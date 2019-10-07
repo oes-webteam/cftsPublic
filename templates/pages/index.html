@@ -1,4 +1,83 @@
 {% extends 'base.html' %} <!-- extends base.html to here -->
 {% block content %} <!-- extends base.html to here -->
-<h1>Index Page</h1>
+
+<!--Cards Start Here -->
+<section id="boxes" class="py-5">
+    <div class="container">
+        <div class="row">
+
+            <!--Choose Files-->
+            <div class="col-lg-4">
+                <div class="card text-center border-secondary mb-resp">
+                    <div class="card-body">
+                        <h3 class="text-gray-dark">Add Files Here</h3>
+                        <p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+                            At consectetur deleniti deserunt eos
+                            exercitationem fuga hic placeat quis, reprehenderit voluptatem?</p>
+                    </div>
+                </div>
+            </div>
+
+            <!--Choose Networks-->
+            <div class="col-lg-4">
+                <div class="card text-center border-secondary mb-resp">
+                    <div class="card-body">
+                        <h3 class="text-gray-dark">Choose Network</h3>
+                        <div class="chkbox">
+                            <form action="/action_page.php">
+                                <input type="checkbox" name="vehicle1" value="nipr">  NIPR
+                                <br>
+                                <input type="checkbox" name="vehicle2" value="bices">  BICES
+                                <br>
+                                <input type="checkbox" name="vehicle1" value="cpn_are">  CPN-ARE
+                                <br>
+                                <input type="checkbox" name="vehicle2" value="cpn_jor">  CPN-JOR
+                                <br>
+                                <input type="checkbox" name="vehicle1" value="cpn_kwt">  CPN-KWT
+                                <br>
+                                <input type="checkbox" name="vehicle2" value="cpn_qat">  CPN-QAT
+                                <br>
+                                <input type="checkbox" name="vehicle1" value="cpn_sau">  CPN-SAU
+                                <br>
+                                <input type="checkbox" name="vehicle2" value="cpn_x">  CPN-X
+                                <br>
+                                <input type="checkbox" name="vehicle1" value="centrixs_swa">  CENTRIXS SWA
+                                <br><br>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!--Add Email-->
+            <div class="col-lg-4">
+                <div class="card text-center border-secondary mb-resp">
+                    <div class="card-body">
+                        <h3 class="text-gray-dark">Add Destination Email</h3>
+                        <p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+                            At consectetur deleniti deserunt eos
+                            exercitationem fuga hic placeat quis, reprehenderit voluptatem?</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!--Submit Button starts here-->
+        <div class="row">
+            <div class="col-md-4"></div>
+            <div class="col-md-4 mt-5 text-center">
+                <!-- ***POINT SUBMIT BTN URL TO RIGHT PLACE***  -->
+                <a href="{% url 'consent' %}" class="btn btn-secondary btn-block" role="button" aria-pressed="true">Submit</a>
+                <!--<a href="index.html" class="btn btn-secondary btn-block" role="button" aria-pressed="true">Submit</a>-->
+            </div>
+            <div class="col-md-4"></div>
+        </div>
+
+    </div>
+
+</section>
+
 {% endblock %} <!-- extends base.html to here -->
+
+
