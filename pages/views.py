@@ -20,3 +20,19 @@ def resources(request):
 
 def urlShortner(request):
     return render(request, 'pages/urlShortner.html')
+
+# Remove after testing
+def testCards(request):
+    return render(request, 'pages/testCards.html')
+
+# Remove after testing
+def testCards2(request):
+    return render(request, 'pages/testCards2.html')
+
+# Remove after testing
+def testCards3(request):
+    return render(request, 'pages/testCards3.html')
+
+# Remove after testing
+def adminTabs(request):
+    return render(request, 'pages/adminTabs.html')
