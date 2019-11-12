@@ -5,34 +5,18 @@ from django.http import HttpResponse
 def index(request):
     return render(request, 'pages/index.html')
 
-
 def consent(request):
     return render(request, 'pages/consent.html')
-
 
 def howTo(request):
     return render(request, 'pages/howTo.html')
 
-
 def resources(request):
     return render(request, 'pages/resources.html')
-
 
 def urlShortner(request):
     return render(request, 'pages/urlShortner.html')
 
-# Remove after testing
-def testCards(request):
-    return render(request, 'pages/testCards.html')
+def analysts(request):
+    return render(request, 'pages/analysts.html')
 
-# Remove after testing
-def testCards2(request):
-    return render(request, 'pages/testCards2.html')
-
-# Remove after testing
-def testCards3(request):
-    return render(request, 'pages/testCards3.html')
-
-# Remove after testing
-def adminTabs(request):
-    return render(request, 'pages/adminTabs.html')
