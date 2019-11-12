@@ -48,5 +48,7 @@ class Request( models.Model ):
   User = models.OneToOneField( User, on_delete=models.DO_NOTHING )
   Network = models.OneToOneField( Network, on_delete=models.DO_NOTHING )
   Emails = models.ManyToManyField( Email )
-  PullNumber = models.IntegerField()
+  PullNumber = models.IntegerField( default=None )
 
+  def count_by_network( self, netName ):
+    return self.network_set.filter( Name=netName ).count()
