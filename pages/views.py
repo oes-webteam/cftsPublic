@@ -20,9 +20,12 @@ def urlShortner(request):
 
 def analysts(request):
     xfer_queues = []
-    for net in Network.objects.all():
-      if Request.count_by_network( net.Name ):
-        xfer_queues.append( Request.network_set.filter( Name=net.Name ) )
+    networks = Network.objects.all()
     
-    return render(request, 'pages/analysts.html')
+    for net in networks:
+      if Request().count_by_network( net.name ):
+        xfer_queues.append( Request.objects.filter( network__name=net.name ) )
+    
+    rc = { 'queues': xfer_queues }
+    return render(request, 'pages/analysts.html', {'rc': rc} )
 
