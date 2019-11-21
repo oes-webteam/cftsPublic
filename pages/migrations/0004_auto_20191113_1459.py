@@ -6,6 +6,8 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
+    atomic = False
+
     dependencies = [
         ('pages', '0003_file_path'),
     ]
@@ -20,11 +22,11 @@ class Migration(migrations.Migration):
             old_name='Abbrev',
             new_name='abbrev',
         ),
-        migrations.RenameField(
-            model_name='classification',
-            old_name='Classification_id',
-            new_name='classification_id',
-        ),
+#        migrations.RenameField(
+#            model_name='classification',
+#            old_name='Classification_id',
+#            new_name='classification_id',
+#        ),
         migrations.RenameField(
             model_name='classification',
             old_name='FullName',
@@ -40,21 +42,21 @@ class Migration(migrations.Migration):
             old_name='Address',
             new_name='address',
         ),
-        migrations.RenameField(
-            model_name='email',
-            old_name='Email_id',
-            new_name='email_id',
-        ),
+#        migrations.RenameField(
+#            model_name='email',
+#            old_name='Email_id',
+#            new_name='email_id',
+#        ),
         migrations.RenameField(
             model_name='file',
             old_name='Classification',
             new_name='classification',
         ),
-        migrations.RenameField(
-            model_name='file',
-            old_name='File_id',
-            new_name='file_id',
-        ),
+#        migrations.RenameField(
+#            model_name='file',
+#            old_name='File_id',
+#            new_name='file_id',
+#        ),
         migrations.RenameField(
             model_name='file',
             old_name='Filename',
@@ -70,21 +72,21 @@ class Migration(migrations.Migration):
             old_name='Size',
             new_name='size',
         ),
-        migrations.RenameField(
-            model_name='network',
-            old_name='Classifications',
-            new_name='classifications',
-        ),
+#        migrations.RenameField(
+#            model_name='network',
+#            old_name='Classifications',
+#            new_name='classifications',
+#        ),
         migrations.RenameField(
             model_name='network',
             old_name='Name',
             new_name='name',
         ),
-        migrations.RenameField(
-            model_name='network',
-            old_name='Network_id',
-            new_name='network_id',
-        ),
+#        migrations.RenameField(
+#            model_name='network',
+#            old_name='Network_id',
+#            new_name='network_id',
+#        ),
         migrations.RenameField(
             model_name='request',
             old_name='DateComplete',
@@ -115,11 +117,11 @@ class Migration(migrations.Migration):
             old_name='DiscNumber',
             new_name='disc_number',
         ),
-        migrations.RenameField(
-            model_name='request',
-            old_name='Emails',
-            new_name='emails',
-        ),
+#        migrations.RenameField(
+#            model_name='request',
+#            old_name='Emails',
+#            new_name='emails',
+#        ),
         migrations.RenameField(
             model_name='request',
             old_name='IsSubmitted',
@@ -130,11 +132,11 @@ class Migration(migrations.Migration):
             old_name='Network',
             new_name='network',
         ),
-        migrations.RenameField(
-            model_name='request',
-            old_name='Request_id',
-            new_name='request_id',
-        ),
+#        migrations.RenameField(
+#            model_name='request',
+#            old_name='Request_id',
+#            new_name='request_id',
+#        ),
         migrations.RenameField(
             model_name='request',
             old_name='User',
@@ -145,11 +147,11 @@ class Migration(migrations.Migration):
             old_name='Email',
             new_name='email',
         ),
-        migrations.RenameField(
-            model_name='user',
-            old_name='User_id',
-            new_name='user_id',
-        ),
+#        migrations.RenameField(
+#            model_name='user',
+#            old_name='User_id',
+#            new_name='user_id',
+#        ),
         migrations.RemoveField(
             model_name='request',
             name='PullNumber',

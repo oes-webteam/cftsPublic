@@ -23,7 +23,7 @@ def analysts(request):
     networks = Network.objects.all()
     
     for net in networks:
-      if Request().count_by_network( net.name ):
+      if Request().pending_count_by_network( net.name ):
         xfer_queues.append( Request.objects.filter( network__name=net.name ) )
     
     rc = { 'queues': xfer_queues }

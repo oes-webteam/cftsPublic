@@ -38,7 +38,7 @@ class User( models.Model ):
 
 class Request( models.Model ):
   request_id = models.UUIDField( primary_key=True, default=uuid.uuid4, editable=False )
-  date_created = models.DateTimeField()
+  date_created = models.DateTimeField( auto_now_add=True)
   date_pulled = models.DateTimeField()
   date_oneeye = models.DateTimeField()
   date_twoeye = models.DateTimeField()
@@ -50,5 +50,5 @@ class Request( models.Model ):
   emails = models.ManyToManyField( Email )
   pull_number = models.IntegerField( default=None )
 
-  def count_by_network( self, netName ):
-    return self.__class__.objects.filter( network__name=netName ).count()
+  def pending_count_by_network( self, netName ):
+    return self.__class__.objects.filter( network__name=netName, date_complete__isnull=True ).count()
