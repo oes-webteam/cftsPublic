@@ -15,7 +15,7 @@
     <!-- Navbar -->
     {% include 'partials/_navbarAdmin.html' %}
 
-    <div class="testOutput" style="background-color: #CC5555; text-align: center;">{{ rc.queues }}</div>
+    <!-- <div class="testOutput" style="background-color: #CC5555; text-align: center;">{{ rc.queues }}</div> -->
 
     <!--  To make the tabs toggleable, add the data-toggle="tab" attribute to each link. Then add a .tab-pane class with a unique ID for every tab and wrap them inside a div element with class .tab-content.  -->
     <div class="container" style="margin-top: 200px;">
@@ -23,23 +23,29 @@
             <div class="card-header">
 
                 <ul class="nav nav-tabs mt-5">
-                    <li class="active"><a data-toggle="tab" href="#fileQueue">File Queue</a></li>
-                    <li><a data-toggle="tab" href="#pull">Pull</a></li>
-                    <li><a data-toggle="tab" href="#pending">Pending</a></li>
+                    <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#fileQueue">Request Queue</a></li>
+                    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#pull">Pull</a></li>
+                    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#pending">Pending</a></li>
                 </ul>
 
                 <div class="tab-content">
-                    <div id="fileQueue" class="tab-pane fade active">
-                    <h3>Menu 2</h3>
-                    <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam.</p>
+                    <div id="fileQueue" class="tab-pane container active">
+                    <h3>Request Queue</h3>
+                        {% if rc.queues %}
+                            {% for q in rc.queues %}
+                            Duh
+                            {% endfor %}
+                        {% else %}
+                            <p>{{ rc.empty }}</p>
+                        {% endif %}
                     </div>
 
-                    <div id="pull" class="tab-pane fade">
+                    <div id="pull" class="tab-pane container fade">
                     <h3>HOME</h3>
                     <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
                     </div>
 
-                    <div id="pending" class="tab-pane fade">
+                    <div id="pending" class="tab-pane container fade">
                     <h3>Menu 1</h3>
                     <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
                     </div>

@@ -1,3 +1,4 @@
+import random
 from django.shortcuts import render
 from django.http import HttpResponse
 from .models import *
@@ -21,11 +22,12 @@ def urlShortner(request):
 def analysts(request):
     xfer_queues = []
     networks = Network.objects.all()
-    
+    empty = random.choice( [ 'These pipes are clean.', 'This house is clean.' ] )
+
     for net in networks:
       if Request().pending_count_by_network( net.name ):
         xfer_queues.append( Request.objects.filter( network__name=net.name ) )
     
-    rc = { 'queues': xfer_queues }
+    rc = { 'queues': xfer_queues, 'empty': empty }
     return render(request, 'pages/analysts.html', {'rc': rc} )
 
