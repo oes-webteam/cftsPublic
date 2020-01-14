@@ -15,3 +15,7 @@ body {
 .tab-pane {
   background-color: #fff;
 }
+
+#fileQueue .error {
+  padding: 0.67em;
+}

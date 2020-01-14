@@ -22,12 +22,12 @@ def urlShortner(request):
 def analysts(request):
     xfer_queues = []
     networks = Network.objects.all()
-    empty = random.choice( [ 'These pipes are clean.', 'This house is clean.' ] )
+    empty = random.choice( [ 'These pipes are clean.', 'LZ is clear.', 'Nothing here. Why not work on metadata?', 'Queue is empty -- just like my wallet.', "There's nothing here? Huh. That's gotta be an error ... " ] )
 
     for net in networks:
       if Request().pending_count_by_network( net.name ):
-        xfer_queues.append( Request.objects.filter( network__name=net.name ) )
+        queue = { 'name': net.name, 'q': Request.objects.filter( network__name=net.name ) }
+        xfer_queues.append( queue )
     
     rc = { 'queues': xfer_queues, 'empty': empty }
     return render(request, 'pages/analysts.html', {'rc': rc} )
-

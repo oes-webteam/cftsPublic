@@ -33,10 +33,17 @@
                     <h3>Request Queue</h3>
                         {% if rc.queues %}
                             {% for q in rc.queues %}
-                            Duh
+                                <h4>{{ q.name }}</h4>
+
+                                <ul>
+                                {% for request in q.q %}
+                                    <li>{{ request }}</li>
+                                {% endfor %}
+                                </ul>
+                                <button> Create {{ q.name }} Pull</button>
                             {% endfor %}
                         {% else %}
-                            <p>{{ rc.empty }}</p>
+                            <p class="error">{{ rc.empty }}</p>
                         {% endif %}
                     </div>
 
@@ -63,13 +70,3 @@
 </body>
 
 </html>
-
-
-
-
-
-
-
-
-
-
