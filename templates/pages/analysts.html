@@ -15,47 +15,49 @@
     <!-- Navbar -->
     {% include 'partials/_navbarAdmin.html' %}
 
-    <!-- <div class="testOutput" style="background-color: #CC5555; text-align: center;">{{ rc.queues }}</div> -->
-
     <!--  To make the tabs toggleable, add the data-toggle="tab" attribute to each link. Then add a .tab-pane class with a unique ID for every tab and wrap them inside a div element with class .tab-content.  -->
     <div class="container" style="margin-top: 200px;">
         <div class="card">
             <div class="card-header">
 
                 <ul class="nav nav-tabs mt-5">
-                    <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#fileQueue">Request Queue</a></li>
-                    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#pull">Pull</a></li>
-                    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#pending">Pending</a></li>
+                {% for network in rc.queues %}
+                    <li class="nav-item{% if network.count == 0 %} disabled{% endif %}">
+                        <a class="nav-link{% if forloop.counter0 == 0 %} active{% endif %}"
+                        {% if network.count != 0 %} 
+                            data-toggle="tab" 
+                            href="#tab{{ network.name }}"
+                        {% endif %}>
+                            {{ network.name }}
+                        </a>
+                    </li>
+                {% endfor %}
                 </ul>
 
                 <div class="tab-content">
-                    <div id="fileQueue" class="tab-pane container active">
-                    <h3>Request Queue</h3>
-                        {% if rc.queues %}
-                            {% for q in rc.queues %}
-                                <h4>{{ q.name }}</h4>
+                {% for network in rc.queues %}
+                    <div id="tab{{ network.name }}" class="tab-pane container{% if forloop.counter0 == 0 %} active{% else %} fade{% endif %}">
+                        <span class="network-header">Pending Requests: {{ network.count }}</span>
+                        <button class="pull-button">Create {{ network.name }} Pull</button>
 
-                                <ul>
-                                {% for request in q.q %}
-                                    <li>{{ request }}</li>
-                                {% endfor %}
-                                </ul>
-                                <button> Create {{ q.name }} Pull</button>
+                        <form class="queue-form">
+                        <table width="100%" border="0" cellpadding="5" cellspacing="5">
+                            <colgroup>
+                                <col width="10%" />
+                                <col />
+                                <col width="30%" />
+                            </colgroup>
+                            {% for request in network.q %}
+                            <tr>
+                                <td><input type="checkbox" name="recordSelection" id="reqeust_{{ request.request_id }}" /></td>
+                                <td><a href="">{{ request.user }}</a></td> <!-- link to request view -->
+                                <td>{{ request.date_created|date:'db'|upper }} {{ request.date_created|time:'H:i:s e' }}</td>
+                            </tr>
                             {% endfor %}
-                        {% else %}
-                            <p class="error">{{ rc.empty }}</p>
-                        {% endif %}
+                        </table>
+                        </form>
                     </div>
-
-                    <div id="pull" class="tab-pane container fade">
-                    <h3>HOME</h3>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-                    </div>
-
-                    <div id="pending" class="tab-pane container fade">
-                    <h3>Menu 1</h3>
-                    <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-                    </div>
+                {% endfor %}
                 </div>
 
             </div> <!-- END card-header -->

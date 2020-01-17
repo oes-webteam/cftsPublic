@@ -25,9 +25,10 @@ def analysts(request):
     empty = random.choice( [ 'These pipes are clean.', 'LZ is clear.', 'Nothing here. Why not work on metadata?', 'Queue is empty -- just like my wallet.', "There's nothing here? Huh. That's gotta be an error ... " ] )
 
     for net in networks:
-      if Request().pending_count_by_network( net.name ):
-        queue = { 'name': net.name, 'q': Request.objects.filter( network__name=net.name ) }
-        xfer_queues.append( queue )
+      ds = Request.objects.filter( network__name=net.name, is_submitted=True, date_complete__isnull=True ).order_by( '-date_created' )
+      queue = { 'name': net.name, 'count': ds.count(), 'q': ds }
+      xfer_queues.append( queue )
     
+    xfer_queues = sorted( xfer_queues, key=lambda k: k['count'], reverse=True )
     rc = { 'queues': xfer_queues, 'empty': empty }
     return render(request, 'pages/analysts.html', {'rc': rc} )

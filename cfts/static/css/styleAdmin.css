@@ -14,8 +14,13 @@ body {
 
 .tab-pane {
   background-color: #fff;
-}
-
-#fileQueue .error {
+  border: 1px solid #dee2e6;
+  border-top: 0;
   padding: 0.67em;
 }
+
+.network-header { font-size: 1.5rem; }
+
+.pull-button { float: right; }
+
+.queue-form { padding: 1rem 0; }

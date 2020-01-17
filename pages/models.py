@@ -70,9 +70,9 @@ class Request( models.Model ):
     formatted_date_created = self.date_created.strftime("%d%b %H:%M:%S");
     return self.user.__str__() + ' (' + formatted_date_created + ')'
 
-  def pending_by_network( self, netName ):
-    return self.__class__.objects.filter( network__name=netName, is_submitted=True, date_complete__isnull=True )
-
-  def pending_count_by_network( self, netName ):
-    return self.pending_by_network( netName ).count()
+#  def pending_by_network( self, netName ):
+#    return self.__class__.objects.filter( network__name=netName, is_submitted=True, date_complete__isnull=True ).order_by( '-date_created' )
+#
+#  def pending_count_by_network( self, netName ):
+#    return self.pending_by_network( netName ).count()
 
