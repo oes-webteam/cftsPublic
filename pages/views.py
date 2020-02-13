@@ -1,7 +1,9 @@
-import random
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.http import HttpResponse
 from .models import *
+
+import random
 
 # Views here output/render a template.
 def index(request):
@@ -19,6 +21,7 @@ def resources(request):
 def urlShortner(request):
     return render(request, 'pages/urlShortner.html')
 
+@login_required
 def analysts(request):
     xfer_queues = []
     networks = Network.objects.all()
