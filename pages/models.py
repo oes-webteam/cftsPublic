@@ -47,7 +47,7 @@ class User( models.Model ):
   user_id = models.UUIDField( primary_key=True, default=uuid.uuid4, editable=False )
   name_first = models.CharField( max_length=50 )
   name_last = models.CharField( max_length=50 )
-  email = models.OneToOneField( Email, on_delete=models.DO_NOTHING )
+  email = models.ForeignKey( Email, on_delete=models.DO_NOTHING )
   def __str__(self):
     return self.name_last + ', ' + self.name_first
 
@@ -57,7 +57,7 @@ class Request( models.Model ):
   user = models.ForeignKey( User, on_delete=models.DO_NOTHING )
   network = models.ForeignKey( Network, on_delete=models.DO_NOTHING )
   files = models.ManyToManyField( File )
-  target_emails = models.ManyToManyField( Email )
+  target_email = models.ForeignKey( Email, on_delete=models.DO_NOTHING, default=None, null=True )
   is_submitted = models.BooleanField( default=False )
   date_pulled = models.DateTimeField( null=True, blank=True )
   pull_number = models.IntegerField( null=True, blank=True )
