@@ -24,3 +24,10 @@ body {
 .pull-button { float: right; }
 
 .queue-form { padding: 1rem 0; }
+.queue-form tr { }
+.queue-form tr:hover { background-color: #F8E080; }
+.queue-form tr.pending { background-color: #EEE; color: #DDD; font-style: italic; }
+.queue-form tr.pending a { color: #BBD0FF; }
+
+.btn { font-size: 0.8em; }
+.btn-back { margin-bottom: 1rem; }

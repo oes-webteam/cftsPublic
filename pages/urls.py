@@ -8,4 +8,5 @@ urlpatterns = [
     path('resources', views.resources, name='resources'),
     path('urlShortner', views.urlShortner, name='urlShortner'),
     path('analysts', views.analysts, name='analysts'),
+    path('transfer-request/<uuid:id>', views.transferRequest, name='transfer-request'),
 ]

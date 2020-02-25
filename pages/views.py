@@ -28,10 +28,34 @@ def analysts(request):
     empty = random.choice( [ 'These pipes are clean.', 'LZ is clear.', 'Nothing here. Why not work on metadata?', 'Queue is empty -- just like my wallet.', "There's nothing here? Huh. That's gotta be an error ... " ] )
 
     for net in networks:
-      ds = Request.objects.filter( network__name=net.name, is_submitted=True, date_complete__isnull=True ).order_by( '-date_created' )
-      queue = { 'name': net.name, 'count': ds.count(), 'q': ds }
+      dataset = Request.objects.filter( network__name=net.name, is_submitted=True, date_complete__isnull=True ).order_by( '-date_created' )
+      queue = { 'name': net.name, 'count': dataset.count(), 'q': dataset }
       xfer_queues.append( queue )
     
     xfer_queues = sorted( xfer_queues, key=lambda k: k['count'], reverse=True )
     rc = { 'queues': xfer_queues, 'empty': empty }
-    return render(request, 'pages/analysts.html', {'rc': rc} )
+    return render( request, 'pages/analysts.html', { 'rc': rc } )
+
+@login_required
+def transferRequest(request, id):
+    rqst = Request.objects.get( request_id = id )
+    rc = { 
+      'request_id': rqst.request_id,
+      'date_created': rqst.date_created,
+      'user': User.objects.get( user_id = rqst.user.user_id ),
+      'network': Network.objects.get( network_id = rqst.network.network_id ),
+      'files': rqst.files.all(),
+      'target_email': Email.objects.get( email_id = rqst.target_email.email_id ),
+      'is_submitted': rqst.is_submitted,
+      'date_pulled': rqst.date_pulled,
+      'user_pulled': rqst.user_pulled,
+      'pull_number': rqst.pull_number,
+      'date_oneeye': rqst.date_oneeye,
+      'user_oneeye': rqst.user_oneeye,
+      'date_twoeye': rqst.date_twoeye,
+      'user_twoeye': rqst.user_twoeye,
+      'date_complete': rqst.date_complete,
+      'user_complete': rqst.user_complete,
+      'disc_number': rqst.disc_number
+    }
+    return render( request, 'pages/transfer-request.html', { 'rc': rc } )
