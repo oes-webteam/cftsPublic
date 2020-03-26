@@ -37,11 +37,7 @@ def analysts( request ):
     return render( request, 'pages/analysts.html', { 'rc': rc } )
 
 @login_required
-<<<<<<< HEAD
 def transferRequest( request, id ):
-=======
-def transferRequest(request, id):
->>>>>>> transfer-requests
     rqst = Request.objects.get( request_id = id )
     rc = { 
       'request_id': rqst.request_id,
