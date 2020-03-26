@@ -28,15 +28,12 @@ def analysts( request ):
     empty = random.choice( [ 'These pipes are clean.', 'LZ is clear.', 'Nothing here. Why not work on metadata?', 'Queue is empty -- just like my wallet.', "There's nothing here? Huh. That's gotta be an error ... " ] )
 
     for net in networks:
-      ds = Request.objects.filter( network__name=net.name, is_submitted=True, date_complete__isnull=True ).order_by( '-date_created' )
-      queue = { 'name': net.name, 'count': ds.count(), 'q': ds }
+      dataset = Request.objects.filter( network__name=net.name, is_submitted=True, date_complete__isnull=True ).order_by( '-date_created' )
+      queue = { 'name': net.name, 'count': dataset.count(), 'q': dataset }
       xfer_queues.append( queue )
     
     xfer_queues = sorted( xfer_queues, key=lambda k: k['count'], reverse=True )
     rc = { 'queues': xfer_queues, 'empty': empty }
-<<<<<<< Updated upstream
-    return render(request, 'pages/analysts.html', {'rc': rc} )
-=======
     return render( request, 'pages/analysts.html', { 'rc': rc } )
 
 @login_required
@@ -65,7 +62,13 @@ def transferRequest( request, id ):
 
 @login_required
 def createZip( request, network_name ):
-  requestsToPull = Request.objects.filter( network = network_id )
+  #select Requests based on network and status
+  requestsToPull = Request.objects.filter( network = network_name, date_pulled = None )
+  return HttpResponse({requestsToPull})
+
+  #compile files from Requests
+
+
   '''
   zip_file = open(path_to_file, 'r')
   response = HttpResponse(zip_file, content_type='application/force-download')
@@ -73,4 +76,3 @@ def createZip( request, network_name ):
   return response
   '''
   pass
->>>>>>> Stashed changes

@@ -38,11 +38,7 @@
                 {% for network in rc.queues %}
                     <div id="tab{{ network.name }}" class="tab-pane container{% if forloop.counter0 == 0 %} active{% else %} fade{% endif %}">
                         <span class="network-header">Pending Requests: {{ network.count }}</span>
-<<<<<<< Updated upstream
-                        <button class="pull-button">Create {{ network.name }} Pull</button>
-=======
                         <button class="btn btn-primary pull-button" id="pull{{network.name}}">Create {{ network.name }} Pull</button>
->>>>>>> Stashed changes
 
                         <form class="queue-form">
                         <table width="100%" border="0" cellpadding="5" cellspacing="5">
