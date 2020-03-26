@@ -48,14 +48,18 @@
                                 <col width="30%" />
                             </colgroup>
                             {% for request in network.q %}
-                            <tr>
+                            <tr class="{% if request.date_pulled %}pending{% endif %}">
                                 <td><input type="checkbox" name="recordSelection" id="reqeust_{{ request.request_id }}" /></td>
-                                <td><a href="">{{ request.user }}</a></td> <!-- link to request view -->
+                                <td><a href="{% url 'transfer-request' id=request.request_id %}">{{ request.user }}</a></td> <!-- link to request view -->
                                 <td>{{ request.date_created|date:'db'|upper }} {{ request.date_created|time:'H:i:s e' }}</td>
                             </tr>
                             {% endfor %}
                         </table>
                         </form>
+
+                        <!-- delete selected button -->
+                        <button class="btn btn-danger">Delete Selected</button>
+
                     </div>
                 {% endfor %}
                 </div>
@@ -68,7 +72,7 @@
 
     <script src="{% static 'js/jquery-3.4.1.min.js' %}"></script>
     <script src="{% static 'js/bootstrap.js' %}"></script>
-    <script src="{% static 'js/popper.min.js' %}"></script> <!-- Check version of this -->
+    <script src="{% static 'js/analysts.js' %}"></script>
 </body>
 
 </html>

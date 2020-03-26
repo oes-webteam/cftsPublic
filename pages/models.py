@@ -28,7 +28,7 @@ class File( models.Model ):
   rejection_reason = models.ForeignKey( Rejection, on_delete=models.DO_NOTHING, null=True, blank=True )
   rejection_text = models.TextField( default=None, blank=True )
   def __str__(self):
-    return os.path.basename(self.file_object.name)
+    return os.path.basename( self.file_object.name )
 
 class Network( models.Model ):
   network_id = models.UUIDField( primary_key=True, default=uuid.uuid4, editable=settings.DEBUG )
@@ -59,11 +59,20 @@ class Request( models.Model ):
   files = models.ManyToManyField( File )
   target_email = models.ForeignKey( Email, on_delete=models.DO_NOTHING, default=None, null=True )
   is_submitted = models.BooleanField( default=False )
+  
   date_pulled = models.DateTimeField( null=True, blank=True )
+  user_pulled = models.ForeignKey( settings.AUTH_USER_MODEL, related_name='request_user_pulled', on_delete=models.DO_NOTHING, null=True, blank=True )
   pull_number = models.IntegerField( null=True, blank=True )
+  
   date_oneeye = models.DateTimeField( null=True, blank=True )
+  user_oneeye = models.ForeignKey( settings.AUTH_USER_MODEL, related_name='request_user_oneeye', on_delete=models.DO_NOTHING, null=True, blank=True )
+  
   date_twoeye = models.DateTimeField( null=True, blank=True )
+  user_twoeye = models.ForeignKey( settings.AUTH_USER_MODEL, related_name='request_user_twoeye', on_delete=models.DO_NOTHING, null=True, blank=True )
+  
   date_complete = models.DateTimeField( null=True, blank=True )
+  user_complete = models.ForeignKey( settings.AUTH_USER_MODEL, related_name='request_user_complete', on_delete=models.DO_NOTHING, null=True, blank=True )
+  
   disc_number = models.IntegerField( null=True, blank=True )
 
   def __str__(self):
