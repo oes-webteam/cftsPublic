@@ -105,3 +105,7 @@ venv.bak/
 
 # uploaded files from the user
 uploads/
+# files created by the system
+cfts/static/files/
+# Visual Studio Code
+.vscode/

@@ -19,11 +19,26 @@ body {
   padding: 0.67em;
 }
 
-.network-header { font-size: 1.5rem; }
+.network-header { text-align: right; }
+.network-header > div { 
+    display: inline-block;
+    vertical-align: top;
+  }
+  .pending-info { 
+    float: left; 
+    font-size: 1.5rem;
+    line-height: 1.5rem;
+    text-align: left;
+  }
+  .last-pull-info {
+    font-size: 1rem;
+    font-style: italic;
+    line-height: 1rem;
+  }
+  .create-pull {}
+  .download-block {}
 
-.pull-button { float: right; }
-
-.queue-form { padding: 1rem 0; }
+.queue-form { padding: 2.3rem 0; }
 .queue-form tr { }
 .queue-form tr:hover { background-color: #F8E080; }
 .queue-form tr.pending { background-color: #EEE; color: #DDD; font-style: italic; }

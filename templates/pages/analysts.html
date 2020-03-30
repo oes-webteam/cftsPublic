@@ -37,8 +37,27 @@
                 <div class="tab-content">
                 {% for network in rc.queues %}
                     <div id="tab{{ network.name }}" class="tab-pane container{% if forloop.counter0 == 0 %} active{% else %} fade{% endif %}">
-                        <span class="network-header">Pending Requests: {{ network.count }}</span>
-                        <button class="btn btn-primary pull-button" id="pull{{network.name}}">Create {{ network.name }} Pull</button>
+                    {% if network.count == 0 %}
+                        {{ rc.empty }}
+                    {% else %}
+                        <div class="network-header">
+                            {% for lp in network.last_pull %}
+                            <div class="pending-info">
+                                Pending Requests: {{ network.pending.count }}
+                                <br />
+                                <span class="last-pull-info">( Last pull created: 
+                                    <span class="date-pulled">{{ lp.date_pulled|date:'db'|upper }} {{ lp.date_pulled|time:'Hi' }}</span> 
+                                    by <span class="user-pulled">{{ lp.user_pulled__username }}</span> )
+                                </span>
+                            </div>
+                            <div class="create-pull">
+                                <button class="btn btn-primary pull-button{% if network.pending.count == 0 %} disabled{% endif %}" id="pull{{network.name}}">Create {{ network.name }} Pull</button>                                 
+                            </div>
+                            <div class="download-block">
+                                <a class="btn btn-primary download-button" id="dl{{network.name}}" href="/static/files/{{ network.name }}_{{ lp.pull_number }}.zip">Downoad Current {{ network.name }} Zip</a>
+                            </div>
+                            {% endfor %}
+                        </div>
 
                         <form class="queue-form">
                         <table width="100%" border="0" cellpadding="5" cellspacing="5">
@@ -60,6 +79,7 @@
                         <!-- delete selected button -->
                         <button class="btn btn-danger">Delete Selected</button>
 
+                    {% endif %}
                     </div>
                 {% endfor %}
                 </div>
@@ -73,6 +93,7 @@
     <script src="{% static 'js/jquery-3.4.1.min.js' %}"></script>
     <script src="{% static 'js/bootstrap.js' %}"></script>
     <script src="{% static 'js/analysts.js' %}"></script>
+
 </body>
 
 </html>
