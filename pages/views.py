@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse, FileResponse
-from django.db.models import Max, Count, Q
+from django.db.models import Max, Count, Q, Sum
 from .models import *
 
 import random
@@ -30,16 +30,55 @@ def urlShortner( request ):
 def analysts( request ):
     xfer_queues = []
     networks = Network.objects.all()
-    empty = random.choice( [ 'These pipes are clean.', 'LZ is clear.', 'Nothing here. Why not work on metadata?', 'Queue is empty -- just like my wallet.', "There's nothing here? Huh. That's gotta be an error ... " ] )
+    empty = random.choice( [ 
+      'These pipes are clean.', 
+      'LZ is clear.', 
+      'Nothing here. Why not work on metadata?', 
+      'Queue is empty -- just like my wallet.', 
+      "There's nothing here? Huh. That's gotta be an error ... " 
+    ] )
 
     for net in networks:
-      last_pull =Request.objects.values( 'pull_number', 'date_pulled', 'user_pulled__username' ).filter( network__name=net.name ).order_by( '-date_pulled' )[:1]
-      dataset = Request.objects.filter( network__name=net.name, is_submitted=True, date_complete__isnull=True ).order_by( '-date_created' )
-      queue = { 'name': net.name, 'count': dataset.count(), 'pending': dataset.aggregate( count = Count( 'request_id', filter=Q( date_pulled__isnull=True ) ) ), 'q': dataset, 'last_pull': last_pull }
+      # get information about the last pull that was done on each network
+      last_pull =Request.objects.values( 
+        'pull_number', 
+        'date_pulled', 
+        'user_pulled__username' 
+        ).filter( network__name=net.name ).order_by( '-date_pulled' )[:1]
+      
+      # get all the xfer requests (pending and pulled) submitted for this network
+      dataset = Request.objects.filter( 
+        network__name=net.name, 
+        is_submitted=True, 
+        date_complete__isnull=True ).order_by( '-date_created' )
+      
+      # count how many total files are in all the pending requests (excluding ones that have already been pulled)
+      file_count = dataset.annotate( 
+        files_in_request = Count( 'files__file_id', filter=Q( date_pulled__isnull=True ) ) 
+      ).aggregate( 
+        files_in_dataset = Sum( 'files_in_request' ) 
+      )
+
+      # smoosh all the info together into one big, beautiful data object ...
+      queue = { 
+        'name': net.name, 
+        'order_by': net.sort_order, 
+        'file_count': file_count, 
+        'count': dataset.count(), 
+        'pending': dataset.aggregate( count = Count( 'request_id', filter=Q( date_pulled__isnull=True ) ) ), 
+        'q': dataset, 
+        'last_pull': last_pull 
+      }
+      # ... and add it to the list
       xfer_queues.append( queue )
     
-    xfer_queues = sorted( xfer_queues, key=lambda k: k['name'], reverse=False )
+    # sort the list of network queues into network order
+    xfer_queues = sorted( xfer_queues, key=lambda k: k['order_by'], reverse=False )
+    
+    # create the request context
     rc = { 'queues': xfer_queues, 'empty': empty }
+    
+    # roll that beautiful bean footage
     return render( request, 'pages/analysts.html', { 'rc': rc } )
 
 @login_required

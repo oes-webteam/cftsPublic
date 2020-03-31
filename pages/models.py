@@ -34,6 +34,9 @@ class Network( models.Model ):
   network_id = models.UUIDField( primary_key=True, default=uuid.uuid4, editable=settings.DEBUG )
   name = models.CharField( max_length=50 )
   classifications = models.ManyToManyField( Classification )
+  sort_order = models.IntegerField()
+  class Meta:
+    ordering = ['sort_order']
   def __str__(self):
     return self.name
 

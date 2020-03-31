@@ -43,7 +43,7 @@
                         <div class="network-header">
                             {% for lp in network.last_pull %}
                             <div class="pending-info">
-                                Pending Requests: {{ network.pending.count }}
+                                Pending Requests: {{ network.pending.count }} ({{network.file_count.files_in_dataset}} Files)
                                 <br />
                                 <span class="last-pull-info">( Last pull created: 
                                     <span class="date-pulled">{{ lp.date_pulled|date:'db'|upper }} {{ lp.date_pulled|time:'Hi' }}</span> 
@@ -68,10 +68,17 @@
                             </colgroup>
                             {% for request in network.q %}
                             <tr class="{% if request.date_pulled %}pending{% endif %}">
-                                <td><input type="checkbox" name="recordSelection" id="reqeust_{{ request.request_id }}" /></td>
-                                <td><a href="{% url 'transfer-request' id=request.request_id %}">{{ request.user }}</a></td> <!-- link to request view -->
+                                <td colspan="2"><a href="{% url 'transfer-request' id=request.request_id %}">{{ request.user }}</a></td> <!-- link to request view -->
                                 <td>{{ request.date_created|date:'db'|upper }} {{ request.date_created|time:'H:i:s e' }}</td>
                             </tr>
+                            {% for file in request.files.all %}
+                            <tr class="{% if request.date_pulled %}pending{% endif %}">
+                                <td><input type="checkbox" name="fileSelection" id="reqeust_{{ request.request_id }}" /></td>
+                                <td colspan="2">{{ file }}</td>
+                            </tr>
+                            <!-- end files -->
+                            {% endfor %}
+                            <!-- end requests -->
                             {% endfor %}
                         </table>
                         </form>
