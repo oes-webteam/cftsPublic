@@ -10,4 +10,6 @@ urlpatterns = [
     path( 'analysts', views.analysts, name='analysts' ),
     path( 'transfer-request/<uuid:id>', views.transferRequest, name='transfer-request' ),
     path( 'create-zip/<str:network_name>', views.createZip, name='create-zip' ),
+    path( 'pulls', views.pulls, name='pulls' ),
+    path( 'tools-makefiles', views.toolsMakeFiles, name='make-files' ),
 ]

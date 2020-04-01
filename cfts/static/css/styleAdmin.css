@@ -18,31 +18,3 @@ body {
   border-top: 0;
   padding: 0.67em;
 }
-
-.network-header { text-align: right; }
-.network-header > div { 
-    display: inline-block;
-    vertical-align: top;
-  }
-  .pending-info { 
-    float: left; 
-    font-size: 1.5rem;
-    line-height: 1.5rem;
-    text-align: left;
-  }
-  .last-pull-info {
-    font-size: 1rem;
-    font-style: italic;
-    line-height: 1rem;
-  }
-  .create-pull {}
-  .download-block {}
-
-.queue-form { padding: 2.3rem 0; }
-.queue-form tr { }
-.queue-form tr:hover { background-color: #F8E080; }
-.queue-form tr.pending { background-color: #EEE; color: #DDD; font-style: italic; }
-.queue-form tr.pending a { color: #BBD0FF; }
-
-.btn { font-size: 0.8em; }
-.btn-back { margin-bottom: 1rem; }

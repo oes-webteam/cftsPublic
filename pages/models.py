@@ -26,7 +26,9 @@ class File( models.Model ):
   file_object = models.FileField( upload_to=randomize_path )
   classification = models.ForeignKey( Classification, on_delete=models.DO_NOTHING )
   rejection_reason = models.ForeignKey( Rejection, on_delete=models.DO_NOTHING, null=True, blank=True )
-  rejection_text = models.TextField( default=None, blank=True )
+  rejection_text = models.TextField( default=None, blank=True, null=True )
+  class Meta:
+    ordering = ['file_object']
   def __str__(self):
     return os.path.basename( self.file_object.name )
 
