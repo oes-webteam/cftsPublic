@@ -17,7 +17,11 @@
     <!-- Navbar -->
     {% include 'partials/_navbarAdmin.html' %}
 
-    <div class="make-it-red">{{ rc.bodyText }}</div>
+    <p>{{ type( rc.history ) }}</p>
+
+    {% for item in rc.history.BICES %}
+      <p>{{ item }}</p>
+    {% endfor %}
 
     {% include 'partials/_footerAdmin.html' %}
 

@@ -41,21 +41,21 @@ def analysts( request ):
 
   for net in networks:
     # get information about the last pull that was done on each network
-    last_pull =Request.objects.values( 
+    last_pull = Pull.objects.values( 
       'pull_number', 
       'date_pulled', 
       'user_pulled__username' 
-      ).filter( network__name=net.name ).order_by( '-date_pulled' )[:1]
-    
+    ).filter( network__name=net.name ).order_by( '-date_pulled' )[:1]
+
     # get all the xfer requests (pending and pulled) submitted for this network
     dataset = Request.objects.filter( 
       network__name=net.name, 
       is_submitted=True, 
-      date_complete__isnull=True ).order_by( '-date_created' )
+      pull__date_complete__isnull=True ).order_by( '-date_created' )
     
     # count how many total files are in all the pending requests (excluding ones that have already been pulled)
     file_count = dataset.annotate( 
-      files_in_request = Count( 'files__file_id', filter=Q( date_pulled__isnull=True ) ) 
+      files_in_request = Count( 'files__file_id', filter=Q( pull__date_pulled__isnull=True ) ) 
     ).aggregate( 
       files_in_dataset = Sum( 'files_in_request' ) 
     )
@@ -66,7 +66,7 @@ def analysts( request ):
       'order_by': net.sort_order, 
       'file_count': file_count, 
       'count': dataset.count(), 
-      'pending': dataset.aggregate( count = Count( 'request_id', filter=Q( date_pulled__isnull=True ) ) ), 
+      'pending': dataset.aggregate( count = Count( 'request_id', filter=Q( pull__date_pulled__isnull=True ) ) ), 
       'q': dataset, 
       'last_pull': last_pull 
     }
@@ -76,6 +76,8 @@ def analysts( request ):
   # sort the list of network queues into network order
   xfer_queues = sorted( xfer_queues, key=lambda k: k['order_by'], reverse=False )
   
+  print( xfer_queues )
+
   # create the request context
   rc = { 'queues': xfer_queues, 'empty': empty }
   
@@ -93,31 +95,29 @@ def transferRequest( request, id ):
     'files': rqst.files.all(),
     'target_email': Email.objects.get( email_id = rqst.target_email.email_id ),
     'is_submitted': rqst.is_submitted,
-    'date_pulled': rqst.date_pulled,
-    'user_pulled': rqst.user_pulled,
-    'pull_number': rqst.pull_number,
-    'date_oneeye': rqst.date_oneeye,
-    'user_oneeye': rqst.user_oneeye,
-    'date_twoeye': rqst.date_twoeye,
-    'user_twoeye': rqst.user_twoeye,
-    'date_complete': rqst.date_complete,
-    'user_complete': rqst.user_complete,
-    'disc_number': rqst.disc_number
   }
   return render( request, 'pages/transfer-request.html', { 'rc': rc } )
 
 @login_required
 def createZip( request, network_name ):
-  # create pull number
-  maxPull = Request.objects.aggregate( Max( 'pull_number' ) )
-  pull_number = maxPull['pull_number__max'] + 1
+  # create pull
+  maxPull = Pull.objects.aggregate( Max( 'pull_number' ) )
+  pull_number = 1 if maxPull['pull_number__max'] == None else maxPull['pull_number__max'] + 1
+
+  new_pull = Pull( 
+    pull_number = pull_number, 
+    network = Network.objects.get( name = network_name ),
+    date_pulled = datetime.datetime.now(),
+    user_pulled = request.user,
+  )
+  new_pull.save()
   
   # create/overwrite zip file
   zipPath =  os.path.join( settings.STATICFILES_DIRS[0], "files\\" ) + network_name + "_" + str( pull_number ) + ".zip"
   zip = ZipFile( zipPath, "w" )
 
   #select Requests based on network and status
-  qs = Request.objects.filter( network__name = network_name, date_pulled = None )
+  qs = Request.objects.filter( network__name = network_name, pull = None )
 
   # for each xfer request ...
   for rqst in qs:
@@ -136,43 +136,38 @@ def createZip( request, network_name ):
     zip.write( email_file_name, os.path.join( zip_folder, email_file_name ) )
     os.remove( email_file_name )
 
-    # update the records
-    rqst.date_pulled = datetime.datetime.now()
-    rqst.user_pulled = request.user
-    rqst.pull_number = pull_number
+    # update the record
+    rqst.pull_id = new_pull.pull_id
     rqst.save()
 
   zip.close()
 
   # see if we can't provide something more useful to the analysts - maybe the new pull number?
-  return JsonResponse( { 'pullNumber': rqst.pull_number, 'datePulled': rqst.date_pulled.strftime( "%d%b %H%M" ).upper(), 'userPulled': str( rqst.user_pulled ) } )
+  return JsonResponse( { 'pullNumber': new_pull.pull_number, 'datePulled': new_pull.date_pulled.strftime( "%d%b %H%M" ).upper(), 'userPulled': str( new_pull.user_pulled ) } )
 
 @login_required
 def pulls( request ):
-  last_pulls = []
+  pull_history = {}  
   networks = Network.objects.all()
   # get last pull data for each network
   for net in networks:
     # get information about the last pull that was done on each network
-    last_pull =Request.objects.values( 
-      'network__name',
-      'pull_number', 
-      'date_pulled', 
-      'user_pulled__username' 
-      ).filter( network__name=net.name ).order_by( '-date_pulled' )[:1]
-    last_pulls.append( last_pull )
+    pulls = Pull.objects.filter( network__name=net.name ).order_by( '-date_pulled' )
+    pull_history[ net.name ] = pulls
 
-  print( last_pulls )
+  print( pull_history )
 
   rc = {
     'bodyText': 'This is the Pulls dashboard',
-    'last_pulls': last_pulls,
+    'history': pull_history,
   }
   return render( request, 'pages/pulls.html', { 'rc': rc } )
 
 @login_required
 def toolsMakeFiles( request ):
   unclass = Classification.objects.get( abbrev='U' )
+  return HttpResponse( 'Made the files' )
+  '''
   for i in range( 16, 20 ):
     # filename
     new_f = 'textfile_' + str(i) + '.txt'
@@ -182,5 +177,4 @@ def toolsMakeFiles( request ):
     new_file.save()
     # save the Django File into the CFTS File
     new_file.file_object.save( new_f, ContentFile( new_f ) )
-
-  return HttpResponse( 'Made the files' )
+  '''

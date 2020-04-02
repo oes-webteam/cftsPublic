@@ -45,6 +45,8 @@ class Network( models.Model ):
 class Email( models.Model ):
   email_id = models.UUIDField( primary_key=True, default=uuid.uuid4, editable=False )
   address = models.CharField( max_length=255 )
+  class Meta:
+    ordering = ['address']
   def __str__(self):
     return self.address
 
@@ -53,8 +55,28 @@ class User( models.Model ):
   name_first = models.CharField( max_length=50 )
   name_last = models.CharField( max_length=50 )
   email = models.ForeignKey( Email, on_delete=models.DO_NOTHING )
+  class Meta:
+    ordering = ['name_last']
   def __str__(self):
     return self.name_last + ', ' + self.name_first
+
+class Pull( models.Model ):
+  pull_id = models.UUIDField( primary_key=True, default=uuid.uuid4, editable=False )
+  pull_number = models.IntegerField( null=True, blank=True )
+  network = models.ForeignKey( Network, on_delete=models.DO_NOTHING )
+  date_pulled = models.DateTimeField( null=True, blank=True )
+  user_pulled = models.ForeignKey( settings.AUTH_USER_MODEL, related_name='request_user_pulled', on_delete=models.DO_NOTHING, null=True, blank=True )
+  date_oneeye = models.DateTimeField( null=True, blank=True )
+  user_oneeye = models.ForeignKey( settings.AUTH_USER_MODEL, related_name='request_user_oneeye', on_delete=models.DO_NOTHING, null=True, blank=True )
+  date_twoeye = models.DateTimeField( null=True, blank=True )
+  user_twoeye = models.ForeignKey( settings.AUTH_USER_MODEL, related_name='request_user_twoeye', on_delete=models.DO_NOTHING, null=True, blank=True )
+  date_complete = models.DateTimeField( null=True, blank=True )
+  user_complete = models.ForeignKey( settings.AUTH_USER_MODEL, related_name='request_user_complete', on_delete=models.DO_NOTHING, null=True, blank=True )
+  disc_number = models.IntegerField( null=True, blank=True )
+  class Meta:
+    ordering = ['-date_pulled']
+  def __str__(self):
+    return self.network.__str__() + '_' + str( self.pull_number )
 
 class Request( models.Model ):
   request_id = models.UUIDField( primary_key=True, default=uuid.uuid4, editable=False )
@@ -64,22 +86,9 @@ class Request( models.Model ):
   files = models.ManyToManyField( File )
   target_email = models.ForeignKey( Email, on_delete=models.DO_NOTHING, default=None, null=True )
   is_submitted = models.BooleanField( default=False )
-  
-  date_pulled = models.DateTimeField( null=True, blank=True )
-  user_pulled = models.ForeignKey( settings.AUTH_USER_MODEL, related_name='request_user_pulled', on_delete=models.DO_NOTHING, null=True, blank=True )
-  pull_number = models.IntegerField( null=True, blank=True )
-  
-  date_oneeye = models.DateTimeField( null=True, blank=True )
-  user_oneeye = models.ForeignKey( settings.AUTH_USER_MODEL, related_name='request_user_oneeye', on_delete=models.DO_NOTHING, null=True, blank=True )
-  
-  date_twoeye = models.DateTimeField( null=True, blank=True )
-  user_twoeye = models.ForeignKey( settings.AUTH_USER_MODEL, related_name='request_user_twoeye', on_delete=models.DO_NOTHING, null=True, blank=True )
-  
-  date_complete = models.DateTimeField( null=True, blank=True )
-  user_complete = models.ForeignKey( settings.AUTH_USER_MODEL, related_name='request_user_complete', on_delete=models.DO_NOTHING, null=True, blank=True )
-  
-  disc_number = models.IntegerField( null=True, blank=True )
-
+  pull = models.ForeignKey( Pull, on_delete=models.DO_NOTHING, default=None, null=True, blank=True )
+  class Meta:
+    ordering = ['-date_created']
   def __str__(self):
     formatted_date_created = self.date_created.strftime("%d%b %H:%M:%S");
     return self.user.__str__() + ' (' + formatted_date_created + ')'

@@ -19,7 +19,7 @@
 
 .queue-form { padding: 2.3rem 0; }
 .queue-form tr { }
-.queue-form tr:hover { background-color: #F8E080; }
+.queue-form tr:hover, .queue-form tr.pending:hover { background-color: #F8E080; }
 .queue-form tr.pending { background-color: #EEE; color: #DDD; font-style: italic; }
 .queue-form tr.pending a { color: #BBD0FF; }
 

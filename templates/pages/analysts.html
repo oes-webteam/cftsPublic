@@ -43,22 +43,30 @@
                         {{ rc.empty }}
                     {% else %}
                         <div class="network-header">
-                            {% for lp in network.last_pull %}
+                            
                             <div class="pending-info">
                                 Pending Requests: {{ network.pending.count }} ({{network.file_count.files_in_dataset}} Files)
                                 <br />
+                                {% for lp in network.last_pull %}
                                 <span class="last-pull-info">( Last pull created: 
-                                    <span class="date-pulled">{{ lp.date_pulled|date:'db'|upper }} {{ lp.date_pulled|time:'Hi' }}</span> 
-                                    by <span class="user-pulled">{{ lp.user_pulled__username }}</span> )
+                                    <span class="date-pulled">
+                                      {{ lp.date_pulled|date:'db'|upper }} {{ lp.date_pulled|time:'Hi' }}
+                                    </span> 
+                                    by <span class="user-pulled">
+                                      {{ lp.user_pulled__username }}
+                                    </span> )
                                 </span>
+                                {% endfor %}
                             </div>
                             <div class="create-pull">
                                 <button class="btn btn-primary pull-button{% if network.pending.count == 0 %} disabled{% endif %}" id="pull{{network.name}}">Create {{ network.name }} Pull</button>                                 
                             </div>
+                            {% for lp in network.last_pull %}
                             <div class="download-block">
                                 <a class="btn btn-primary download-button" id="dl{{network.name}}" href="/static/files/{{ network.name }}_{{ lp.pull_number }}.zip">Downoad Current {{ network.name }} Zip</a>
                             </div>
                             {% endfor %}
+                            
                         </div>
 
                         <form class="queue-form">
@@ -69,12 +77,12 @@
                                 <col width="30%" />
                             </colgroup>
                             {% for request in network.q %}
-                            <tr class="{% if request.date_pulled %}pending{% endif %}">
+                            <tr class="{% if request.pull != None %}pending{% endif %}">
                                 <td colspan="2"><a href="{% url 'transfer-request' id=request.request_id %}">{{ request.user }}</a></td> <!-- link to request view -->
                                 <td>{{ request.date_created|date:'db'|upper }} {{ request.date_created|time:'H:i:s e' }}</td>
                             </tr>
                             {% for file in request.files.all %}
-                            <tr class="{% if request.date_pulled %}pending{% endif %}">
+                            <tr class="{% if request.pull != None %}pending{% endif %}">
                                 <td><input type="checkbox" name="fileSelection" id="reqeust_{{ request.request_id }}" /></td>
                                 <td colspan="2">{{ file }}</td>
                             </tr>
