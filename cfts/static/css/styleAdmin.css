@@ -1,4 +1,6 @@
 body {
+  color: rgb(51,51,51);
+  font: 0.8rem 'Verdana', 'Arial', sans-serif;
   margin-top: 105px; 
 }
   

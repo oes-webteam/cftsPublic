@@ -1,1 +1,93 @@
-.make-it-red{ background-color: #F00; }
+.grid-container { 
+  display: grid; 
+  justify-content: space-around;
+  padding-top: 2rem;
+}
+
+.grid-column { 
+  list-style: none;
+  padding: 0 1rem; 
+}
+.grid-column-header { 
+  font-family: 'Garamond';
+  font-weight: bold; 
+}
+.grid-column > li { 
+  background-color: rgb(245,245,240);
+  border: 2px solid rgb(205,51,51);
+  border-radius: 1rem;
+  margin: 1rem 0; 
+  padding: 15px; 
+  position: relative;
+}
+.grid-column > li.to-twoeye { border-color: rgb(225,185,51); }
+.grid-column > li.to-complete { border-color: rgb(51,205,51); }
+.grid-column > li.is-done { 
+  background-color: rgb(225,225,225); 
+  border-color: rgb(120,120,120);
+  color: rgb(160,160,160);
+}
+
+.grid-column > li:hover {
+  background-color: rgb(255,238,170);
+}
+.grid-column > li > ul { margin: 0; padding: 0; }
+.grid-column > li > ul > li { list-style: none; }
+
+.pull-menu-btn {
+  border: 0;
+  border-radius: 0.36rem;
+  box-shadow: 1px 1px 2px rgb(72,58,4);
+  position: absolute;
+  height: 30px;
+  width: 36px;
+  bottom: 10px;
+  right: 10px;
+}
+
+.pull-menu { 
+  display: none; 
+  
+  background-color: rgb(240,240,240);
+  border: 1px solid rgb(51,51,51);
+  border-radius: 0.3rem;
+  list-style-type: none;
+  padding: 0.5rem 0;
+  position: absolute;
+  top: 70%;
+  left: 90%;
+  z-index: 999;
+  white-space: nowrap;
+}
+
+/* all options */
+.pull-menu-option { font-weight: bold; }
+.pull-menu-option:hover { background-color: rgb(255,225,100); }
+.pull-menu-option a { 
+  color: rgb(51,51,51); 
+  display: block;
+  padding: 0.5rem;
+}
+.pull-menu-option a:hover { text-decoration: none; }
+
+/* some options */
+.pull-menu-option:first-child { 
+  border-top-left-radius: 0.3rem; 
+  border-top-right-radius: 0.3rem;
+}
+.pull-menu-option:last-child { 
+  border-bottom-left-radius: 0.3rem; 
+  border-bottom-right-radius: 0.3rem;
+}
+
+/* download option */
+.pull-menu-option.download {  }
+.pull-menu-option.download a { color: rgb(65,90,245); }
+
+/* complete options */
+.pull-menu-option.complete { 
+  color: rgb(195,195,195);
+  font-weight: normal;
+  font-style: italic;
+  padding: 0.5rem;
+}

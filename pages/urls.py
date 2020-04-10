@@ -11,5 +11,8 @@ urlpatterns = [
     path( 'transfer-request/<uuid:id>', views.transferRequest, name='transfer-request' ),
     path( 'create-zip/<str:network_name>', views.createZip, name='create-zip' ),
     path( 'pulls', views.pulls, name='pulls' ),
+    path( 'pulls-oneeye/<uuid:id>', views.pullsOneEye, name='pulls-oneeye' ),
+    path( 'pulls-twoeye/<uuid:id>', views.pullsTwoEye, name='pulls-twoeye' ),
+    path( 'pulls-done/<uuid:id>/<int:cd>', views.pullsDone, name='pulls-done' ),
     path( 'tools-makefiles', views.toolsMakeFiles, name='make-files' ),
 ]
