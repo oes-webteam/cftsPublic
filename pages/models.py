@@ -18,13 +18,18 @@ class Classification( models.Model ):
 
 class Rejection( models.Model ):
   rejection_id = models.UUIDField( primary_key=True, default=uuid.uuid4, editable=False )
+  name = models.CharField( max_length=50 )
   subject = models.CharField( max_length=255 )
   text = models.TextField()
+  def __str__(self):
+    return self.name
 
 class File( models.Model ):
   file_id = models.UUIDField( primary_key=True, default=uuid.uuid4, editable=False )
-  file_object = models.FileField( upload_to=randomize_path )
+  file_object = models.FileField( upload_to=randomize_path, max_length=500 )
   classification = models.ForeignKey( Classification, on_delete=models.DO_NOTHING )
+  is_pii = models.BooleanField( default=False )
+  is_centcom_info = models.BooleanField( default=False )
   rejection_reason = models.ForeignKey( Rejection, on_delete=models.DO_NOTHING, null=True, blank=True )
   rejection_text = models.TextField( default=None, blank=True, null=True )
   class Meta:
@@ -55,6 +60,7 @@ class User( models.Model ):
   name_first = models.CharField( max_length=50 )
   name_last = models.CharField( max_length=50 )
   email = models.ForeignKey( Email, on_delete=models.DO_NOTHING )
+  notes = models.TextField( null=True, blank=True )
   class Meta:
     ordering = ['name_last']
   def __str__(self):

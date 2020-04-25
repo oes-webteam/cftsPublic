@@ -5,11 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="{% static 'jquery-ui/jquery-ui.min.css' %}" />
     <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
     <link rel="stylesheet" href="{% static 'css/styleAdmin.css' %}">    
-
     <link rel="stylesheet" href="{% static 'css/analysts.css' %}">    
-    <title>CFTS</title>
+    <title>CFTS - Queues</title>
 </head>
 <body>
 
@@ -47,13 +47,13 @@
                                 Pending Requests: {{ network.pending.count }} ({{network.file_count.files_in_dataset}} Files)
                                 <br />
                                 {% for lp in network.last_pull %}
-                                <span class="last-pull-info">( Last pull created: 
+                                <span class="last-pull-info">Last pull created: 
                                     <span class="date-pulled">
-                                      {{ lp.date_pulled|date:'db'|upper }} {{ lp.date_pulled|time:'Hi' }}
+                                      {{ lp.date_pulled|date:'db'|upper }} @ {{ lp.date_pulled|time:'Hi' }}
                                     </span> 
                                     by <span class="user-pulled">
                                       {{ lp.user_pulled__username }}
-                                    </span> )
+                                    </span>
                                 </span>
                                 {% endfor %}
                             </div>
@@ -78,22 +78,30 @@
                             {% for request in network.q %}
                             <tr class="{% if request.pull != None %}pending{% endif %}">
                                 <td colspan="2"><a href="{% url 'transfer-request' id=request.request_id %}">{{ request.user }}</a></td> <!-- link to request view -->
-                                <td>{{ request.date_created|date:'db'|upper }} {{ request.date_created|time:'H:i:s e' }}</td>
+                                <td>Submitted: {{ request.date_created|date:'db'|upper }} @ {{ request.date_created|time:'Hi' }}</td>
                             </tr>
                             {% for file in request.files.all %}
-                            <tr class="{% if request.pull != None %}pending{% endif %}">
-                                <td><input type="checkbox" name="fileSelection" id="reqeust_{{ request.request_id }}" /></td>
-                                <td colspan="2">{{ file }}</td>
+                            <tr class="{% if request.pull != None %}pending {% endif %}{% if file.rejection_reason != None %}rejected {% endif %}">
+                                <td>
+                                    <input type="checkbox" name="fileSelection" id="chk_{{ file.file_id }}" request_id="{{ request.request_id }}" request_email="{{ request.user.email }}" file_name="{{ file }}" />
+                                    <button class="btn btn-danger btn-reject" id="btn_{{ file.file_id }}" request_id="{{ request.request_id }}" request_email="{{ request.user.email }}" file_name="{{ file }}">Reject</button>
+                                    <!-- Show encrypt flag? -->
+                                    {% if file.is_pii or file.is_centcom_info %}
+                                    <span title="PII: {{ file.is_pii }}&#10;CENTCOM Info: {{ file.is_centcom_info }}">🔒</span>
+                                    {% endif %}
+                                </td>
+                                <td colspan="2"><span title="{{ file }}">{{ file|truncatechars:50 }}</span></td>
                             </tr>
+                            {% endfor %}
                             <!-- end files -->
+                            {% if not forloop.last %}<tr class="spacing"><td colspan="3">&nbsp;</td></tr>{% endif %}
                             {% endfor %}
                             <!-- end requests -->
-                            {% endfor %}
                         </table>
                         </form>
 
                         <!-- delete selected button -->
-                        <button class="btn btn-danger">Delete Selected</button>
+                        <button class="btn btn-danger btn-reject-selected">Reject All Selected</button>
 
                     {% endif %}
                     </div>
@@ -104,11 +112,27 @@
         </div><!-- END card -->
     </div> <!-- END container -->
 
+    <div id="reject-form" title="Reject File(s)">
+        <form>
+            <div class="form-group">
+                <label for="reason">Rejection Reason: </label>
+                <select name="reason" class="form-control">
+                    <option value=""></option>
+                    {% for r in rc.rejections %}
+                    <option value="{{ r.rejection_id }}" data-subject="{{ r.subject }}" data-text="{{ r.text }}">{{ r.name }}</option>
+                    {% endfor %}
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+        </form>
+    </div>
+
     {% include 'partials/_footerAdmin.html' %}
 
-    <script src="{% static 'js/jquery-3.4.1.min.js' %}"></script>
-    <script src="{% static 'js/bootstrap.js' %}"></script>
-    <script src="{% static 'js/analysts.js' %}"></script>
+<script src="{% static 'jquery-ui/external/jquery/jquery.js' %}"></script>
+<script src="{% static 'jquery-ui/jquery-ui.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.js' %}"></script>
+<script src="{% static 'js/analysts.js' %}"></script>
 
 </body>
 

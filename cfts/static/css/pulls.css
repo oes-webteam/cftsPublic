@@ -38,8 +38,9 @@
   border: 0;
   border-radius: 0.36rem;
   box-shadow: 1px 1px 2px rgb(72,58,4);
+  font-weight: bold;
   position: absolute;
-  height: 30px;
+  height: 20px;
   width: 36px;
   bottom: 10px;
   right: 10px;

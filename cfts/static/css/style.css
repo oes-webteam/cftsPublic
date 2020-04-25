@@ -1,13 +1,17 @@
 body {
-  margin-top: 105px; }
+  margin-top: 105px; 
+}
 
-.navbar {
+nav.navbar {
+  background: #fff; 
   box-shadow: 2px 2px 5px #484848;
+  font: 1.1rem 'Georgia', 'Times New Roman', serif;
   opacity: 0.9;
-  background: #fff; }
-  .navbar .nav-item {
+}
+  nav.navbar li.nav-item {
     font-size: 1.4rem;
-    padding-right: 1.4rem; }
+    padding-right: 1.4rem; 
+  }
 
 .card-body1 {
   height: 150px; }

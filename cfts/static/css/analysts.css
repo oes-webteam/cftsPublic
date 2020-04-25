@@ -1,3 +1,4 @@
+.tab-pane { padding-bottom: 1rem; }
 .network-header { text-align: right; }
 .network-header > div { 
     display: inline-block;
@@ -17,11 +18,27 @@
   .create-pull {}
   .download-block {}
 
-.queue-form { padding: 2.3rem 0; }
-.queue-form tr { }
-.queue-form tr:hover, .queue-form tr.pending:hover { background-color: #F8E080; }
-.queue-form tr.pending { background-color: #EEE; color: #DDD; font-style: italic; }
+.queue-form { padding: 2.3rem 0 1rem; }
+.queue-form table {  }
+.queue-form tr { line-height: 1.6rem; }
+
+.queue-form tr.pending { background-color: #EEE; color: #BBB; font-style: italic; }
 .queue-form tr.pending a { color: #BBD0FF; }
+
+.queue-form tr.rejected, .queue-form tr.rejected a { color: #DD0000; }
+
+.queue-form tr:hover, 
+.queue-form tr.pending:hover,
+.queue-form tr.rejected:hover { background-color: #F8E080; }
+
+.queue-form tr.spacing { line-height: 0.5rem; }
+.queue-form tr.spacing:hover { background-color: initial; }
+
+.queue-form td { padding: 1px 5px; }
+
 
 .btn { font-size: 0.8em; }
 .btn-back { margin-bottom: 1rem; }
+
+.btn-reject{ display: none; padding: 0.175rem 0.5rem; }
+.btn-reject-selected { padding: 0.135rem 0.5rem; }

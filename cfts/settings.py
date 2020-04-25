@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'django_static_jquery_ui',
     'pages.apps.PagesConfig', #came from the pages > apps.py tells django its an app
     'django.contrib.admin',
     'django.contrib.auth',
