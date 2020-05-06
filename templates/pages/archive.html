@@ -1,4 +1,5 @@
 {% load static %} <!-- Has to load first to use static helper -->
+{% load util %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,27 +18,61 @@
 
     <div class="container" style="margin-top: 200px;">
     <!-- search form -->
+
     <!-- search by date -->
 
-    <table>
+    <!-- filter inputs -->
+    <table class="data-table">
+        <tr><td colspan="6"><span>Filter by:</span></td></tr>
         <tr>
-            <th>Request ID</th>
+            <td class="form-group">
+                <input type="text" class="form-control filter" name="filterUser" placeholder="User" />
+            </td>
+            <td class="form-group">
+                <input type="text" class="form-control filter datepicker" name="filterDate" placeholder="Date" />
+            </td>
+            <td class="form-group">
+                <select class="form-control filter" name="filterNet">
+                    <option value="">Network</option>
+                {% for net in rc.networks %}
+                    <option>{{ net }}</option>
+                {% endfor %}
+                </select>
+            </td>
+            <td class="form-group">
+                <input type="text" class="form-control filter" name="filterFiles" placeholder="Filename" />
+            </td>
+            <td class="form-group">
+                <input type="text" class="form-control filter" name="filterEmail" placeholder="Email" />
+            </td>
+            <td class="form-group">
+                <input type="text" class="form-control filter" name="filterPull" placeholder="Pull" />
+            </td>
+        </tr>
+        <tr>
+            <th style="width: 20em;">User</th>  <!-- add filter by user -->
             <th>Date Created</th>
-            <th>User</th>  <!-- add filter by user -->
             <th>Network</th>
             <th>Files</th>
             <th>Target Email</th>
             <th>Pull</th> <!-- add filter by pull -->
         </tr>
     {% for r in rc.requests %}
-        <tr>
-            <td>{{ r.request_id }}</td>
-            <td>{{ r.date_created }}</td>
-            <td><a href="#" class="user" id="{{ r.user.user_id }}">{{ r.user }}</a></td>
-            <td>{{ r.network }}</td>
-            <td>{{ r.files }}</td>
-            <td>{{ r.target_email }}</td>
-            <td>{{ r.pull }}</td>
+        <tr class="data-row">
+            <td class="xfer-user"><a href="#" class="user" id="{{ r.user.user_id }}">{{ r.user }}</a></td>
+            <td class="xfer-date">{{ r.date_created|date:"m/d/Y Hi" }}</td>
+            <td class="xfer-net">{{ r.network }}</td>
+            <td class="xfer-files">
+                <ul class="file-list">
+                {%  for f in r.files.all %}
+                    {% with f.file_object.name|split:"/" as name %}
+                    <li x-file-name="{{ name.2 }}">{{ name.2|truncatechars:50 }}</li>
+                    {% endwith %}
+                {% endfor %}
+                </ul>
+            </td>
+            <td class="xfer-email">{{ r.target_email }}</td>
+            <td class="xfer-pull">{{ r.pull }}</td>
         </tr>
     {% endfor %}
     </table>
@@ -60,19 +95,11 @@
         </ul>
     </div>
     
-    <div id="files-modal" title="Files Info">
-        
-    </div>
-    
-    <div id="pull-modal" title="Pull Info">
-        
-    </div>
-
     {% include 'partials/_footerAdmin.html' %}
 
 <script src="{% static 'jquery-ui/external/jquery/jquery.js' %}"></script>
+<script src="{% static 'js/bootstrap.js' %}"></script>
 <script src="{% static 'jquery-ui/jquery-ui.min.js' %}"></script>
-<!-- <script src="{% static 'js/bootstrap.js' %}"></script> -->
 <script src="{% static 'js/archive.js' %}"></script>
 
 </body>

@@ -1,4 +1,5 @@
 /* analysts.js */
+
 // ADD SHIFT-CLICK SELECTION
 function enableGroupSelection( selector ) {
   let lastChecked = null;
@@ -26,6 +27,7 @@ function enableGroupSelection( selector ) {
   }));
 }
 
+// WORK WITH COOKIES
 function getCookie(name) {
   let cookie = {};
   document.cookie.split(';').forEach(function(el) {
@@ -35,6 +37,10 @@ function getCookie(name) {
   return cookie[name];
 }
 
+
+/*************************/
+/* THE REAL FUN BEGINS!! */
+/*************************/
 jQuery( document ).ready( function() {
   
   $.ajaxSetup({ 
@@ -143,7 +149,7 @@ jQuery( document ).ready( function() {
         'id_list': id_list
       };
 
-      const setRejectOnFiles = $.post( '/set-reject', postData, 'json' ).then( 
+      const setRejectOnFiles = $.post( '/api-setreject', postData, 'json' ).then( 
         // success
         function( resp ) {
           console.log( 'SUCCESS' );
