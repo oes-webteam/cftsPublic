@@ -9,6 +9,9 @@ urlpatterns = [
     path( 'resources', static_views.resources, name='resources' ),
     path( 'urlShortner', static_views.urlShortner, name='urlShortner' ),
 
+    # frontend
+    path('testCards', views.testCards, name='testCards'),
+
     # analysts
     path( 'analysts', views.analysts, name='analysts' ),
     path( 'transfer-request/<uuid:id>', views.transferRequest, name='transfer-request' ),

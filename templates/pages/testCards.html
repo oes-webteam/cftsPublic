@@ -1,0 +1,186 @@
+{% extends 'base.html' %} <!-- extends base.html to here -->
+{% block content %} <!-- extends base.html to here -->
+
+<!--Cards Start Here -->
+<section id="boxes" class="py-5">
+    <div class="container">
+        <div class="row">
+
+            <!--Choose Network-->
+            <div class="col-lg-4">
+                <div class="card text-center border-secondary mb-resp bg-light">
+                    <div class="card-body">
+                        <h3 class="text-gray-dark">Transfer to:</h3>
+                        <table class="table table-borderless">
+                            <!-- <thead>
+                                <tr>
+                                    <th>Transfer to:</th>
+                                </tr>
+                            </thead> -->
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="custom-control custom-switch text-left">
+                                            <input type="checkbox" class="custom-control-input" id="switchNipr">
+                                            <label class="custom-control-label" for="switchNipr">NIPR</label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="custom-control custom-switch text-left">
+                                            <input type="checkbox" class="custom-control-input" id="switchBices">
+                                            <label class="custom-control-label" for="switchBices">BICES</label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="custom-control custom-switch text-left">
+                                            <input type="checkbox" class="custom-control-input" id="switchCpnare">
+                                            <label class="custom-control-label" for="switchCpnare">CPN-ARE</label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="custom-control custom-switch text-left">
+                                            <input type="checkbox" class="custom-control-input" id="switchSwa">
+                                            <label class="custom-control-label" for="switchSwa">CENTRIXS SWA</label>
+                                        </div> 
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="custom-control custom-switch text-left">
+                                            <input type="checkbox" class="custom-control-input" id="switchCpnjor">
+                                            <label class="custom-control-label" for="switchCpnjor">CPN-JOR</label>
+                                        </div> 
+                                    </td>
+                                    <td>
+                                        <div class="custom-control custom-switch text-left">
+                                            <input type="checkbox" class="custom-control-input" id="switchCpnkwt">
+                                            <label class="custom-control-label" for="switchCpnkwt">CPN-KWT</label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="custom-control custom-switch text-left">
+                                            <input type="checkbox" class="custom-control-input" id="switchCpnqat">
+                                            <label class="custom-control-label" for="switchCpnqat">CPN-QAT</label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="custom-control custom-switch text-left">
+                                            <input type="checkbox" class="custom-control-input" id="switchCpnsau">
+                                            <label class="custom-control-label" for="switchCpnsau">CPN-SAU</label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="custom-control custom-switch text-left">
+                                            <input type="checkbox" class="custom-control-input" id="switchCpnx">
+                                            <label class="custom-control-label" for="switchCpnx">CPN-X</label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Email -->
+            <div class="col-lg-4">
+                <div class="card text-center border-secondary mb-resp bg-light">
+                    <div class="card-body">
+                        <h3 class="text-gray-dark">Destination Email</h3>
+                        <form>
+                            <div class="form-group">
+                                <!-- <label for="exampleInputEmail1">Email address</label> -->
+                                <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email">
+                                <!-- <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
+                            </div>
+                        </form>
+                        <form>
+                            <div class="form-group">
+                                <!-- <label for="exampleInputEmail1">Email address</label> -->
+                                <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="additional email">
+                                <!-- <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
+                            </div>
+                        </form>
+                        <form>
+                            <div class="form-group">
+                                <!-- <label for="exampleInputEmail1">Email address</label> -->
+                                <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="additional email">
+                                <!-- <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
+                            </div>
+                        </form>
+                        <br/>
+                        <br/>
+                        <h3 class="text-gray-dark">Current Network Email</h3>
+                        <form>
+                            <div class="form-group">
+                                <!-- <label for="exampleInputEmail1">Email address</label> -->
+                                <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email">
+                                <small id="emailHelp" class="form-text text-muted">Enter the email of the Network your on now</small>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Drag and Drop-->
+            <div class="col-lg-4">
+                <div class="card  border-secondary mb-resp bg-light">
+                    <div class="card-body">
+                        <h3 class="text-gray-dark text-center">Add files for transfer</h3>
+
+                        <div class="upload-console">
+                                <!--<h2 class="upload-console-header">Upload</h2>-->
+                                <div class="upload-console-body">
+                                    <div class="form-group"> <!-- Added DIV to add margin to btn -->
+                                        <form action="upload.php" method="post" enctype="multipart/form-data">
+                                            <input type="file" name="files[]" id="standard-upload-files" multiple>
+                                            <input type="submit" value="Upload files" id="standard-upload" class="form-control-file mt-2">
+                                        </form>
+                                    </div>
+                                    
+                                
+                                <!--<h3>Or drag and drop files below</h3>-->
+                                    <div class="upload-console-drop" id="drop-zone">
+                                        Just drag and drop files here
+                                    </div>
+                                
+                                    <div class="bar">
+                                        <div class="bar-fill" id="bar-fill">
+                                            <div class="bar-fill-text" id="bar-fill-text"></div>
+                                        </div>
+                                    </div>
+                                
+                                    <div id="uploads-finished" class="hidden">
+                                        <h3>Processed files</h3>
+                                    </div>
+                                </div>    
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!--Submit Button starts here-->
+        <div class="row">
+            <div class="col-md-4"></div>
+            <div class="col-md-4 mt-5 text-center">
+                <!-- ***POINT SUBMIT BTN URL TO RIGHT PLACE***  -->
+                <a href="{% url 'consent' %}" class="btn btn-secondary btn-block" role="button" aria-pressed="true">Submit</a>
+                <!--<a href="index.html" class="btn btn-secondary btn-block" role="button" aria-pressed="true">Submit</a>-->
+            </div>
+            <div class="col-md-4"></div>
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %} <!-- extends base.html to here -->
