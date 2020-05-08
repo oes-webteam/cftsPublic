@@ -1,3 +1,5 @@
+/* break this up as needed (?) */
+
 body {
   margin-top: 105px; 
 }
@@ -13,14 +15,15 @@ nav.navbar {
     padding-right: 1.4rem; 
   }
 
-.card-body1 {
-  height: 150px; }
-
 .card-body {
-  height: 450px; }
+  height: 475px; }
 
 #boxes {
   margin-bottom: 100px; }
+
+.card-body h3 { line-height: 1.67em; }
+ 
+.spacer { line-height: 2em; }
 
 .sub_btn {
   font-size: 1.4rem; }
