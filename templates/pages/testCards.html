@@ -20,7 +20,7 @@
                             </div>
                             <div class="form-group">
                                 <input type="email" class="form-control" name="userEmail" id="userEmail" aria-describedby="userEmailHelp" placeholder="Current Email Address">
-                                <small id="userEmailHelp" class="form-text text-muted">Your email for the current network</small>
+                                <small id="userEmailHelp" class="form-text text-muted">on the current network</small>
                             </div>
                         </div>
                     </div>
@@ -33,28 +33,25 @@
                             <h3 class="text-gray-dark text-center">Add files for transfer</h3>
 
                             <div class="upload-console">
-                                    <!--<h2 class="upload-console-header">Upload</h2>-->
-                                    <div class="upload-console-body">
-                                        <div class="form-group"> <!-- Added DIV to add margin to btn -->
-                                            <input type="file" name="files[]" id="standard-upload-files" multiple>
-                                            <input type="submit" value="Upload files" id="standard-upload" class="form-control-file mt-2">
-                                        </div>
-                                    
+                                <!--<h2 class="upload-console-header">Upload</h2>-->
+                                <div class="upload-console-body">
+                                    <div class="form-group"> <!-- Added DIV to add margin to btn -->
+                                        <input type="file" name="files[]" id="standard-upload-files" multiple>
+                                        <!-- <input type="submit" value="Upload files" id="standard-upload" class="form-control-file mt-2"> -->
+                                    </div>
+                                
                                     <!--<h3>Or drag and drop files below</h3>-->
-                                        <div class="upload-console-drop" id="drop-zone">
-                                            Just drag and drop files here
+                                    <div class="upload-console-drop empty" id="drop-zone">
+                                        Just drag and drop files here
+                                    </div>
+                                
+                                    <div class="bar">
+                                        <div class="bar-fill" id="bar-fill">
+                                            <div class="bar-fill-text" id="bar-fill-text"></div>
                                         </div>
-                                    
-                                        <div class="bar">
-                                            <div class="bar-fill" id="bar-fill">
-                                                <div class="bar-fill-text" id="bar-fill-text"></div>
-                                            </div>
-                                        </div>
-                                    
-                                        <div id="uploads-finished" class="hidden">
-                                            <h3>Processed files</h3>
-                                        </div>
-                                    </div>    
+                                    </div>
+                                
+                                </div>    
                             </div>
                             
                         </div>
@@ -79,7 +76,7 @@
                             <div class="form-group">
                                 <!-- <label for="exampleInputEmail1">Email address</label> -->
                                 <input type="email" class="form-control" name="targetEmail" id="targetEmail" aria-describedby="targetEmailHelp" placeholder="Target Email Address">
-                                <small id="targetEmailHelp" class="form-text text-muted">Your email on the target network</small>
+                                <small id="targetEmailHelp" class="form-text text-muted">on the target network</small>
                             </div>
                         </div>
                     </div>

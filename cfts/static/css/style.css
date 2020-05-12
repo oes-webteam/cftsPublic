@@ -27,3 +27,67 @@ nav.navbar {
 
 .sub_btn {
   font-size: 1.4rem; }
+
+/* Drag & drop styles (from ddGlobal) */
+.upload-console-drop {
+	border: 2px dashed #ccc;
+	color: #ccc;
+  height: auto;
+	margin-top: 15px;
+	margin-bottom: 20px;
+  min-height: 200px;
+  text-align: left;
+}
+.upload-console-drop.empty {
+  height: 200px;
+	line-height: 200px;
+  text-align: center;
+}
+.bar {
+	width:100%;
+	background:#eee;
+	padding:3px;
+	border-radius:3px;
+	box-shadow:inset 0 1px 3px rgba(0,0,0,.2);
+	box-sizing:border-box;
+	margin-bottom:20px;
+}
+
+.bar-fill {
+	height:30px;
+	display:block;
+	background:cornflowerblue;
+	width:0;
+	border-radius:3px;
+	-webkit-transition:width 0.8s ease;
+	transition:width 0.8s ease;
+}
+
+.bar-fill-text {
+	color:#fff;
+	line-height:30px;
+	margin-left:5px;
+}
+/* end ddGlobal */
+
+.highlight-active {
+  border-color: #07F !important;
+  box-shadow: 0 0 3px 0 #07F;
+}
+
+#drop-zone ul {
+  font-size: 0.7em;
+  line-height: 1.67em;
+  list-style-type: "❌";
+  margin-left: -1em;
+}
+#drop-zone ul li { 
+  padding-left: 0.33em; 
+}
+#drop-zone ul li a.remove { 
+  display: inline-block; 
+  margin: 0.5em 0 0 -2em;
+  cursor: pointer;
+  height: 1.67em;
+  width: 2em;
+}
