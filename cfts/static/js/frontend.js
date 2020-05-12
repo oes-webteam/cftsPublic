@@ -65,8 +65,8 @@ validateFile = ( thisFile ) => {
     // hard NO!!
     msg += "\nPRF and LVY files cannot be transferred per CFTS use policy. See Resources >> Cross Domain Users Guide for details.";
     notifyUser( msg );
+    return false;
   }
-  return false;
 
   for( let q in fileQueue ) {
     let qFile = fileQueue[q];

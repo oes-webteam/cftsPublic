@@ -12,4 +12,3 @@ def testCards(request):
   rc = { 'networks': nets }
 
   return render(request, 'pages/testCards.html', { 'rc': rc } )
-
