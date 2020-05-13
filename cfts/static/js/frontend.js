@@ -6,8 +6,11 @@ preventDefaults = ( e ) => {
   e.preventDefault();
   e.stopPropagation();
 };
+
 addHighlight = ( e ) => dropArea.classList.add( 'highlight-active' );
+
 removeHighlight = ( e ) => dropArea.classList.remove( 'highlight-active' );
+
 removeFileFromQueue = ( e ) => {
   preventDefaults( e );
   fileQueue.splice( e.target.getAttribute( "index" ), 1 );
