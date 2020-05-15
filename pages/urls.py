@@ -10,7 +10,7 @@ urlpatterns = [
     path( 'urlShortner', static_views.urlShortner, name='urlShortner' ),
 
     # frontend
-    path('testCards', views.testCards, name='testCards'),
+    path('frontend', views.frontend, name='frontend'),
 
     # queue
     path( 'queue', views.queue, name='queue' ),
@@ -25,6 +25,9 @@ urlpatterns = [
     
     # archive
     path( 'archive', views.archive, name='archive' ),
+
+    # reporting
+    path( 'reports', views.reports, name='reports' ),
 
     # APIs
     path( 'api-getuser/<uuid:id>', views.getUser, name='api-getuser' ),

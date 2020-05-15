@@ -1,4 +1,11 @@
-.tab-pane { padding-bottom: 1rem; }
+.tab-pane {
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  border-top: 0;
+  padding: 0.67em;
+  padding-bottom: 1rem;
+}
+
 .network-header { text-align: right; }
 .network-header > div { 
     display: inline-block;

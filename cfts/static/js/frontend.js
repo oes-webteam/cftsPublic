@@ -1,3 +1,5 @@
+window.document.title = "CFTS -- Transfer Request Form"
+
 let dropArea = document.getElementById( "drop-zone" );
 let filesInput = document.getElementById( "standard-upload-files" );
 let fileQueue = [];

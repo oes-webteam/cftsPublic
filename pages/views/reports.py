@@ -1,14 +1,15 @@
 #====================================================================
+# decorators
+from django.contrib.auth.decorators import login_required
+
 # responses
 from django.shortcuts import render
-from django.http import HttpResponse
 
-# db/model stuff
+# model/database stuff
 from pages.models import *
 #====================================================================
 
-def frontend(request):
-  nets = Network.objects.all()
-  rc = { 'networks': nets }
-
-  return render(request, 'pages/frontend.html', { 'rc': rc } )
+@login_required
+def reports( request ):
+  rc = {}
+  return render( request, 'pages/reports.html', { 'rc': rc } )

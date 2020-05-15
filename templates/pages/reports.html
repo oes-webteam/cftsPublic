@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load util %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/reports.css' %}">    
+
+<form>
+<!-- date pickers for start/end dates -->
+<!-- default to week prior to current date -->
+<div class="form-group">
+  <div class="input-group date">
+    <label for="startDate">Start Date</label>
+    <input type="text" id="startDate" class="form-control datepicker start">
+    <div class="input-group-addon">
+        <span class="glyphicon glyphicon-th"></span>
+    </div>
+
+    <label for="endDate">End Date</label>
+    <input type="text" id="endDate" class="form-control datepicker end">
+    <div class="input-group-addon">
+        <span class="glyphicon glyphicon-th"></span>
+    </div>
+  </div>
+</div>
+
+</form>
+
+<script src="{% static 'js/reports.js' %}"></script>
+{% endblock %}
