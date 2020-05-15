@@ -19,10 +19,17 @@
   .download-block {}
 
 .queue-form { padding: 2.3rem 0 1rem; }
-.queue-form table {  }
+.queue-form table {}
 .queue-form tr { line-height: 1.6rem; }
 
-.queue-form tr.pending { background-color: #EEE; color: #BBB; font-style: italic; }
+.queue-form tr.request-header { background-color: #F0F0F0; }
+
+.queue-form tr.pending, 
+.queue-form tr.request-header.pending { 
+  background-color: #EEE; 
+  color: #BBB; 
+  font-style: italic; 
+}
 .queue-form tr.pending a { color: #BBD0FF; }
 
 .queue-form tr.rejected, .queue-form tr.rejected a { color: #DD0000; }
@@ -31,11 +38,27 @@
 .queue-form tr.pending:hover,
 .queue-form tr.rejected:hover { background-color: #F8E080; }
 
-.queue-form tr.spacing { line-height: 0.5rem; }
+.queue-form tr.spacing { line-height: 1rem; }
 .queue-form tr.spacing:hover { background-color: initial; }
 
 .queue-form td { padding: 1px 5px; }
+.queue-form tr.request-header td { padding: 5px; }
 
+.queue-form .request-comments { 
+  color: #AAA;
+  font-style: italic;
+  line-height: 0.67em;
+  margin: 0.33em 0;
+  text-align: right;
+}
+.queue-form .request-comments a {  }
+.queue-form .request-submitted { text-align: right; }
+.queue-form tr.request-header td.comments-text { margin: 0; padding: 0; }
+.queue-form .comments-text div { 
+  display: none; 
+  line-height: 1.33em;
+  padding: 0.33rem 1rem; 
+}
 
 .btn { font-size: 0.8em; }
 .btn-back { margin-bottom: 1rem; }

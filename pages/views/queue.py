@@ -22,7 +22,7 @@ from django.db.models import Max, Count, Q, Sum
 
 @login_required
 @ensure_csrf_cookie
-def analysts( request ):
+def queue( request ):
   xfer_queues = []
   ds_networks = Network.objects.all()
   empty = random.choice( [ 
@@ -88,7 +88,7 @@ def analysts( request ):
   rc = { 'queues': xfer_queues, 'empty': empty, 'rejections': rejections }
   
   # roll that beautiful bean footage
-  return render( request, 'pages/analysts.html', { 'rc': rc } )
+  return render( request, 'pages/queue.html', { 'rc': rc } )
 
 
 

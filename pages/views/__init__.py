@@ -1,5 +1,5 @@
 from .frontend import *
-from .analysts import *
+from .queue import *
 from .pulls import *
 from .archive import *
 from .apis import *

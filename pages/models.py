@@ -27,6 +27,7 @@ class Rejection( models.Model ):
 class File( models.Model ):
   file_id = models.UUIDField( primary_key=True, default=uuid.uuid4, editable=False )
   file_object = models.FileField( upload_to=randomize_path, max_length=500 )
+  file_hash = models.CharField( max_length=40, blank=True, null=True )
   classification = models.ForeignKey( Classification, on_delete=models.DO_NOTHING )
   is_pii = models.BooleanField( default=False )
   is_centcom_info = models.BooleanField( default=False )
@@ -91,6 +92,7 @@ class Request( models.Model ):
   network = models.ForeignKey( Network, on_delete=models.DO_NOTHING )
   files = models.ManyToManyField( File )
   target_email = models.ForeignKey( Email, on_delete=models.DO_NOTHING, default=None, null=True )
+  comments = models.TextField( null=True, blank=True )
   is_submitted = models.BooleanField( default=False )
   pull = models.ForeignKey( Pull, on_delete=models.DO_NOTHING, default=None, null=True, blank=True )
   class Meta:

@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="{% static 'jquery-ui/jquery-ui.min.css' %}" />
     <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
     <link rel="stylesheet" href="{% static 'css/styleAdmin.css' %}">    
-    <link rel="stylesheet" href="{% static 'css/analysts.css' %}">    
+    <link rel="stylesheet" href="{% static 'css/queue.css' %}">    
     <title>CFTS - Queues</title>
 </head>
 <body>
@@ -71,15 +71,21 @@
                         <form class="queue-form">
                         <table width="100%" border="0" cellpadding="5" cellspacing="5">
                             <colgroup>
-                                <col width="10%" />
+                                <col width="20%" />
                                 <col />
-                                <col width="30%" />
+                                <col width="20%" />
                             </colgroup>
                             {% for request in network.q %}
-                            <tr class="{% if request.pull != None %}pending{% endif %}">
-                                <td colspan="2"><a href="{% url 'transfer-request' id=request.request_id %}">{{ request.user }}</a></td> <!-- link to request view -->
-                                <td>Submitted: {{ request.date_created|date:'db'|upper }} @ {{ request.date_created|time:'Hi' }}</td>
+                            <tr class="request-header{% if request.pull != None %} pending{% endif %}">
+                                <td><a href="{% url 'transfer-request' id=request.request_id %}">{{ request.user }}</a></td> <!-- link to request view -->
+                                <td{% if request.comments != None %} class="request-comments"> <a href="#" class="btn btn-primary comments">Show/Hide Comments</a> {% else %}>{% endif %}</td>
+                                <td class="request-submitted">Submitted: {{ request.date_created|date:'db'|upper }} @ {{ request.date_created|time:'Hi' }}</td>
                             </tr>
+                            {% if request.comments != None %}
+                            <tr class="request-header{% if request.pull != None %} pending{% endif %}">
+                                <td colspan="3" class="comments-text"><div>{{ request.comments|linebreaksbr }}</div></td>
+                            </tr>
+                            {% endif %}
                             {% for file in request.files.all %}
                             <tr class="{% if request.pull != None %}pending {% endif %}{% if file.rejection_reason != None %}rejected {% endif %}">
                                 <td>
@@ -132,7 +138,7 @@
 <script src="{% static 'jquery-ui/external/jquery/jquery.js' %}"></script>
 <script src="{% static 'jquery-ui/jquery-ui.min.js' %}"></script>
 <script src="{% static 'js/bootstrap.js' %}"></script>
-<script src="{% static 'js/analysts.js' %}"></script>
+<script src="{% static 'js/queue.js' %}"></script>
 
 </body>
 

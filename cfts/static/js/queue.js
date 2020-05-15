@@ -223,6 +223,13 @@ jQuery( document ).ready( function() {
     rejectFormCallback( rejectDialog.data() );
   })
 
+  const showComments = ( e ) => {
+    e.preventDefault();
+    $this = $( e.target );
+    $this.parents( "tr" ).next().find( ".comments-text div" ).slideToggle( "fast" );
+  };
+  $( ".btn.comments" ).click( showComments );
+
 
   // RUN THIS STUFF NOW THAT THE PAGE IS LOADED
   enableGroupSelection( 'input[type="checkbox"]' )

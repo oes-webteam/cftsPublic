@@ -12,8 +12,8 @@ urlpatterns = [
     # frontend
     path('testCards', views.testCards, name='testCards'),
 
-    # analysts
-    path( 'analysts', views.analysts, name='analysts' ),
+    # queue
+    path( 'queue', views.queue, name='queue' ),
     path( 'transfer-request/<uuid:id>', views.transferRequest, name='transfer-request' ),
     path( 'create-zip/<str:network_name>', views.createZip, name='create-zip' ),
     
