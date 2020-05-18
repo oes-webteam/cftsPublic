@@ -1,7 +1,11 @@
 #====================================================================
 # core
+from datetime import datetime
 from zipfile import ZipFile
 from django.conf import settings
+
+#utilities
+from django.utils.dateparse import parse_date
 
 # decorators
 from django.contrib.auth.decorators import login_required
@@ -13,7 +17,6 @@ from django.http import JsonResponse # , HttpResponse, FileResponse
 # model/database stuff
 from pages.models import *
 #====================================================================
-
 
 @login_required
 def setReject( request ):
@@ -68,3 +71,42 @@ def getUser( request, id ):
     'email': user.email.address
   }
   return JsonResponse( data )
+
+@login_required
+def runNumbers( request ):
+  files_reviewed = 0
+  files_transfered = 0
+  start_date = datetime.strptime( request.POST.get( 'start_date' ), "%m/%d/%Y" ).date()
+  end_date = datetime.strptime( request.POST.get( 'end_date' ), "%m/%d/%Y" ).date()
+
+  # only the completed requests, tyvm
+  requests_in_range = Request.objects.filter( pull__date_complete__date__range = ( start_date, end_date ) )
+
+  for rqst in requests_in_range:
+    
+    files_in_request = rqst.files.all()
+
+    for f in files_in_request:
+      file_count = 1
+      file_name = f.__str__()
+      ext = file_name.split( '.' )[1]
+
+      # if it's a zip ...
+      if ext == 'zip':
+        # ... count all the files in the zip ...
+        path = f.file_object.path
+        with ZipFile( path, 'r' ) as zip:
+          contents = zip.namelist()
+          # ... minus the folders
+          for c in contents:
+            if c[-1] == "/" or c[-1] == "\\":
+              contents.remove( c )
+          file_count = len( contents )
+
+      # sum it all up
+      files_reviewed = files_reviewed + file_count
+      # exclude the rejects from the transfers numbers
+      if f.rejection_reason == None:
+        files_transfered = files_transfered + file_count
+
+  return JsonResponse( { 'files_reviewed': files_reviewed, 'files_transfered': files_transfered } )

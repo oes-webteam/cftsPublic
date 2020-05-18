@@ -32,7 +32,10 @@ urlpatterns = [
     # APIs
     path( 'api-getuser/<uuid:id>', views.getUser, name='api-getuser' ),
     path( 'api-setreject', views.setReject, name='api-setreject' ),
+    path( 'api-numbers', views.runNumbers, name='api-numbers' ),
 
     # dev tools
     path( 'tools-makefiles', views.makeFiles, name='make-files' ),
+    path( 'tools-stubGet', views.stubGet, name="stub-get" ),
+    path( 'tools-stubPost', views.stubPost, name="stub-post" ),
 ]

@@ -1,9 +1,17 @@
 #====================================================================
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from pages.models import Classification #, File
 from django.contrib.auth.decorators import login_required
 # from django.core.files.base import ContentFile
 #====================================================================
+
+def stubGet( request ):
+  return JsonResponse( {} )
+
+def stubPost( request ):
+  data = request.POST
+  return JsonResponse( data )
+
 
 @login_required
 def makeFiles( request ):

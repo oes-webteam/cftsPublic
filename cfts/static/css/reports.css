@@ -1,1 +1,7 @@
 /* reports.css */
+.ui-datepicker{ z-index: 2000 !important; }
+
+.results { display: none; }
+.results h3 { color: red; }
+#reviewed, #transfered { font-size: 2em; }
+
