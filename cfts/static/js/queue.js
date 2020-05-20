@@ -1,4 +1,4 @@
-/* analysts.js */
+window.document.title = "CFTS -- Transfer Queue";
 
 // ADD SHIFT-CLICK SELECTION
 function enableGroupSelection( selector ) {

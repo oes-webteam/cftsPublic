@@ -14,7 +14,7 @@ $.ajaxSetup({
   } 
 });
 
-window.document.title = "CFTS -- Analyst Reports"
+window.document.title = "CFTS -- Analyst Reports";
 
 
 // HAS DOM DEPENDENCIES

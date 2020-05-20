@@ -1,62 +1,45 @@
-{% load static %} <!-- Has to load first to use static helper -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
-    <link rel="stylesheet" href="{% static 'css/styleAdmin.css' %}">    
+{% extends 'base.html' %}
+{% load static %}
+{% load util %}
 
-    <link rel="stylesheet" href="{% static 'css/pulls.css' %}">
-    <title>CFTS - Pulls</title>
-</head>
-<body>
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/pulls.css' %}">
 
-    <!-- Navbar -->
-    {% include 'partials/_navbarAdmin.html' %}
-
-    <div class="grid-container" style="grid-template-columns: 5% repeat( {{ rc.pull_history|length }}, 1fr [col-start]) 5%;">
-      <div><!-- spacer --></div>  
-    {% for net in rc.pull_history %}
-      <ul class="grid-column" style="grid-column: {{ forloop.counter|add:1 }}">
-      {% for pull in net %}
-        {% if forloop.counter0 == 0 %}<h3 class="grid-column-header">{{ pull.pull_network }}</h3>{% endif %}
-        <li class="{% if pull.date_complete != None %}is-done{% elif pull.date_twoeye != None %}to-complete{% elif pull.date_oneeye != None %}to-twoeye{% endif%}">
-          <ul>
-            <li><strong>{{ pull.pull_network }}_{{ pull.pull_number }}</strong></li>
-            <li>{{ pull.pull_date }}</li>
-            <li>{{ pull.pull_user }}</li>
-          </ul>
-          <button class="pull-menu-btn">&hellip;</button>
-          <!-- TODO: remove this from the flow of the document -->
-          <ul class="pull-menu">
-            <li class="pull-menu-option download"><a href="{% static 'files/' %}{{pull.pull_network}}_{{pull.pull_number}}.zip">Download Again</a></li>
-            {% if pull.date_oneeye == None %}
-            <li class="pull-menu-option"><a href="{{pull.pull_id}}" class="oneeye">One-eye Complete</a></li>
-            {% elif pull.date_twoeye == None %}
-            <li class="pull-menu-option complete"><del>One-eye Complete</del></li>
-            <li class="pull-menu-option"><a href="{{pull.pull_id}}" class="twoeye">Two-eye Complete</a></li>
-            {% elif pull.date_complete == None %}
-            <li class="pull-menu-option complete"><del>One-eye Complete</del></li>
-            <li class="pull-menu-option complete"><del>Two-eye Complete</del></li>
-            <li class="pull-menu-option"><a href="{{pull.pull_id}}" class="done">Transfer Complete</a></li>
-            {% endif %}
-          </ul>
-          <!-- END TODO -->
-        </li>
-      {% endfor %}
+<div class="grid-container" style="grid-template-columns: 5% repeat( {{ rc.pull_history|length }}, 1fr [col-start]) 5%;">
+  <div><!-- spacer --></div>  
+{% for net in rc.pull_history %}
+  <ul class="grid-column" style="grid-column: {{ forloop.counter|add:1 }}">
+  {% for pull in net %}
+    {% if forloop.counter0 == 0 %}<h3 class="grid-column-header">{{ pull.pull_network }}</h3>{% endif %}
+    <li class="{% if pull.date_complete != None %}is-done{% elif pull.date_twoeye != None %}to-complete{% elif pull.date_oneeye != None %}to-twoeye{% endif%}">
+      <ul>
+        <li><strong>{{ pull.pull_network }}_{{ pull.pull_number }}</strong></li>
+        <li>{{ pull.pull_date }}</li>
+        <li>{{ pull.pull_user }}</li>
       </ul>
-    {% endfor %}
-      <div><!-- spacer --></div>  
-    </div>
+      <button class="pull-menu-btn">&hellip;</button>
+      <!-- TODO: remove this from the flow of the document -->
+      <ul class="pull-menu">
+        <li class="pull-menu-option download"><a href="{% static 'files/' %}{{pull.pull_network}}_{{pull.pull_number}}.zip">Download Again</a></li>
+        {% if pull.date_oneeye == None %}
+        <li class="pull-menu-option"><a href="{{pull.pull_id}}" class="oneeye">One-eye Complete</a></li>
+        {% elif pull.date_twoeye == None %}
+        <li class="pull-menu-option complete"><del>One-eye Complete</del></li>
+        <li class="pull-menu-option"><a href="{{pull.pull_id}}" class="twoeye">Two-eye Complete</a></li>
+        {% elif pull.date_complete == None %}
+        <li class="pull-menu-option complete"><del>One-eye Complete</del></li>
+        <li class="pull-menu-option complete"><del>Two-eye Complete</del></li>
+        <li class="pull-menu-option"><a href="{{pull.pull_id}}" class="done">Transfer Complete</a></li>
+        {% endif %}
+      </ul>
+      <!-- END TODO -->
+    </li>
+  {% endfor %}
+  </ul>
+{% endfor %}
+  <div><!-- spacer --></div>  
+</div>
 
-    {% include 'partials/_footerAdmin.html' %}
-
-    <script src="{% static 'js/jquery-3.4.1.min.js' %}"></script>
-    <script src="{% static 'js/bootstrap.js' %}"></script>
-
-    <script src="{% static 'js/pulls.js' %}"></script>
-</body>
-
-</html>
+<script src="{% static 'js/pulls.js' %}"></script>
+{% endblock %}
+    

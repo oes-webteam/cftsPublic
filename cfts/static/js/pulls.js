@@ -1,3 +1,5 @@
+window.document.title = "CFTS -- Pulls";
+
 jQuery( document ).ready( function() {
   $( '.pull-menu-btn' ).click( e => {
     e.preventDefault();

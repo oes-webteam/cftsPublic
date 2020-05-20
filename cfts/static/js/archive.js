@@ -1,3 +1,5 @@
+window.document.title = "CFTS -- Transfer Archive";
+
 /* delayed onchange while typing jquery for text boxes widget
 This code was shamelessly harvested from StackOverflow user AntonK and then modified
 
