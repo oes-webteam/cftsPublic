@@ -6,7 +6,7 @@
 <!--Cards Start Here -->
 <section id="boxes" class="py-5">
     <div class="container">
-        <form action="upload.php" method="post" enctype="multipart/form-data">
+        <form action="#" id="transfer-request-form" method="post" enctype="multipart/form-data">
             <div class="row" id="form-row">
                 <!-- Email -->
                 <div class="col-lg-4">
@@ -19,8 +19,12 @@
                             <div class="form-group">
                                 <input type="text" class="form-control" name="lastName" id="lastName" placeholder="Last Name">
                             </div>
-                            <div class="form-group">
-                                <input type="email" class="form-control" name="userEmail" id="userEmail" aria-describedby="userEmailHelp" placeholder="Email Address">
+                            <div class="form-group input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="userEmailRequired">*</span>
+                                </div>
+                                <input type="email" class="form-control" name="userEmail" id="userEmail" aria-describedby="userEmailHelp userEmailRequired" placeholder="Email Address">
+                                <span class="w-100"></span>
                                 <small id="userEmailHelp" class="form-text text-muted">on this network</small>
                             </div>
                         </div>
@@ -45,16 +49,21 @@
                                     <div class="upload-console-drop empty" id="drop-zone">
                                         Just drag and drop files here
                                     </div>
-                                
-                                    <div class="bar">
-                                        <div class="bar-fill" id="bar-fill">
-                                            <div class="bar-fill-text" id="bar-fill-text"></div>
-                                        </div>
-                                    </div>
-                                
+
                                 </div>    
                             </div>
-                            
+
+                            <h5 class="text-gray-dark text-center">Do any of these files contain?</h5>
+                            <div style="display: grid; grid-template-columns: 33% 67%;">
+                                <div class="custom-control custom-checkbox custom-control-inline">
+                                    <input type="checkbox" id="isPII" name="isPII" class="custom-control-input">
+                                    <label class="custom-control-label" for="isPII">PII</label>
+                                  </div>
+                                  <div class="custom-control custom-checkbox custom-control-inline">
+                                    <input type="checkbox" id="isCENTCOM" name="isCENTCOM" class="custom-control-input">
+                                    <label class="custom-control-label" for="isCENTCOM">CENTCOM Information</label>
+                                  </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -72,12 +81,15 @@
                                 </div>
                                 {% endfor %}
                             </div>
-                            <div class="spacer">&nbsp;</div>
                             <h3 class="text-gray-dark">Destination Email</h3>
                             <div class="form-group">
                                 <!-- <label for="exampleInputEmail1">Email address</label> -->
                                 <input type="email" class="form-control" name="targetEmail" id="targetEmail" aria-describedby="targetEmailHelp" placeholder="Email Address">
                                 <small id="targetEmailHelp" class="form-text text-muted">on the target network</small>
+                            </div>
+                            <h3 class="text-gray-dark">Comments</h3>
+                            <div class="form-group">
+                                <textarea class="form-control" name="comments" id="comments" placeholder="250 characters or less"></textarea>
                             </div>
                         </div>
                     </div>
@@ -101,4 +113,5 @@
 </section>
 
 <script src="{% static 'js/frontend.js' %}"></script>
+<script src="{% static 'js/process.js' %}"></script>
 {% endblock %} <!-- end content block variable -->
