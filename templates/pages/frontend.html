@@ -6,7 +6,7 @@
 <!--Cards Start Here -->
 <section id="boxes" class="py-5">
     <div class="container">
-        <form action="#" id="transfer-request-form" method="post" enctype="multipart/form-data">
+        <form action="#" id="transfer-request-form" method="post" enctype="multipart/form-data" novalidate="true">
             <div class="row" id="form-row">
                 <!-- Email -->
                 <div class="col-lg-4">
@@ -23,7 +23,7 @@
                                 <div class="input-group-prepend">
                                     <span class="input-group-text" id="userEmailRequired">*</span>
                                 </div>
-                                <input type="email" class="form-control" name="userEmail" id="userEmail" aria-describedby="userEmailHelp userEmailRequired" placeholder="Email Address">
+                                <input type="email" class="form-control" name="userEmail" id="userEmail" aria-describedby="userEmailHelp userEmailRequired" placeholder="Email Address" required>
                                 <span class="w-100"></span>
                                 <small id="userEmailHelp" class="form-text text-muted">on this network</small>
                             </div>
@@ -76,7 +76,7 @@
                             <div style="display: grid; grid-template-columns: 50% 50%;">
                                 {% for net in rc.networks %}
                                 <div class="custom-control custom-switch text-left" style="margin: 0.5em 0;">
-                                    <input type="radio" name="network" class="custom-control-input" id="switch{{ net.name }}">
+                                    <input type="radio" name="network" class="custom-control-input" id="switch{{ net.name }}" value="{{ net.name }}">
                                     <label class="custom-control-label" for="switch{{ net.name }}">{{ net.name }}</label>
                                 </div>
                                 {% endfor %}
@@ -84,7 +84,7 @@
                             <h3 class="text-gray-dark">Destination Email</h3>
                             <div class="form-group">
                                 <!-- <label for="exampleInputEmail1">Email address</label> -->
-                                <input type="email" class="form-control" name="targetEmail" id="targetEmail" aria-describedby="targetEmailHelp" placeholder="Email Address">
+                                <input type="email" class="form-control" name="targetEmail" id="targetEmail" aria-describedby="targetEmailHelp" placeholder="Email Address" required>
                                 <small id="targetEmailHelp" class="form-text text-muted">on the target network</small>
                             </div>
                             <h3 class="text-gray-dark">Comments</h3>
@@ -104,7 +104,7 @@
                         TODO: Make this an actual <button> with a "click"
                         eventHandler to avoid event bubble-up issues 
                     -->
-                    <a href="{% url 'consent' %}" class="btn btn-secondary btn-block" role="button" aria-pressed="true">Submit</a>
+                    <button class="btn btn-secondary btn-block" role="button">Submit</button>
                 </div>
                 <div class="col-md-4"></div>
             </div> <!-- end #button-row -->
