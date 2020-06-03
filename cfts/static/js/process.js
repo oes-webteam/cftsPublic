@@ -1,15 +1,19 @@
-/* ********************************************** */
-/* process.js                                     */
-/* validate and process the transfer request form */
-/* depends on:                                    */
-/*    <form id="transfer-request-form">           */
-/*    fileQueue - an array of file objects        */
-/*    notifyUser - a function                     */
-/* ********************************************** */
-
+/* *****************************************
+  process.js -- 
+  Validate the form inputs, 
+  POST them to the server for processing, 
+  and handle the response 
+  ****************************************** */
 
 xferForm = document.querySelector( "#transfer-request-form" );
 xferForm.addEventListener( 'submit', process, false );
+
+// Add the CSRF token to ajax requests
+$.ajaxSetup({ 
+  beforeSend: function( xhr, settings ) {
+    xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+  } 
+ });
 
 function checkEmail( email, net, direction ) {
   // look -- if it's not even a real email address, just kick it the eff out
@@ -140,8 +144,8 @@ function process( e ) {
 
     let data = preparePost( xferForm );
     data.method = 'POST';
-    // data.url = 'process-request';
-    data.url = 'test-process-request';
+    // data.url = 'api-processrequest';
+    data.url = 'tools-stubpost';
 
     $.ajax( data ).done( successHandler ).fail( failHandler );
 

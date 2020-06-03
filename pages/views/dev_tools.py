@@ -9,7 +9,9 @@ def stubGet( request ):
   return JsonResponse( {} )
 
 def stubPost( request ):
+  print( request )
   data = request.POST
+  print( data )
   return JsonResponse( data )
 
 
