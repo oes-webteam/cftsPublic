@@ -112,21 +112,19 @@ function validateForm( form ) {
   return isValid;
 }
 
-function preparePost( form ) { 
-  let data = {};
-  let body = new FormData( form );
+function prepareFormData( form ) { 
+  let data = new FormData( form );
   
-  body.delete( "files[]" );
+  data.delete( "files[]" );
   for( let i in fileQueue ) {
-    body.append( 'files', fileQueue[i], fileQueue[i].name );
+    data.append( 'files', fileQueue[i], fileQueue[i].name );
   }
 
-  data.body = body;
   return data;
 }
 
 function successHandler( r ) { 
-  // console.dir( r ); 
+  console.dir( r ); 
 }
 
 function failHandler( r, s ) { 
@@ -142,12 +140,15 @@ function process( e ) {
     // Give user feedback that the submit action occurred and things are happening
     notifyUser( "Submitting the request now. This could take up to a few minutes depending upon the size of the files being transferred. Please stand by ... " );
 
-    let data = preparePost( xferForm );
-    data.method = 'POST';
+    ajaxSettings = {};
+    ajaxSettings.data = prepareFormData( xferForm );
+    ajaxSettings.method = 'POST';
+    ajaxSettings.contentType = 'multipart/form-data';
+    ajaxSettings.processData = false;
     // data.url = 'api-processrequest';
-    data.url = 'tools-stubpost';
+    ajaxSettings.url = 'tools-stubpost';
 
-    $.ajax( data ).done( successHandler ).fail( failHandler );
+    $.ajax( ajaxSettings ).done( successHandler ).fail( failHandler );
 
   } else {
     // notify the user there were validation errors
