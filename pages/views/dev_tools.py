@@ -9,11 +9,11 @@ def stubGet( request ):
   return JsonResponse( {} )
 
 def stubPost( request ):
-  print( request )
-  data = request.POST
-  print( data )
+  if request.method == 'POST':
+    data = request.POST
+  else:
+    data = {}
   return JsonResponse( data )
-
 
 @login_required
 def makeFiles( request ):

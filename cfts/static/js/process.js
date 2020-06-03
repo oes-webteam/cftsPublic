@@ -140,14 +140,14 @@ function process( e ) {
     // Give user feedback that the submit action occurred and things are happening
     notifyUser( "Submitting the request now. This could take up to a few minutes depending upon the size of the files being transferred. Please stand by ... " );
 
-    ajaxSettings = {};
-    ajaxSettings.data = prepareFormData( xferForm );
-    ajaxSettings.method = 'POST';
-    ajaxSettings.contentType = 'multipart/form-data';
-    ajaxSettings.processData = false;
-    // data.url = 'api-processrequest';
-    ajaxSettings.url = 'tools-stubpost';
-
+    ajaxSettings = {
+      // url = 'api-processrequest',
+      url: 'tools-stubpost',
+      method: 'POST',
+      data: prepareFormData( xferForm ),
+      contentType: 'multipart/form-data',
+      processData: false
+    };
     $.ajax( ajaxSettings ).done( successHandler ).fail( failHandler );
 
   } else {
