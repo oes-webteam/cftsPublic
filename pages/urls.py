@@ -33,10 +33,10 @@ urlpatterns = [
     path( 'api-getuser/<uuid:id>', views.getUser, name='api-getuser' ),
     path( 'api-setreject', views.setReject, name='api-setreject' ),
     path( 'api-numbers', views.runNumbers, name='api-numbers' ),
-    ## path( 'api-processreqeust', views.process, name='api-processrequest' ),
+    path( 'api-processrequest', views.process, name='api-processrequest' ),
 
     # dev tools
     path( 'tools-makefiles', views.makeFiles, name='make-files' ),
-    path( 'tools-stubget', views.stubGet, name="stub-get" ),
-    path( 'tools-stubpost', views.stubPost, name="stub-post" ),
+    path( 'tools-stubget', views.stubGet, name='stub-get' ),
+    path( 'tools-stubpost', views.stubPost, name='stub-post' ),
 ]

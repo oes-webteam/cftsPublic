@@ -8,13 +8,6 @@
 xferForm = document.querySelector( "#transfer-request-form" );
 xferForm.addEventListener( 'submit', process, false );
 
-// Add the CSRF token to ajax requests
-$.ajaxSetup({ 
-  beforeSend: function( xhr, settings ) {
-    xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
-  } 
- });
-
 function checkEmail( email, net, direction ) {
   // look -- if it's not even a real email address, just kick it the eff out
   var emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
@@ -141,12 +134,14 @@ function process( e ) {
     notifyUser( "Submitting the request now. This could take up to a few minutes depending upon the size of the files being transferred. Please stand by ... " );
 
     ajaxSettings = {
-      // url = 'api-processrequest',
-      url: 'tools-stubpost',
+      url: 'api-processrequest',
       method: 'POST',
       data: prepareFormData( xferForm ),
-      contentType: 'multipart/form-data',
-      processData: false
+      contentType: false,
+      processData: false,
+      beforeSend: function( xhr, settings ) {
+        xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+      }
     };
     $.ajax( ajaxSettings ).done( successHandler ).fail( failHandler );
 

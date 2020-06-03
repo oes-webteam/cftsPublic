@@ -110,3 +110,51 @@ def runNumbers( request ):
         files_transfered = files_transfered + file_count
 
   return JsonResponse( { 'files_reviewed': files_reviewed, 'files_transfered': files_transfered } )
+
+def process ( request ):
+  resp = {}
+  
+  if request.method == 'POST':
+    form_data = request.POST
+    form_files = request.FILES
+
+    # use the form data to create the necessary records for the request
+    source_email = Email( address = form_data.get( 'userEmail' ) )
+    source_email.save()
+    
+    target_email = Email( address = form_data.get( 'targetEmail' ) )
+    target_email.save()
+
+    user = User( 
+      name_first = form_data.get( 'firstName' ), 
+      name_last = form_data.get( 'lastName' ), 
+      email = source_email 
+      )
+    user.save()
+
+    request = Request( 
+      user = user, 
+      network = Network.objects.get( name = form_data.get( 'network' ) ),  
+      target_email = target_email,
+      comments = form_data.get( 'comments' )
+      )
+    request.save()
+
+    # add files to the request
+    for f in form_files:
+      this_file = File(
+        file_object = form_files[f]
+        )
+      this_file.save()
+      request.files.add( this_file )
+    
+    request.is_submitted = True
+    request.save()
+
+    resp = { 'status': 'success', 'request_id': request.pk }
+
+  else:
+    resp = { 'status': 'fail', 'reason': 'bad-request-type', 'msg': "The 'api-processrequest' view only accepts POST requests." }
+
+  return JsonResponse( resp )
+
