@@ -13,16 +13,16 @@
         <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a href="{% url 'index' %}" class="nav-link">Home</a>                   <!--HOME LINK-->
+                    <a href="{% url 'index' %}" class="nav-link">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a href="{% url 'urlShortner' %}" class="nav-link">URL Shortner</a>   <!--URL SHORTNER LINK-->
+                    <a href="{% url 'urlShortner' %}" class="nav-link">URL Shortner</a>
                 </li>
                 <li class="nav-item dropdown"> <!--DROP DOWN STARTS HERE FOR NAV-->
                     <a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Resources                                                   <!--RESOURCES-->
+                    Resources
                     </a>
-                    <div class="dropdown-menu" aria-labelledby="dropdownMenuLink"> <!--LINKS INSIDE DROPDOWN-->
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                         <a class="dropdown-item" href="files/test file.txt" download="Tetragraph">Tetragraph</a>
                         <a class="dropdown-item" href="files/test file.txt" download="Cross Domain User Guide">Cross Domain User Guide</a>
                         <a class="dropdown-item" href="files/test file.txt" download="DoDIIS One-way Transfer">DoDIIS One-way Transfer</a>
@@ -31,11 +31,11 @@
                 {% if user.is_authenticated %}
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Analysts</a>
-                    <div class="dropdown-menu" aria-labelledby="dropdownMenuLink"> <!--LINKS INSIDE DROPDOWN-->
-                        <a class="dropdown-item" href="queue">Transfer Queue</a>
-                        <a class="dropdown-item" href="pulls">Pulls History</a>
-                        <a class="dropdown-item" href="archive">Transfers Archive</a>
-                        <a class="dropdown-item" href="reports">Reporting</a>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                        <a class="dropdown-item" href="{% url 'queue' %}">Transfer Queue</a>
+                        <a class="dropdown-item" href="{% url 'pulls' %}">Pulls History</a>
+                        <a class="dropdown-item" href="{% url 'archive' %}">Transfers Archive</a>
+                        <a class="dropdown-item" href="{% url 'reports' %}">Reporting</a>
                     </div> 
                 </li>
                 {% else %}

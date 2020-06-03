@@ -75,3 +75,12 @@
   height: 1.67em;
   width: 2em;
 }
+
+label.custom-control-label {
+	line-height: 1.67em;
+}
+
+.input-group-prepend .input-group-text {
+	color: red !important;
+	font-weight: bold;
+}
