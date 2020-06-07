@@ -15,6 +15,9 @@ $.ajaxSetup({
   } 
  });
 
+/* **************** */
+/* EMAIL VALIDATION */
+/* **************** */
 function checkEmail( email, net, direction ) {
   // look -- if it's not even a real email address, just kick it the eff out
   var emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
@@ -56,6 +59,9 @@ function checkEmail( email, net, direction ) {
   return false;
 }
 
+/* *************** */
+/* FORM VALIDATION */
+/* *************** */
 function validateForm( form ) {
   let thisNet = 'SIPR';
   let isValid = true;
@@ -85,6 +91,14 @@ function validateForm( form ) {
     isValid = false;
   }
 
+  // classifications
+  for( let check of document.querySelectorAll( ".file-classification" ) ) {
+    if( check.value == "" ) {
+      errors.push( check );
+      isValid = false;
+    }
+  }
+
   // target network
   if( !form.elements.network.value.length ) {
     form.elements.network.forEach( ( elem ) => errors.push( elem ) );
@@ -100,8 +114,10 @@ function validateForm( form ) {
   if( !isValid ) {
     // it's just a bunch of screwing around and explosions until you write it down (aka: log it)
     errors.forEach( ( elem ) => console.dir( elem ) );
+
     // mark everything good
     [...form.elements].forEach( ( elem ) => elem.classList.add( 'is-valid' ) );
+
     // mark the naughty-naughties
     errors.forEach( ( elem ) => {
       elem.classList.remove( "is-valid" );
@@ -112,25 +128,64 @@ function validateForm( form ) {
   return isValid;
 }
 
+/* ****************************************** */
+/* PREPARE THE FORM DATA FOR THE AJAX REQUEST */
+/* ****************************************** */
 function prepareFormData( form ) { 
-  let data = new FormData( form );
+  let formData = new FormData( form );
+  let data = new FormData();
   
-  data.delete( "files[]" );
+  data = prepareFileInfo( data );
+  for( const [field, value] of formData.entries() ){
+    if( !( field.includes( "classification" ) || field.includes( "encrypt" ) ) ) {
+      data.append( field, value );
+    }
+  }
+  
   for( let i in fileQueue ) {
-    data.append( 'files', fileQueue[i], fileQueue[i].name );
+    data.append( 'files', fileQueue[i].object, fileQueue[i].name );
   }
 
   return data;
 }
 
+/* ***************** */
+/* PREPARE FILE INFO */
+/* ***************** */
+function prepareFileInfo( formData ) {
+  let fileInfo = [];
+
+  for( let i of fileQueue ) {
+    obj = {
+      'classification': i.cls,
+      'encrypt': i.encrypt
+    }
+    fileInfo.push( JSON.stringify( obj ) );
+  }
+
+  formData.append( 'fileInfo', fileInfo );
+
+  return formData;
+}
+
+
+/* ****************************** */
+/* AJAX REQUEST SENT SUCCESSFULLY */
+/* ****************************** */
 function successHandler( r ) { 
   console.dir( r ); 
 }
 
+/* ******************* */
+/* AJAX REQUEST FAILED */
+/* ******************* */
 function failHandler( r, s ) { 
   notifyUser( "A system error occurred while trying to submit the files.\n\n" + r.status + ": " + r.statusText + ".  Please notify the CFTS administrators of this error by emailing {{ SETTINGS.CFTS_ADMIN_EMAIL }}.");
 }
 
+/* ***************************************************************** */
+/* THE ROOT FORM PROCESSING FUNCTION (EVERYTHING ELSE SUPPORTS THIS) */
+/* ***************************************************************** */
 function process( e ) {
   preventDefaults( e );
 
@@ -140,12 +195,19 @@ function process( e ) {
     // Give user feedback that the submit action occurred and things are happening
     notifyUser( "Submitting the request now. This could take up to a few minutes depending upon the size of the files being transferred. Please stand by ... " );
 
+    // give it a quick refresh
+    updateFileInfo();
+    
+    let prepData = prepareFormData( xferForm );
+
+    for ( let pair of prepData.entries() ) console.log( pair[0] + ', ' + pair[1] );
+
     ajaxSettings = {
       // url = 'api-processrequest',
       url: 'tools-stubpost',
       method: 'POST',
-      data: prepareFormData( xferForm ),
-      contentType: 'multipart/form-data',
+      data: prepData,
+      contentType: false,
       processData: false
     };
     $.ajax( ajaxSettings ).done( successHandler ).fail( failHandler );

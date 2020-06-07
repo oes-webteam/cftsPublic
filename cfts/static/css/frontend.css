@@ -1,80 +1,13 @@
 /* frontend.css */
-.card-body {
-  height: 475px; }
+.card-body { min-height: 525px; }
 
-#boxes {
-  margin-bottom: 100px; }
+#boxes { margin-bottom: 100px; }
 
-.card-body h3 { line-height: 1.67em; }
+.card-body h3 { line-height: 1.5em; }
  
 .spacer { line-height: 2em; }
 
-.sub_btn {
-  font-size: 1.4rem; }
-
-/* Drag & drop styles (from ddGlobal) */
-.upload-console-drop {
-	border: 2px dashed #ccc;
-	color: #ccc;
-  height: auto;
-	margin-top: 15px;
-	margin-bottom: 20px;
-  min-height: 200px;
-  text-align: left;
-}
-.upload-console-drop.empty {
-  height: 200px;
-	line-height: 200px;
-  text-align: center;
-}
-.bar {
-	width:100%;
-	background:#eee;
-	padding:3px;
-	border-radius:3px;
-	box-shadow:inset 0 1px 3px rgba(0,0,0,.2);
-	box-sizing:border-box;
-	margin-bottom:20px;
-}
-
-.bar-fill {
-	height:30px;
-	display:block;
-	background:cornflowerblue;
-	width:0;
-	border-radius:3px;
-	-webkit-transition:width 0.8s ease;
-	transition:width 0.8s ease;
-}
-
-.bar-fill-text {
-	color:#fff;
-	line-height:30px;
-	margin-left:5px;
-}
-/* end ddGlobal */
-
-.highlight-active {
-  border-color: #07F !important;
-  box-shadow: 0 0 3px 0 #07F;
-}
-
-#drop-zone ul {
-  font-size: 0.7em;
-  line-height: 1.67em;
-  list-style-type: "❌";
-  margin-left: -1em;
-}
-#drop-zone ul li { 
-  padding-left: 0.33em; 
-}
-#drop-zone ul li a.remove { 
-  display: inline-block; 
-  margin: 0.5em 0 0 -2em;
-  cursor: pointer;
-  height: 1.67em;
-  width: 2em;
-}
+.sub_btn { font-size: 1.4rem; }
 
 label.custom-control-label {
 	line-height: 1.67em;
@@ -83,4 +16,72 @@ label.custom-control-label {
 .input-group-prepend .input-group-text {
 	color: red !important;
 	font-weight: bold;
+}
+
+/* file input button */
+/* hide the standard file input visually, but keep it in the DOM for accessability and validation */
+#standard-upload-files {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap; /* 1 */
+  clip-path: inset(50%);
+  border: 0;
+}
+
+.upload-console .form-group { text-align: center; }
+
+/* Drag & drop styles (from ddGlobal) */
+.upload-console-drop {
+	border: 2px dashed #ccc;
+	color: #ccc;
+  height: auto;
+	margin-top: 15px;
+	margin-bottom: 20px;
+  min-height: 100px;
+  text-align: left;
+}
+.upload-console-drop.empty {
+  height: 100px;
+	line-height: 100px;
+  text-align: center;
+}
+/* end ddGlobal */
+
+.highlight-active {
+  border-color: #07F !important;
+  box-shadow: 0 0 3px 0 #07F;
+}
+
+.file-list.init { text-align: center; }
+.file-list span { 
+	display: block;
+	font-style: italic; 
+	margin: 1em 0;
+}
+
+.file-list ul {
+  line-height: 1.67em;
+  list-style-type: "❌";
+  margin-left: -1em;
+}
+.file-list ul li { 
+	padding-left: 0.33em; 
+}
+.file-list ul li a.remove { 
+  display: inline-block; 
+  margin: 0.5em 0 0 -2em;
+  cursor: pointer;
+  height: 1.67em;
+  width: 2em;
+}
+
+.file-list .file-classification {
+	display: inline-block;
+	font-size: 1em;
+	margin-right: 2em;
+	width: 50%;
 }

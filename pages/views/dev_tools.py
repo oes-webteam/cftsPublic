@@ -9,10 +9,10 @@ def stubGet( request ):
   return JsonResponse( {} )
 
 def stubPost( request ):
+  data = {}
   if request.method == 'POST':
-    data = request.POST
-  else:
-    data = {}
+    data = request.POST.dict()
+
   return JsonResponse( data )
 
 @login_required
