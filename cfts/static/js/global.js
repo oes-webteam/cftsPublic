@@ -1,3 +1,9 @@
+// PREVENT DEFAULT ACTIONS FROM OCCURRING ON EVENTS 
+const preventDefaults = ( e ) => {
+  e.preventDefault();
+  e.stopPropagation();
+};
+
 // WORK WITH COOKIES
 function getCookie(name) {
   let cookie = {};

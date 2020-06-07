@@ -3,23 +3,21 @@ window.document.title = "CFTS -- Transfer Request Form"
 let dropArea = document.getElementById( "drop-zone" );
 let filesInput = document.getElementById( "standard-upload-files" );
 let fileQueue = [];
+let fileInfo = {};
 
-preventDefaults = ( e ) => {
-  e.preventDefault();
-  e.stopPropagation();
+
+/* ****************************************** */
+/* USER NOTIFICATION (NEEDS VAST IMPROVEMENT) */
+/* ****************************************** */
+notifyUser = ( msg ) => {
+  alert( msg );
 };
 
-addHighlight = ( e ) => dropArea.classList.add( 'highlight-active' );
 
-removeHighlight = ( e ) => dropArea.classList.remove( 'highlight-active' );
-
-removeFileFromQueue = ( e ) => {
-  preventDefaults( e );
-  fileQueue.splice( e.target.getAttribute( "index" ), 1 );
-  displayFileQueue();
-}
-
-addFiles = ( e ) => {
+/* ********************************************************* */
+/* ADD FILES TO THE QUEUE WHEN ADDED FROM FIELD OR DROP ZONE */
+/* ********************************************************* */
+const addFiles = ( e ) => {
   let fileList = [];
   if( 'dataTransfer' in e ) fileList = e.dataTransfer.files;
   else if ( 'target' in e ) fileList = e.target.files;
@@ -32,35 +30,25 @@ addFiles = ( e ) => {
     let thisFile = fileList[f];
     let isValid = validateFile( thisFile );
     
-    if( isValid )
-      fileQueue.push( thisFile );
+    if( isValid ) {
+      // add file to the queue
+      fileObject = { 
+        'object': thisFile,
+        'name': thisFile.name
+      };
+      fileQueue.push( fileObject );
+    }
   } // endfor
 
+  updateFileInfo();
   displayFileQueue();
 }
 
-displayFileQueue = () => {
-  dropArea.innerHTML = "";
-  let unorderedList = document.createElement( "ul" );
-  for ( let f in fileQueue ) {
-    let listItem = document.createElement( "li" );
-    
-    // add link to remove a file from the queue
-    let deleteFile = document.createElement( "a" );
-    deleteFile.classList.add( "remove" );
-    deleteFile.setAttribute( "index", f );
-    deleteFile.setAttribute( "title", "Remove File" );
-    deleteFile.addEventListener( "click", removeFileFromQueue, false );
-    listItem.appendChild( deleteFile );
 
-    listItem.appendChild( document.createTextNode( fileQueue[f].name ) );
-    unorderedList.appendChild( listItem );
-  }
-  dropArea.appendChild( unorderedList );
-  dropArea.classList.remove( "empty" );
-};
-
-validateFile = ( thisFile ) => {
+/* ************************************************ */
+/* VALIDATE UPLOADED FILES (AS BEST WE CAN FOR NOW) */
+/* ************************************************ */
+const validateFile = ( thisFile ) => {
   let isvalid = true;
   let msg = thisFile.name;
   
@@ -73,8 +61,8 @@ validateFile = ( thisFile ) => {
     return false;
   }
 
-  for( let q in fileQueue ) {
-    let qFile = fileQueue[q];
+  for( let o of fileQueue ) {
+    let qFile = o.object;
 
     // make sure this file doesn't already exist in the queue
     // (crappy version -- would like to do this with MD5 or SHA-1 hash in the future)
@@ -89,23 +77,127 @@ validateFile = ( thisFile ) => {
   return isvalid;
 };
 
-notifyUser = ( msg ) => {
-  alert( msg );
+
+/* ************************************************************** */
+/* TAKE THE STUFF FROM THE FILE LIST AND ADD IT TO THE FILE QUEUE */
+/* ************************************************************** */
+const updateFileInfo = () => {
+  // loop the file list
+  let fileList  = document.querySelectorAll( ".file-list ul li" );
+  for ( let i = 0; i < fileList.length; i++ ) {
+    let cls = fileList[i].querySelector( "select" );
+    let encrypt = fileList[i].querySelector( "input" );
+    
+    fileQueue[i].cls = cls.value;
+    fileQueue[i].encrypt = encrypt.checked;
+  }
 };
 
-// EVENT LISTENERS
-// dropArea
+
+/* **************************************************************************** */
+/* RENDER THE FILES IN THE QUEUE ON THE PAGE, WITH LINKS TO REMOVE OR EDIT INFO */
+/* **************************************************************************** */
+const displayFileQueue = () => {
+  if( fileQueue.length ) {
+    let displayArea = $( '.file-list' )[0];
+
+    // CLEAR!!!
+    displayArea.innerHTML = "";
+    displayArea.classList.remove( 'init' );
+
+    let unorderedList = displayArea.children[0] || document.createElement( "ul" );
+    for ( let i in fileQueue ) {
+      let listItem = document.createElement( "li" );
+      
+      // add link to remove a file from the queue
+      let deleteFile = document.createElement( "a" );
+      deleteFile.classList.add( "remove" );
+      deleteFile.setAttribute( "index", i );
+      deleteFile.setAttribute( "title", "Remove File" );
+      deleteFile.addEventListener( "click", removeFileFromQueue, false );
+      listItem.appendChild( deleteFile );
+
+      listItem.appendChild( document.createTextNode( fileQueue[i].name ) );
+
+      let fileInfoDiv = document.createElement( "div" );
+      fileInfoDiv.classList.add( "form-row" );
+      
+      let selectClass = document.createElement( "select" );
+      selectClass.classList.add( "file-classification", "form-control", "col" );
+      selectClass.setAttribute( "name", "classification" + i );
+      selectClass.setAttribute( "id", "classification" + i );
+      selectClass.required = true;
+      [ '', 'U', 'U//FOUO', 'C//REL', 'S//REL' ].forEach(  c => {
+        let option = document.createElement( "option" );
+        option.setAttribute( "value", c );
+        if( fileQueue[i] && fileQueue[i].cls == c ) option.selected = true;
+        option.appendChild( document.createTextNode( c ) );
+        selectClass.appendChild( option );
+      });
+      fileInfoDiv.appendChild( selectClass );
+
+      let toEncrypt = document.createElement( "input" );
+      toEncrypt.setAttribute( "type", "checkbox" );
+      toEncrypt.setAttribute( "name", "encrypt" + i )
+      toEncrypt.setAttribute( "id", "encrypt" + i )
+      toEncrypt.setAttribute( "value", "true" );
+      if( fileQueue[i] && fileQueue[i].encrypt ) toEncrypt.checked = true;
+      toEncrypt.classList.add( "form-check-input", "col" );
+
+      let checkLabel = document.createElement( "label" );
+      checkLabel.setAttribute( "for", "encrypt" + i );
+      checkLabel.append( document.createTextNode( "Send Encrypted?" ) );
+      checkLabel.classList.add( "form-check-label", "col" );
+      fileInfoDiv.appendChild( toEncrypt );
+      fileInfoDiv.appendChild( checkLabel );
+
+      listItem.appendChild( fileInfoDiv );
+
+      unorderedList.appendChild( listItem );
+    } // endfor
+    if( displayArea.children.length == 0 ) displayArea.appendChild( unorderedList );
+  }
+};
+
+
+/* ********************************* */
+/* REMOVE A FILE FROM THE FILE QUEUE */
+/* ********************************* */
+const removeFileFromQueue = ( e ) => {
+  preventDefaults( e );
+  fileQueue.splice( e.target.getAttribute( "index" ), 1 );
+
+  let fileList = document.querySelector( ".file-list ul" );
+  fileList.removeChild( e.target.parentElement );
+
+  updateFileInfo();
+  displayFileQueue();
+};
+
+
+/* ***************************************** */
+/* ADD/REMOVE HIGHLIGHTING TO/FROM DROP ZONE */
+/* ***************************************** */
+addHighlight = ( e ) => dropArea.classList.add( 'highlight-active' );
+removeHighlight = ( e ) => dropArea.classList.remove( 'highlight-active' );
+
+
+/* *************** */
+/* EVENT LISTENERS */
+/* *************** */
+// prevent default actions for all these events
 [ 'dragenter', 'dragover', 'dragleave', 'drop' ].forEach( eventName => {
   dropArea.addEventListener( eventName, preventDefaults, false ); 
 });
 
+// add/remove highlighting to/from drop zone
 [ 'dragenter', 'dragover' ].forEach( eventName => {
   dropArea.addEventListener( eventName, addHighlight, false );
 });
-
 [ 'dragleave', 'drop' ].forEach( eventName => {
   dropArea.addEventListener( eventName, removeHighlight, false );
 });
 
+// the add files handler for the drop zone and file field
 dropArea.addEventListener( 'drop', addFiles, false );
 filesInput.addEventListener( 'change', addFiles, false );
