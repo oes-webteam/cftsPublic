@@ -137,7 +137,7 @@ function prepareFormData( form ) {
   
   data = prepareFileInfo( data );
   for( const [field, value] of formData.entries() ){
-    if( !( field.includes( "classification" ) || field.includes( "encrypt" ) ) ) {
+    if( !( field.includes( "classification" ) || field.includes( "encrypt" ) || field.includes( "files[]" ) ) ) {
       data.append( field, value );
     }
   }
@@ -158,12 +158,12 @@ function prepareFileInfo( formData ) {
   for( let i of fileQueue ) {
     obj = {
       'classification': i.cls,
-      'encrypt': i.encrypt
+      'encrypt': i.encrypt.toString()
     }
-    fileInfo.push( JSON.stringify( obj ) );
+    fileInfo.push( obj );
   }
 
-  formData.append( 'fileInfo', fileInfo );
+  formData.append( 'fileInfo', JSON.stringify( fileInfo ) );
 
   return formData;
 }

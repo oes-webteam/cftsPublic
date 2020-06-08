@@ -1,5 +1,6 @@
 #====================================================================
 # core
+import json
 from datetime import datetime
 from zipfile import ZipFile
 from django.conf import settings
@@ -141,9 +142,13 @@ def process ( request ):
     request.save()
 
     # add files to the request
-    for f in form_files:
+    file_info =  json.loads( form_data.get( 'fileInfo' ) )
+    print( form_files.getlist( "files" ) )
+    for i, f in enumerate( form_files.getlist( "files" ) ):
       this_file = File(
-        file_object = form_files[f]
+        file_object = f,
+        classification = Classification.objects.get( abbrev = file_info[ i ][ 'classification' ] ),
+        is_pii = file_info[ i ][ 'encrypt' ] == 'true'
         )
       this_file.save()
       request.files.add( this_file )
