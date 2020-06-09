@@ -85,3 +85,11 @@ label.custom-control-label {
 	margin-right: 2em;
 	width: 50%;
 }
+
+.file-list input[ type = checkbox ] {
+  position: relative;
+  margin-right: -3rem;
+  margin-left: -2.5rem;
+}
+
+.file-list label { white-space: nowrap; }
