@@ -31,7 +31,7 @@ def setReject( request ):
   File.objects.filter( file_id__in = id_list ).update( rejection_reason_id = reject_id[0] )
 
   # recreate the zip file for the pull
-  someRequest = Request.objects.get( request_id = request_id )
+  someRequest = Request.objects.get( request_id = request_id[0] )
   network_name = someRequest.network__name
   pull_number = someRequest.pull__pull_number
 

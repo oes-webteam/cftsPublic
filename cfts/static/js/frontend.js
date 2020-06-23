@@ -10,7 +10,12 @@ let fileInfo = {};
 /* USER NOTIFICATION (NEEDS VAST IMPROVEMENT) */
 /* ****************************************** */
 notifyUser = ( msg ) => {
-  alert( msg );
+  let alertDiv = $( ".alert" );
+  alertDiv.text( msg );  
+  alertDiv.fadeIn();
+  window.setTimeout( function() {
+    alertDiv.fadeOut();
+  }, 5000 );
 };
 
 
