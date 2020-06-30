@@ -1,0 +1,16 @@
+astroid==2.3.3
+colorama==0.4.3
+Django==2.1.12
+django-mssql==1.8
+django-pyodbc-azure==2.1.0.0
+django-static-jquery-ui==1.12.1.1
+isort==4.3.21
+lazy-object-proxy==1.4.3
+mccabe==0.6.1
+pylint==2.4.4
+pyodbc==4.0.27
+pytz==2019.2
+six==1.14.0
+sqlparse==0.3.0
+typed-ast==1.4.1
+wrapt==1.11.2
