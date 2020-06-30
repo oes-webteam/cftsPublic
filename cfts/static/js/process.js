@@ -174,6 +174,7 @@ function prepareFileInfo( formData ) {
 /* ****************************** */
 function successHandler( r ) { 
   console.dir( r ); 
+  notifyUser( "THANK YOU! Your files have been submitted. " )
 }
 
 /* ******************* */

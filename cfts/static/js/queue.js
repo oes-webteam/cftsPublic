@@ -182,6 +182,8 @@ jQuery( document ).ready( function() {
         $( document.body ).append( $anchor );
       }
       $( '.emailLink' ).each( function() { $(this)[0].click(); } );
+    
+      rejectDialog.close();
     } else {
       /* bad user, no cookie */
       console.log( "What did you do, Ray?" );
