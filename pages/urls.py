@@ -39,4 +39,5 @@ urlpatterns = [
     path( 'tools-makefiles', views.makeFiles, name='make-files' ),
     path( 'tools-stubget', views.stubGet, name='stub-get' ),
     path( 'tools-stubpost', views.stubPost, name='stub-post' ),
+    path( 'tools-setupdb', views.setupDB, name="setupdb" ),
 ]
