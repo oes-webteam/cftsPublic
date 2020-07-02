@@ -34,17 +34,17 @@ def makeFiles( request ):
 def setupDB( request ):
   if Network.objects.count() == 0:
     # Classifications
-    unclass = Classification( classification_id = '8cefbfbe3e5a4d46aea10c22c879569d', fullname = 'UNCLASSIFIED', abbrev = 'U', sort_order = 1 )
+    unclass = Classification( classification_id = '8cefbfbe3e5a4d46aea10c22c879569d', full_name = 'UNCLASSIFIED', abbrev = 'U', sort_order = 1 )
     unclass.save()
-    fouo = Classification( classification_id = 'fbeeca2f48bc4ebebdc428a8a94a2a90', fullname = 'UNCLASSIFIED//FOR OFFICIAL USE ONLY', abbrev = 'U//FOUO', sort_order = 2 )
+    fouo = Classification( classification_id = 'fbeeca2f48bc4ebebdc428a8a94a2a90', full_name = 'UNCLASSIFIED//FOR OFFICIAL USE ONLY', abbrev = 'U//FOUO', sort_order = 2 )
     fouo.save()
-    c = Classification( classification_id = '49c821fc4bd9487e86ded88610c59f54', fullname = 'CONFIDENTIAL', abbrev = 'C', sort_order = 3 )
+    c = Classification( classification_id = '49c821fc4bd9487e86ded88610c59f54', full_name = 'CONFIDENTIAL', abbrev = 'C', sort_order = 3 )
     c.save()
-    c_rel = Classification( classification_id = 'a605c8d9b6fe404d98812d944c3cf3ca', fullname = 'CONFIDENTIAL//RELEASABLE', abbrev = 'C//REL', sort_order = 4 )
+    c_rel = Classification( classification_id = 'a605c8d9b6fe404d98812d944c3cf3ca', full_name = 'CONFIDENTIAL//RELEASABLE', abbrev = 'C//REL', sort_order = 4 )
     c_rel.save()
-    s = Classification( classification_id = '3fd32c420cc74af0b7a5afd1e481b92e', fullname = 'SECRET', abbrev = 'S', sort_order = 5 )
+    s = Classification( classification_id = '3fd32c420cc74af0b7a5afd1e481b92e', full_name = 'SECRET', abbrev = 'S', sort_order = 5 )
     s.save()
-    s_rel = Classification( classification_id = 'b8f6928f278d4891a77f32cb7c411094', fullname = 'SECRET//RELEASABLE', abbrev = 'S//REL', sort_order = 6 )
+    s_rel = Classification( classification_id = 'b8f6928f278d4891a77f32cb7c411094', full_name = 'SECRET//RELEASABLE', abbrev = 'S//REL', sort_order = 6 )
     s_rel.save()
 
     # Networks
