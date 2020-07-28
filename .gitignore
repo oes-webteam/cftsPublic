@@ -108,6 +108,6 @@ venv.bak/
 # uploaded files from the user
 uploads/
 # files created by the system
-cfts/static/files/
+cfts/static/files/*.zip
 # Visual Studio Code
 .vscode/

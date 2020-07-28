@@ -13,7 +13,7 @@ from django.contrib.auth.decorators import login_required
 
 # responses
 from django.shortcuts import render
-from django.http import JsonResponse # , HttpResponse, FileResponse
+from django.http import JsonResponse, HttpResponseRedirect # , HttpResponse, FileResponse
 
 # model/database stuff
 from pages.models import *

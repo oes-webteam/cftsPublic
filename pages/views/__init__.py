@@ -5,3 +5,4 @@ from .archive import *
 from .apis import *
 from .dev_tools import *
 from .reports import *
+from .downloads import *

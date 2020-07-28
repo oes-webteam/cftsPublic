@@ -1,120 +1,139 @@
-{% extends 'base.html' %} <!-- view wrapper -->
-{% load static %} 
-{% block content %} <!-- begin content block variable -->
-<link rel="stylesheet" href="{% static 'css/frontend.css' %}">
+{% extends 'base.html' %}
+<!-- view wrapper -->
+{% load static %} {% block content %}
+<!-- begin content block variable -->
+<link rel="stylesheet" href="{% static 'css/frontend.css' %}" />
 
 <!--Cards Start Here -->
 <section id="boxes" class="py-5">
-    <div class="container">
+  <div class="container">
+    <div class="alert alert-success fadein" style="display: none;" role="alert"></div>
 
-        <div class="alert alert-success fadein" style="display: none;" role="alert"></div>
-
-        <form action="#" id="transfer-request-form" method="post" enctype="multipart/form-data" novalidate="true">
-            <div class="row" id="form-row">
-                <!-- Email -->
-                <div class="col-lg-4">
-                    <div class="card text-center border-secondary mb-resp bg-light">
-                        <div class="card-body">
-                            <h3 class="text-gray-dark">User Information</h3>
-                            <div class="form-group">
-                                <input type="text" class="form-control" name="firstName" id="firstName" placeholder="First Name">
-                            </div>
-                            <div class="form-group">
-                                <input type="text" class="form-control" name="lastName" id="lastName" placeholder="Last Name">
-                            </div>
-                            <div class="form-group input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text" id="userEmailRequired">*</span>
-                                </div>
-                                <input type="email" class="form-control" name="userEmail" id="userEmail" aria-describedby="userEmailHelp userEmailRequired" placeholder="Email Address" required>
-                                <span class="w-100"></span>
-                                <small id="userEmailHelp" class="form-text text-muted">on this network</small>
-                            </div>
-
-                            <!-- Drag and Drop-->
-                            <h3 class="text-gray-dark text-center">Add Files To Queue</h3>
-                            <div class="upload-console">
-                                <!--<h2 class="upload-console-header">Upload</h2>-->
-                                <div class="upload-console-body">
-                                    <div class="form-group"> <!-- Added DIV to add margin to btn -->
-                                        <label for="standard-upload-files" class="btn btn-primary">Upload Files
-                                            <input type="file" name="files[]" id="standard-upload-files" multiple>
-                                            <!-- <input type="submit" value="Upload files" id="standard-upload" class="form-control-file mt-2"> -->
-                                        </label>
-                                    </div>
-                                
-                                    <!--<h3>Or drag and drop files below</h3>-->
-                                    <div class="upload-console-drop empty" id="drop-zone">
-                                        Just drag and drop files here
-                                    </div>
-
-                                </div>    
-                            </div>
-
-                        </div>
-                    </div>
+    <form action="#" id="transfer-request-form" method="post" enctype="multipart/form-data" novalidate="true">
+      <div class="row" id="form-row">
+        <!-- Email -->
+        <div class="col-lg-4">
+          <div class="card text-center border-secondary mb-resp bg-light">
+            <div class="card-body">
+              <h3 class="text-gray-dark">User Information</h3>
+              <div class="form-group">
+                <input type="text" class="form-control" name="firstName" id="firstName" placeholder="First Name" />
+              </div>
+              <div class="form-group">
+                <input type="text" class="form-control" name="lastName" id="lastName" placeholder="Last Name" />
+              </div>
+              <div class="form-group input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="userEmailRequired">*</span>
                 </div>
+                <input
+                  type="email"
+                  class="form-control"
+                  name="userEmail"
+                  id="userEmail"
+                  aria-describedby="userEmailHelp userEmailRequired"
+                  placeholder="Email Address"
+                  required
+                />
+                <span class="w-100"></span>
+                <small id="userEmailHelp" class="form-text text-muted">on this network</small>
+              </div>
 
-                <!-- Request Queue -->
-                <div class="col-lg-4">
-                    <div class="card  border-secondary mb-resp bg-light">
-                        <div class="card-body">
-                            <h3 class="text-gray-dark text-center">Request Queue</h3>
-                            <div class="file-list init">
-                                <span>No files in queue.</span>
-                                <small>Use the button above or drag and drop files into the indicated area.</small>
-                            </div>
-                        </div>
-                    </div>
+              <!-- Drag and Drop-->
+              <h3 class="text-gray-dark text-center">Add Files To Queue</h3>
+              <div class="upload-console">
+                <!--<h2 class="upload-console-header">Upload</h2>-->
+                <div class="upload-console-body">
+                  <div class="form-group">
+                    <!-- Added DIV to add margin to btn -->
+                    <label for="standard-upload-files" class="btn btn-primary"
+                      >Upload Files
+                      <input type="file" name="files[]" id="standard-upload-files" multiple />
+                      <!-- <input type="submit" value="Upload files" id="standard-upload" class="form-control-file mt-2"> -->
+                    </label>
+                  </div>
+
+                  <!--<h3>Or drag and drop files below</h3>-->
+                  <div class="upload-console-drop empty" id="drop-zone">
+                    Just drag and drop files here
+                  </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-                <!--Choose Network-->
-                <div class="col-lg-4">
-                    <div class="card text-center border-secondary mb-resp bg-light">
-                        <div class="card-body">
-                            <h3 class="text-gray-dark">Transfer To</h3>
-                            <div style="display: grid; grid-template-columns: 50% 50%;">
-                                {% for net in rc.networks %}
-                                <div class="custom-control custom-switch text-left" style="margin: 0.5em 0;">
-                                    <input type="radio" name="network" class="custom-control-input" id="switch{{ net.name }}" value="{{ net.name }}">
-                                    <label class="custom-control-label" for="switch{{ net.name }}">{{ net.name }}</label>
-                                </div>
-                                {% endfor %}
-                            </div>
-                            <h3 class="text-gray-dark">Destination Email</h3>
-                            <div class="form-group input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text" id="targetEmailRequired">*</span>
-                                </div>
-                                <input type="email" class="form-control" name="targetEmail" id="targetEmail" aria-describedby="targetEmailHelp targetEmailRequired" placeholder="Email Address" required>
-                                <span class="w-100"></span>
-                                <small id="targetEmailHelp" class="form-text text-muted">on the target network</small>
-                            </div>
-                            <h3 class="text-gray-dark">Comments</h3>
-                            <div class="form-group">
-                                <textarea class="form-control" name="comments" id="comments" placeholder="250 characters or less"></textarea>
-                            </div>
-                        </div>
-                    </div>
+        <!-- Request Queue -->
+        <div class="col-lg-4">
+          <div class="card border-secondary mb-resp bg-light">
+            <div class="card-body">
+              <h3 class="text-gray-dark text-center">Request Queue</h3>
+              <div class="file-list init">
+                <span>No files in queue.</span>
+                <small>Use the button above or drag and drop files into the indicated area.</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!--Choose Network-->
+        <div class="col-lg-4">
+          <div class="card text-center border-secondary mb-resp bg-light">
+            <div class="card-body">
+              <h3 class="text-gray-dark">Transfer To</h3>
+              <div style="display: grid; grid-template-columns: 50% 50%;">
+                {% for net in rc.networks %}
+                <div class="custom-control custom-switch text-left" style="margin: 0.5em 0;">
+                  <input type="radio" name="network" class="custom-control-input" id="switch{{ net.name }}" value="{{ net.name }}" />
+                  <label class="custom-control-label" for="switch{{ net.name }}">{{ net.name }}</label>
                 </div>
+                {% endfor %}
+              </div>
+              <h3 class="text-gray-dark">Destination Email</h3>
+              <div class="form-group input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="targetEmailRequired">*</span>
+                </div>
+                <input
+                  type="email"
+                  class="form-control"
+                  name="targetEmail"
+                  id="targetEmail"
+                  aria-describedby="targetEmailHelp targetEmailRequired"
+                  placeholder="Email Address"
+                  required
+                />
+                <span class="w-100"></span>
+                <small id="targetEmailHelp" class="form-text text-muted">on the target network</small>
+              </div>
+              <h3 class="text-gray-dark">Comments</h3>
+              <div class="form-group">
+                <textarea class="form-control" name="comments" id="comments" placeholder="250 characters or less"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- end #form-row -->
 
-            </div> <!-- end #form-row -->
-
-            <div class="row" id="button-row">
-                <div class="col-md-4"></div>
-                <div class="col-md-4 mt-5 text-center">
-                    <!-- 
+      <div class="row" id="button-row">
+        <div class="col-md-4"></div>
+        <div class="col-md-4 mt-5 text-center">
+          <!-- 
                         TODO: Make this an actual <button> with a "click"
                         eventHandler to avoid event bubble-up issues 
                     -->
-                    <button class="btn btn-secondary btn-block" role="button">Submit</button>
-                </div>
-                <div class="col-md-4"></div>
-            </div> <!-- end #button-row -->
-        </form>
-    </div>  <!-- end .container -->
+          <button class="btn btn-secondary btn-block" role="button">Submit</button>
+        </div>
+        <div class="col-md-4"></div>
+      </div>
+      <!-- end #button-row -->
+    </form>
+  </div>
+  <!-- end .container -->
 </section>
 
 <script src="{% static 'js/frontend.js' %}"></script>
 <script src="{% static 'js/process.js' %}"></script>
-{% endblock %} <!-- end content block variable -->
+{% endblock %}
+<!-- end content block variable -->
