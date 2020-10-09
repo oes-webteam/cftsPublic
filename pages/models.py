@@ -6,6 +6,22 @@ def randomize_path( instance, filename ):
   path = str( uuid.uuid4() )
   return os.path.join( 'uploads/', path, filename )
 
+class ResourceLink( models.Model ):
+  resourcelink_id = models.UUIDField( primary_key=True, default=uuid.uuid4, editable=False )
+  name = models.CharField( max_length=50 )
+  file_object = models.FileField( upload_to='resources/', blank=True, null=True )
+  url_path = models.CharField( max_length=255, blank=True )
+  sort_order = models.IntegerField()
+  @property
+  def file_name(self):
+    path_as_list = self.file_object.name.split( '/' )
+    last_two = path_as_list[-1:]
+    return '/'.join( last_two )
+  def __str__(self):
+    return self.name
+  class Meta:
+    ordering = ['sort_order']
+
 class Classification( models.Model ):
   classification_id = models.UUIDField( primary_key=True, default=uuid.uuid4, editable=settings.DEBUG )
   full_name = models.CharField( max_length=50 )

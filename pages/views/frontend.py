@@ -9,6 +9,9 @@ from pages.models import *
 
 def frontend(request):
   nets = Network.objects.all()
-  rc = { 'networks': nets }
+  resources = ResourceLink.objects.all()
+#  for rl in resources:
+#    print( rl.file_name )
+  rc = { 'networks': nets, 'resources': resources }
 
   return render(request, 'pages/frontend.html', { 'rc': rc } )

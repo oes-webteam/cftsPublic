@@ -3,8 +3,8 @@
 from django.http import  FileResponse
 
 
-def downloads(request, file):
-    filename = 'templates/partials/files/{}'.format(file)
+def resources(request, file):
+    filename = 'resources/' + file
     response = FileResponse(open(filename, 'rb'))
     return response
 

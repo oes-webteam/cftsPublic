@@ -10,7 +10,7 @@ urlpatterns = [
     path( 'urlShortner', static_views.urlShortner, name='urlShortner' ),
 
     # resources
-     path( 'downloads/<str:file>', views.downloads, name='downloads' ),
+     path( 'resources/<str:file>', views.resources, name='resources' ),
 
     # frontend
     path('frontend', views.frontend, name='frontend'),
