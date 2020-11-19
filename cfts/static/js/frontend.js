@@ -4,6 +4,7 @@ let dropArea = document.getElementById( "drop-zone" );
 let filesInput = document.getElementById( "standard-upload-files" );
 let fileQueue = [];
 let fileInfo = {};
+let addEmail = document.getElementById( "addEmail" );
 
 
 /* ****************************************** */
@@ -185,6 +186,36 @@ const removeFileFromQueue = ( e ) => {
 /* ***************************************** */
 addHighlight = ( e ) => dropArea.classList.add( 'highlight-active' );
 removeHighlight = ( e ) => dropArea.classList.remove( 'highlight-active' );
+
+
+/* ******************************* */
+/* ADD NEW DESTINATION EMAIL FIELD */
+/* ******************************* */
+const createEmailField = ( e ) => {
+  
+  preventDefaults( e );
+  let theButton = e.target;
+  let count = document.getElementsByName( 'targetEmail' ).length - 1;
+  
+//  let spacerSpan = document.createElement( 'span' );
+//  spacerSpan.classList.add( 'w-100' );
+
+  let newField = document.createElement( 'input' );
+  newField.setAttribute( 'type', 'email' );
+  newField.setAttribute( 'name', 'targetEmail' );
+  newField.setAttribute( 'id', 'destination' + count );
+  newField.setAttribute( 'placeholder', 'Email Address' );
+  newField.classList.add( 'form-control' );
+  
+  let formGroup = document.createElement( 'div' );
+  formGroup.classList.add( 'form-group', 'add-email' );
+  formGroup.appendChild( newField );
+
+  // inputGroup.insertBefore( spacerSpan, inputGroup.children[ position ] )
+  theButton.parentElement.insertAdjacentElement( "beforeBegin", formGroup );
+}
+addEmail.addEventListener( 'click', createEmailField, false );
+
 
 
 /* *************** */

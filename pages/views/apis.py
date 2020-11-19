@@ -123,8 +123,12 @@ def process ( request ):
     source_email = Email( address = form_data.get( 'userEmail' ) )
     source_email.save()
     
-    target_email = Email( address = form_data.get( 'targetEmail' ) )
-    target_email.save()
+    destination_list = form_data.get( 'targetEmail' ).split( "," )
+    target_list = []
+    for destination in destination_list:
+      target_email = Email( address = destination )
+      target_email.save()
+      target_list.append( target_email )
 
     user = User( 
       name_first = form_data.get( 'firstName' ), 
@@ -136,10 +140,10 @@ def process ( request ):
     request = Request( 
       user = user, 
       network = Network.objects.get( name = form_data.get( 'network' ) ),  
-      target_email = target_email,
       comments = form_data.get( 'comments' )
       )
     request.save()
+    request.target_email.add( *target_list )
 
     # add files to the request
     file_info =  json.loads( form_data.get( 'fileInfo' ) )

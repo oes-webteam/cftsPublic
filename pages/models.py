@@ -107,7 +107,7 @@ class Request( models.Model ):
   user = models.ForeignKey( User, on_delete=models.DO_NOTHING )
   network = models.ForeignKey( Network, on_delete=models.DO_NOTHING )
   files = models.ManyToManyField( File )
-  target_email = models.ForeignKey( Email, on_delete=models.DO_NOTHING, default=None, null=True )
+  target_email = models.ManyToManyField( Email )
   comments = models.TextField( null=True, blank=True )
   is_submitted = models.BooleanField( default=False )
   pull = models.ForeignKey( Pull, on_delete=models.DO_NOTHING, default=None, null=True, blank=True )

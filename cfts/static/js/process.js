@@ -113,23 +113,44 @@ function validateForm(form) {
     isValid = false;
   }
 
-  // target email
-  if (!(form.elements.targetEmail.value.length && checkEmail(form.elements.targetEmail.value, form.elements.network.value, "to"))) {
-    errors.push(form.elements.targetEmail);
-    isValid = false;
+  // target email(s)
+  /* form has multiple emails */
+  if( form.elements.targetEmail.length > 1 ) {
+    /* check all for validity */
+    form.elements.targetEmail.forEach( ( elem ) => {
+      if( !checkEmail( elem.value, form.elements.network.value, "to" ) ) { 
+        errors.push( elem );
+        isValid = false;
+      }
+    });  
+  } 
+  /* form has one email */
+  else if( form.elements.targetEmail.length == 1 ) {
+    if( !( form.elements.targetEmail.value.length && checkEmail( form.elements.targetEmail.value, form.elements.network.value, "to" ) ) ) {
+      errors.push( form.elements.targetEmail );
+      isValid = false;
+    }
+  } 
+  /* uhh... the field doesn't even exist, I guess??? */
+  else {
+    console.dir( form.elements.targetEmail );
+    console.log ( "WTF happened here?!" );
+    return false;
   }
 
+
+  // process errors
   if (!isValid) {
     // it's just a bunch of screwing around and explosions until you write it down (aka: log it)
-    errors.forEach((elem) => console.dir(elem));
+    errors.forEach( ( elem ) => console.dir( elem ) );
 
     // mark everything good
-    [...form.elements].forEach((elem) => elem.classList.add("is-valid"));
+    [ ...form.elements ].forEach( ( elem ) => elem.classList.add( "is-valid" ) );
 
     // mark the naughty-naughties
     errors.forEach((elem) => {
-      elem.classList.remove("is-valid");
-      elem.classList.add("is-invalid");
+      elem.classList.remove( "is-valid" );
+      elem.classList.add( "is-invalid" );
     });
   }
 
@@ -142,6 +163,21 @@ function validateForm(form) {
 function prepareFormData(form) {
   let formData = new FormData(form);
   let data = new FormData();
+
+  if( form.elements.targetEmail.length > 1 ) {
+    let emailList = '';
+    let first = true;
+    for( let email of form.elements.targetEmail ) {
+      if( first ) {
+        emailList += email.value;
+        first = false;
+      } else {  
+        emailList += ',' + email.value;
+      }
+    }
+    formData.delete( 'targetEmail' );
+    formData.append( 'targetEmail', emailList );
+  }
 
   data = prepareFileInfo(data);
   for (const [field, value] of formData.entries()) {
@@ -182,8 +218,36 @@ function prepareFileInfo(formData) {
 function successHandler(r) {
   console.dir(r);
   notifyUser("THANK YOU! Your files have been submitted. ");
+  // CLEAN UP!!
   document.getElementById("transfer-request-form").reset();
+  resetFileQueue();
+  resetAdditionalEmails();
 }
+
+function resetFileQueue() {
+  fileQueue = []; // obvs
+  fileList = document.querySelector( '.file-list' );
+  fileList.removeChild( fileList.firstChild );
+
+  let newSpan = document.createElement( 'span' );
+  let spanText = document.createTextNode( 'No files in queue.' );
+  newSpan.appendChild( spanText );
+
+  let newSmall = document.createElement( 'small' );
+  let smallText = document.createTextNode( 'Use the button to the left or drag and drop files into the indicated area.' );
+  newSmall.appendChild( smallText );
+
+  fileList.appendChild( newSpan );
+  fileList.appendChild( newSmall );
+
+  fileList.classList.add( 'init' );
+}
+
+function resetAdditionalEmails() {
+  let toRemove = document.querySelectorAll( '.add-email' );
+  for( let el of toRemove ) { el.remove(); }
+}
+
 
 /* ******************* */
 /* AJAX REQUEST FAILED */

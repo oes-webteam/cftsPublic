@@ -46,7 +46,7 @@
                 <div class="upload-console-body">
                   <div class="form-group">
                     <!-- Added DIV to add margin to btn -->
-                    <label for="standard-upload-files" class="btn btn-primary"
+                    <label for="standard-upload-files" class="btn btn-success"
                       >Upload Files
                       <input type="file" name="files[]" id="standard-upload-files" multiple />
                       <!-- <input type="submit" value="Upload files" id="standard-upload" class="form-control-file mt-2"> -->
@@ -55,7 +55,7 @@
 
                   <!--<h3>Or drag and drop files below</h3>-->
                   <div class="upload-console-drop empty" id="drop-zone">
-                    Just drag and drop files here
+                    Drag and drop files here
                   </div>
                 </div>
               </div>
@@ -70,7 +70,7 @@
               <h3 class="text-gray-dark text-center">Request Queue</h3>
               <div class="file-list init">
                 <span>No files in queue.</span>
-                <small>Use the button above or drag and drop files into the indicated area.</small>
+                <small>Use the button to the left or drag and drop files into the indicated area.</small>
               </div>
             </div>
           </div>
@@ -90,7 +90,7 @@
                 {% endfor %}
               </div>
               <h3 class="text-gray-dark">Destination Email</h3>
-              <div class="form-group input-group">
+              <div class="form-group input-group" id="targetEmailGroup">
                 <div class="input-group-prepend">
                   <span class="input-group-text" id="targetEmailRequired">*</span>
                 </div>
@@ -104,7 +104,10 @@
                   required
                 />
                 <span class="w-100"></span>
-                <small id="targetEmailHelp" class="form-text text-muted">on the target network</small>
+                <small id="targetEmailHelp" class="form-text text-muted">on the target network</small>              
+              </div>
+              <div class="form-group">
+                <a href="#" id="addEmail" class="btn btn-success">Add Email</a>
               </div>
               <h3 class="text-gray-dark">Comments</h3>
               <div class="form-group">
@@ -120,9 +123,9 @@
         <div class="col-md-4"></div>
         <div class="col-md-4 mt-5 text-center">
           <!-- 
-                        TODO: Make this an actual <button> with a "click"
-                        eventHandler to avoid event bubble-up issues 
-                    -->
+              TODO: Make this an actual <button> with a "click"
+              eventHandler to avoid event bubble-up issues 
+          -->
           <button class="btn btn-secondary btn-block" role="button">Submit</button>
         </div>
         <div class="col-md-4"></div>

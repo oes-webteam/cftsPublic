@@ -101,7 +101,7 @@ def transferRequest( request, id ):
     'user': User.objects.get( user_id = rqst.user.user_id ),
     'network': Network.objects.get( network_id = rqst.network.network_id ),
     'files': rqst.files.all(),
-    'target_email': Email.objects.get( email_id = rqst.target_email.email_id ),
+    'target_email': rqst.target_email.all(),
     'is_submitted': rqst.is_submitted,
   }
   return render( request, 'pages/transfer-request.html', { 'rc': rc } )
@@ -140,8 +140,10 @@ def createZip( request, network_name ):
       zip.write( f.file_object.path, zip_path )
 
     # create and add the target email file
-    email_file_name = str( rqst.target_email )
+    email_file_name = '_email.txt'
     fp = open( email_file_name, "w" )
+    for this_email in rqst.target_email.all():
+      fp.write( this_email.address + ';\n' )
     fp.close()
     zip.write( email_file_name, os.path.join( zip_folder, email_file_name ) )
     os.remove( email_file_name )
