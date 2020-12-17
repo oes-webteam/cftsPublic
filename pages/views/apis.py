@@ -32,14 +32,14 @@ def setReject( request ):
 
   # recreate the zip file for the pull
   someRequest = Request.objects.get( request_id = request_id[0] )
-  network_name = someRequest.network__name
-  pull_number = someRequest.pull__pull_number
+  network_name = someRequest.network.name
+  pull_number = someRequest.pull.pull_number
 
   zipPath =  os.path.join( settings.STATICFILES_DIRS[0], "files\\" ) + network_name + "_" + str( pull_number ) + ".zip"
   zip = ZipFile( zipPath, "w" )
 
   #select Requests based on pull
-  qs = Request.objects.filter( pull__pull_id = someRequest.pull__pull_id, file__rejection_reason = None )
+  qs = Request.objects.filter( pull__pull_id = someRequest.pull.pull_id, files__rejection_reason = None )
 
   # for each xfer request ...
   for rqst in qs:

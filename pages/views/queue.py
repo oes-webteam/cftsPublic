@@ -83,7 +83,7 @@ def queue( request ):
       'subject': row.subject,
       'text': row.text
     })
-
+  
   # create the request context
   rc = { 'queues': xfer_queues, 'empty': empty, 'rejections': rejections }
   

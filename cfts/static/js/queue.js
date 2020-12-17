@@ -115,17 +115,19 @@ jQuery( document ).ready( function() {
   };
 
   // REJECTION MODAL INPUT VALIDATION AND ACTION
-  const rejectFormCallback = ( data ) => {
+  const rejectFormCallback = ( theDialog ) => {
     // user input validation
     let isValid = true;
     isValid = isValid && checkSelection( "[name='reason']" );
     
     /* THE REAL WORK GOES HERE */
     if ( isValid ) {
+      let data = $( theDialog ).data().data;
+      
       let $this = $( "[name='reason'] option:selected" );
       let requests = {};
       
-      let csrftoken = getCookie('csrftoken');  
+      let csrftoken = getCookie('csrftoken');
 
       let id_list = [];
       data.forEach( ( f ) => {
@@ -141,14 +143,14 @@ jQuery( document ).ready( function() {
       const setRejectOnFiles = $.post( '/api-setreject', postData, 'json' ).then( 
         // success
         function( resp ) {
-          console.log( 'SUCCESS' );
-          console.log( 'Server response: ' + resp );
+          // console.log( 'SUCCESS' );
+          // console.log( 'Server response: ' + resp );
         },
         // fail 
         function( resp, status ) {
-          console.log( 'FAIL' );
-          console.log( 'Server response: ' + resp );
-          console.log( 'Response status: ' + status );
+          // console.log( 'FAIL' );
+          // console.log( 'Server response: ' + resp );
+          // console.log( 'Response status: ' + status );
         }
       );
 
@@ -181,13 +183,17 @@ jQuery( document ).ready( function() {
         let $anchor = $( "<a class='emailLink' target='_blank' href='mailto:" + email + "?subject=" + subject + "&body=" + body + "'></a>" );
         $( document.body ).append( $anchor );
       }
-      $( '.emailLink' ).each( function() { $(this)[0].click(); } );
-    
-      rejectDialog.close();
+      $( '.emailLink' ).each( function() { $(this)[0].click(); } );    
+      
+      // close the dialog
+      $( theDialog ).dialog( 'close' );
+      
+      // reload the page from server
+      $( "#forceReload" ).submit();
+
     } else {
       /* bad user, no cookie */
       console.log( "What did you do, Ray?" );
-
     }
   };
 
@@ -198,7 +204,8 @@ jQuery( document ).ready( function() {
     modal: true,
     buttons: {
       "Reject Files": function() { 
-        rejectFormCallback( $(this).data( 'data' ) );
+        let theDialog = this;
+        rejectFormCallback( theDialog );
       },
       Cancel: () => rejectDialog.dialog( 'close' )
     },
@@ -210,8 +217,7 @@ jQuery( document ).ready( function() {
 
   const rejectForm = rejectDialog.find( 'form' ).submit( e => {
     e.preventDefault();
-    console.log( rejectDialog );
-    rejectFormCallback( rejectDialog.data() );
+    rejectFormCallback( rejectDialog );
   })
 
   const showComments = ( e ) => {
