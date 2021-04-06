@@ -1,5 +1,6 @@
 from .frontend import *
 from .queue import *
+from .scan import *
 from .pulls import *
 from .archive import *
 from .apis import *

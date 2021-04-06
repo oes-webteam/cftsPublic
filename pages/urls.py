@@ -20,6 +20,9 @@ urlpatterns = [
     path( 'transfer-request/<uuid:id>', views.transferRequest, name='transfer-request' ),
     path( 'create-zip/<str:network_name>', views.createZip, name='create-zip' ),
     
+    # scan
+    path( 'scan', views.scan, name="scan" ),
+    
     # pulls
     path( 'pulls', views.pulls, name='pulls' ),
     path( 'pulls-oneeye/<uuid:id>', views.pullsOneEye, name='pulls-oneeye' ),
