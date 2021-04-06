@@ -1,0 +1,12 @@
+#scan-results { display: none; }
+
+#scan-results h3 {
+  color: red;
+}
+
+#scan-results > ul > li {
+  border: 1px dashed red;
+  border-radius: 1.67ex;
+  max-width: 50vw;
+  min-width: 50vmax;
+}

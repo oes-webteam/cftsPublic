@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load util %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/scan.css' %}">
+
+<section class="py-4">
+
+  <form action="#" id="scanForm" method="post" enctype="multipart/form-data" novalidate="true">
+    <!-- file input -->
+    <input type="file" name="toScan" />
+    <input type="submit" />
+  </form>
+
+</section>
+
+<section id="scan-results">
+  <h3>Scan contained the following findings</h3>
+  <ul id="rootList" class="list-group">
+    <li class="root-item list-group-item m-2 p-3">
+      <ul class="scanned-list">
+        <li class="scanned-item">
+
+        </li>
+      </ul>
+    </li>
+  </ul>
+</section>
+
+<!-- Add client side javascript checks to verify the file being uploaded is what it says it is -->
+<!-- I mean, we should be able to trust our own analysts... but they're also users. And I don't -->
+<!-- trust users any further than I can shot put them. -->
+<script src="{% static 'js/scan.js' %}"></script>
+{% endblock %}
+    
