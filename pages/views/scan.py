@@ -97,16 +97,16 @@ def scanFile( text_file ):
   try:
     with open( text_file, "r", encoding="utf-8") as f:
       f_content = f.read()
+      result = { 
+        'file': text_file,
+        'findings': []
+      }
       for compiled_reg in reg_lst:  
-        found = compiled_reg.findall( f_content )
-        if len( found ):
-          result = { 
-            'file': '',
-            'findings': []
-          }
-          result['file'] = text_file
-          for flag in found:
-            result['findings'].append( flag )
+        found = re.finditer( compiled_reg, f_content )
+        for match in found:
+          result['findings'].append( '%s <br/> %s (%s)' % ( match.string, match.group(), match.start() ) )
+      if not len( result['findings'] ):
+        result = None
     
   except UnicodeDecodeError:
     # Found non-text data
