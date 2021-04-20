@@ -78,6 +78,7 @@ class User( models.Model ):
   name_last = models.CharField( max_length=50 )
   email = models.ForeignKey( Email, on_delete=models.DO_NOTHING )
   notes = models.TextField( null=True, blank=True )
+  is_centcom = models.BooleanField( default=False )
   class Meta:
     ordering = ['name_last']
   def __str__(self):
@@ -114,7 +115,7 @@ class Request( models.Model ):
   class Meta:
     ordering = ['-date_created']
   def __str__(self):
-    formatted_date_created = self.date_created.strftime("%d%b %H:%M:%S");
+    formatted_date_created = self.date_created.strftime("%d%b %H:%M:%S")
     return self.user.__str__() + ' (' + formatted_date_created + ')'
 
 #  def pending_by_network( self, netName ):
