@@ -133,7 +133,8 @@ def process ( request ):
     user = User( 
       name_first = form_data.get( 'firstName' ), 
       name_last = form_data.get( 'lastName' ), 
-      email = source_email 
+      email = source_email,
+      is_centcom = form_data.get( 'isCentcom' )
       )
     user.save()
 
