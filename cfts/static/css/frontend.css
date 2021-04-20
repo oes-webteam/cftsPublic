@@ -23,6 +23,11 @@ label.custom-control-label {
 	font-weight: bold;
 }
 
+input[type="checkbox"] { 
+  margin-top: 0.5rem;
+  transform: scale(2) !important; 
+}
+
 /* file input button */
 /* hide the standard file input visually, but keep it in the DOM for accessability and validation */
 #standard-upload-files {
