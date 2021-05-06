@@ -33,6 +33,9 @@ def queue( request ):
     "There's nothing here? Huh. That's gotta be an error ... " 
   ] )
 
+  ########################
+  # FOR EACH NETWORK ... #
+  ########################
   for net in ds_networks:
     # get information about the last pull that was done on each network
     last_pull = Pull.objects.values( 
