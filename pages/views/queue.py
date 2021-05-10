@@ -49,7 +49,7 @@ def queue(request):
         ds_requests = Request.objects.filter(
             network__name=net.name,
             is_submitted=True,
-            pull__date_complete__isnull=True
+            pull__date_complete__isnull=True,
             # , files__in=File.objects.filter( rejection_reason__isnull=True )
         ).order_by('-date_created')
 
@@ -107,6 +107,8 @@ def transferRequest(request, id):
         'files': rqst.files.all(),
         'target_email': rqst.target_email.all(),
         'is_submitted': rqst.is_submitted,
+        'is_centcom': User.objects.get(user_id=rqst.user.user_id).is_centcom
+
     }
     return render(request, 'pages/transfer-request.html', {'rc': rc})
 
