@@ -47,7 +47,10 @@
                             {% endfor %}
                         </div>
                         <div class="create-pull">
-                            <button class="btn btn-primary pull-button{% if network.pending.count == 0 %} disabled{% endif %}" id="pull{{network.name}}">Create {{ network.name }} Pull</button>                                 
+                            <button class="btn btn-primary pull-button{% if network.pending.count == 0 %} disabled{% endif %}" id="pull{{network.name}}">Create {{ network.name }} Pull</button> 
+                            <button class="btn btn-primary pull-button centcom{% if network.pending.count == 0 %} disabled{% endif %}" id="pull{{network.name}}">Pull only Centcom</button> 
+                      
+                            
                         </div>
                         {% for lp in network.last_pull %}
                         <div class="download-block">

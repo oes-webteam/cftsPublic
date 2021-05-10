@@ -114,7 +114,7 @@ def transferRequest(request, id):
 
 
 @login_required
-def createZip(request, network_name):
+def createZip(request, network_name, isCentcom):
     # create pull
     maxPull = Pull.objects.aggregate(Max('pull_number'))
     pull_number = 1 if maxPull['pull_number__max'] == None else maxPull['pull_number__max'] + 1
@@ -133,8 +133,12 @@ def createZip(request, network_name):
     zip = ZipFile(zipPath, "w")
 
     # select Requests based on network and status
-    qs = Request.objects.filter(network__name=network_name, pull=None)
-
+    if(isCentcom == "True"):
+        qs = Request.objects.filter(
+            network__name=network_name, pull=None, user__is_centcom=True)
+    elif(isCentcom == "False"):
+        qs = Request.objects.filter(
+            network__name=network_name, pull=None)
     # for each xfer request ...
     for rqst in qs:
         zip_folder = str(rqst.user)
