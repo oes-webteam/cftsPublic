@@ -82,7 +82,8 @@ function validateForm(form) {
   });
 
   // name
-  if (!(form.elements.firstName.value.length || form.elements.lastName.value.length)) {
+  if (!(form.elements.firstName.value.length && form.elements.lastName.value.length)) {
+    console.log("missing names")
     errors.push(form.elements.firstName, form.elements.lastName);
     isValid = false;
   }
