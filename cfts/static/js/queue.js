@@ -56,11 +56,14 @@ jQuery( document ).ready( function() {
           alert( 'Pull complete. New ZIP file created for ' + netName + '.  Click the download button to retrieve it.' );
           
           // prevent a second pull
-          pullBtn.addClass( 'disabled' );
+          //pullBtn.addClass( 'disabled' );
+          $('.pull-button').addClass('disabled');
 
           // update link on page to avoid unnecessary refresh 
           downloadBtn = $( '#dl' + netName );
           downloadBtn.attr( 'href', '/static/files/' + netName + '_' + resp.pullNumber + '.zip' );
+          downloadBtn.text('Download Current '+ netName + ' Zip')
+          downloadBtn.attr('hidden', false);
           downloadBtn.focus();
 
           // update last pulled info
