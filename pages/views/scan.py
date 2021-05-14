@@ -10,6 +10,10 @@ from django.contrib.auth.decorators import login_required
 # responses
 from django.shortcuts import render
 from django.http import JsonResponse
+
+# pdf parsing
+from io import StringIO
+from pdfminer.high_level import *
 #====================================================================
 
 @login_required
@@ -30,7 +34,7 @@ def scan( request ):
       results = runScan()
 
     # clean up after yourself
-    cleanup( settings.SCANTOOL_DIR )  
+    cleanup(settings.SCANTOOL_DIR)
     return JsonResponse( results, safe=False )
 
   # GET
@@ -51,6 +55,18 @@ def runScan():
 
       if( ext in office_filetype_list ):
         file_results = scanOfficeFile( file_path )
+      elif(ext == '.pdf'):
+        textFile = open(root+"\\"+temp+".txt", "w")
+        pdf2Text = StringIO()
+        with open(file_path, 'rb') as pdf:
+          extract_text_to_fp(pdf, pdf2Text, output_type='text', codec='utf-8')
+          textFile.write(pdf2Text.getvalue().strip())
+          textFile.close()
+
+        text_path = os.path.join(root+"\\"+temp+".txt")
+        file_results = scanFile(text_path)
+        file_results['file'] = file_path
+
       else:
         file_results = scanFile( file_path )
 
@@ -60,7 +76,7 @@ def runScan():
         result['found'] = file_results
         scan_results.append( result )  
 
-##  print( scan_results )
+  #print(scan_results)
   return scan_results
 
 def scanOfficeFile( office_file ):
@@ -81,12 +97,12 @@ def scanOfficeFile( office_file ):
         results.append( findings )
   
   # clean up after yourself
-  cleanup( settings.SCANTOOL_TEMPDIR )  
+  #cleanup( settings.SCANTOOL_TEMPDIR )
   #done
   return results
 
 
-def scanFile( text_file ):
+def scanFile(text_file):
   result = None
   
   dirty_word_list =  [ "SECRET", "S//", "NOFORN", "C//", "CONFIDENTIAL", "PRV", "LVY" ]
@@ -104,7 +120,9 @@ def scanFile( text_file ):
       for compiled_reg in reg_lst:  
         found = re.finditer( compiled_reg, f_content )
         for match in found:
-          result['findings'].append( '%s <br/> %s (%s)' % ( match.string, match.group(), match.start() ) )
+          #result['findings'].append( '%s <br/> %s (%s)' % ( match.string, match.group(), match.start() ) )
+          result['findings'].append(
+              'This file contains the term: %s' % (match.group()))
       if not len( result['findings'] ):
         result = None
     
