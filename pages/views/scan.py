@@ -61,7 +61,6 @@ def runScan():
             if(ext in office_filetype_list):
                 file_results = scanOfficeFile(file_path)
             elif(ext == '.pdf'):
-                print(filename)
                 textFile = open(root+"\\"+temp+".txt", "w")
                 pdf2Text = StringIO()
                 with open(file_path, 'rb') as pdf:
@@ -76,7 +75,6 @@ def runScan():
                 os.remove(text_path)
 
             else:
-                print(filename)
                 file_results = scanFile(file_path)
 
             if(file_results is not None):
