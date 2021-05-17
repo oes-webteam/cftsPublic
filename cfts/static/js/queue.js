@@ -165,6 +165,7 @@ jQuery( document ).ready( function() {
           requests[ selectedFile.requestID ].files.push( { 'id': selectedFile.fileID, 'name': selectedFile.fileName } );
       });
 
+      let reject = 0
       // for each request ...
       for( r in requests ) {
         const email = requests[r].email;
@@ -180,11 +181,14 @@ jQuery( document ).ready( function() {
         body = body.replace( /<br>/g, '%0A' );
 
         // ... create an email with that user's files
-        let $anchor = $( "<a class='emailLink' target='_blank' href='mailto:" + email + "?subject=" + subject + "&body=" + body + "'></a>" );
+        let $anchor = $( "<a class='emailLink" + reject + "' target='_blank' href='mailto:" + email + "?subject=" + subject + "&body=" + body + "'></a>" );
         $( document.body ).append( $anchor );
+        window.open($('.emailLink'+reject).attr('href'),"reject"+reject)
+        reject++;
       }
-      $( '.emailLink' ).each( function() { $(this)[0].click(); } );    
-      
+
+      //$( '.emailLink' ).each( function() { $(this)[0].click(); } );  
+     
       // close the dialog
       $( theDialog ).dialog( 'close' );
       
