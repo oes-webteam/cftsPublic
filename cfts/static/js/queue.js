@@ -73,6 +73,8 @@ jQuery( document ).ready( function() {
           $( '.last-pull-info .date-pulled' ).text( resp.datePulled );
           $( '.last-pull-info .user-pulled' ).text( resp.userPulled );
 
+          $( "#forceReload" ).submit();
+
         } else {
             console.error( 'Shit broke, yo.' );
         }
