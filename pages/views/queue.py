@@ -102,6 +102,7 @@ def transferRequest( request, id ):
     'request_id': rqst.request_id,
     'date_created': rqst.date_created,
     'user': User.objects.get( user_id = rqst.user.user_id ),
+    'phone': User.objects.get(user_id=rqst.user.user_id).phone,
     'network': Network.objects.get( network_id = rqst.network.network_id ),
     'files': rqst.files.all(),
     'target_email': rqst.target_email.all(),
