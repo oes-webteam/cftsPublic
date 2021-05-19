@@ -156,6 +156,7 @@ class Request(models.Model):
     is_submitted = models.BooleanField(default=False)
     pull = models.ForeignKey(
         Pull, on_delete=models.DO_NOTHING, default=None, null=True, blank=True)
+    centcom_pull = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['-date_created']

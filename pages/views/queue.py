@@ -136,6 +136,9 @@ def createZip(request, network_name, isCentcom):
     if(isCentcom == "True"):
         qs = Request.objects.filter(
             network__name=network_name, pull=None, user__is_centcom=True)
+        for rqst in qs:
+          rqst.centcom_pull = True
+
     elif(isCentcom == "False"):
         qs = Request.objects.filter(
             network__name=network_name, pull=None)

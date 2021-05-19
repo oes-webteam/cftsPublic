@@ -37,7 +37,20 @@
   color: #BBB; 
   font-style: italic; 
 }
-.queue-form tr.pending a { color: #BBD0FF; }
+.queue-form tr.pending a,
+.queue-form tr.centcom .request-comments a  { color: #BBD0FF; }
+
+.queue-form tr.centcom, 
+.queue-form tr.request-header.centcom { 
+  background-color: #FCD96B; 
+  color: #BBB; 
+  font-style: italic; 
+}
+
+.queue-form tr.centcom a,
+.queue-form tr.centcom .request-submitted
+{ color: #07328f; }
+
 
 .queue-form tr.rejected, .queue-form tr.rejected a { color: #DD0000; }
 
