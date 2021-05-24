@@ -136,7 +136,7 @@ class Pull(models.Model):
     user_complete = models.ForeignKey(
         settings.AUTH_USER_MODEL, related_name='request_user_complete', on_delete=models.DO_NOTHING, null=True, blank=True)
     disc_number = models.IntegerField(null=True, blank=True)
-
+    centcom_pull = models.BooleanField(default=False)
     class Meta:
         ordering = ['-date_pulled']
 

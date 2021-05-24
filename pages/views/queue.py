@@ -119,12 +119,21 @@ def createZip(request, network_name, isCentcom):
     maxPull = Pull.objects.aggregate(Max('pull_number'))
     pull_number = 1 if maxPull['pull_number__max'] == None else maxPull['pull_number__max'] + 1
 
-    new_pull = Pull(
-        pull_number=pull_number,
-        network=Network.objects.get(name=network_name),
-        date_pulled=datetime.datetime.now(),
-        user_pulled=request.user,
-    )
+    if isCentcom == "True":
+        new_pull = Pull(
+            pull_number=pull_number,
+            network=Network.objects.get(name=network_name),
+            date_pulled=datetime.datetime.now(),
+            user_pulled=request.user,
+            centcom_pull=True
+        )
+    else:
+        new_pull = Pull(
+            pull_number=pull_number,
+            network=Network.objects.get(name=network_name),
+            date_pulled=datetime.datetime.now(),
+            user_pulled=request.user,
+        )
     new_pull.save()
 
     # create/overwrite zip file

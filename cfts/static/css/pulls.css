@@ -20,7 +20,10 @@
   padding: 15px; 
   position: relative;
 }
-.grid-column > li.to-twoeye { border-color: rgb(225,185,51); }
+
+
+.grid-column > li.centcom{  background-color: #ffe79e;}
+.grid-column > li.to-twoeye { border-color: rgb(255, 208, 0); }
 .grid-column > li.to-complete { border-color: rgb(51,205,51); }
 .grid-column > li.is-done { 
   background-color: rgb(225,225,225); 
@@ -29,7 +32,7 @@
 }
 
 .grid-column > li:hover {
-  background-color: rgb(255,238,170);
+  background-color: #bebebe;
 }
 .grid-column > li > ul { margin: 0; padding: 0; }
 .grid-column > li > ul > li { list-style: none; }
