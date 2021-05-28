@@ -120,13 +120,22 @@ def process ( request ):
     form_files = request.FILES
 
     # use the form data to create the necessary records for the request
-    source_email = Email( address = form_data.get( 'userEmail' ) )
+    try:
+      source_email = Email.objects.filter(
+          address=form_data.get('userEmail'))[0]
+    except IndexError:
+      source_email = Email(address=form_data.get('userEmail'))
+
     source_email.save()
     
     destination_list = form_data.get( 'targetEmail' ).split( "," )
     target_list = []
     for destination in destination_list:
-      target_email = Email( address = destination )
+      try:
+        target_email = Email.objects.filter(address=destination)[0]
+      except IndexError:
+        target_email = Email(address=destination)
+
       target_email.save()
       target_list.append( target_email )
 
