@@ -17,6 +17,9 @@ from django.http import JsonResponse, HttpResponseRedirect # , HttpResponse, Fil
 
 # model/database stuff
 from pages.models import *
+
+# smartcard stuff
+import chilkat2
 #====================================================================
 
 @login_required
@@ -117,6 +120,7 @@ def process ( request ):
   
   if request.method == 'POST':
     form_data = request.POST
+    print(form_data)
     form_files = request.FILES
 
     # use the form data to create the necessary records for the request
@@ -134,7 +138,8 @@ def process ( request ):
       name_first = form_data.get( 'firstName' ), 
       name_last = form_data.get( 'lastName' ), 
       email = source_email,
-      is_centcom = form_data.get( 'isCentcom' )
+      is_centcom=form_data.get('isCentcom'),
+      user_identifier=form_data.get('userID')
       )
     user.save()
 
@@ -168,3 +173,108 @@ def process ( request ):
 
   return JsonResponse( resp )
 
+
+def cardAuth(request):
+  user = {}
+  authAttempts = request.GET.get('authAttempts')
+  cardPIN = request.GET.get('cardPIN')
+  userInfo = authGetCerts(cardPIN, authAttempts)
+
+  if userInfo == False:
+    correctPIN = False
+  else:
+    user = verifyUserInfo(userInfo)
+    correctPIN = True
+
+  resp = {'status': 'success',
+          'authAttempts': authAttempts,
+          'correctPIN': correctPIN,
+          'user': user
+          }
+  return JsonResponse(resp)
+
+
+##################################################################
+store = chilkat2.CertStore()
+
+
+cspName = ""
+store.OpenSmartcard(cspName)
+
+
+def authGetCerts(cardPIN, authAttempts):
+    #print("-------------------------------------------------")
+    userInfo = []
+    i = 0
+    while(i < store.NumCertificates):
+        try:
+            cert = store.GetCertificate(i)
+            cert.SmartCardPin = cardPIN
+
+            authStatus = cert.CheckSmartCardPin()
+            if authStatus == 1:
+                print("Correct PIN")
+                if cert.SubjectCN != "":
+                    #print("Cert #%d loaded from smartcard: " % i)
+                    #print("CN: " + cert.SubjectCN)
+                    dodID = cert.SubjectCN.split(".")
+                    user = {
+                        "firstName": dodID[1],
+                        "lastName": dodID[0],
+                        "ID": cert.SubjectCN,
+                        "Email": ""
+                    }
+
+                    #print("DoD ID: " + dodID[-1])
+                    #print("Alt Name: " + cert.SubjectAlternativeName.split(">")
+                    #       [3].split("<")[0])
+                    user["Email"] = cert.SubjectAlternativeName.split(">")[
+                        3].split("<")[0]
+                    userInfo.append(user)
+
+            elif authStatus == 0:
+                print("Incorrect PIN")
+                #print("-------------------------------------------------")
+                # if authAttempts > 0:
+                #     print("You have %s PIN attemtps left" % authAttempts)
+                # else:
+                return False
+
+            elif authStatus < 0:
+                print("Smartcard does not support a PIN")
+
+        except UnicodeDecodeError:
+            pass
+
+        #print("-------------------------------------------------")
+        i = i + 1
+    return userInfo
+
+
+def verifyUserInfo(userInfo):
+  differentID = False
+  i = 0
+  while(i < len(userInfo)):
+      try:
+          if(userInfo[i] != userInfo[i+1]):
+              differentID = True
+          i = i + 1
+      except(IndexError):
+          break
+
+  if userInfo != []:
+      if differentID == True:
+          print("User info not uniform.")
+      else:
+          # print("All user info is the same")
+          # print("First Name:", userInfo[0]["firstName"])
+          # print("Last Name:", userInfo[0]["lastName"])
+          # print("DoD ID:", userInfo[0]["ID"])
+          # print("Email: ", userInfo[0]["Email"])
+          user = {
+              "firstName": userInfo[0]["firstName"],
+              "lastName": userInfo[0]["lastName"],
+              "ID": userInfo[0]["ID"],
+              "Email": userInfo[0]["Email"]
+          }
+          return user

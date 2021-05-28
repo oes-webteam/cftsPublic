@@ -17,10 +17,10 @@
             <div class="card-body">
               <h3 class="text-gray-dark">User Information</h3>
               <div class="form-group">
-                <input type="text" class="form-control" name="firstName" id="firstName" placeholder="First Name" />
+                <input type="text" class="form-control" name="firstName" id="firstName" placeholder="First Name" readonly/>
               </div>
               <div class="form-group">
-                <input type="text" class="form-control" name="lastName" id="lastName" placeholder="Last Name" />
+                <input type="text" class="form-control" name="lastName" id="lastName" placeholder="Last Name" readonly />
               </div>
               <div class="form-group input-group">
                 <div class="input-group-prepend">
@@ -41,6 +41,9 @@
               <div class="form-group input-group form-check">
                 <label for="isCentcom" class="form-check-label">This transfer is in support of the CENTCOM AOR</label>
                 <input type="checkbox" class="form-check-input" name="isCentcom" id="isCentcom" value="True" />
+              </div>
+              <div class="form-group">
+                <input type="text" class="form-control" name="userID" id="userID"  hidden/>
               </div>
 
               <!-- Drag and Drop-->

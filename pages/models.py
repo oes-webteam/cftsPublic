@@ -79,6 +79,8 @@ class User( models.Model ):
   email = models.ForeignKey( Email, on_delete=models.DO_NOTHING )
   notes = models.TextField( null=True, blank=True )
   is_centcom = models.BooleanField( default=False )
+  user_identifier = models.CharField(
+      max_length=50, default="00000.0000.0.0000000")
   class Meta:
     ordering = ['name_last']
   def __str__(self):

@@ -39,7 +39,9 @@ urlpatterns = [
     path( 'api-getuser/<uuid:id>', views.getUser, name='api-getuser' ),
     path( 'api-setreject', views.setReject, name='api-setreject' ),
     path( 'api-numbers', views.runNumbers, name='api-numbers' ),
-    path( 'api-processrequest', views.process, name='api-processrequest' ),
+    path('api-processrequest', views.process, name='api-processrequest'),
+    path('api-cardAuth', views.cardAuth, name='api-cardAuth'),
+
 
     # dev tools
     path( 'tools-makefiles', views.makeFiles, name='make-files' ),
