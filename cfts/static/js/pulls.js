@@ -42,7 +42,6 @@ jQuery( document ).ready( function() {
 
     url = '/pulls-done/' + $this.attr( 'href' ) + '/' + cd;
     success = ( resp ) => {
-        console.log(resp);
         alert( "Pull id " + resp.id + " marked as 'Transfer Complete'." );
         location.reload();        
     };
