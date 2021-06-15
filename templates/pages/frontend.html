@@ -4,6 +4,8 @@
 <!-- begin content block variable -->
 <link rel="stylesheet" href="{% static 'css/frontend.css' %}" />
 
+{% csrf_token %}
+
 <!--Cards Start Here -->
 <section id="boxes" class="py-5">
   <div class="container">
@@ -17,10 +19,10 @@
             <div class="card-body">
               <h3 class="text-gray-dark">User Information</h3>
               <div class="form-group">
-                <input type="text" class="form-control" name="firstName" id="firstName" placeholder="First Name" readonly/>
+                <input type="text" class="form-control" name="firstName" id="firstName" placeholder= "First Name" {% if rc.cert %}readonly{% endif %} />
               </div>
               <div class="form-group">
-                <input type="text" class="form-control" name="lastName" id="lastName" placeholder="Last Name" readonly />
+                <input type="text" class="form-control" name="lastName" id="lastName" placeholder="Last Name" {% if rc.cert %}readonly{% endif %} />
               </div>
               <div class="form-group input-group">
                 <div class="input-group-prepend">
@@ -38,6 +40,7 @@
                 <span class="w-100"></span>
                 <small id="userEmailHelp" class="form-text text-muted">on this network</small>
               </div>
+
               <div class="form-group input-group form-check">
                 <label for="isCentcom" class="form-check-label">This transfer is in support of the CENTCOM AOR</label>
                 <input type="checkbox" class="form-check-input" name="isCentcom" id="isCentcom" value="True" />
@@ -143,6 +146,7 @@
   <!-- end .container -->
 </section>
 
+<script> var cert = "{{rc.cert}}"; </script>
 <script src="{% static 'js/frontend.js' %}"></script>
 <script src="{% static 'js/process.js' %}"></script>
 {% endblock %}

@@ -6,45 +6,19 @@ let fileQueue = [];
 let fileInfo = {};
 let addEmail = document.getElementById( "addEmail" );
 
-// Add the CSRF token to ajax requests
-$.ajaxSetup({
-  beforeSend: function (xhr, settings) {
-    xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
-  },
-});
 
-function authCardUser(cardPIN, authAttempts){
-  if(cardPIN == 0){
-  cardPIN = prompt("Enter Smart Card PIN: ");
-}
-  data = {cardPIN: cardPIN, authAttempts: authAttempts}
-
-  $.getJSON("api-cardAuth", data,
-    function (data, textStatus, jqXHR) {
-      getUserCerts(data)
-    }
-  )
-  }
-
-function getUserCerts( response ){
-  //console.log(response)
-  user = response.user
-  authAttempts = response.authAttempts - 1
-  if(response.correctPIN == true){
-    //alert("Correct PIN")
-    //console.log(user)
-    $("#firstName").val(user.firstName)
-    $("#lastName").val(user.lastName)
-    $("#userEmail").val(user.Email)
-    $("#userID").val(user.ID)
-  }
-  else if(response.correctPIN == false && response.authAttempts>0){
-    authCardUser(prompt(`Incorrect PIN, you have ${authAttempts} attempts remaining.\n\ Enter Smart Card PIN:` ),authAttempts)
-  }
-  }
-
-authCardUser(0,3)
-
+/* *************************************************** */
+/* GET USER CERT INFORMATION FROM VAR IN FRONTEND.HTML */
+/* *************************************************** */
+  // console.log(cert)
+  subject = cert.split("=")
+  subject = subject[subject.length-1]
+  // console.log(subject)
+  user = subject.split(".")
+  // console.log(user)
+  $("#firstName").val(user[1])
+  $("#lastName").val(user[0]) 
+  $("#userID").val(subject)
 
 /* ****************************************** */
 /* USER NOTIFICATION (NEEDS VAST IMPROVEMENT) */

@@ -8,13 +8,6 @@
 xferForm = document.querySelector("#transfer-request-form");
 xferForm.addEventListener("submit", process, false);
 
-// Add the CSRF token to ajax requests
-$.ajaxSetup({
-  beforeSend: function (xhr, settings) {
-    xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
-  },
-});
-
 /* **************** */
 /* EMAIL VALIDATION */
 /* **************** */
@@ -263,6 +256,8 @@ function failHandler(r, s) {
   );
 }
 
+
+
 /* ***************************************************************** */
 /* THE ROOT FORM PROCESSING FUNCTION (EVERYTHING ELSE SUPPORTS THIS) */
 /* ***************************************************************** */
@@ -281,6 +276,15 @@ function process(e) {
     updateFileInfo();
 
     let prepData = prepareFormData(xferForm);
+
+    
+      //Add the CSRF token to ajax requests
+     $.ajaxSetup({
+       beforeSend: function (xhr, settings) {
+         xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+       },
+     });
+
 
     ajaxSettings = {
       url: "api-processrequest",
