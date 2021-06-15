@@ -47,7 +47,10 @@
                             {% endfor %}
                         </div>
                         <div class="create-pull">
-                            <button class="btn btn-primary pull-button{% if network.pending.count == 0 %} disabled{% endif %}" id="pull{{network.name}}">Create {{ network.name }} Pull</button>                                 
+                            <button class="btn btn-primary pull-button{% if network.pending.count == 0 %} disabled{% endif %}" id="pull{{network.name}}">Create {{ network.name }} Pull</button> 
+                            <button class="btn btn-warning pull-button centcom{% if network.pending.count == 0 %} disabled{% endif %}" id="pull{{network.name}}">Pull only Centcom</button> 
+                      
+                            
                         </div>
                         {% for lp in network.last_pull %}
                         <div class="download-block">
@@ -65,7 +68,7 @@
                             <col width="20%" />
                         </colgroup>
                         {% for request in network.q %}
-                        <tr class="request-header{% if request.pull != None %} pending{% endif %}">
+                        <tr class="request-header{% if request.pull != None %} pending{% endif %} {% if request.centcom_pull %}centcom{% endif %}">
                             <td><a href="{% url 'transfer-request' id=request.request_id %}">{{ request.user }}</a></td> <!-- link to request view -->
                             <td{% if request.comments != None %} class="request-comments"> <a href="#" class="btn btn-primary comments">Show/Hide Comments</a> {% else %}>{% endif %}</td>
                             <td class="request-submitted">Submitted: {{ request.date_created|date:'db'|upper }} @ {{ request.date_created|time:'Hi' }}</td>

@@ -44,7 +44,13 @@ jQuery( document ).ready( function() {
     pullBtn = $( e.target );
     buttonID = pullBtn.attr( 'id' );
     netName = buttonID.substr( 4 );
-    let url = '/create-zip/' + netName;
+    if(pullBtn.hasClass('centcom')){
+      isCentcom = "True"
+    }
+    else{
+      isCentcom = "False"
+    }
+    let url = '/create-zip/' + netName +'/'+ isCentcom;
     
     if( $( e.target ).hasClass( 'disabled' ) ) {
       alert( 'There are no pending transfer requests to pull for this network.' )
@@ -66,6 +72,8 @@ jQuery( document ).ready( function() {
           // update last pulled info
           $( '.last-pull-info .date-pulled' ).text( resp.datePulled );
           $( '.last-pull-info .user-pulled' ).text( resp.userPulled );
+
+          $( "#forceReload" ).submit();
 
         } else {
             console.error( 'Shit broke, yo.' );

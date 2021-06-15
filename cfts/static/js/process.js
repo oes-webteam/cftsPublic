@@ -115,7 +115,7 @@ function validateForm(form) {
 
   // target email(s)
   /* form has multiple emails */
-  if( form.elements.targetEmail.length > 1 ) {
+  if( typeof form.elements.targetEmail.length != 'undefined' && form.elements.targetEmail.length > 1 ) {
     /* check all for validity */
     form.elements.targetEmail.forEach( ( elem ) => {
       if( !checkEmail( elem.value, form.elements.network.value, "to" ) ) { 
@@ -125,7 +125,7 @@ function validateForm(form) {
     });  
   } 
   /* form has one email */
-  else if( form.elements.targetEmail.length == 1 ) {
+  else if( typeof form.elements.targetEmail != 'undefined' ) {
     if( !( form.elements.targetEmail.value.length && checkEmail( form.elements.targetEmail.value, form.elements.network.value, "to" ) ) ) {
       errors.push( form.elements.targetEmail );
       isValid = false;
@@ -134,6 +134,7 @@ function validateForm(form) {
   /* uhh... the field doesn't even exist, I guess??? */
   else {
     console.dir( form.elements.targetEmail );
+    console.log( form.elements.targetEmail.length );
     console.log ( "WTF happened here?!" );
     return false;
   }
@@ -177,6 +178,15 @@ function prepareFormData(form) {
     }
     formData.delete( 'targetEmail' );
     formData.append( 'targetEmail', emailList );
+  }
+
+  if(form.elements.isCentcom.checked == false){
+    formData.delete('isCentcom');
+    formData.append('isCentcom', "False");
+  }else{
+    formData.delete('isCentcom');
+    formData.append('isCentcom', "True");
+
   }
 
   data = prepareFileInfo(data);
