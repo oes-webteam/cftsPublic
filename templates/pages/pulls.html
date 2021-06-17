@@ -11,9 +11,9 @@
   <ul class="grid-column" style="grid-column: {{ forloop.counter|add:1 }}">
   {% for pull in net %}
     {% if forloop.counter0 == 0 %}<h3 class="grid-column-header">{{ pull.pull_network }}</h3>{% endif %}
-    <li class="{% if pull.date_complete != None %}is-done{% elif pull.date_twoeye != None %}to-complete{% elif pull.date_oneeye != None %}to-twoeye{% endif%}">
+    <li class="{% if pull.date_complete != None %}is-done{% elif pull.date_twoeye != None %}to-complete{% elif pull.date_oneeye != None %}to-twoeye{% endif %} {% if pull.centcom_pull %}centcom{% endif %}">
       <ul>
-        <li><strong>{{ pull.pull_network }}_{{ pull.pull_number }}</strong></li>
+        <li><strong>{{ pull.pull_network }}_{{ pull.pull_number }} {% if pull.centcom_pull %}Centcom Only{% endif %}</strong></li>
         <li>{{ pull.pull_date }}</li>
         <li>{{ pull.pull_user }}</li>
       </ul>

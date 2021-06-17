@@ -1,5 +1,6 @@
 window.document.title = "CFTS -- Scan Tool";
 scanForm = document.querySelector( "#scanForm" );
+firstScan = true
 
 // Add the CSRF token to ajax requests
 $.ajaxSetup({
@@ -51,7 +52,10 @@ const processResults = function( results ) {
     }
     
     section.style.display = "block";
-    rootList.removeChild( rootItem );
+    if(firstScan == true){
+      rootList.removeChild( rootItem );
+      firstScan = false;
+    };
 
   } catch ( err ) {
     console.log( err.message );
