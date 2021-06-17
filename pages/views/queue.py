@@ -49,7 +49,7 @@ def queue(request):
         ds_requests = Request.objects.filter(
             network__name=net.name,
             is_submitted=True,
-            pull__date_complete__isnull=True,
+            pull__date_complete__isnull=True
             # , files__in=File.objects.filter( rejection_reason__isnull=True )
         ).order_by('-date_created')
 
