@@ -146,7 +146,10 @@
   <!-- end .container -->
 </section>
 
-<script> var cert = "{{rc.cert}}"; </script>
+<script> 
+  var cert = "{{rc.cert}}"; 
+  var userHash = "{{rc.userHash}}";
+</script>
 <script src="{% static 'js/frontend.js' %}"></script>
 <script src="{% static 'js/process.js' %}"></script>
 {% endblock %}

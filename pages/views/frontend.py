@@ -1,4 +1,6 @@
 # ====================================================================
+# crypto
+import hashlib
 # responses
 from django.shortcuts import render
 from django.http import HttpResponse
@@ -15,7 +17,11 @@ def frontend(request):
     resources = ResourceLink.objects.all()
     try:
         cert = request.META['CERT_SUBJECT']
-        rc = {'networks': nets, 'resources': resources, 'cert': cert, }
+        userHash = hashlib.md5()
+        userHash.update(cert.encode())
+        userHash = userHash.hexdigest()
+        rc = {'networks': nets, 'resources': resources,
+              'cert': cert, 'userHash': userHash}
     except KeyError:
         rc = {'networks': nets, 'resources': resources, }
     #  for rl in resources:
