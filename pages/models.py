@@ -3,7 +3,6 @@ import os
 from django.conf import settings
 from django.db import models
 
-
 def randomize_path(instance, filename):
     path = str(uuid.uuid4())
     return os.path.join('uploads/', path, filename)

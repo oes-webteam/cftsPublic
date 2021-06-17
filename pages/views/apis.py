@@ -64,7 +64,6 @@ def setReject(request):
         os.remove(email_file_name)
 
     zip.close()
-
     return JsonResponse({'mystring': 'isgreat'})
 
 

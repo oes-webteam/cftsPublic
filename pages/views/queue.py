@@ -97,18 +97,18 @@ def queue(request):
 
 
 @login_required
-def transferRequest(request, id):
-    rqst = Request.objects.get(request_id=id)
-    rc = {
+def transferRequest( request, id ):
+    rqst = Request.objects.get( request_id = id )
+    rc = { 
         'request_id': rqst.request_id,
         'date_created': rqst.date_created,
-        'user': User.objects.get(user_id=rqst.user.user_id),
-        'network': Network.objects.get(network_id=rqst.network.network_id),
+        'user': User.objects.get( user_id = rqst.user.user_id ),
+        'phone': User.objects.get(user_id=rqst.user.user_id).phone,
+        'network': Network.objects.get( network_id = rqst.network.network_id ),
         'files': rqst.files.all(),
         'target_email': rqst.target_email.all(),
         'is_submitted': rqst.is_submitted,
         'is_centcom': User.objects.get(user_id=rqst.user.user_id).is_centcom
-
     }
     return render(request, 'pages/transfer-request.html', {'rc': rc})
 
