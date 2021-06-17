@@ -144,7 +144,8 @@ def process(request):
             name_first=form_data.get('firstName'),
             name_last=form_data.get('lastName'),
             email=source_email,
-            is_centcom=False
+            is_centcom=False,
+            phone=form_data.get('userPhone')
         )
         if form_data.get('isCentcom') == "True":
             user.is_centcom = True
