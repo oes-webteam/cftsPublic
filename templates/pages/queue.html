@@ -95,7 +95,7 @@
                                 <span title="PII: {{ file.is_pii }}&#10;CENTCOM Info: {{ file.is_centcom_info }}">🔒</span>
                                 {% endif %}
                             </td>
-                            <td colspan="2"><span title="{{ file }}">{{ file|truncatechars:50 }}</span></td>
+                            <td colspan="2"><a title="{{ file }}" href="getFile/{{file.file_object}}">{{ file }}</a></td>
                         </tr>
                         {% endfor %}
                         <!-- end files -->

@@ -12,7 +12,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 
 # responses
 from django.shortcuts import render
-from django.http import JsonResponse  # , HttpResponse, FileResponse
+from django.http import JsonResponse, FileResponse, response  # , HttpResponse,
 
 # model/database stuff
 from pages.models import *
@@ -178,3 +178,9 @@ def createZip(request, network_name, isCentcom):
 
     # see if we can't provide something more useful to the analysts - maybe the new pull number?
     return JsonResponse({'pullNumber': new_pull.pull_number, 'datePulled': new_pull.date_pulled.strftime("%d%b %H%M").upper(), 'userPulled': str(new_pull.user_pulled)})
+
+@login_required
+def getFile(request, fileID, fileName):
+  response = FileResponse(
+      open(os.path.join("uploads", fileID, fileName), 'rb'))
+  return response
