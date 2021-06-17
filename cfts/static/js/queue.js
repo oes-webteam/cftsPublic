@@ -44,7 +44,13 @@ jQuery( document ).ready( function() {
     pullBtn = $( e.target );
     buttonID = pullBtn.attr( 'id' );
     netName = buttonID.substr( 4 );
-    let url = '/create-zip/' + netName;
+    if(pullBtn.hasClass('centcom')){
+      isCentcom = "True"
+    }
+    else{
+      isCentcom = "False"
+    }
+    let url = '/create-zip/' + netName +'/'+ isCentcom;
     
     if( $( e.target ).hasClass( 'disabled' ) ) {
       alert( 'There are no pending transfer requests to pull for this network.' )
@@ -56,16 +62,21 @@ jQuery( document ).ready( function() {
           alert( 'Pull complete. New ZIP file created for ' + netName + '.  Click the download button to retrieve it.' );
           
           // prevent a second pull
-          pullBtn.addClass( 'disabled' );
+          //pullBtn.addClass( 'disabled' );
+          $('.pull-button').addClass('disabled');
 
           // update link on page to avoid unnecessary refresh 
           downloadBtn = $( '#dl' + netName );
           downloadBtn.attr( 'href', '/static/files/' + netName + '_' + resp.pullNumber + '.zip' );
+          downloadBtn.text('Download Current '+ netName + ' Zip')
+          downloadBtn.attr('hidden', false);
           downloadBtn.focus();
 
           // update last pulled info
           $( '.last-pull-info .date-pulled' ).text( resp.datePulled );
           $( '.last-pull-info .user-pulled' ).text( resp.userPulled );
+
+          $( "#forceReload" ).submit();
 
         } else {
             console.error( 'Shit broke, yo.' );

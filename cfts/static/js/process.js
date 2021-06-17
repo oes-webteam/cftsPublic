@@ -180,6 +180,15 @@ function prepareFormData(form) {
     formData.append( 'targetEmail', emailList );
   }
 
+  if(form.elements.isCentcom.checked == false){
+    formData.delete('isCentcom');
+    formData.append('isCentcom', "False");
+  }else{
+    formData.delete('isCentcom');
+    formData.append('isCentcom', "True");
+
+  }
+
   data = prepareFileInfo(data);
   for (const [field, value] of formData.entries()) {
     if (!(field.includes("classification") || field.includes("encrypt") || field.includes("files[]"))) {

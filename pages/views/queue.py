@@ -30,7 +30,8 @@ def queue(request):
         'LZ is clear.',
         'Nothing here. Why not work on metadata?',
         'Queue is empty -- just like my wallet.',
-        "There's nothing here? Huh. That's gotta be an error ... "
+        "There's nothing here? Huh. That's gotta be an error ... ",
+        "Xander was here."
     ])
 
     ########################
@@ -106,22 +107,33 @@ def transferRequest(request, id):
         'files': rqst.files.all(),
         'target_email': rqst.target_email.all(),
         'is_submitted': rqst.is_submitted,
+        'is_centcom': User.objects.get(user_id=rqst.user.user_id).is_centcom
+
     }
     return render(request, 'pages/transfer-request.html', {'rc': rc})
 
 
 @login_required
-def createZip(request, network_name):
+def createZip(request, network_name, isCentcom):
     # create pull
     maxPull = Pull.objects.aggregate(Max('pull_number'))
     pull_number = 1 if maxPull['pull_number__max'] == None else maxPull['pull_number__max'] + 1
 
-    new_pull = Pull(
-        pull_number=pull_number,
-        network=Network.objects.get(name=network_name),
-        date_pulled=datetime.datetime.now(),
-        user_pulled=request.user,
-    )
+    if isCentcom == "True":
+        new_pull = Pull(
+            pull_number=pull_number,
+            network=Network.objects.get(name=network_name),
+            date_pulled=datetime.datetime.now(),
+            user_pulled=request.user,
+            centcom_pull=True
+        )
+    else:
+        new_pull = Pull(
+            pull_number=pull_number,
+            network=Network.objects.get(name=network_name),
+            date_pulled=datetime.datetime.now(),
+            user_pulled=request.user,
+        )
     new_pull.save()
 
     # create/overwrite zip file
@@ -130,8 +142,15 @@ def createZip(request, network_name):
     zip = ZipFile(zipPath, "w")
 
     # select Requests based on network and status
-    qs = Request.objects.filter(network__name=network_name, pull=None)
+    if(isCentcom == "True"):
+        qs = Request.objects.filter(
+            network__name=network_name, pull=None, user__is_centcom=True)
+        for rqst in qs:
+          rqst.centcom_pull = True
 
+    elif(isCentcom == "False"):
+        qs = Request.objects.filter(
+            network__name=network_name, pull=None)
     # for each xfer request ...
     for rqst in qs:
         zip_folder = str(rqst.user)
