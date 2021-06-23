@@ -53,7 +53,13 @@ jQuery( document ).ready( function() {
     let url = '/create-zip/' + netName +'/'+ isCentcom;
     
     if( $( e.target ).hasClass( 'disabled' ) ) {
+      if( $(e.target).hasClass('centcom') ){
+      alert( 'There are no pending CENTCOM transfer requests to pull for this network.' )
+      }
+      else{
       alert( 'There are no pending transfer requests to pull for this network.' )
+      }
+
     } else {
       $.get( url, {}, ( resp, status ) => {
         if( status == 'success' ) { 

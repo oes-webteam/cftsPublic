@@ -48,7 +48,7 @@
                         </div>
                         <div class="create-pull">
                             <button class="btn btn-primary pull-button{% if network.pending.count == 0 %} disabled{% endif %}" id="pull{{network.name}}">Create {{ network.name }} Pull</button> 
-                            <button class="btn btn-warning pull-button centcom{% if network.pending.count == 0 %} disabled{% endif %}" id="pull{{network.name}}">Pull only Centcom</button> 
+                            <button class="btn btn-warning pull-button centcom{% if network.centcom.count == 0 %} disabled{% endif %}" id="pull{{network.name}}">Pull only Centcom</button> 
                       
                             
                         </div>

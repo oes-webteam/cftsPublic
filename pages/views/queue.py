@@ -69,6 +69,7 @@ def queue(request):
             'count': ds_requests.count(),
             'pending': ds_requests.aggregate(count=Count('request_id', filter=Q(pull__date_pulled__isnull=True))),
             'q': ds_requests,
+            'centcom': ds_requests.aggregate(count=Count('request_id', filter=Q(pull__date_pulled__isnull=True, centcom_pull=True))),
             'last_pull': last_pull
         }
         # ... and add it to the list
