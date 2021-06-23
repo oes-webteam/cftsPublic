@@ -43,7 +43,7 @@ $( document ).ready( function( ) {
         ( resp ) => {
           $( '#reviewed' ).text( resp.files_reviewed );
           $( '#transfered' ).text( resp.files_transfered );
-          $( '#centcom' ).text( resp.centcom );
+          $( '#centcom' ).text( resp.centcom_files );
           $( '#rejected' ).text( resp.files_rejected );
           $( '.col.results' ).show();
         }, 

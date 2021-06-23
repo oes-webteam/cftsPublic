@@ -120,10 +120,12 @@ def runNumbers(request):
             # exclude the rejects from the transfers numbers
             if f.rejection_reason == None:
                 files_transfered = files_transfered + file_count
+                if f.is_centcom == True:
+                    centcom_files = centcom_files + file_count
             else:
                 files_rejected = files_rejected + file_count
 
-    return JsonResponse({'files_reviewed': files_reviewed, 'files_transfered': files_transfered, 'files_rejected': files_rejected})
+    return JsonResponse({'files_reviewed': files_reviewed, 'files_transfered': files_transfered, 'files_rejected': files_rejected, 'centcom_files': centcom_files})
 
 
 def process(request):
