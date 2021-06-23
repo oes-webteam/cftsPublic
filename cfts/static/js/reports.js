@@ -43,6 +43,8 @@ $( document ).ready( function( ) {
         ( resp ) => {
           $( '#reviewed' ).text( resp.files_reviewed );
           $( '#transfered' ).text( resp.files_transfered );
+          $( '#centcom' ).text( resp.centcom );
+          $( '#rejected' ).text( resp.files_rejected );
           $( '.col.results' ).show();
         }, 
         // ajax request failed

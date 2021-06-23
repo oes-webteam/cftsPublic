@@ -83,6 +83,8 @@ def getUser(request, id):
 def runNumbers(request):
     files_reviewed = 0
     files_transfered = 0
+    files_rejected = 0
+    centcom_files = 0
     start_date = datetime.strptime(
         request.POST.get('start_date'), "%m/%d/%Y").date()
     end_date = datetime.strptime(
@@ -118,8 +120,10 @@ def runNumbers(request):
             # exclude the rejects from the transfers numbers
             if f.rejection_reason == None:
                 files_transfered = files_transfered + file_count
+            else:
+                files_rejected = files_rejected + file_count
 
-    return JsonResponse({'files_reviewed': files_reviewed, 'files_transfered': files_transfered})
+    return JsonResponse({'files_reviewed': files_reviewed, 'files_transfered': files_transfered, 'files_rejected': files_rejected})
 
 
 def process(request):
