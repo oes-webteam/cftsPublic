@@ -63,7 +63,7 @@ class File(models.Model):
     classification = models.ForeignKey(
         Classification, on_delete=models.DO_NOTHING)
     is_pii = models.BooleanField(default=False)
-    is_centcom_info = models.BooleanField(default=False)
+    is_centcom = models.BooleanField(default=False)
     rejection_reason = models.ForeignKey(
         Rejection, on_delete=models.DO_NOTHING, null=True, blank=True)
     rejection_text = models.TextField(default=None, blank=True, null=True)
@@ -108,7 +108,7 @@ class User(models.Model):
     name_last = models.CharField(max_length=50)
     email = models.ForeignKey(Email, on_delete=models.DO_NOTHING)
     notes = models.TextField(null=True, blank=True)
-    is_centcom = models.BooleanField(default=False, null=True, blank=True)
+    #is_centcom = models.BooleanField(default=False, null=True, blank=True)
     phone = models.CharField(max_length=50, default="000-000-0000")
 
     class Meta:
@@ -156,7 +156,7 @@ class Request(models.Model):
     is_submitted = models.BooleanField(default=False)
     pull = models.ForeignKey(
         Pull, on_delete=models.DO_NOTHING, default=None, null=True, blank=True)
-    centcom_pull = models.BooleanField(default=False)
+    is_centcom = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['-date_created']
