@@ -21,6 +21,7 @@ from django.db.models import Max, Count, Q, Sum
 # email creation
 import pythoncom
 import win32com.client as win32
+from cfts import settings
 # ====================================================================
 
 
@@ -167,9 +168,14 @@ def createZip(request, network_name, isCentcom):
         # create and add the target email file
         email_file_name = '_email.txt'
         fp = open(email_file_name, "w")
+        emailString = ""
+
         for this_email in rqst.target_email.all():
-            fp.write(this_email.address + ';\n')
+            emailString = emailString + this_email.address + ';\n'
+        
+        fp.write(emailString)
         fp.close()
+
         zip.write(email_file_name, os.path.join(zip_folder, email_file_name))
         os.remove(email_file_name)
 
@@ -178,7 +184,7 @@ def createZip(request, network_name, isCentcom):
         # create outlook .msg file
         outlook = win32.Dispatch('outlook.application')
         mail = outlook.CreateItem(0)
-        mail.To = 'aalvarado@bwfed.com'
+        mail.To = emailString
         mail.Subject = 'CFTS File Transfer'
         mail.Body = 'Attatched files transfered across domains from CFTS.'
 
@@ -187,7 +193,14 @@ def createZip(request, network_name, isCentcom):
             mail.Attachments.Add(attachment)
         
         # write to zip path
-        mail.SaveAs("_email.msg")
+        msg_file_name = '_email.msg'
+        msg_file_path = os.path.join(settings.STATICFILES_DIRS[0], "files",msg_file_name)
+
+        mail.SaveAs(msg_file_path)
+        outlook.Quit()
+
+        zip.write(msg_file_path,os.path.join(zip_folder, msg_file_name))
+        os.remove(msg_file_path)
         # update the record
         rqst.pull_id = new_pull.pull_id
         rqst.save()
