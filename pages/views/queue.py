@@ -17,6 +17,10 @@ from django.http import JsonResponse, FileResponse, response  # , HttpResponse,
 # model/database stuff
 from pages.models import *
 from django.db.models import Max, Count, Q, Sum
+
+# email creation
+import pythoncom
+import win32com.client as win32
 # ====================================================================
 
 
@@ -155,7 +159,6 @@ def createZip(request, network_name, isCentcom):
     for rqst in qs:
         zip_folder = str(rqst.user)
         theseFiles = rqst.files.filter(rejection_reason=None)
-
         # add their files to the zip in the folder of their name
         for f in theseFiles:
             zip_path = os.path.join(zip_folder, str(f))
@@ -170,6 +173,21 @@ def createZip(request, network_name, isCentcom):
         zip.write(email_file_name, os.path.join(zip_folder, email_file_name))
         os.remove(email_file_name)
 
+        pythoncom.CoInitialize()
+
+        # create outlook .msg file
+        outlook = win32.Dispatch('outlook.application')
+        mail = outlook.CreateItem(0)
+        mail.To = 'aalvarado@bwfed.com'
+        mail.Subject = 'CFTS File Transfer'
+        mail.Body = 'Attatched files transfered across domains from CFTS.'
+
+        for f in theseFiles:
+            attachment  = f.file_object.path
+            mail.Attachments.Add(attachment)
+        
+        # write to zip path
+        mail.SaveAs("_email.msg")
         # update the record
         rqst.pull_id = new_pull.pull_id
         rqst.save()
