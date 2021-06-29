@@ -29,6 +29,7 @@ urlpatterns = [
 
     # pulls
     path('pulls', views.pulls, name='pulls'),
+    path('getPull/<str:fileName>', views.getPull, name='getPull'),
     path('pulls-oneeye/<uuid:id>', views.pullsOneEye, name='pulls-oneeye'),
     path('pulls-twoeye/<uuid:id>', views.pullsTwoEye, name='pulls-twoeye'),
     path('pulls-done/<uuid:id>/<int:cd>', views.pullsDone, name='pulls-done'),

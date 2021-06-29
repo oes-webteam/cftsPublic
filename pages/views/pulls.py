@@ -4,13 +4,17 @@ import datetime
 
 # decorators
 from django.contrib.auth.decorators import login_required
+from django.http.response import FileResponse
 
 # responses
 from django.shortcuts import render
-from django.http import JsonResponse #, HttpResponse, FileResponse
+from django.http import JsonResponse, FileResponse #, HttpResponse, FileResponse
 
 # model/database stuff
 from pages.models import *
+
+# cfts settings
+from cfts import settings
 #====================================================================
 
 
@@ -74,3 +78,10 @@ def pullsDone( request, id, cd ):
   thisPull.disc_number = cd
   thisPull.save()
   return JsonResponse( { 'id': id } )
+
+@login_required
+def getPull(request, fileName):
+  response = FileResponse(
+      open(os.path.join(settings.PULLS_DIR, fileName), 'rb'))
+  return response
+
