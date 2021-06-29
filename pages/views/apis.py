@@ -154,7 +154,7 @@ def process(request):
                 name_first=form_data.get('firstName'),
                 name_last=form_data.get('lastName'),
                 email=source_email,
-                is_centcom=form_data.get('isCentcom'),
+                #is_centcom=form_data.get('isCentcom'),
                 user_identifier=form_data.get('userID')
             )
             user.save()
