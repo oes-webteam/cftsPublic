@@ -78,8 +78,6 @@ def getUser(request, id):
     }
     return JsonResponse(data)
 
-
-@login_required
 def runNumbers(request):
     files_reviewed = 0
     files_transfered = 0
@@ -127,63 +125,62 @@ def runNumbers(request):
 
     return JsonResponse({'files_reviewed': files_reviewed, 'files_transfered': files_transfered, 'files_rejected': files_rejected, 'centcom_files': centcom_files})
 
-
-def process(request):
+@login_required
+def process ( request ):
     resp = {}
-
+  
     if request.method == 'POST':
         form_data = request.POST
         form_files = request.FILES
 
         # use the form data to create the necessary records for the request
-        source_email = Email(address=form_data.get('userEmail'))
-        source_email.save()
+        try:
+            source_email = Email.objects.filter(
+                address=form_data.get('userEmail'))[0]
+        except IndexError:
+            source_email = Email(address=form_data.get('userEmail'))
 
-        destination_list = form_data.get('targetEmail').split(",")
+        source_email.save()
+    
+        destination_list = form_data.get( 'targetEmail' ).split( "," )
         target_list = []
         for destination in destination_list:
-            target_email = Email(address=destination)
+            try:
+                target_email = Email.objects.filter(address=destination)[0]
+            except IndexError:
+                target_email = Email(address=destination)
+
             target_email.save()
-            target_list.append(target_email)
+            target_list.append( target_email )
 
-        user = User(
-            name_first=form_data.get('firstName'),
-            name_last=form_data.get('lastName'),
-            email=source_email,
-            #is_centcom=False,
-            phone=form_data.get('userPhone')
+            user = User( 
+                name_first = form_data.get( 'firstName' ), 
+                name_last = form_data.get( 'lastName' ), 
+                email = source_email,
+                is_centcom = form_data.get( 'isCentcom' )
+            )
+            user.save()
+
+        request = Request( 
+            user = user, 
+            network = Network.objects.get( name = form_data.get( 'network' ) ),  
+            comments = form_data.get( 'comments' )
         )
-        user.save()
-
-        request = Request(
-            user=user,
-            network=Network.objects.get(name=form_data.get('network')),
-            comments=form_data.get('comments'),
-            is_centcom=False
-        )
-
-        if form_data.get('isCentcom') == "True":
-            request.is_centcom = True
-        elif form_data.get('isCentcom') == "False":
-            request.is_centcom = False
-
         request.save()
-        request.target_email.add(*target_list)
+        request.target_email.add( *target_list )
 
         # add files to the request
-        file_info = json.loads(form_data.get('fileInfo'))
-        print(form_files.getlist("files"))
-        for i, f in enumerate(form_files.getlist("files")):
+        file_info =  json.loads( form_data.get( 'fileInfo' ) )
+        print( form_files.getlist( "files" ) )
+        for i, f in enumerate( form_files.getlist( "files" ) ):
             this_file = File(
-                file_object=f,
-                classification=Classification.objects.get(
-                    abbrev=file_info[i]['classification']),
-                is_pii=file_info[i]['encrypt'] == 'true',
-                is_centcom=request.is_centcom
+                file_object = f,
+                classification = Classification.objects.get( abbrev = file_info[ i ][ 'classification' ] ),
+                is_pii = file_info[ i ][ 'encrypt' ] == 'true'
             )
             this_file.save()
-            request.files.add(this_file)
-
+            request.files.add( this_file )
+    
         request.is_submitted = True
         request.save()
 
