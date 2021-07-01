@@ -32,7 +32,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'django_static_jquery_ui',
-    'pages.apps.PagesConfig', #came from the pages > apps.py tells django its an app
+    'pages.apps.PagesConfig',  # came from the pages > apps.py tells django its an app
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -58,7 +58,8 @@ LOGIN_URL = '/admin/login/'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')], # Here we set the location of the templates
+        # Here we set the location of the templates
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -111,6 +112,31 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
+# Error Logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        },
+        'handlers': {
+            'file': {
+                'level': 'DEBUG',
+                'class': 'logging.FileHandler',
+                'filename': os.path.join(BASE_DIR, 'debug.log'),
+            },
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['file'],
+                'level': 'DEBUG',
+                'propagate': True,
+            },
+        },
+    }
+    }
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
@@ -120,5 +146,5 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'cfts\static')
 ]
 
-SCANTOOL_DIR = os.path.join (BASE_DIR, 'cfts\scan' )
-SCANTOOL_TEMPDIR = os.path.join( SCANTOOL_DIR, 'temp' )
+SCANTOOL_DIR = os.path.join(BASE_DIR, 'cfts\scan')
+SCANTOOL_TEMPDIR = os.path.join(SCANTOOL_DIR, 'temp')
