@@ -3,7 +3,6 @@ import os
 from django.conf import settings
 from django.db import models
 
-
 def randomize_path(instance, filename):
     path = str(uuid.uuid4())
     return os.path.join('uploads/', path, filename)
@@ -110,6 +109,7 @@ class User(models.Model):
     email = models.ForeignKey(Email, on_delete=models.DO_NOTHING)
     notes = models.TextField(null=True, blank=True)
     is_centcom = models.BooleanField(default=False, null=True, blank=True)
+    phone = models.CharField(max_length=50, default="000-000-0000")
 
     class Meta:
         ordering = ['name_last']

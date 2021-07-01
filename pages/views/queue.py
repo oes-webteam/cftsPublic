@@ -12,7 +12,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 
 # responses
 from django.shortcuts import render
-from django.http import JsonResponse  # , HttpResponse, FileResponse
+from django.http import JsonResponse, FileResponse, response  # , HttpResponse,
 
 # model/database stuff
 from pages.models import *
@@ -49,7 +49,7 @@ def queue(request):
         ds_requests = Request.objects.filter(
             network__name=net.name,
             is_submitted=True,
-            pull__date_complete__isnull=True,
+            pull__date_complete__isnull=True
             # , files__in=File.objects.filter( rejection_reason__isnull=True )
         ).order_by('-date_created')
 
@@ -69,6 +69,7 @@ def queue(request):
             'count': ds_requests.count(),
             'pending': ds_requests.aggregate(count=Count('request_id', filter=Q(pull__date_pulled__isnull=True))),
             'q': ds_requests,
+            'centcom': ds_requests.aggregate(count=Count('request_id', filter=Q(pull__date_pulled__isnull=True, centcom_pull=True))),
             'last_pull': last_pull
         }
         # ... and add it to the list
@@ -97,18 +98,18 @@ def queue(request):
 
 
 @login_required
-def transferRequest(request, id):
-    rqst = Request.objects.get(request_id=id)
-    rc = {
+def transferRequest( request, id ):
+    rqst = Request.objects.get( request_id = id )
+    rc = { 
         'request_id': rqst.request_id,
         'date_created': rqst.date_created,
-        'user': User.objects.get(user_id=rqst.user.user_id),
-        'network': Network.objects.get(network_id=rqst.network.network_id),
+        'user': User.objects.get( user_id = rqst.user.user_id ),
+        'phone': User.objects.get(user_id=rqst.user.user_id).phone,
+        'network': Network.objects.get( network_id = rqst.network.network_id ),
         'files': rqst.files.all(),
         'target_email': rqst.target_email.all(),
         'is_submitted': rqst.is_submitted,
         'is_centcom': User.objects.get(user_id=rqst.user.user_id).is_centcom
-
     }
     return render(request, 'pages/transfer-request.html', {'rc': rc})
 
@@ -178,3 +179,9 @@ def createZip(request, network_name, isCentcom):
 
     # see if we can't provide something more useful to the analysts - maybe the new pull number?
     return JsonResponse({'pullNumber': new_pull.pull_number, 'datePulled': new_pull.date_pulled.strftime("%d%b %H%M").upper(), 'userPulled': str(new_pull.user_pulled)})
+
+@login_required
+def getFile(request, fileID, fileName):
+  response = FileResponse(
+      open(os.path.join("uploads", fileID, fileName), 'rb'))
+  return response

@@ -53,7 +53,13 @@ jQuery( document ).ready( function() {
     let url = '/create-zip/' + netName +'/'+ isCentcom;
     
     if( $( e.target ).hasClass( 'disabled' ) ) {
+      if( $(e.target).hasClass('centcom') ){
+      alert( 'There are no pending CENTCOM transfer requests to pull for this network.' )
+      }
+      else{
       alert( 'There are no pending transfer requests to pull for this network.' )
+      }
+
     } else {
       $.get( url, {}, ( resp, status ) => {
         if( status == 'success' ) { 
@@ -62,11 +68,14 @@ jQuery( document ).ready( function() {
           alert( 'Pull complete. New ZIP file created for ' + netName + '.  Click the download button to retrieve it.' );
           
           // prevent a second pull
-          pullBtn.addClass( 'disabled' );
+          //pullBtn.addClass( 'disabled' );
+          $('.pull-button').addClass('disabled');
 
           // update link on page to avoid unnecessary refresh 
           downloadBtn = $( '#dl' + netName );
           downloadBtn.attr( 'href', '/static/files/' + netName + '_' + resp.pullNumber + '.zip' );
+          downloadBtn.text('Download Current '+ netName + ' Zip')
+          downloadBtn.attr('hidden', false);
           downloadBtn.focus();
 
           // update last pulled info
@@ -173,6 +182,7 @@ jQuery( document ).ready( function() {
           requests[ selectedFile.requestID ].files.push( { 'id': selectedFile.fileID, 'name': selectedFile.fileName } );
       });
 
+      let reject = 0
       // for each request ...
       for( r in requests ) {
         const email = requests[r].email;
@@ -188,11 +198,14 @@ jQuery( document ).ready( function() {
         body = body.replace( /<br>/g, '%0A' );
 
         // ... create an email with that user's files
-        let $anchor = $( "<a class='emailLink' target='_blank' href='mailto:" + email + "?subject=" + subject + "&body=" + body + "'></a>" );
+        let $anchor = $( "<a class='emailLink" + reject + "' target='_blank' href='mailto:" + email + "?subject=" + subject + "&body=" + body + "'></a>" );
         $( document.body ).append( $anchor );
+        window.open($('.emailLink'+reject).attr('href'),"reject"+reject)
+        reject++;
       }
-      $( '.emailLink' ).each( function() { $(this)[0].click(); } );    
-      
+
+      //$( '.emailLink' ).each( function() { $(this)[0].click(); } );  
+     
       // close the dialog
       $( theDialog ).dialog( 'close' );
       
