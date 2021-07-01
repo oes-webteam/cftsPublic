@@ -8,7 +8,6 @@ urlpatterns = [
     path('consent', static_views.consent, name='consent'),
     path('howTo', static_views.howTo, name='howTo'),
     path('resources', static_views.resources, name='resources'),
-    path('urlShortner', static_views.urlShortner, name='urlShortner'),
 
     # resources
     path('resources/<str:file>', views.resources, name='resources'),
