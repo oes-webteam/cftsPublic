@@ -144,20 +144,23 @@ def process(request):
             name_first=form_data.get('firstName'),
             name_last=form_data.get('lastName'),
             email=source_email,
-            is_centcom=False,
+            #is_centcom=False,
             phone=form_data.get('userPhone')
         )
-        if form_data.get('isCentcom') == "True":
-            user.is_centcom = True
-        elif form_data.get('isCentcom') == "False":
-            user.is_centcom = False
         user.save()
 
         request = Request(
             user=user,
             network=Network.objects.get(name=form_data.get('network')),
-            comments=form_data.get('comments')
+            comments=form_data.get('comments'),
+            is_centcom=False
         )
+
+        if form_data.get('isCentcom') == "True":
+            request.is_centcom = True
+        elif form_data.get('isCentcom') == "False":
+            request.is_centcom = False
+
         request.save()
         request.target_email.add(*target_list)
 
@@ -169,7 +172,8 @@ def process(request):
                 file_object=f,
                 classification=Classification.objects.get(
                     abbrev=file_info[i]['classification']),
-                is_pii=file_info[i]['encrypt'] == 'true'
+                is_pii=file_info[i]['encrypt'] == 'true',
+                is_centcom=request.is_centcom
             )
             this_file.save()
             request.files.add(this_file)
