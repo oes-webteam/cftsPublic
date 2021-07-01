@@ -38,7 +38,8 @@ def pulls( request ):
         'date_oneeye': pull.date_oneeye,
         'date_twoeye': pull.date_twoeye,
         'date_complete': pull.date_complete,
-        'pull_network': net.name
+        'pull_network': net.name,
+        'centcom_pull': pull.centcom_pull
       }
       these_pulls.append( this_pull )
     rc['pull_history'].append( these_pulls )

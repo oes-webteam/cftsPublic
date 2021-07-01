@@ -3,5 +3,5 @@
 
 .results { display: none; }
 .results h3 { color: red; }
-#reviewed, #transfered { font-size: 2em; }
+#reviewed, #transfered, #rejected, #centcom { font-size: 2em; }
 
