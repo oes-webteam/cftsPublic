@@ -4,7 +4,7 @@ from email import generator
 import random
 import datetime
 # from io import BytesIO, StringIO
-from zipfile import ZipFile
+from zipfile import ZipFile, Path
 from django.conf import settings
 
 # decorators
@@ -27,6 +27,7 @@ from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 import mimetypes
 import warnings
+from pathlib import Path
 # ====================================================================
 
 
@@ -172,6 +173,21 @@ def createZip(request, network_name, isCentcom):
 
         # create and add the target email file
         email_file_name = '_email.txt'
+        email_file_path = zip_folder + "/" + email_file_name
+
+        if email_file_path in zip.namelist():
+            i = 1
+            print("txt file exists")
+            while True:
+                email_file_name = "_email"+str(i)+".txt"
+                email_file_path = zip_folder + "/" + email_file_name
+
+                print("Trying " + email_file_name)
+                if email_file_path in zip.namelist():
+                    i = i + 1
+                else:
+                    break
+        
         fp = open(email_file_name, "w")
         emailString = ""
 
@@ -204,29 +220,27 @@ def createZip(request, network_name, isCentcom):
             msg.attach(attachment)
 
         msg_file_name = '_email.eml'
+        msgPath =zip_folder+"/"+msg_file_name
+
+        if msgPath in zip.namelist():
+            i = 1
+            print("eml file exists")
+            while True:
+                msg_file_name = "_email"+str(i)+".eml"
+                msgPath =zip_folder+"/"+msg_file_name
+                print("Trying " + msg_file_name)
+                if msgPath in zip.namelist():
+                    i = i + 1
+                else:
+                    break        
+
 
         with open(msg_file_name.encode("utf-8"), 'w') as eml:
             gen = Generator(eml)
             gen.flatten(msg)
 
-        
+
         zip.write(msg_file_name, os.path.join(zip_folder, msg_file_name))
-
-        
-        # warnings.filterwarnings('error', "UserWarning:*")
-        # try:
-        #     zip.write(msg_file_name, os.path.join(zip_folder, msg_file_name))
-        # except Warning:
-        #     while True:
-        #         i=1
-        #         try:
-        #             zip.write("_email"+i+".eml", os.path.join(zip_folder, "_email"+i+".eml"))
-        #             break
-        #         except Warning:
-        #             print("file already exists, trying new name")
-        #             i=i+1
-
-
         os.remove(msg_file_name)
 
         # update the record
