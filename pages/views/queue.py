@@ -1,5 +1,6 @@
 # ====================================================================
 # core
+from email import generator
 import random
 import datetime
 # from io import BytesIO, StringIO
@@ -19,9 +20,13 @@ from pages.models import *
 from django.db.models import Max, Count, Q, Sum
 
 # email creation
-import pythoncom
-import win32com.client as win32
-from cfts import settings
+from email.generator import Generator
+from email.mime.text import MIMEText
+from email.encoders import encode_base64
+from email.mime.base import MIMEBase
+from email.mime.multipart import MIMEMultipart
+import mimetypes
+import warnings
 # ====================================================================
 
 
@@ -178,29 +183,52 @@ def createZip(request, network_name, isCentcom):
 
         zip.write(email_file_name, os.path.join(zip_folder, email_file_name))
         os.remove(email_file_name)
+        
 
-        pythoncom.CoInitialize()
+        msg = MIMEMultipart()
 
-        # create outlook .msg file
-        outlook = win32.Dispatch('outlook.application')
-        mail = outlook.CreateItem(0)
-        mail.To = emailString
-        mail.Subject = 'CFTS File Transfer'
-        mail.Body = 'Attatched files transfered across domains from CFTS.'
+        msg['To'] = emailString
+        msg['Subject'] = 'CFTS File Transfer'
+
+        msg.attach(MIMEText('Attatched files transfered across domains from CFTS.'))
 
         for f in theseFiles:
-            attachment  = f.file_object.path
-            mail.Attachments.Add(attachment)
+            fileMime = mimetypes.guess_type(f.file_object.path)
+            
+            file = open(f.file_object.path.encode('utf-8'),'rb')
+            attachment = MIMEBase(fileMime[0],fileMime[1])
+            attachment.set_payload(file.read())
+            file.close()
+            encode_base64(attachment)
+            attachment.add_header('Content-Disposition','attachment',filename=f.file_object.path.split("\\")[-1])
+            msg.attach(attachment)
+
+        msg_file_name = '_email.eml'
+
+        with open(msg_file_name.encode("utf-8"), 'w') as eml:
+            gen = Generator(eml)
+            gen.flatten(msg)
+
         
-        # write to zip path
-        msg_file_name = '_email.msg'
-        msg_file_path = os.path.join(settings.STATICFILES_DIRS[0], "files",msg_file_name)
+        zip.write(msg_file_name, os.path.join(zip_folder, msg_file_name))
 
-        mail.SaveAs(msg_file_path)
-        outlook.Quit()
+        
+        # warnings.filterwarnings('error', "UserWarning:*")
+        # try:
+        #     zip.write(msg_file_name, os.path.join(zip_folder, msg_file_name))
+        # except Warning:
+        #     while True:
+        #         i=1
+        #         try:
+        #             zip.write("_email"+i+".eml", os.path.join(zip_folder, "_email"+i+".eml"))
+        #             break
+        #         except Warning:
+        #             print("file already exists, trying new name")
+        #             i=i+1
 
-        zip.write(msg_file_path,os.path.join(zip_folder, msg_file_name))
-        os.remove(msg_file_path)
+
+        os.remove(msg_file_name)
+
         # update the record
         rqst.pull_id = new_pull.pull_id
         rqst.save()
@@ -209,6 +237,8 @@ def createZip(request, network_name, isCentcom):
 
     # see if we can't provide something more useful to the analysts - maybe the new pull number?
     return JsonResponse({'pullNumber': new_pull.pull_number, 'datePulled': new_pull.date_pulled.strftime("%d%b %H%M").upper(), 'userPulled': str(new_pull.user_pulled)})
+
+
 
 @login_required
 def getFile(request, fileID, fileName):
