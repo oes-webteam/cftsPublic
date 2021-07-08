@@ -1,9 +1,10 @@
 # ====================================================================
 # core
+from email import generator
 import random
 import datetime
 # from io import BytesIO, StringIO
-from zipfile import ZipFile
+from zipfile import ZipFile, Path
 from django.conf import settings
 
 # decorators
@@ -17,6 +18,16 @@ from django.http import JsonResponse, FileResponse, response  # , HttpResponse,
 # model/database stuff
 from pages.models import *
 from django.db.models import Max, Count, Q, Sum
+
+# email creation
+from email.generator import Generator
+from email.mime.text import MIMEText
+from email.encoders import encode_base64
+from email.mime.base import MIMEBase
+from email.mime.multipart import MIMEMultipart
+import mimetypes
+import warnings
+from pathlib import Path
 # ====================================================================
 
 
@@ -156,7 +167,6 @@ def createZip(request, network_name, isCentcom):
     for rqst in qs:
         zip_folder = str(rqst.user)
         theseFiles = rqst.files.filter(rejection_reason=None)
-
         # add their files to the zip in the folder of their name
         for f in theseFiles:
             zip_path = os.path.join(zip_folder, str(f))
@@ -164,12 +174,75 @@ def createZip(request, network_name, isCentcom):
 
         # create and add the target email file
         email_file_name = '_email.txt'
+        email_file_path = zip_folder + "/" + email_file_name
+
+        if email_file_path in zip.namelist():
+            i = 1
+            print("txt file exists")
+            while True:
+                email_file_name = "_email"+str(i)+".txt"
+                email_file_path = zip_folder + "/" + email_file_name
+
+                print("Trying " + email_file_name)
+                if email_file_path in zip.namelist():
+                    i = i + 1
+                else:
+                    break
+        
         fp = open(email_file_name, "w")
+        emailString = ""
+
         for this_email in rqst.target_email.all():
-            fp.write(this_email.address + ';\n')
+            emailString = emailString + this_email.address + ';\n'
+        
+        fp.write(emailString)
         fp.close()
+
         zip.write(email_file_name, os.path.join(zip_folder, email_file_name))
         os.remove(email_file_name)
+        
+
+        msg = MIMEMultipart()
+
+        msg['To'] = emailString
+        msg['Subject'] = 'CFTS File Transfer'
+
+        msg.attach(MIMEText('Attatched files transfered across domains from CFTS.'))
+
+        for f in theseFiles:
+            fileMime = mimetypes.guess_type(f.file_object.path)
+            
+            file = open(f.file_object.path.encode('utf-8'),'rb')
+            attachment = MIMEBase(fileMime[0],fileMime[1])
+            attachment.set_payload(file.read())
+            file.close()
+            encode_base64(attachment)
+            attachment.add_header('Content-Disposition','attachment',filename=f.file_object.path.split("\\")[-1])
+            msg.attach(attachment)
+
+        msg_file_name = '_email.eml'
+        msgPath =zip_folder+"/"+msg_file_name
+
+        if msgPath in zip.namelist():
+            i = 1
+            print("eml file exists")
+            while True:
+                msg_file_name = "_email"+str(i)+".eml"
+                msgPath =zip_folder+"/"+msg_file_name
+                print("Trying " + msg_file_name)
+                if msgPath in zip.namelist():
+                    i = i + 1
+                else:
+                    break        
+
+
+        with open(msg_file_name.encode("utf-8"), 'w') as eml:
+            gen = Generator(eml)
+            gen.flatten(msg)
+
+
+        zip.write(msg_file_name, os.path.join(zip_folder, msg_file_name))
+        os.remove(msg_file_name)
 
         # update the record
         rqst.pull_id = new_pull.pull_id
@@ -179,6 +252,8 @@ def createZip(request, network_name, isCentcom):
 
     # see if we can't provide something more useful to the analysts - maybe the new pull number?
     return JsonResponse({'pullNumber': new_pull.pull_number, 'datePulled': new_pull.date_pulled.strftime("%d%b %H%M").upper(), 'userPulled': str(new_pull.user_pulled)})
+
+
 
 @login_required
 def getFile(request, fileID, fileName):
