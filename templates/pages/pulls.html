@@ -12,11 +12,18 @@
   {% for pull in net %}
     {% if forloop.counter0 == 0 %}<h3 class="grid-column-header">{{ pull.pull_network }}</h3>{% endif %}
     <li class="{% if pull.date_complete != None %}is-done{% elif pull.date_twoeye != None %}to-complete{% elif pull.date_oneeye != None %}to-twoeye{% endif %} {% if pull.centcom_pull %}centcom{% endif %}">
+
       <ul>
-        <li><strong>{{ pull.pull_network }}_{{ pull.pull_number }} {% if pull.centcom_pull %}Centcom Only{% endif %}</strong></li>
+        <li class="title-line"><strong>{{ pull.pull_network }}_{{ pull.pull_number }} {% if pull.centcom_pull %}Centcom Only{% endif %}</strong></li>
+        <li class="title-line status-imgs">
+        {% if  pull.date_oneeye != None %}<img src="{% static 'img/asset 13.svg' %}" class="status-img" alt="One Eye" />{% endif %}      
+        {% if pull.date_twoeye != None %}<img src="{% static 'img/asset 13.svg' %}" class="status-img" alt="Two Eye" />{% endif %}  
+        {% if pull.date_complete != None %}<img src="{% static 'img/asset 14.svg' %}" class="status-img" alt="Burned to Disk" />{% endif %}
+        </li>
         <li>{{ pull.pull_date }}</li>
         <li>{{ pull.pull_user }}</li>
       </ul>
+
       <button class="pull-menu-btn">&hellip;</button>
       <!-- TODO: remove this from the flow of the document -->
       <ul class="pull-menu">
