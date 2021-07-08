@@ -15,13 +15,20 @@
 
       <ul>
         <li class="title-line"><strong>{{ pull.pull_network }}_{{ pull.pull_number }} {% if pull.centcom_pull %}Centcom Only{% endif %}</strong></li>
-        <li class="title-line status-imgs">
-        {% if  pull.date_oneeye != None %}<img src="{% static 'img/asset 13.svg' %}" class="status-img" alt="One Eye" />{% endif %}      
-        {% if pull.date_twoeye != None %}<img src="{% static 'img/asset 13.svg' %}" class="status-img" alt="Two Eye" />{% endif %}  
-        {% if pull.date_complete != None %}<img src="{% static 'img/asset 14.svg' %}" class="status-img" alt="Burned to Disk" />{% endif %}
+        <li class="title-line status-imgs {% if pull.date_complete != None %}is-done{% elif pull.date_twoeye != None %}to-complete{% elif pull.date_oneeye != None %}to-twoeye{% endif %}">
+          <img src="{% if  pull.date_oneeye != None %}{% static 'img/asset 13.svg' %}{% else %}{% static 'img/transparent.png' %}{% endif %}" class="status-img" alt="One Eye" />    
+          <img src="{% if  pull.date_oneeye != None %}{% static 'img/asset 13.svg' %}{% else %}{% static 'img/transparent.png' %}{% endif %}" class="status-img" alt="Two Eye" />
+          <img src="{% if  pull.date_oneeye != None %}{% static 'img/asset 14.svg' %}{% else %}{% static 'img/transparent.png' %}{% endif %}" class="status-img" alt="Burned to Disk #{{pull.disk_number}}" />
         </li>
-        <li>{{ pull.pull_date }}</li>
-        <li>{{ pull.pull_user }}</li>
+        {% if pull.date_complete != None %}
+          <li>Completed by {{pull.user_complete}} </br>on {{pull.date_complete}}</li>
+        {% elif pull.date_twoeye != None %}
+          <li>Two eyed by {{pull.user_twoeye}} </br>on {{pull.date_twoeye}}</li>
+        {% elif pull.date_oneeye != None %}
+          <li>One eyed by {{pull.user_oneeye}} </br>on {{pull.date_oneeye}}</li>
+        {% else %}
+          <li>Pulled by {{pull.pull_user}} </br>on {{pull.pull_date}} </li>
+        {% endif %}
       </ul>
 
       <button class="pull-menu-btn">&hellip;</button>
