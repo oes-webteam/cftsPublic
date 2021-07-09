@@ -4,7 +4,7 @@ from email import generator
 import random
 import datetime
 # from io import BytesIO, StringIO
-from zipfile import ZipFile, Path
+from zipfile import ZipFile
 from django.conf import settings
 
 # decorators
@@ -26,8 +26,6 @@ from email.encoders import encode_base64
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 import mimetypes
-import warnings
-from pathlib import Path
 # ====================================================================
 
 
@@ -80,7 +78,7 @@ def queue(request):
             'count': ds_requests.count(),
             'pending': ds_requests.aggregate(count=Count('request_id', filter=Q(pull__date_pulled__isnull=True))),
             'q': ds_requests,
-            'centcom': ds_requests.aggregate(count=Count('request_id', filter=Q(pull__date_pulled__isnull=True, centcom_pull=True))),
+            'centcom': ds_requests.aggregate(count=Count('request_id', filter=Q(pull__date_pulled__isnull=True, is_centcom=True))),
             'last_pull': last_pull
         }
         # ... and add it to the list

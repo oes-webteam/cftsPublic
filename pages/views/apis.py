@@ -157,14 +157,15 @@ def process ( request ):
                 name_first = form_data.get( 'firstName' ), 
                 name_last = form_data.get( 'lastName' ), 
                 email = source_email,
-                is_centcom = form_data.get( 'isCentcom' )
+                phone = form_data.get('userPhone')
             )
             user.save()
 
         request = Request( 
             user = user, 
             network = Network.objects.get( name = form_data.get( 'network' ) ),  
-            comments = form_data.get( 'comments' )
+            comments = form_data.get( 'comments' ),
+            is_centcom = form_data.get( 'isCentcom' )
         )
         request.save()
         request.target_email.add( *target_list )
@@ -176,7 +177,9 @@ def process ( request ):
             this_file = File(
                 file_object = f,
                 classification = Classification.objects.get( abbrev = file_info[ i ][ 'classification' ] ),
-                is_pii = file_info[ i ][ 'encrypt' ] == 'true'
+                is_pii = file_info[ i ][ 'encrypt' ] == 'true',
+                is_centcom = form_data.get( 'isCentcom' )
+
             )
             this_file.save()
             request.files.add( this_file )
