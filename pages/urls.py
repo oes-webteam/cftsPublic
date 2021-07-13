@@ -25,7 +25,7 @@ urlpatterns = [
          views.getFile, name='getFile'),
 
     # scan
-    path('scan', views.scan, name="scan"),
+    path('scan/<str:pullZip>', views.scan, name="scan"),
 
     # pulls
     path('pulls', views.pulls, name='pulls'),

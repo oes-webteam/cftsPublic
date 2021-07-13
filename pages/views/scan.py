@@ -16,11 +16,14 @@ from django.http import JsonResponse
 # pdf parsing
 from io import StringIO
 from pdfminer.high_level import *
+
+# cfts settings
+from cfts import settings as cftsSettings
 # ====================================================================
 
 
 @login_required
-def scan(request):
+def scan(request,pullZip):
     # request context
     rc = {
         'bodyText': 'Scan Tool'
@@ -28,20 +31,40 @@ def scan(request):
 
     # POST
     if request.method == 'POST':
-        form_files = request.FILES
-##    print( form_files )
-
-        for i, f in enumerate(form_files.getlist("toScan")):
-            zf = ZipFile(f)
+        if pullZip !="none":
+            print("Scanning from pull")
+            pullZip = os.path.join(cftsSettings.BASE_DIR,"pulls",pullZip)
+            zf = ZipFile(pullZip)
             zf.extractall(settings.SCANTOOL_DIR)
             results = runScan()
+
+        else:
+            form_files = request.FILES
+            for i, f in enumerate(form_files.getlist("toScan")):
+                zf = ZipFile(f)
+                zf.extractall(settings.SCANTOOL_DIR)
+                results = runScan()
 
         # clean up after yourself
         cleanup(settings.SCANTOOL_DIR)
         return JsonResponse(results, safe=False)
+    
+    # if request.method == 'GET':
+    #     if pullNet !="none" and pullNum !="none":
+    #         pullZip = os.path.join(cftsSettings.BASE_DIR,"pulls",pullNet+"_"+pullNum+".zip")
+    #         zf = ZipFile(pullZip)
+    #         zf.extractall(settings.SCANTOOL_DIR)
+    #         results = runScan()
+
+    #         # clean up after yourself
+    #         cleanup(settings.SCANTOOL_DIR)
+    #         return render(request, 'pages/scan.html', {'rc': rc, 'results': results})
 
     # GET
-    return render(request, 'pages/scan.html', {'rc': rc})
+    if pullZip !="none":
+        return render(request, 'pages/scan.html', {'rc': rc, 'pullZip': pullZip })
+    else:
+        return render(request, 'pages/scan.html', {'rc': rc})
 
 
 def runScan():

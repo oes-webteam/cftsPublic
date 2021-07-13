@@ -13,22 +13,45 @@ $.ajaxSetup({
 /* POSTs the zip to the scan tool API via AJAX */
 /* POST callback: processResults()             */
 const callScan = function ( e ) {
-  preventDefaults( e );
-  let data = new FormData( scanForm );
 
-  $.ajax({
-    url: '/scan',
-    data: data,
-    cache: false,
-    contentType: false,
-    processData: false,
-    method: 'POST',
-    type: 'POST', // For jQuery < 1.9
-    success: function( data ){
-        processResults( data );
-    }
-  });
+  if(pullZip!=""){
+    let data = pullZip;
+
+    $.ajax({
+      url: '/scan/'+pullZip,
+      data: data,
+      cache: false,
+      contentType: false,
+      processData: false,
+      method: 'POST',
+      type: 'POST', // For jQuery < 1.9
+      success: function( data ){
+          processResults( data );
+      }
+    });
+  }
+  else{
+    preventDefaults( e );
+    let data = new FormData( scanForm );
+
+    $.ajax({
+      url: '/scan/none',
+      data: data,
+      cache: false,
+      contentType: false,
+      processData: false,
+      method: 'POST',
+      type: 'POST', // For jQuery < 1.9
+      success: function( data ){
+          processResults( data );
+      }
+    });
+
+  }
+
+
 };
+
 
 /* processResults( [json] ): returns void */
 /* Builds HTML display of scan results    */
@@ -93,5 +116,11 @@ const processFindings = function( findings ) {
   return findingList;
 };
 
+
+
+if(pullZip!=""){
+  console.log(pullZip)
+  callScan()
+}
 
 scanForm.addEventListener( "submit", callScan, false );
