@@ -62,6 +62,18 @@ const processResults = function( results ) {
     let rootItem = document.querySelector( '.root-item' );
     // loop over results
 
+    if(results.length==0){
+      console.log("scan returned no hits")
+      let cln = rootItem.cloneNode( true );
+      cln.innerHTML = "Scan returned no hits.";
+
+      let scannedList = document.createElement( 'ul' );
+      scannedList.classList.add( 'scanned-list' );
+
+      cln.appendChild( scannedList );
+      rootList.appendChild( cln );
+      
+    }
     for( let r of results ) {
       let cln = rootItem.cloneNode( true );
       cln.innerHTML = r.file;
@@ -119,8 +131,8 @@ const processFindings = function( findings ) {
 
 
 if(pullZip!=""){
-  console.log(pullZip)
-  callScan()
+  scanForm.hidden = true;
+  callScan();
 }
 
 scanForm.addEventListener( "submit", callScan, false );
