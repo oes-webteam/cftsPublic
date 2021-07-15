@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="{% static 'css/queue.css' %}">    
 
 <!--  To make the tabs toggleable, add the data-toggle="tab" attribute to each link. Then add a .tab-pane class with a unique ID for every tab and wrap them inside a div element with class .tab-content.  -->
-<div class="container" style="margin-top: 200px;">
+<div class="container" style="margin-top: 105px;">
     <div class="card">
         <div class="card-header">
 
@@ -77,10 +77,7 @@
                         {% for request in network.q %}
                         <tr class="request-header{% if request.pull != None %} pending{% endif %} {% if request.centcom_pull %}centcom{% endif %}">
                             <td><a href="{% url 'transfer-request' id=request.request_id %}">{{ request.user }}</a></td> <!-- link to request view -->
-                            <td class="request-comments"> {% if request.comments != "" %}
-                                <button class="btn btn-primary comments">Show/Hide Comments</button>{% endif %}
-
-                            </td>
+                            <td class="request-comments"> {% if request.comments != "" %}<a href="#" class="btn btn-primary comments">Show/Hide Comments</a> {% else %}{% endif %}<a href="#" class="btn btn-danger request-reject">Reject Request</a></td>
                             <td class="request-submitted">Submitted: {{ request.date_created|date:'db'|upper }} @ {{ request.date_created|time:'Hi' }}</td>
                         </tr>
                         {% if request.comments != None %}
