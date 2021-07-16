@@ -101,11 +101,8 @@ def runScan():
                     result['file'] = file_path
                     result['found'] = file_results
                     scan_results.append(result)
-                else:
-                    print("no hits for file: ", filename)
-            else:
-                print("Skipping email file...:", filename)
-    print("Scan results: ", scan_results)
+                
+            
     return scan_results
 
 
@@ -139,10 +136,10 @@ def scanFile(text_file):
     result = None
 
     dirty_word_list = ["SECRET", "S//", "NOFORN",
-                       "C//", "CONFIDENTIAL", "PRV", "LVY"]
+                       "C//", "CONFIDENTIAL", "PRV", "LVY", "RDD", "RLD", "ALD", "RFP"]
     reg_lst = []
     for raw_regex in dirty_word_list:
-        reg_lst.append(re.compile(raw_regex))
+        reg_lst.append(re.compile(raw_regex, re.IGNORECASE))
 
     try:
         with open(text_file, "r", encoding="utf-8") as f:
