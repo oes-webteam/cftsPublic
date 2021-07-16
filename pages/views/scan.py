@@ -79,9 +79,9 @@ def runScan():
                 if(ext in office_filetype_list):
                     file_results = scanOfficeFile(file_path)
                 elif(ext == '.pdf'):
-                    textFile = open(root+"\\"+temp+".txt", "w")
+                    textFile = open(root+"\\"+temp+".txt", "w",encoding='utf-8')
                     pdf2Text = StringIO()
-                    with open(file_path, 'rb') as pdf:
+                    with open(file_path, 'rb',) as pdf:
                         extract_text_to_fp(
                             pdf, pdf2Text, output_type='text', codec='utf-8')
                         textFile.write(pdf2Text.getvalue().strip())
@@ -136,10 +136,16 @@ def scanFile(text_file):
     result = None
 
     dirty_word_list = ["SECRET", "S//", "NOFORN",
-                       "C//", "CONFIDENTIAL", "PRV", "LVY", "RDD", "RLD", "ALD", "RFP"]
+                       "C//", "CONFIDENTIAL"]
+    dirty_extension_list = ["PRV", "LVY", "RDD", "RLD", "ALD", "RFP"]
+
     reg_lst = []
+
     for raw_regex in dirty_word_list:
         reg_lst.append(re.compile(raw_regex, re.IGNORECASE))
+    
+    for raw_regex in dirty_extension_list:
+        reg_lst.append(re.compile(raw_regex))
 
     try:
         with open(text_file, "r", encoding="utf-8") as f:
