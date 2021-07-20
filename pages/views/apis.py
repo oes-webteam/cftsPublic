@@ -18,6 +18,7 @@ from django.http import JsonResponse, HttpResponseRedirect
 
 # model/database stuff
 from pages.models import *
+
 # ====================================================================
 
 
@@ -83,6 +84,18 @@ def runNumbers(request):
     files_transfered = 0
     files_rejected = 0
     centcom_files = 0
+    file_types = []
+    file_type_counts = {
+        "pdf": 0,
+        "excel": 0,
+        "word": 0,
+        "ppt": 0,
+        "text": 0,
+        "img": 0,
+        "other": 0
+    }
+    file_size = 0
+
     start_date = datetime.strptime(
         request.POST.get('start_date'), "%m/%d/%Y").date()
     end_date = datetime.strptime(
@@ -100,6 +113,8 @@ def runNumbers(request):
             file_count = 1
             file_name = f.__str__()
             ext = file_name.split('.')[1]
+            file_types.append(ext)
+            
 
             # if it's a zip ...
             if ext == 'zip':
@@ -111,7 +126,10 @@ def runNumbers(request):
                     for c in contents:
                         if c[-1] == "/" or c[-1] == "\\":
                             contents.remove(c)
+                        file_size = file_size + zip.getinfo(c).file_size
                     file_count = len(contents)
+            else:
+                file_size = file_size + os.stat(f.file_object.path).st_size            
 
             # sum it all up
             files_reviewed = files_reviewed + file_count
@@ -123,7 +141,37 @@ def runNumbers(request):
             else:
                 files_rejected = files_rejected + file_count
 
-    return JsonResponse({'files_reviewed': files_reviewed, 'files_transfered': files_transfered, 'files_rejected': files_rejected, 'centcom_files': centcom_files})
+    # add up all file type counts
+    pdfCount = file_types.count("pdf")
+    file_type_counts["pdf"] = pdfCount
+
+    excelCount = file_types.count("xlsx")+file_types.count("xls")+file_types.count("xlsm")+file_types.count("xlsb")+file_types.count("xltx")+file_types.count("xltm")+file_types.count("xlt")+file_types.count("csv")
+    file_type_counts["excel"] = excelCount
+
+    wordCount = file_types.count("doc")+file_types.count("docx")
+    file_type_counts["word"] = wordCount
+
+    textCount = file_types.count("txt")
+    file_type_counts["text"] = textCount
+
+    pptCount = file_types.count("ppt")+file_types.count("pptx")+file_types.count("pps")
+    file_type_counts["ppt"] = pptCount
+
+    imgCount = file_types.count("png")+file_types.count("jpg")+file_types.count("jpeg")+file_types.count("svg")+file_types.count("gif")
+    file_type_counts["img"] = imgCount
+
+    otherCount = len(file_types) - (pdfCount + excelCount + wordCount + imgCount + pptCount + textCount)
+    file_type_counts["other"] = otherCount
+
+    # make bytes more human readable
+    i = 0
+    sizeSuffix = {0 : 'Bytes', 1: 'KB', 2: 'MB', 3: 'GB', 4: 'TB'}
+
+    while file_size > 1024:
+        file_size /= 1024
+        i += 1
+
+    return JsonResponse({'files_reviewed': files_reviewed, 'files_transfered': files_transfered, 'files_rejected': files_rejected, 'centcom_files': centcom_files, 'file_types': file_type_counts, 'file_sizes': str(round(file_size,2))+" "+sizeSuffix[i] })
 
 @login_required
 def process ( request ):
