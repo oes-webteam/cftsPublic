@@ -164,6 +164,17 @@ class Request(models.Model):
         formatted_date_created = self.date_created.strftime("%d%b %H:%M:%S")
         return self.user.__str__() + ' (' + formatted_date_created + ')'
 
+class DirtyWord(models.Model):
+    dirtyword_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    word = models.CharField(max_length=255)
+    case_sensitive = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['word']
+
+    def __str__(self):
+        return self.word
+
 #  def pending_by_network( self, netName ):
 #    return self.__class__.objects.filter( network__name=netName, is_submitted=True, date_complete__isnull=True ).order_by( '-date_created' )
 #

@@ -20,6 +20,9 @@ from pdfminer.high_level import *
 # cfts settings
 from cfts import settings as cftsSettings
 
+# db models
+from pages.models import *
+
 # regular expressions
 import re
 # ====================================================================
@@ -135,17 +138,13 @@ def scanFile(text_file):
     # }
     result = None
 
-    dirty_word_list = ["SECRET", "S//", "NOFORN",
-                       "C//", "CONFIDENTIAL"]
-    dirty_extension_list = ["PRV", "LVY", "RDD", "RLD", "ALD", "RFP"]
-
     reg_lst = []
 
-    for raw_regex in dirty_word_list:
-        reg_lst.append(re.compile(raw_regex, re.IGNORECASE))
+    for raw_regex in DirtyWord.objects.filter(case_sensitive = False):
+        reg_lst.append(re.compile(raw_regex.word, re.IGNORECASE))
     
-    for raw_regex in dirty_extension_list:
-        reg_lst.append(re.compile(raw_regex))
+    for raw_regex in DirtyWord.objects.filter(case_sensitive = True):
+        reg_lst.append(re.compile(raw_regex.word))
 
     try:
         with open(text_file, "r", encoding="utf-8") as f:
