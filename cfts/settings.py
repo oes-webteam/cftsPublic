@@ -146,5 +146,14 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'cfts\static')
 ]
 
-SCANTOOL_DIR = os.path.join(BASE_DIR, 'cfts\scan')
-SCANTOOL_TEMPDIR = os.path.join(SCANTOOL_DIR, 'temp')
+UPLOADS_DIR = os.path.join(BASE_DIR,'uploads')
+PULLS_DIR = os.path.join(BASE_DIR,'pulls')
+
+print("----------------------------------------------------")
+print("uploads path: ",os.path.abspath(UPLOADS_DIR))
+print("pulls path: ",os.path.abspath(PULLS_DIR))
+print("----------------------------------------------------")
+
+
+SCANTOOL_DIR = os.path.join (BASE_DIR, 'cfts\scan' )
+SCANTOOL_TEMPDIR = os.path.join( SCANTOOL_DIR, 'temp' )

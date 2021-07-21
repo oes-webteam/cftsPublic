@@ -6,6 +6,7 @@ import datetime
 # from io import BytesIO, StringIO
 from zipfile import ZipFile
 from django.conf import settings
+from cfts import settings as cftsSettings
 
 # decorators
 from django.contrib.auth.decorators import login_required
@@ -147,8 +148,9 @@ def createZip(request, network_name, isCentcom):
     new_pull.save()
 
     # create/overwrite zip file
-    zipPath = os.path.join(
-        settings.STATICFILES_DIRS[0], "files\\") + network_name + "_" + str(pull_number) + ".zip"
+    zipPath = os.path.join(cftsSettings.PULLS_DIR+"\\") + network_name + "_" + str(pull_number) + ".zip"
+    # zipPath = os.path.join(
+    #     settings.STATICFILES_DIRS[0], "files\\") + network_name + "_" + str(pull_number) + ".zip"
     zip = ZipFile(zipPath, "w")
 
     # select Requests based on network and status

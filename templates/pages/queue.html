@@ -56,7 +56,7 @@
                             {% for lp in network.last_pull %}
                             <div class="download-block">
                                 <a class="btn btn-primary download-button" id="dl{{network.name}}"
-                                    href="/static/files/{{ network.name }}_{{ lp.pull_number }}.zip">Download Current {{ network.name }} Zip</a>
+                                    href="getPull/{{ network.name }}_{{ lp.pull_number }}.zip">Download Current {{ network.name }} Zip</a>
                                 </div>
                                 {% endfor %}
                         {% else %}

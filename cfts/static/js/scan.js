@@ -13,22 +13,45 @@ $.ajaxSetup({
 /* POSTs the zip to the scan tool API via AJAX */
 /* POST callback: processResults()             */
 const callScan = function ( e ) {
-  preventDefaults( e );
-  let data = new FormData( scanForm );
 
-  $.ajax({
-    url: '/scan',
-    data: data,
-    cache: false,
-    contentType: false,
-    processData: false,
-    method: 'POST',
-    type: 'POST', // For jQuery < 1.9
-    success: function( data ){
-        processResults( data );
-    }
-  });
+  if(pullZip!=""){
+    let data = pullZip;
+
+    $.ajax({
+      url: '/scan/'+pullZip,
+      data: data,
+      cache: false,
+      contentType: false,
+      processData: false,
+      method: 'POST',
+      type: 'POST', // For jQuery < 1.9
+      success: function( data ){
+          processResults( data );
+      }
+    });
+  }
+  else{
+    preventDefaults( e );
+    let data = new FormData( scanForm );
+
+    $.ajax({
+      url: '/scan/none',
+      data: data,
+      cache: false,
+      contentType: false,
+      processData: false,
+      method: 'POST',
+      type: 'POST', // For jQuery < 1.9
+      success: function( data ){
+          processResults( data );
+      }
+    });
+
+  }
+
+
 };
+
 
 /* processResults( [json] ): returns void */
 /* Builds HTML display of scan results    */
@@ -39,6 +62,18 @@ const processResults = function( results ) {
     let rootItem = document.querySelector( '.root-item' );
     // loop over results
 
+    if(results.length==0){
+      console.log("scan returned no hits")
+      let cln = rootItem.cloneNode( true );
+      cln.innerHTML = "Scan returned no hits.";
+
+      let scannedList = document.createElement( 'ul' );
+      scannedList.classList.add( 'scanned-list' );
+
+      cln.appendChild( scannedList );
+      rootList.appendChild( cln );
+      
+    }
     for( let r of results ) {
       let cln = rootItem.cloneNode( true );
       cln.innerHTML = r.file;
@@ -93,5 +128,11 @@ const processFindings = function( findings ) {
   return findingList;
 };
 
+
+
+if(pullZip!=""){
+  scanForm.hidden = true;
+  callScan();
+}
 
 scanForm.addEventListener( "submit", callScan, false );

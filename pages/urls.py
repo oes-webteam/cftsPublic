@@ -25,10 +25,11 @@ urlpatterns = [
          views.getFile, name='getFile'),
 
     # scan
-    path('scan', views.scan, name="scan"),
+    path('scan/<str:pullZip>', views.scan, name="scan"),
 
     # pulls
     path('pulls', views.pulls, name='pulls'),
+    path('getPull/<str:fileName>', views.getPull, name='getPull'),
     path('pulls-oneeye/<uuid:id>', views.pullsOneEye, name='pulls-oneeye'),
     path('pulls-twoeye/<uuid:id>', views.pullsTwoEye, name='pulls-twoeye'),
     path('pulls-done/<uuid:id>/<int:cd>', views.pullsDone, name='pulls-done'),

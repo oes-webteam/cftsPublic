@@ -25,6 +25,7 @@
 <!-- Add client side javascript checks to verify the file being uploaded is what it says it is -->
 <!-- I mean, we should be able to trust our own analysts... but they're also users. And I don't -->
 <!-- trust users any further than I can shot put them. -->
+<script> var pullZip="{{pullZip}}"; </script>
 <script src="{% static 'js/scan.js' %}"></script>
 {% endblock %}
     
