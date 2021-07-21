@@ -119,7 +119,7 @@ def transferRequest( request, id ):
         'files': rqst.files.all(),
         'target_email': rqst.target_email.all(),
         'is_submitted': rqst.is_submitted,
-        'is_centcom': User.objects.get(user_id=rqst.user.user_id).is_centcom
+        'is_centcom': rqst.is_centcom
     }
     return render(request, 'pages/transfer-request.html', {'rc': rc})
 
