@@ -1,6 +1,7 @@
 # ====================================================================
 # core
 import json
+import os
 from datetime import datetime
 from zipfile import ZipFile
 from django.conf import settings
@@ -201,11 +202,18 @@ def process ( request ):
             target_email.save()
             target_list.append( target_email )
 
-            user = User( 
-                name_first = form_data.get( 'firstName' ), 
-                name_last = form_data.get( 'lastName' ), 
-                email = source_email,
-                phone = form_data.get('userPhone')
+        try:
+            user = User.objects.filter(
+                user_identifier=form_data.get('userID'))[0]
+            print("User already exists")
+        except IndexError:
+            print("No user found with ID")
+            user = User(
+                name_first=form_data.get('firstName'),
+                name_last=form_data.get('lastName'),
+                email=source_email,
+                #is_centcom=form_data.get('isCentcom'),
+                user_identifier=form_data.get('userID')
             )
             user.save()
 

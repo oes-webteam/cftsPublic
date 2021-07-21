@@ -7,6 +7,19 @@ let fileInfo = {};
 let addEmail = document.getElementById( "addEmail" );
 
 
+/* *************************************************** */
+/* GET USER CERT INFORMATION FROM VAR IN FRONTEND.HTML */
+/* *************************************************** */
+  // console.log(cert)
+  subject = cert.split("=")
+  subject = subject[subject.length-1]
+  // console.log(subject)
+  user = subject.split(".")
+  // console.log(user)
+  $("#firstName").val(user[1])
+  $("#lastName").val(user[0]) 
+  $("#userID").val(userHash)
+
 /* ****************************************** */
 /* USER NOTIFICATION (NEEDS VAST IMPROVEMENT) */
 /* ****************************************** */
