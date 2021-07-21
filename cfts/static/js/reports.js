@@ -41,11 +41,24 @@ $( document ).ready( function( ) {
       $.post( url, data, 'json' ).then( 
         // ajax request succeeded
         ( resp ) => {
+
           $( '#reviewed' ).text( resp.files_reviewed );
           $( '#transfered' ).text( resp.files_transfered );
           $( '#centcom' ).text( resp.centcom_files );
           $( '#rejected' ).text( resp.files_rejected );
+          
+          $( '#excel' ).text("Excel files: " + resp.file_types.excel);
+          $( '#word' ).text("Word files: " + resp.file_types.word);
+          $( '#ppt' ).text("PowerPoint files: " + resp.file_types.ppt);
+          $( '#txt' ).text("Text files: " + resp.file_types.text);
+          $( '#pdf' ).text("PDF files: " + resp.file_types.pdf);
+          $( '#img' ).text("Image files: " + resp.file_types.img);
+          $( '#other' ).text("Other files: " + resp.file_types.other);
+
+          $( '#size' ).text(resp.file_sizes);
+
           $( '.col.results' ).show();
+
         }, 
         // ajax request failed
         ( resp, status ) => {
