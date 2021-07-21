@@ -1,10 +1,10 @@
 import os
 import shutil
-from cfts import settings
 from datetime import datetime
 
 # path to uploads folder
-uploadsPath = os.path.join(settings.BASE_DIR, 'uploads')
+uploadsPath = os.path.join(os.path.dirname(os.getcwd()), 'uploads')
+print("Uploads folder path: ", uploadsPath)
 
 # get all files in folder
 with os.scandir(uploadsPath) as files:
