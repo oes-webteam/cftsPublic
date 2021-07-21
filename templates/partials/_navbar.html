@@ -19,9 +19,7 @@
         <li class="nav-item">
           <a href="{% url 'index' %}" class="nav-link">Home</a>
         </li>
-        <li class="nav-item">
-          <a href="{% url 'urlShortner' %}" class="nav-link">URL Shortner</a>
-        </li>
+        
         <li class="nav-item dropdown">
           <!--DROP DOWN STARTS HERE FOR NAV-->
           <a
@@ -61,7 +59,7 @@
           >
           <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
             <a class="dropdown-item" href="{% url 'queue' %}">Transfer Queue</a>
-            <a class="dropdown-item" href="{% url 'scan' %}">Scan Tool</a>
+            <a class="dropdown-item" href="{% url 'scan' 'none' %}">Scan Tool</a>
             <a class="dropdown-item" href="{% url 'pulls' %}">Pulls History</a>
             <a class="dropdown-item" href="{% url 'archive' %}">Transfers Archive</a>
             <a class="dropdown-item" href="{% url 'reports' %}">Reporting</a>

@@ -1,7 +1,7 @@
 #====================================================================
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
-from pages.models import Classification, Rejection, Network#, File
+from pages.models import Classification, Rejection, Network, DirtyWord#, File
 from django.contrib.auth.decorators import login_required
 # from django.core.files.base import ContentFile
 #====================================================================
@@ -89,5 +89,40 @@ def setupDB( request ):
     jopes = Rejection( name = 'JOPES', subject = 'CFTS Request Rejected -- JOPES Data', text = '' )
     jopes.save()
     bad_class = Rejection( name = 'Contains Classification Markings', subject = 'CFTS Request Rejected -- Contains Classification Markings', text = '' )
+
+  #scan dirty words
+  if DirtyWord.objects.count() == 0:
+    secret = DirtyWord(word = "SECRET", case_sensitive = False)
+    secret.save() 
+
+    sSlash = DirtyWord(word = "S//", case_sensitive = False)
+    sSlash.save()
+
+    noforn = DirtyWord(word = "NOFORN", case_sensitive = False)
+    noforn.save()
+
+    cSlash = DirtyWord(word = "C//", case_sensitive = False)
+    cSlash.save()
+
+    confid = DirtyWord(word = "CONFIDENTIAL", case_sensitive = False)
+    confid.save()
+
+    PRV = DirtyWord(word = "PRV", case_sensitive = True)
+    PRV.save()
+
+    LVY = DirtyWord(word = "LVY", case_sensitive = True)
+    LVY.save()
+
+    RDD = DirtyWord(word = "RDD", case_sensitive = True)
+    RDD.save()
+
+    RLD = DirtyWord(word = "RLD", case_sensitive = True)
+    RLD.save()
+
+    ALD = DirtyWord(word = "ALD", case_sensitive = True)
+    ALD.save()
+
+    RFP = DirtyWord(word = "RFP", case_sensitive = True)
+    RFP.save()
 
   return render( request, 'pages/setupdb.html' )

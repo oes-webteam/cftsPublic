@@ -12,6 +12,3 @@ def howTo( request ):
 
 def resources( request ):
   return render(request, 'pages/resources.html')
-
-def urlShortner( request ):
-  return render(request, 'pages/urlShortner.html')

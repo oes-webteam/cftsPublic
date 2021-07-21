@@ -207,25 +207,44 @@ removeHighlight = ( e ) => dropArea.classList.remove( 'highlight-active' );
 const createEmailField = ( e ) => {
   
   preventDefaults( e );
-  let theButton = e.target;
-  let count = document.getElementsByName( 'targetEmail' ).length - 1;
-  
-//  let spacerSpan = document.createElement( 'span' );
-//  spacerSpan.classList.add( 'w-100' );
+  let emailFields = document.getElementsByName('targetEmail');
+  let emailFieldEmpty = false;
 
-  let newField = document.createElement( 'input' );
-  newField.setAttribute( 'type', 'email' );
-  newField.setAttribute( 'name', 'targetEmail' );
-  newField.setAttribute( 'id', 'destination' + count );
-  newField.setAttribute( 'placeholder', 'Email Address' );
-  newField.classList.add( 'form-control' );
-  
-  let formGroup = document.createElement( 'div' );
-  formGroup.classList.add( 'form-group', 'add-email' );
-  formGroup.appendChild( newField );
+  emailFields.forEach(field => {
+    if(field.value == ""){
+      console.log("empty email field")
+      field.classList.add('is-invalid');
+      emailFieldEmpty = true;
+    }
+    else{
+      if(field.classList.contains('is-invalid')){
+        field.classList.remove('is-invalid');
+      }
+    }
+  })
 
-  // inputGroup.insertBefore( spacerSpan, inputGroup.children[ position ] )
-  theButton.parentElement.insertAdjacentElement( "beforeBegin", formGroup );
+
+  if(emailFieldEmpty == false){
+    let theButton = e.target;
+    let count = document.getElementsByName( 'targetEmail' ).length - 1;
+    
+  //  let spacerSpan = document.createElement( 'span' );
+  //  spacerSpan.classList.add( 'w-100' );
+
+    let newField = document.createElement( 'input' );
+    newField.setAttribute( 'type', 'email' );
+    newField.setAttribute( 'name', 'targetEmail' );
+    newField.setAttribute( 'id', 'destination' + count );
+    newField.setAttribute( 'placeholder', 'Email Address' );
+    newField.classList.add( 'form-control' );
+    
+    let formGroup = document.createElement( 'div' );
+    formGroup.classList.add( 'form-group', 'add-email' );
+    formGroup.appendChild( newField );
+
+    // inputGroup.insertBefore( spacerSpan, inputGroup.children[ position ] )
+    theButton.parentElement.insertAdjacentElement( "beforeBegin", formGroup );
+  }
 }
 addEmail.addEventListener( 'click', createEmailField, false );
 

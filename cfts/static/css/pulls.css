@@ -20,16 +20,40 @@
   padding: 15px; 
   position: relative;
 }
-.grid-column > li.to-twoeye { border-color: rgb(225,185,51); }
-.grid-column > li.to-complete { border-color: rgb(51,205,51); }
-.grid-column > li.is-done { 
+
+.status-imgs{
+  background-color: rgb(245,245,240);
+  float: right;
+  margin-top: -5px;
+}
+
+.status-img{
+  height: 23px;
+  width: 30px;
+  outline: solid;
+  outline-offset: 1px;
+  outline-width: 3px;
+  padding: 2px;
+}
+.title-line{
+  display: inline-block;
+}
+
+.grid-column > li.to-twoeye { 
+  border-color: rgb(236, 193, 0); 
+
+}
+.grid-column > li.to-complete { 
+  border-color: rgb(51,205,51); 
+}
+.grid-column > li.is-done, .grid-column > li > ul > li.is-done, .grid-column > li > ul > li.is-done > img { 
   background-color: rgb(225,225,225); 
   border-color: rgb(120,120,120);
   color: rgb(160,160,160);
 }
 
 .grid-column > li:hover {
-  background-color: rgb(255,238,170);
+  background-color: #bebebe;
 }
 .grid-column > li > ul { margin: 0; padding: 0; }
 .grid-column > li > ul > li { list-style: none; }
