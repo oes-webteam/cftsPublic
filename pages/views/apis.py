@@ -20,6 +20,7 @@ from django.http import JsonResponse, HttpResponseRedirect
 # model/database stuff
 from pages.models import *
 
+
 # ====================================================================
 
 
@@ -113,7 +114,7 @@ def runNumbers(request):
         for f in files_in_request:
             file_count = 1
             file_name = f.__str__()
-            ext = file_name.split('.')[1]
+            ext = str(file_name.split('.')[-1]).lower()
             file_types.append(ext)
             
 
@@ -127,6 +128,9 @@ def runNumbers(request):
                     for c in contents:
                         if c[-1] == "/" or c[-1] == "\\":
                             contents.remove(c)
+
+                        ext = str(c.split('.')[-1]).lower()
+                        file_types.append(ext)
                         file_size = file_size + zip.getinfo(c).file_size
                     file_count = len(contents)
             else:
@@ -161,7 +165,9 @@ def runNumbers(request):
     imgCount = file_types.count("png")+file_types.count("jpg")+file_types.count("jpeg")+file_types.count("svg")+file_types.count("gif")
     file_type_counts["img"] = imgCount
 
-    otherCount = len(file_types) - (pdfCount + excelCount + wordCount + imgCount + pptCount + textCount)
+    zipCount = file_types.count("zip")
+
+    otherCount = len(file_types) - (pdfCount + excelCount + wordCount + imgCount + pptCount + textCount + zipCount)
     file_type_counts["other"] = otherCount
 
     # make bytes more human readable
@@ -202,20 +208,32 @@ def process ( request ):
             target_email.save()
             target_list.append( target_email )
 
-        try:
-            user = User.objects.filter(
-                user_identifier=form_data.get('userID'))[0]
-            print("User already exists")
-        except IndexError:
-            print("No user found with ID")
+        # only check for unique users if userID is provided
+        if form_data.get('userID') == "":
+            print("Not able to get user ID, may create duplicate user.")
+
             user = User(
                 name_first=form_data.get('firstName'),
                 name_last=form_data.get('lastName'),
                 email=source_email,
-                #is_centcom=form_data.get('isCentcom'),
                 user_identifier=form_data.get('userID')
             )
             user.save()
+
+        else:
+            try:
+                user = User.objects.filter(
+                    user_identifier=form_data.get('userID'))[0]
+                print("User already exists")
+            except IndexError:
+                print("No user found with ID")
+                user = User(
+                    name_first=form_data.get('firstName'),
+                    name_last=form_data.get('lastName'),
+                    email=source_email,
+                    user_identifier=form_data.get('userID')
+                )
+                user.save()
 
         request = Request( 
             user = user, 
