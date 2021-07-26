@@ -20,6 +20,7 @@ from django.http import JsonResponse, HttpResponseRedirect
 # model/database stuff
 from pages.models import *
 
+
 # ====================================================================
 
 
@@ -113,7 +114,7 @@ def runNumbers(request):
         for f in files_in_request:
             file_count = 1
             file_name = f.__str__()
-            ext = file_name.split('.')[1]
+            ext = str(file_name.split('.')[-1]).lower()
             file_types.append(ext)
             
 
@@ -127,6 +128,9 @@ def runNumbers(request):
                     for c in contents:
                         if c[-1] == "/" or c[-1] == "\\":
                             contents.remove(c)
+
+                        ext = str(c.split('.')[-1]).lower()
+                        file_types.append(ext)
                         file_size = file_size + zip.getinfo(c).file_size
                     file_count = len(contents)
             else:
@@ -161,7 +165,9 @@ def runNumbers(request):
     imgCount = file_types.count("png")+file_types.count("jpg")+file_types.count("jpeg")+file_types.count("svg")+file_types.count("gif")
     file_type_counts["img"] = imgCount
 
-    otherCount = len(file_types) - (pdfCount + excelCount + wordCount + imgCount + pptCount + textCount)
+    zipCount = file_types.count("zip")
+
+    otherCount = len(file_types) - (pdfCount + excelCount + wordCount + imgCount + pptCount + textCount + zipCount)
     file_type_counts["other"] = otherCount
 
     # make bytes more human readable
