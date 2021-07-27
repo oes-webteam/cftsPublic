@@ -180,7 +180,6 @@ def runNumbers(request):
 
     return JsonResponse({'files_reviewed': files_reviewed, 'files_transfered': files_transfered, 'files_rejected': files_rejected, 'centcom_files': centcom_files, 'file_types': file_type_counts, 'file_sizes': str(round(file_size,2))+" "+sizeSuffix[i] })
 
-@login_required
 def process ( request ):
     resp = {}
   
