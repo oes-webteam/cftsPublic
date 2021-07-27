@@ -80,6 +80,7 @@ def runScan():
 
                 if(ext in office_filetype_list):
                     file_results = scanOfficeFile(file_path)
+
                 elif(ext == '.pdf'):
                     textFile = open(root+"\\"+temp+".txt", "w", encoding="utf-8")
                     with open(file_path, 'rb') as pdf:
@@ -98,6 +99,13 @@ def runScan():
                     if file_results is not None:
                         file_results['file'] = file_path
 ##                os.remove(text_path)
+
+                elif(ext == '.zip'):
+                    fileZip = ZipFile(os.path.join(root,filename))
+                    fileZip.extractall(root)
+                    for zipRoot, zipDirs, zipFiles in os.walk(os.path.join(root,filename.split(".")[0])):
+                        for file in zipFiles:
+                            files.append(os.path.join(filename.split(".")[0],file))
 
                 else:
                     file_results = scanFile(file_path)
