@@ -15,8 +15,7 @@ from django.http import JsonResponse
 
 # pdf parsing
 from io import StringIO
-from pdfminer.high_level import *
-
+import PyPDF2
 # cfts settings
 from cfts import settings as cftsSettings
 
@@ -82,19 +81,23 @@ def runScan():
                 if(ext in office_filetype_list):
                     file_results = scanOfficeFile(file_path)
                 elif(ext == '.pdf'):
-                    textFile = open(root+"\\"+temp+".txt", "w",encoding='utf-8')
-                    pdf2Text = StringIO()
-                    with open(file_path, 'rb',) as pdf:
-                        extract_text_to_fp(
-                            pdf, pdf2Text, output_type='text', codec='utf-8')
-                        textFile.write(pdf2Text.getvalue().strip())
-                        textFile.close()
+                    textFile = open(root+"\\"+temp+".txt", "w", encoding="utf-8")
+                    with open(file_path, 'rb') as pdf:
+                        pdfReader = PyPDF2.PdfFileReader(pdf)
+                        pages = pdfReader.pages
+                        
+                        for page in pages:
+                            pageText = page.extractText()
+                            textFile.write("".join(pageText.split()))
+                            
+                        pdf.close()
 
+                    textFile.close()
                     text_path = os.path.join(root+"\\"+temp+".txt")
                     file_results = scanFile(text_path)
                     if file_results is not None:
                         file_results['file'] = file_path
-                    os.remove(text_path)
+##                os.remove(text_path)
 
                 else:
                     file_results = scanFile(file_path)
