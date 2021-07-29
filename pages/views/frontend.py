@@ -33,6 +33,4 @@ def frontend(request):
         return render(request, 'pages/frontend.html', {'rc': rc})
     
     except KeyError:
-        request.session.__setitem__('consent','consent given')
-        request.session.set_expiry(0)
         return render(request, 'pages/consent.html')

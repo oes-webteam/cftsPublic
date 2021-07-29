@@ -45,6 +45,8 @@ urlpatterns = [
     path('api-setreject', views.setReject, name='api-setreject'),
     path('api-numbers', views.runNumbers, name='api-numbers'),
     path('api-processrequest', views.process, name='api-processrequest'),
+    path('api-setconsentcookie', views.setConsentCookie, name='api-setconsentcookie'),
+    
 
     # dev tools
     path('tools-makefiles', views.makeFiles, name='make-files'),
