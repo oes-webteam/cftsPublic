@@ -13,7 +13,7 @@ from django.utils.dateparse import parse_date
 from django.contrib.auth.decorators import login_required
 
 # responses
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 # , HttpResponse, FileResponse
 from django.http import JsonResponse, HttpResponseRedirect
 
@@ -268,3 +268,8 @@ def process ( request ):
                 'msg': "The 'api-processrequest' view only accepts POST requests."}
 
     return JsonResponse(resp)
+
+def setConsentCookie(request):
+    request.session.__setitem__('consent','consent given')
+    request.session.set_expiry(0)
+    return redirect('frontend')
