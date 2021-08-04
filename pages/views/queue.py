@@ -21,7 +21,7 @@ from pages.models import *
 from django.db.models import Max, Count, Q, Sum
 
 # email creation
-from email.generator import Generator
+from email.generator import BytesGenerator
 from email.mime.text import MIMEText
 from email.encoders import encode_base64
 from email.mime.base import MIMEBase
@@ -164,9 +164,20 @@ def createZip(request, network_name, isCentcom):
         qs = Request.objects.filter(
             network__name=network_name, pull=None)
     # for each xfer request ...
+
+    requestDirs = []
     for rqst in qs:
-        zip_folder = str(rqst.user)
+        zip_folder = str(rqst.user) + "/request_1"
         theseFiles = rqst.files.filter(rejection_reason=None)
+
+        i = 2
+        while zip_folder in requestDirs:
+            print("request folder already exists")
+            zip_folder = str(rqst.user) + "/request_" + str(i)
+            i+=1
+
+        requestDirs.append(zip_folder)
+
         # add their files to the zip in the folder of their name
         for f in theseFiles:
             zip_path = os.path.join(zip_folder, str(f))
@@ -189,17 +200,18 @@ def createZip(request, network_name, isCentcom):
                 else:
                     break
         
-        fp = open(email_file_name, "w")
-        emailString = ""
+            
+        with zip.open(email_file_path, 'w') as fp:
+            emailString = ""
 
-        for this_email in rqst.target_email.all():
-            emailString = emailString + this_email.address + ';\n'
+            for this_email in rqst.target_email.all():
+                emailString = emailString + this_email.address + ';\n'
+            
+            fp.write(emailString.encode('utf-8'))
+            fp.close()
         
-        fp.write(emailString)
-        fp.close()
-
-        zip.write(email_file_name, os.path.join(zip_folder, email_file_name))
-        os.remove(email_file_name)
+        #zip.write(email_file_name, os.path.join(zip_folder, email_file_name))
+        #os.remove(email_file_name)
         
 
         msg = MIMEMultipart()
@@ -221,7 +233,7 @@ def createZip(request, network_name, isCentcom):
             msg.attach(attachment)
 
         msg_file_name = '_email.eml'
-        msgPath =zip_folder+"/"+msg_file_name
+        msgPath = zip_folder + "/" + msg_file_name
 
         if msgPath in zip.namelist():
             i = 1
@@ -236,14 +248,14 @@ def createZip(request, network_name, isCentcom):
                     break        
 
 
-        with open(msg_file_name.encode("utf-8"), 'w') as eml:
-            gen = Generator(eml)
+        
+        with zip.open(msgPath, 'w') as eml:
+            gen = BytesGenerator(eml)
             gen.flatten(msg)
 
-
-        zip.write(msg_file_name, os.path.join(zip_folder, msg_file_name))
-        os.remove(msg_file_name)
-
+        #zip.write(msg_file_name, os.path.join(zip_folder, msg_file_name))
+        #os.remove(msg_file_name)
+        
         # update the record
         rqst.pull_id = new_pull.pull_id
         rqst.save()
