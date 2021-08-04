@@ -24,7 +24,7 @@ let addEmail = document.getElementById( "addEmail" );
 /* USER NOTIFICATION (NEEDS VAST IMPROVEMENT) */
 /* ****************************************** */
 notifyUser = ( msg ) => {
-  let alertDiv = $( ".alert" );
+  let alertDiv = $( ".alert-success" );
   alertDiv.text( msg );  
   alertDiv.fadeIn();
   window.setTimeout( function() {
