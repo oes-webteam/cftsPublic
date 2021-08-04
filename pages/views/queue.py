@@ -202,47 +202,47 @@ def createZip(request, network_name, isCentcom):
         os.remove(email_file_name)
         
 
-        msg = MIMEMultipart()
+        # msg = MIMEMultipart()
 
-        msg['To'] = emailString
-        msg['Subject'] = 'CFTS File Transfer'
+        # msg['To'] = emailString
+        # msg['Subject'] = 'CFTS File Transfer'
 
-        msg.attach(MIMEText('Attatched files transfered across domains from CFTS.'))
+        # msg.attach(MIMEText('Attatched files transfered across domains from CFTS.'))
 
-        for f in theseFiles:
-            fileMime = mimetypes.guess_type(f.file_object.path)
+        # for f in theseFiles:
+        #     fileMime = mimetypes.guess_type(f.file_object.path)
             
-            file = open(f.file_object.path.encode('utf-8'),'rb')
-            attachment = MIMEBase(fileMime[0],fileMime[1])
-            attachment.set_payload(file.read())
-            file.close()
-            encode_base64(attachment)
-            attachment.add_header('Content-Disposition','attachment',filename=f.file_object.path.split("\\")[-1])
-            msg.attach(attachment)
+        #     file = open(f.file_object.path.encode('utf-8'),'rb')
+        #     attachment = MIMEBase(fileMime[0],fileMime[1])
+        #     attachment.set_payload(file.read())
+        #     file.close()
+        #     encode_base64(attachment)
+        #     attachment.add_header('Content-Disposition','attachment',filename=f.file_object.path.split("\\")[-1])
+        #     msg.attach(attachment)
 
-        msg_file_name = '_email.eml'
-        msgPath =zip_folder+"/"+msg_file_name
+        # msg_file_name = '_email.eml'
+        # msgPath =zip_folder+"/"+msg_file_name
 
-        if msgPath in zip.namelist():
-            i = 1
-            print("eml file exists")
-            while True:
-                msg_file_name = "_email"+str(i)+".eml"
-                msgPath =zip_folder+"/"+msg_file_name
-                print("Trying " + msg_file_name)
-                if msgPath in zip.namelist():
-                    i = i + 1
-                else:
-                    break        
-
-
-        with open(msg_file_name.encode("utf-8"), 'w') as eml:
-            gen = Generator(eml)
-            gen.flatten(msg)
+        # if msgPath in zip.namelist():
+        #     i = 1
+        #     print("eml file exists")
+        #     while True:
+        #         msg_file_name = "_email"+str(i)+".eml"
+        #         msgPath =zip_folder+"/"+msg_file_name
+        #         print("Trying " + msg_file_name)
+        #         if msgPath in zip.namelist():
+        #             i = i + 1
+        #         else:
+        #             break        
 
 
-        zip.write(msg_file_name, os.path.join(zip_folder, msg_file_name))
-        os.remove(msg_file_name)
+        # with open(msg_file_name.encode("utf-8"), 'w') as eml:
+        #     gen = Generator(eml)
+        #     gen.flatten(msg)
+
+
+        # zip.write(msg_file_name, os.path.join(zip_folder, msg_file_name))
+        # os.remove(msg_file_name)
 
         # update the record
         rqst.pull_id = new_pull.pull_id
