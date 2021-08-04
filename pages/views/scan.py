@@ -83,7 +83,6 @@ def runScan():
 
     for filename in fileList:
         if txt.match(filename.split("\\")[-1]) == None and eml.match(filename.split("\\")[-1]) == None:
-            print("scanning file: ", filename)
             file_results = None
             temp, ext = os.path.splitext(filename)
 
@@ -109,11 +108,10 @@ def runScan():
                     file_results['file'] = filename
 
             elif(ext == '.zip'):
-                print("zip found, extracting...")
                 fileZip = ZipFile(os.path.join(root,filename))
-                
-                fileZip.extractall(scan_dir+"\\extracted_files")
-                for zipRoot, zipDirs, zipFiles in os.walk(scan_dir+"\\extracted_files"):
+                extractDir = scan_dir+"\\extracted_files\\"+filename.split("\\")[-3]+filename.split("\\")[-2]
+                fileZip.extractall(extractDir)
+                for zipRoot, zipDirs, zipFiles in os.walk(extractDir):
                     for file in zipFiles:
                         fileList.append(zipRoot+"\\"+file)
 
