@@ -77,7 +77,10 @@
                         {% for request in network.q %}
                         <tr class="request-header{% if request.pull != None %} pending{% endif %} {% if request.centcom_pull %}centcom{% endif %}">
                             <td><a href="{% url 'transfer-request' id=request.request_id %}">{{ request.user }}</a></td> <!-- link to request view -->
-                            <td{% if request.comments != None %} class="request-comments"> <a href="#" class="btn btn-primary comments">Show/Hide Comments</a> {% else %}>{% endif %}</td>
+                            <td class="request-comments"> {% if request.comments != "" %}
+                                <button class="btn btn-primary comments">Show/Hide Comments</button>{% endif %}
+
+                            </td>
                             <td class="request-submitted">Submitted: {{ request.date_created|date:'db'|upper }} @ {{ request.date_created|time:'Hi' }}</td>
                         </tr>
                         {% if request.comments != None %}
@@ -106,7 +109,7 @@
                     </form>
 
                     <!-- delete selected button -->
-                    <button class="btn btn-danger btn-reject-selected">Reject All Selected</button>
+                    {% comment %} <button class="btn btn-danger btn-reject-selected">Reject All Selected</button> {% endcomment %}
 
                 {% endif %}
                 </div>

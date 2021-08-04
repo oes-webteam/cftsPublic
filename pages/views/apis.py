@@ -17,6 +17,8 @@ from django.shortcuts import render, redirect
 # , HttpResponse, FileResponse
 from django.http import JsonResponse, HttpResponseRedirect
 
+# cfts settings
+from cfts import settings as Settings
 # model/database stuff
 from pages.models import *
 
@@ -39,34 +41,14 @@ def setReject(request):
     # recreate the zip file for the pull
     someRequest = Request.objects.get(request_id=request_id[0])
     network_name = someRequest.network.name
-    pull_number = someRequest.pull.pull_number
+    try:
+        pull_number = someRequest.pull.pull_id
 
-    zipPath = os.path.join(
-        settings.STATICFILES_DIRS[0], "files\\") + network_name + "_" + str(pull_number) + ".zip"
-    zip = ZipFile(zipPath, "w")
+        url = 'create-zip/'+ str(network_name) +'/'+ str(someRequest.is_centcom)+'/'+ str(pull_number)
+        return redirect('create-zip',network_name=network_name,isCentcom=someRequest.is_centcom,rejectPull=pull_number)
 
-    # select Requests based on pull
-    qs = Request.objects.filter(
-        pull__pull_id=someRequest.pull.pull_id, files__rejection_reason=None)
-
-    # for each xfer request ...
-    for rqst in qs:
-        zip_folder = str(rqst.user)
-        theseFiles = rqst.files.all()
-
-        # add their files to the zip in the folder of their name
-        for f in theseFiles:
-            zip_path = os.path.join(zip_folder, str(f))
-            zip.write(f.file_object.path, zip_path)
-
-        # create and add the target email file
-        email_file_name = str(rqst.target_email)
-        fp = open(email_file_name, "w")
-        fp.close()
-        zip.write(email_file_name, os.path.join(zip_folder, email_file_name))
-        os.remove(email_file_name)
-
-    zip.close()
+    except AttributeError:
+        print("Request not found in any pull.")
     return JsonResponse({'mystring': 'isgreat'})
 
 

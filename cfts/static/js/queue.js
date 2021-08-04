@@ -50,7 +50,7 @@ jQuery( document ).ready( function() {
     else{
       isCentcom = "False"
     }
-    let url = '/create-zip/' + netName +'/'+ isCentcom;
+    let url = '/create-zip/' + netName +'/'+ isCentcom+'/false';
     
     if( $( e.target ).hasClass( 'disabled' ) ) {
       if( $(e.target).hasClass('centcom') ){

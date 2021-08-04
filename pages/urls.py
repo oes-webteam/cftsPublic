@@ -19,7 +19,7 @@ urlpatterns = [
     path('queue', views.queue, name='queue'),
     path('transfer-request/<uuid:id>',
          views.transferRequest, name='transfer-request'),
-    path('create-zip/<str:network_name>/<str:isCentcom>',
+    path('create-zip/<str:network_name>/<str:isCentcom>/<str:rejectPull>',
          views.createZip, name='create-zip'),
     path('getFile/uploads/<str:fileID>/<str:fileName>',
          views.getFile, name='getFile'),
