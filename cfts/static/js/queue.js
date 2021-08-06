@@ -98,7 +98,13 @@ jQuery( document ).ready( function() {
       console.log("selcted reject clicked")
 
       const $checkedItems = $( "[name='fileSelection']:checked[request_id='"+$( e.target ).attr('request_id')+"']");
-      let data = [];
+
+      if ($checkedItems.length == 0){
+        alert( ' Select 1 or more files to reject.' );
+      }
+      
+      else{
+        let data = [];
       $checkedItems.each( i => {
         data.push({ 
           'fileID': $checkedItems[i].id.slice(4), 
@@ -108,12 +114,13 @@ jQuery( document ).ready( function() {
         }) 
       });
       rejectDialog.data( 'data', data ).dialog( 'open' );
+      }
+      
     }
 
     else{
       console.log("request reject clicked")
       const checkboxes = Array.from( document.querySelectorAll( 'input[type="checkbox"][request_id="'+$( e.target ).attr('request_id')+'"]' ) );
-  
       checkboxes.forEach( checkbox =>{
         checkbox.removeAttribute("hidden");
       });
