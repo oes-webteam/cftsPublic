@@ -50,7 +50,7 @@ jQuery( document ).ready( function() {
     else{
       isCentcom = "False"
     }
-    let url = '/create-zip/' + netName +'/'+ isCentcom;
+    let url = '/create-zip/' + netName +'/'+ isCentcom+'/false';
     
     if( $( e.target ).hasClass( 'disabled' ) ) {
       if( $(e.target).hasClass('centcom') ){
@@ -90,34 +90,47 @@ jQuery( document ).ready( function() {
       });
     }
   });
-  
-  // REJECT BUTTON CLICK HANDLER
-  $( '.btn-reject' ).click( e => {
-    e.preventDefault();
-    const data = [{ 
-      'fileID': e.target.id.slice(4), 
-      'fileName': $( e.target ).attr( 'file_name' ),
-      'requestID': $( e.target ).attr( 'request_id' ),
-      'requestEmail': $( e.target ).attr( 'request_email' )
-    }];
-    rejectDialog.data( 'data', data ).dialog( 'open' );
-  });
 
-  // MULTI-REJECT CLICK HANDLER
-  $( '.btn-reject-selected' ).click( e => {
+  $('.request-reject').click(e => {
     e.preventDefault();
-    const $checkedItems = $( "[name='fileSelection']:checked" );
-    let data = [];
-    $checkedItems.each( i => {
-      data.push({ 
-        'fileID': $checkedItems[i].id.slice(4), 
-        'fileName': $( $checkedItems[i] ).attr( 'file_name' ),
-        'requestID': $( $checkedItems[i] ).attr( 'request_id' ),
-        'requestEmail': $( $checkedItems[i] ).attr( 'request_email' )
-      }) 
-    });
-    rejectDialog.data( 'data', data ).dialog( 'open' );
+
+    if($(e.target).hasClass('selected-reject')){
+      console.log("selcted reject clicked")
+
+      const $checkedItems = $( "[name='fileSelection']:checked[request_id='"+$( e.target ).attr('request_id')+"']");
+
+      if ($checkedItems.length == 0){
+        alert( ' Select 1 or more files to reject.' );
+      }
+      
+      else{
+        let data = [];
+      $checkedItems.each( i => {
+        data.push({ 
+          'fileID': $checkedItems[i].id.slice(4), 
+          'fileName': $( $checkedItems[i] ).attr( 'file_name' ),
+          'requestID': $( $checkedItems[i] ).attr( 'request_id' ),
+          'requestEmail': $( $checkedItems[i] ).attr( 'request_email' )
+        }) 
+      });
+      rejectDialog.data( 'data', data ).dialog( 'open' );
+      }
+      
+    }
+
+    else{
+      console.log("request reject clicked")
+      const checkboxes = Array.from( document.querySelectorAll( 'input[type="checkbox"][request_id="'+$( e.target ).attr('request_id')+'"]' ) );
+      checkboxes.forEach( checkbox =>{
+        checkbox.removeAttribute("hidden");
+      });
+  
+      $(e.target).text("Reject Selected")
+      $(e.target).addClass('selected-reject')
+    }
+
   });
+  
 
   // REJECTION MODAL DEFINITIONS (POPUP)
   const checkSelection = ( selector ) => {
