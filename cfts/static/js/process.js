@@ -223,9 +223,25 @@ function successHandler(r) {
   console.dir(r);
   notifyUser("THANK YOU! Your files have been submitted. ");
   // CLEAN UP!!
+
+  email = $("#userEmail").val();
+  phone = $("#userPhone").val();
+
   document.getElementById("transfer-request-form").reset();
   resetFileQueue();
   resetAdditionalEmails();
+  autoFileUserInfo(email,phone);
+}
+
+function autoFileUserInfo(email,phone){
+  subject = cert.split("=")
+  subject = subject[subject.length-1]
+  user = subject.split(".")
+  $("#firstName").val(user[1])
+  $("#lastName").val(user[0]) 
+  $("#userID").val(userHash)
+  $("#userEmail").val(email)
+  $("#userPhone").val(phone)
 }
 
 function resetFileQueue() {
