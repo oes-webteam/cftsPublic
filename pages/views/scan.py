@@ -16,8 +16,7 @@ from django.http import JsonResponse
 
 # pdf parsing
 from io import StringIO
-from pdfminer.high_level import *
-
+import PyPDF2
 # cfts settings
 from cfts import settings as cftsSettings
 
@@ -78,6 +77,51 @@ def runScan():
     for root, subdirs, files in os.walk(scan_dir):
 
         for filename in files:
+
+            if txt.match(filename) == None and eml.match(filename) == None:
+                file_results = None
+                file_path = os.path.join(root, filename)
+    ##      print( '\t- file %s (full path: %s)' % ( filename, file_path ) )
+                temp, ext = os.path.splitext(filename)
+
+                if(ext in office_filetype_list):
+                    file_results = scanOfficeFile(file_path)
+
+                elif(ext == '.pdf'):
+                    textFile = open(root+"\\"+temp+".txt", "w", encoding="utf-8")
+                    with open(file_path, 'rb') as pdf:
+                        pdfReader = PyPDF2.PdfFileReader(pdf)
+                        pages = pdfReader.pages
+                        
+                        for page in pages:
+                            pageText = page.extractText()
+                            textFile.write("".join(pageText.split()))
+                            
+                        pdf.close()
+
+                    textFile.close()
+                    text_path = os.path.join(root+"\\"+temp+".txt")
+                    file_results = scanFile(text_path)
+                    if file_results is not None:
+                        file_results['file'] = file_path
+##                os.remove(text_path)
+
+                elif(ext == '.zip'):
+                    fileZip = ZipFile(os.path.join(root,filename))
+                    fileZip.extractall(root)
+                    for zipRoot, zipDirs, zipFiles in os.walk(os.path.join(root,filename.split(".")[0])):
+                        for file in zipFiles:
+                            files.append(os.path.join(filename.split(".")[0],file))
+
+                else:
+                    file_results = scanFile(file_path)
+
+                if(file_results is not None):
+                    result = {}
+                    result['file'] = file_path
+                    result['found'] = file_results
+                    scan_results.append(result)
+                
             
             fileList.append(root+"\\"+filename)
 

@@ -78,7 +78,9 @@
   text-align: right;
 }
 .queue-form .request-comments a {  }
-.queue-form .request-submitted { text-align: right; }
+.queue-form .request-submitted { 
+  text-align: right; 
+}
 .queue-form tr.request-header td.comments-text { margin: 0; padding: 0; }
 .queue-form .comments-text div { 
   display: none; 
