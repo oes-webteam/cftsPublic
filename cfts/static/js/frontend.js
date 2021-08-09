@@ -146,7 +146,7 @@ const displayFileQueue = () => {
       selectClass.setAttribute( "name", "classification" + i );
       selectClass.setAttribute( "id", "classification" + i );
       selectClass.required = true;
-      [ '', 'U', 'U//FOUO', 'C//REL', 'S//REL' ].forEach(  c => {
+      [ '','U', 'U//FOUO', 'CUI', 'C//REL', 'S//REL' ].forEach(  c => {
         let option = document.createElement( "option" );
         option.setAttribute( "value", c );
         if( fileQueue[i] && fileQueue[i].cls == c ) option.selected = true;
