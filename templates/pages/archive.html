@@ -67,7 +67,7 @@
                 {% endfor %}
             </ul>
         </td>
-        <td class="xfer-pull">{% if r.is_centcom %}
+        <td class="xfer-pull">{% if r.pull.centcom_pull %}
         {{r.pull}} Centcom Only
         {% else %}{{ r.pull }}
         {% endif %}</td>
