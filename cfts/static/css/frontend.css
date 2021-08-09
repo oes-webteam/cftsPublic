@@ -104,3 +104,7 @@ input[type="checkbox"] {
 }
 
 .file-list label { white-space: nowrap; }
+
+.browser-notif{
+  text-align: center;
+}
