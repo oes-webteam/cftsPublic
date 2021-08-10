@@ -173,7 +173,7 @@ def process ( request ):
         try:
             source_email = Email.objects.get(
                 address=form_data.get('userEmail'))
-        except IndexError:
+        except Email.DoesNotExist:
             source_email = Email(address=form_data.get('userEmail'))
             source_email.save()
     
@@ -182,7 +182,7 @@ def process ( request ):
         for destination in destination_list:
             try:
                 target_email = Email.objects.get(address=destination)
-            except IndexError:
+            except Email.DoesNotExist:
                 target_email = Email(address=destination)
                 target_email.save()
 
@@ -204,12 +204,15 @@ def process ( request ):
             try:
                 User.objects.filter(
                     user_identifier=form_data.get('userID')).update(email=source_email,phone=form_data.get('userPhone'))
-                print("User already exists")
-                print("Updating user email and phone")
+                    
                 user = User.objects.get(
                     user_identifier=form_data.get('userID'))
 
-            except IndexError:
+                print("User already exists")
+                print("Updating user email and phone")
+                
+
+            except User.DoesNotExist:
                 print("No user found with ID")
                 user = User(
                     name_first=form_data.get('firstName'),
