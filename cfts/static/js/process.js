@@ -273,12 +273,12 @@ function resetAdditionalEmails() {
 /* AJAX REQUEST FAILED */
 /* ******************* */
 function failHandler(r, s) {
-  notifyUser(
+  notifyUserError(
     "A system error occurred while trying to submit the files.\n\n" +
       r.status +
       ": " +
       r.statusText +
-      ".  Please notify the CFTS administrators of this error by emailing {{ SETTINGS.CFTS_ADMIN_EMAIL }}."
+      '.  Please notify the CFTS administrators of this error. Contact info can be found by clicking "Contact Us" at the bottom of the page.'
   );
 }
 

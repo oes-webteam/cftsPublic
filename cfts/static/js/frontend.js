@@ -24,12 +24,20 @@ let addEmail = document.getElementById( "addEmail" );
 /* USER NOTIFICATION (NEEDS VAST IMPROVEMENT) */
 /* ****************************************** */
 notifyUser = ( msg ) => {
+  $(".server-error").hide()
   let alertDiv = $( ".alert-success" );
   alertDiv.text( msg );  
   alertDiv.fadeIn();
   window.setTimeout( function() {
     alertDiv.fadeOut();
   }, 5000 );
+};
+
+notifyUserError = ( msg ) => {
+  $(".alert-success").hide()
+  let alertDiv = $( ".server-error" );
+  alertDiv.text( msg );  
+  alertDiv.fadeIn();
 };
 
 

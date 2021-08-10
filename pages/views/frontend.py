@@ -13,6 +13,7 @@ from pages.models import *
 
 @ensure_csrf_cookie
 def frontend(request):
+    browser = request.user_agent.browser.family
     nets = Network.objects.all()
     resources = ResourceLink.objects.all()
     try:
@@ -22,15 +23,15 @@ def frontend(request):
         try:
             cert = request.META['CERT_SUBJECT']
             if cert =="":
-                rc = {'networks': nets, 'resources': resources, }
+                rc = {'networks': nets, 'resources': resources, 'browser': browser}
             else:
                 userHash = hashlib.md5()
                 userHash.update(cert.encode())
                 userHash = userHash.hexdigest()
                 rc = {'networks': nets, 'resources': resources,
-                    'cert': cert, 'userHash': userHash}
+                    'cert': cert, 'userHash': userHash, 'browser': browser}
         except KeyError:
-            rc = {'networks': nets, 'resources': resources, }
+            rc = {'networks': nets, 'resources': resources,'browser': browser }
         #  for rl in resources:
     #    print( rl.file_name )
 
