@@ -5,6 +5,7 @@ import shutil
 # core
 from zipfile import ZipFile
 from django.conf import settings
+import shutil
 
 # decorators
 from django.contrib.auth.decorators import login_required
@@ -15,8 +16,7 @@ from django.http import JsonResponse
 
 # pdf parsing
 from io import StringIO
-from pdfminer.high_level import *
-
+import PyPDF2
 # cfts settings
 from cfts import settings as cftsSettings
 
@@ -65,14 +65,19 @@ def runScan():
     scan_results = []
     office_filetype_list = [".docx", ".dotx", ".xlsx",
                             ".xltx", ".pptx", ".potx", ".ppsx", ".onenote"]
+
     scan_dir = os.path.abspath(settings.SCANTOOL_DIR)
 
     # \cfts\scan should contain all the user folders from the zip file
+    txt = re.compile('_email(\d+)?.txt')
+    eml = re.compile('_email(\d+)?.eml')
+
+    fileList = []
+
     for root, subdirs, files in os.walk(scan_dir):
-        txt = re.compile('_email(\d+)?.txt')
-        eml = re.compile('_email(\d+)?.eml')
 
         for filename in files:
+
             if txt.match(filename) == None and eml.match(filename) == None:
                 file_results = None
                 file_path = os.path.join(root, filename)
@@ -81,20 +86,32 @@ def runScan():
 
                 if(ext in office_filetype_list):
                     file_results = scanOfficeFile(file_path)
-                elif(ext == '.pdf'):
-                    textFile = open(root+"\\"+temp+".txt", "w",encoding='utf-8')
-                    pdf2Text = StringIO()
-                    with open(file_path, 'rb',) as pdf:
-                        extract_text_to_fp(
-                            pdf, pdf2Text, output_type='text', codec='utf-8')
-                        textFile.write(pdf2Text.getvalue().strip())
-                        textFile.close()
 
+                elif(ext == '.pdf'):
+                    textFile = open(root+"\\"+temp+".txt", "w", encoding="utf-8")
+                    with open(file_path, 'rb') as pdf:
+                        pdfReader = PyPDF2.PdfFileReader(pdf)
+                        pages = pdfReader.pages
+                        
+                        for page in pages:
+                            pageText = page.extractText()
+                            textFile.write("".join(pageText.split()))
+                            
+                        pdf.close()
+
+                    textFile.close()
                     text_path = os.path.join(root+"\\"+temp+".txt")
                     file_results = scanFile(text_path)
                     if file_results is not None:
                         file_results['file'] = file_path
-                    os.remove(text_path)
+##                os.remove(text_path)
+
+                elif(ext == '.zip'):
+                    fileZip = ZipFile(os.path.join(root,filename))
+                    fileZip.extractall(root)
+                    for zipRoot, zipDirs, zipFiles in os.walk(os.path.join(root,filename.split(".")[0])):
+                        for file in zipFiles:
+                            files.append(os.path.join(filename.split(".")[0],file))
 
                 else:
                     file_results = scanFile(file_path)
@@ -106,15 +123,59 @@ def runScan():
                     scan_results.append(result)
                 
             
-    return scan_results
+            fileList.append(root+"\\"+filename)
 
+    for filename in fileList:
+        if txt.match(filename.split("\\")[-1]) == None and eml.match(filename.split("\\")[-1]) == None:
+            file_results = None
+            temp, ext = os.path.splitext(filename)
+
+            if(ext in office_filetype_list):
+                file_results = scanOfficeFile(filename)
+
+            elif(ext == '.pdf'):
+                textFile = open(temp+".txt", "w", encoding="utf-8")
+                with open(filename, 'rb') as pdf:
+                    pdfReader = PyPDF2.PdfFileReader(pdf)
+                    pages = pdfReader.pages
+                    
+                    for page in pages:
+                        pageText = page.extractText()
+                        textFile.write("".join(pageText.split()))
+                        
+                    pdf.close()
+
+                textFile.close()
+                text_path = os.path.join(temp+".txt")
+                file_results = scanFile(text_path)
+                if file_results is not None:
+                    file_results['file'] = filename
+
+            elif(ext == '.zip'):
+                fileZip = ZipFile(os.path.join(root,filename))
+                extractDir = scan_dir+"\\extracted_files\\"+filename.split("\\")[-3]+filename.split("\\")[-2]
+                fileZip.extractall(extractDir)
+                for zipRoot, zipDirs, zipFiles in os.walk(extractDir):
+                    for file in zipFiles:
+                        fileList.append(zipRoot+"\\"+file)
+
+            else:
+                file_results = scanFile(filename)
+
+            if(file_results is not None):
+                result = {}
+                result['file'] = filename
+                result['found'] = file_results
+                scan_results.append(result)
+                
+    return scan_results
 
 def scanOfficeFile(office_file):
     results = None
 
     # treat as a zip and extract to \cfts\scan\temp directory
     zf = ZipFile(office_file)
-    zf.extractall(settings.SCANTOOL_TEMPDIR)
+    zf.extractall(settings.SCANTOOL_TEMPDIR+"/office")
 
     # step through the contents of the scantool 'temp' folder
     for root, subdirs, files in os.walk(settings.SCANTOOL_TEMPDIR):
@@ -127,6 +188,7 @@ def scanOfficeFile(office_file):
                 results.append(findings)
 
     # clean up after yourself
+    shutil.rmtree(settings.SCANTOOL_TEMPDIR+"/office")
     # done
     return results
 

@@ -24,7 +24,7 @@ let addEmail = document.getElementById( "addEmail" );
 /* USER NOTIFICATION (NEEDS VAST IMPROVEMENT) */
 /* ****************************************** */
 notifyUser = ( msg ) => {
-  let alertDiv = $( ".alert" );
+  let alertDiv = $( ".alert-success" );
   alertDiv.text( msg );  
   alertDiv.fadeIn();
   window.setTimeout( function() {
@@ -146,7 +146,7 @@ const displayFileQueue = () => {
       selectClass.setAttribute( "name", "classification" + i );
       selectClass.setAttribute( "id", "classification" + i );
       selectClass.required = true;
-      [ '', 'U', 'U//FOUO', 'C//REL', 'S//REL' ].forEach(  c => {
+      [ '','U', 'U//FOUO', 'CUI', 'C//REL', 'S//REL' ].forEach(  c => {
         let option = document.createElement( "option" );
         option.setAttribute( "value", c );
         if( fileQueue[i] && fileQueue[i].cls == c ) option.selected = true;

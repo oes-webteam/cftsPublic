@@ -19,7 +19,7 @@ urlpatterns = [
     path('queue', views.queue, name='queue'),
     path('transfer-request/<uuid:id>',
          views.transferRequest, name='transfer-request'),
-    path('create-zip/<str:network_name>/<str:isCentcom>',
+    path('create-zip/<str:network_name>/<str:isCentcom>/<str:rejectPull>',
          views.createZip, name='create-zip'),
     path('getFile/uploads/<str:fileID>/<str:fileName>',
          views.getFile, name='getFile'),
@@ -45,6 +45,8 @@ urlpatterns = [
     path('api-setreject', views.setReject, name='api-setreject'),
     path('api-numbers', views.runNumbers, name='api-numbers'),
     path('api-processrequest', views.process, name='api-processrequest'),
+    path('api-setconsentcookie', views.setConsentCookie, name='api-setconsentcookie'),
+    
 
     # dev tools
     path('tools-makefiles', views.makeFiles, name='make-files'),
