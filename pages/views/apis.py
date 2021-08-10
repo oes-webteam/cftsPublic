@@ -171,22 +171,21 @@ def process ( request ):
 
         # use the form data to create the necessary records for the request
         try:
-            source_email = Email.objects.filter(
-                address=form_data.get('userEmail'))[0]
+            source_email = Email.objects.get(
+                address=form_data.get('userEmail'))
         except IndexError:
             source_email = Email(address=form_data.get('userEmail'))
-
-        source_email.save()
+            source_email.save()
     
         destination_list = form_data.get( 'targetEmail' ).split( "," )
         target_list = []
         for destination in destination_list:
             try:
-                target_email = Email.objects.filter(address=destination)[0]
+                target_email = Email.objects.get(address=destination)
             except IndexError:
                 target_email = Email(address=destination)
+                target_email.save()
 
-            target_email.save()
             target_list.append( target_email )
 
         # only check for unique users if userID is provided
@@ -203,9 +202,13 @@ def process ( request ):
 
         else:
             try:
-                user = User.objects.filter(
-                    user_identifier=form_data.get('userID'))[0]
+                User.objects.filter(
+                    user_identifier=form_data.get('userID')).update(email=source_email,phone=form_data.get('userPhone'))
                 print("User already exists")
+                print("Updating user email and phone")
+                user = User.objects.get(
+                    user_identifier=form_data.get('userID'))
+
             except IndexError:
                 print("No user found with ID")
                 user = User(
@@ -215,6 +218,7 @@ def process ( request ):
                     phone=form_data.get('userPhone'),
                     user_identifier=form_data.get('userID')
                 )
+                
                 user.save()
 
         request = Request( 
