@@ -197,7 +197,7 @@ def process ( request ):
                 name_first=form_data.get('firstName'),
                 name_last=form_data.get('lastName'),
                 email=source_email,
-                user_identifier=form_data.get('userID')
+                phone=form_data.get('userPhone')
             )
             user.save()
 
@@ -212,6 +212,7 @@ def process ( request ):
                     name_first=form_data.get('firstName'),
                     name_last=form_data.get('lastName'),
                     email=source_email,
+                    phone=form_data.get('userPhone'),
                     user_identifier=form_data.get('userID')
                 )
                 user.save()
