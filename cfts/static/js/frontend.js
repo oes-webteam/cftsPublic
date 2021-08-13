@@ -209,6 +209,14 @@ addHighlight = ( e ) => dropArea.classList.add( 'highlight-active' );
 removeHighlight = ( e ) => dropArea.classList.remove( 'highlight-active' );
 
 
+/* ******************* */
+/* REMOVE EXTRA EMAILS */
+/* ******************* */
+const deleteEmailField = ( e ) => {
+  preventDefaults( e );
+  console.log(e.parentNode)
+};
+
 /* ******************************* */
 /* ADD NEW DESTINATION EMAIL FIELD */
 /* ******************************* */
@@ -231,7 +239,6 @@ const createEmailField = ( e ) => {
     }
   })
 
-
   if(emailFieldEmpty == false){
     let theButton = e.target;
     let count = document.getElementsByName( 'targetEmail' ).length - 1;
@@ -245,15 +252,31 @@ const createEmailField = ( e ) => {
     newField.setAttribute( 'id', 'destination' + count );
     newField.setAttribute( 'placeholder', 'Email Address' );
     newField.classList.add( 'form-control' );
+
+    let appendSpan = document.createElement('span');
+    appendSpan.classList.add('input-group-text')
+    appendSpan.setAttribute('id', 'removeEmail' + count)
+    appendSpan.textContent="X"
+    appendSpan.addEventListener( "click", () => {
+      appendSpan.parentNode.parentNode.remove();
+    }, false );
+
+
+    let removeField = document.createElement('div');
+    removeField.classList.add('input-group-append')
+    removeField.appendChild(appendSpan);
     
     let formGroup = document.createElement( 'div' );
-    formGroup.classList.add( 'form-group', 'add-email' );
+    formGroup.classList.add( 'form-group', 'add-email', 'input-group' );
     formGroup.appendChild( newField );
+    formGroup.appendChild(removeField);
+
 
     // inputGroup.insertBefore( spacerSpan, inputGroup.children[ position ] )
     theButton.parentElement.insertAdjacentElement( "beforeBegin", formGroup );
   }
 }
+
 addEmail.addEventListener( 'click', createEmailField, false );
 
 

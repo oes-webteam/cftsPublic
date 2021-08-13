@@ -18,7 +18,7 @@ label.custom-control-label {
 	line-height: 1.67em;
 }
 
-.input-group-prepend .input-group-text {
+.input-group-prepend .input-group-text, .input-group-append .input-group-text{
 	color: red !important;
 	font-weight: bold;
 }
