@@ -59,20 +59,20 @@ def scan(request,pullZip):
         return render(request, 'pages/scan.html', {'rc': rc, 'pullZip': pullZip })
     else:
         return render(request, 'pages/scan.html', {'rc': rc})
-
+    
 
 def runScan():
     scan_results = []
+    fileList = []
     office_filetype_list = [".docx", ".dotx", ".xlsx",
                             ".xltx", ".pptx", ".potx", ".ppsx", ".onenote"]
-
+    
     scan_dir = os.path.abspath(settings.SCANTOOL_DIR)
 
     # \cfts\scan should contain all the user folders from the zip file
     txt = re.compile('_email(\d+)?.txt')
     eml = re.compile('_email(\d+)?.eml')
 
-    fileList = []
 
     for root, subdirs, files in os.walk(scan_dir):
 
@@ -86,6 +86,16 @@ def runScan():
 
             if(ext in office_filetype_list):
                 file_results = scanOfficeFile(filename)
+                if file_results is not None:
+                    for result in file_results:                            
+                        temp, ext = os.path.splitext(result['file'])    
+                        if ext in office_filetype_list:
+                            embedOffFilePath = os.path.dirname(filename)+"\\"+result['file'].split('\\')[-1]
+                            shutil.move(result['file'], embedOffFilePath)
+                            fileList.append(embedOffFilePath)
+                        
+                # clean up after yourself
+                shutil.rmtree(settings.SCANTOOL_TEMPDIR+"/office")
 
             elif(ext == '.pdf'):
                 textFile = open(temp+".txt", "w", encoding="utf-8")
@@ -121,12 +131,11 @@ def runScan():
                 result['file'] = filename
                 result['found'] = file_results
                 scan_results.append(result)
-                
+
     return scan_results
 
-def scanOfficeFile(office_file):
+def scanOfficeFile(office_file):           
     results = None
-
     # treat as a zip and extract to \cfts\scan\temp directory
     zf = ZipFile(office_file)
     zf.extractall(settings.SCANTOOL_TEMPDIR+"/office")
@@ -141,8 +150,7 @@ def scanOfficeFile(office_file):
                     results = []
                 results.append(findings)
 
-    # clean up after yourself
-    shutil.rmtree(settings.SCANTOOL_TEMPDIR+"/office")
+    
     # done
     return results
 
