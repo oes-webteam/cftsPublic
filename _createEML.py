@@ -18,8 +18,10 @@ import mimetypes
 currentDir = os.path.dirname(os.path.realpath(__file__))
 
 for root, subdirs, files in os.walk(currentDir):
-    zipPath = os.path.join(currentDir,files[-1])
-    zipExtractPath = os.path.join(currentDir,files[-1].split('.')[0])
+    for file in files:
+        if file.split('.')[-1] == "zip":
+            zipPath = os.path.join(currentDir,file)
+            zipExtractPath = os.path.join(currentDir,file.split('.')[0])
 
 print("zip folder: ", zipPath)
 print("extract folder:", zipExtractPath)
