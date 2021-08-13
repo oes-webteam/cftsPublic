@@ -14,7 +14,7 @@
     <li class="{% if pull.date_complete != None %}is-done{% elif pull.date_twoeye != None %}to-complete{% elif pull.date_oneeye != None %}to-twoeye{% endif %} {% if pull.centcom_pull %}centcom{% endif %}">
 
       <ul>
-        <li class="title-line"><strong>{{ pull.pull_network }}_{{ pull.pull_number }} {% if pull.centcom_pull %}Centcom Only{% endif %}</strong></li>
+        <li class="title-line"><strong>{{ pull.pull_network }}_{{ pull.pull_number }} {% if pull.centcom_pull %}</br>Centcom Only{% endif %}</strong></li>
         <li class="title-line status-imgs {% if pull.date_complete != None %}is-done{% elif pull.date_twoeye != None %}to-complete{% elif pull.date_oneeye != None %}to-twoeye{% endif %}">
           <img src="{% if  pull.date_oneeye != None %}{% static 'img/asset 13.svg' %}{% else %}{% static 'img/transparent.png' %}{% endif %}" class="status-img" alt="One Eye" />    
           <img src="{% if  pull.date_twoeye != None %}{% static 'img/asset 13.svg' %}{% else %}{% static 'img/transparent.png' %}{% endif %}" class="status-img" alt="Two Eye" />
