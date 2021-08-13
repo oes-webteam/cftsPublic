@@ -10,7 +10,9 @@
 <section id="boxes" class="py-5">
 
   <div class="container">
-  <div class="alert alert-danger browser-notif" role="alert">This service <a class="alert-link">does not</a> support Internet Explorer. Please use Microsoft Edge, Google Chrome, or Firefox to utilize CFTS.</div>
+    {% if rc.browser == "IE"%}<div class="alert alert-danger browser-notif" role="alert">This service <a class="alert-link">does not</a> support Internet Explorer. Please use Microsoft Edge, Google Chrome, or Firefox to utilize CFTS.</div>{% endif %}
+  
+    <div class="alert alert-warning fadein server-error" style="display: none;" role="alert"></div>
 
     <div class="alert alert-success fadein" style="display: none;" role="alert"></div>
 
