@@ -3,7 +3,7 @@ import re
 import shutil
 # ====================================================================
 # core
-from zipfile import ZipFile
+from zipfile import ZipFile, BadZipFile
 from django.conf import settings
 import shutil
 
@@ -25,6 +25,7 @@ from pages.models import *
 
 # regular expressions
 import re
+
 # ====================================================================
 
 
@@ -37,21 +38,33 @@ def scan(request,pullZip):
 
     # POST
     if request.method == 'POST':
+
+        extractPath = settings.SCANTOOL_DIR+"\\scan_1"
+
+        i = 2
+        while True:
+            if os.path.isdir(extractPath):
+                extractPath = settings.SCANTOOL_DIR+"\\scan_"+str(i)
+                i+=1
+            else:
+                break
+                
         if pullZip !="none":
             pullZip = os.path.join(cftsSettings.BASE_DIR,"pulls",pullZip)
             zf = ZipFile(pullZip)
-            zf.extractall(settings.SCANTOOL_DIR)
-            results = runScan()
+            zf.extractall(extractPath)    
+            results = runScan(extractPath)
 
         else:
             form_files = request.FILES
             for i, f in enumerate(form_files.getlist("toScan")):
                 zf = ZipFile(f)
-                zf.extractall(settings.SCANTOOL_DIR)
-                results = runScan()
+                zf.extractall(extractPath)
+                results = runScan(extractPath)
 
         # clean up after yourself
-        cleanup(settings.SCANTOOL_DIR)
+        shutil.rmtree(extractPath)
+        
         return JsonResponse(results, safe=False)
 
     # GET
@@ -61,13 +74,13 @@ def scan(request,pullZip):
         return render(request, 'pages/scan.html', {'rc': rc})
     
 
-def runScan():
+def runScan(extractPath):
     scan_results = []
     fileList = []
     office_filetype_list = [".docx", ".dotx", ".xlsx",
                             ".xltx", ".pptx", ".potx", ".ppsx", ".onenote"]
     
-    scan_dir = os.path.abspath(settings.SCANTOOL_DIR)
+    scan_dir = os.path.abspath(extractPath)
 
     # \cfts\scan should contain all the user folders from the zip file
     txt = re.compile('_email(\d+)?.txt')
@@ -86,16 +99,19 @@ def runScan():
 
             if(ext in office_filetype_list):
                 file_results = scanOfficeFile(filename)
+
                 if file_results is not None:
-                    for result in file_results:                            
-                        temp, ext = os.path.splitext(result['file'])    
-                        if ext in office_filetype_list:
-                            embedOffFilePath = os.path.dirname(filename)+"\\"+result['file'].split('\\')[-1]
-                            shutil.move(result['file'], embedOffFilePath)
-                            fileList.append(embedOffFilePath)
+                    for result in file_results:
+                        if result['findings'] != ['File is corrupt. Cannot scan.']:
+                            temp, ext = os.path.splitext(result['file'])    
+                            if ext in office_filetype_list:
+                                embedOffFilePath = os.path.dirname(filename)+"\\"+result['file'].split('\\')[-1]
+                                shutil.move(result['file'], embedOffFilePath)
+                                fileList.append(embedOffFilePath)
                         
                 # clean up after yourself
-                shutil.rmtree(settings.SCANTOOL_TEMPDIR+"/office")
+                if os.path.isdir(os.path.dirname(filename)+"\\office"):
+                    shutil.rmtree(os.path.dirname(filename)+"\\office")
 
             elif(ext == '.pdf'):
                 textFile = open(temp+".txt", "w", encoding="utf-8")
@@ -117,7 +133,7 @@ def runScan():
 
             elif(ext == '.zip'):
                 fileZip = ZipFile(os.path.join(root,filename))
-                extractDir = scan_dir+"\\extracted_files\\"+filename.split("\\")[-3]+filename.split("\\")[-2]
+                extractDir = os.path.dirname(filename)+"\\extracted_files\\"+filename.split("\\")[-1]
                 fileZip.extractall(extractDir)
                 for zipRoot, zipDirs, zipFiles in os.walk(extractDir):
                     for file in zipFiles:
@@ -134,23 +150,32 @@ def runScan():
 
     return scan_results
 
-def scanOfficeFile(office_file):           
+def scanOfficeFile(office_file):
     results = None
     # treat as a zip and extract to \cfts\scan\temp directory
-    zf = ZipFile(office_file)
-    zf.extractall(settings.SCANTOOL_TEMPDIR+"/office")
+    try:
+        zf = ZipFile(office_file)
+        zf.extractall(os.path.dirname(office_file)+"\\office")    
 
-    # step through the contents of the scantool 'temp' folder
-    for root, subdirs, files in os.walk(settings.SCANTOOL_TEMPDIR):
-        for filename in files:
-            file_path = os.path.join(root, filename)
-            findings = scanFile(file_path)
-            if(findings is not None):
-                if(results is None):
-                    results = []
-                results.append(findings)
+        # step through the contents of the scantool 'temp' folder
+        for root, subdirs, files in os.walk(os.path.dirname(office_file)+"\\office"):
+            for filename in files:
+                file_path = os.path.join(root, filename)
+                findings = scanFile(file_path)
+                if(findings is not None):
+                    if(results is None):
+                        results = []
+                    results.append(findings)
 
-    
+    except BadZipFile:
+        if results is None:
+            results = []
+            
+        result = {
+            'file': office_file,
+            'findings': ['File is corrupt. Cannot scan.']
+            }
+        results.append(result)
     # done
     return results
 
