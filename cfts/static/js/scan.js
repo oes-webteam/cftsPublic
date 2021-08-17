@@ -1,5 +1,6 @@
 window.document.title = "CFTS -- Scan Tool";
 scanForm = document.querySelector( "#scanForm" );
+loadingIcon = document.querySelector('#loading-icon');
 firstScan = true
 
 // Add the CSRF token to ajax requests
@@ -15,6 +16,8 @@ $.ajaxSetup({
 const callScan = function ( e ) {
 
   if(pullZip!=""){
+
+    loadingIcon.hidden = false
     let data = pullZip;
 
     $.ajax({
@@ -26,12 +29,14 @@ const callScan = function ( e ) {
       method: 'POST',
       type: 'POST', // For jQuery < 1.9
       success: function( data ){
+          loadingIcon.hidden = true
           processResults( data );
       }
     });
   }
   else{
     preventDefaults( e );
+    loadingIcon.hidden = false
     let data = new FormData( scanForm );
 
     $.ajax({
@@ -43,7 +48,8 @@ const callScan = function ( e ) {
       method: 'POST',
       type: 'POST', // For jQuery < 1.9
       success: function( data ){
-          processResults( data );
+        loadingIcon.hidden = true
+        processResults( data );
       }
     });
 

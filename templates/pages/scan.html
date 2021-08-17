@@ -12,8 +12,13 @@
     <input type="file" name="toScan" />
     <input type="submit" />
   </form>
-
 </section>
+
+<div  id='loading-icon' hidden>
+<h3>Scanning Pull...</h3>
+<img src={% static 'img/loading-icon.gif' %} class='loading-icon'></img>
+
+</div>
 
 <section id="scan-results">
   <h3>Scan contained the following findings</h3>

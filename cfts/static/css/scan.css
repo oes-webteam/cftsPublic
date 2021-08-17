@@ -1,6 +1,6 @@
 #scan-results { display: none; }
 
-#scan-results h3 {
+#scan-results h3, #loading-icon h3 {
   color: red;
 }
 
