@@ -133,7 +133,7 @@ def runScan(extractPath):
 
             elif(ext == '.zip'):
                 fileZip = ZipFile(os.path.join(root,filename))
-                extractDir = scan_dir+"\\extracted_files\\"+filename.split("\\")[-3]+filename.split("\\")[-2]
+                extractDir = os.path.dirname(filename)+"\\extracted_files\\"+filename.split("\\")[-1]
                 fileZip.extractall(extractDir)
                 for zipRoot, zipDirs, zipFiles in os.walk(extractDir):
                     for file in zipFiles:
