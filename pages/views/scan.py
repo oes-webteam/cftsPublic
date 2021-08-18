@@ -93,60 +93,69 @@ def runScan(extractPath):
             fileList.append(root+"\\"+filename)
 
     for filename in fileList:
-        if txt.match(filename.split("\\")[-1]) == None and eml.match(filename.split("\\")[-1]) == None:
-            file_results = None
-            temp, ext = os.path.splitext(filename)
+        try:
+            if txt.match(filename.split("\\")[-1]) == None and eml.match(filename.split("\\")[-1]) == None:
+                file_results = None
+                temp, ext = os.path.splitext(filename)
 
-            if(ext in office_filetype_list):
-                file_results = scanOfficeFile(filename)
+                if(ext in office_filetype_list):
+                    file_results = scanOfficeFile(filename)
 
-                if file_results is not None:
-                    for result in file_results:
-                        if result['findings'] != ['File is corrupt. Cannot scan.']:
-                            temp, ext = os.path.splitext(result['file'])    
-                            if ext in office_filetype_list:
-                                embedOffFilePath = os.path.dirname(filename)+"\\"+result['file'].split('\\')[-1]
-                                shutil.move(result['file'], embedOffFilePath)
-                                fileList.append(embedOffFilePath)
+                    if file_results is not None:
+                        for result in file_results:
+                            if result['findings'] != ['File is corrupt. Cannot scan.']:
+                                temp, ext = os.path.splitext(result['file'])    
+                                if ext in office_filetype_list:
+                                    embedOffFilePath = os.path.dirname(filename)+"\\"+result['file'].split('\\')[-1]
+                                    shutil.move(result['file'], embedOffFilePath)
+                                    fileList.append(embedOffFilePath)
+                            
+                    # clean up after yourself
+                    if os.path.isdir(os.path.dirname(filename)+"\\office"):
+                        shutil.rmtree(os.path.dirname(filename)+"\\office")
+
+                elif(ext == '.pdf'):
+                    textFile = open(temp+".txt", "w", encoding="utf-8")
+                    with open(filename, 'rb') as pdf:
+                        pdfReader = PyPDF2.PdfFileReader(pdf)
+                        pages = pdfReader.pages
                         
-                # clean up after yourself
-                if os.path.isdir(os.path.dirname(filename)+"\\office"):
-                    shutil.rmtree(os.path.dirname(filename)+"\\office")
+                        for page in pages:
+                            pageText = page.extractText()
+                            textFile.write("".join(pageText.split()))
+                            
+                        pdf.close()
 
-            elif(ext == '.pdf'):
-                textFile = open(temp+".txt", "w", encoding="utf-8")
-                with open(filename, 'rb') as pdf:
-                    pdfReader = PyPDF2.PdfFileReader(pdf)
-                    pages = pdfReader.pages
-                    
-                    for page in pages:
-                        pageText = page.extractText()
-                        textFile.write("".join(pageText.split()))
-                        
-                    pdf.close()
+                    textFile.close()
+                    text_path = os.path.join(temp+".txt")
+                    file_results = scanFile(text_path)
+                    if file_results is not None:
+                        file_results['file'] = filename
 
-                textFile.close()
-                text_path = os.path.join(temp+".txt")
-                file_results = scanFile(text_path)
-                if file_results is not None:
-                    file_results['file'] = filename
+                elif(ext == '.zip'):
+                    fileZip = ZipFile(os.path.join(root,filename))
+                    extractDir = os.path.dirname(filename)+"\\extracted_files\\"+filename.split("\\")[-1]
+                    fileZip.extractall(extractDir)
+                    for zipRoot, zipDirs, zipFiles in os.walk(extractDir):
+                        for file in zipFiles:
+                            fileList.append(zipRoot+"\\"+file)
 
-            elif(ext == '.zip'):
-                fileZip = ZipFile(os.path.join(root,filename))
-                extractDir = os.path.dirname(filename)+"\\extracted_files\\"+filename.split("\\")[-1]
-                fileZip.extractall(extractDir)
-                for zipRoot, zipDirs, zipFiles in os.walk(extractDir):
-                    for file in zipFiles:
-                        fileList.append(zipRoot+"\\"+file)
+                else:
+                    file_results = scanFile(filename)
 
-            else:
-                file_results = scanFile(filename)
+        except Exception as e:
+            file_results = []
+            result = {
+                'file': filename,
+                'findings': [str('Error in scan: ' + repr(e))]
+                }
+            file_results.append(result)
 
-            if(file_results is not None):
-                result = {}
-                result['file'] = filename
-                result['found'] = file_results
-                scan_results.append(result)
+        if(file_results is not None):
+            result = {}
+            result['file'] = filename
+            result['found'] = file_results
+            scan_results.append(result)
 
     return scan_results
 
