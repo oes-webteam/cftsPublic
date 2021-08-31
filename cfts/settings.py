@@ -120,7 +120,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'timestamp': {
-            'format': '{asctime} {lineno} {message}',
+            'format': '{asctime} {message}',
             'style': '{',
         },
     },
