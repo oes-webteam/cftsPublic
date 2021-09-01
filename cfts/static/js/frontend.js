@@ -20,6 +20,7 @@ let addEmail = document.getElementById( "addEmail" );
   $("#lastName").val(user[0]) 
   $("#userID").val(userHash)
 
+
 /* ****************************************** */
 /* USER NOTIFICATION (NEEDS VAST IMPROVEMENT) */
 /* ****************************************** */
@@ -154,13 +155,44 @@ const displayFileQueue = () => {
       selectClass.setAttribute( "name", "classification" + i );
       selectClass.setAttribute( "id", "classification" + i );
       selectClass.required = true;
-      [ '','U', 'U//FOUO', 'CUI', 'C//REL', 'S//REL' ].forEach(  c => {
-        let option = document.createElement( "option" );
-        option.setAttribute( "value", c );
-        if( fileQueue[i] && fileQueue[i].cls == c ) option.selected = true;
-        option.appendChild( document.createTextNode( c ) );
-        selectClass.appendChild( option );
-      });
+
+      /* ************************************* */
+      /* Get classifications from Django admin */
+      /* ****************************** ****** */
+      //Add the CSRF token to ajax requests
+      $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+          xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+        },
+        });
+      
+      
+        ajaxSettings = {
+        url: "api-getclassifications",
+        method: "GET",
+        contentType: false,
+        processData: false,
+        };
+        $.ajax(ajaxSettings).done(successHandler);
+      
+      function successHandler(data){
+        let classifications = ['']
+        for(obj in data){
+          classifications.push(data[obj].fields.abbrev)
+        }
+
+        classifications.forEach(  c => {
+          let option = document.createElement( "option" );
+          option.setAttribute( "value", c );
+          if( fileQueue[i] && fileQueue[i].cls == c ) option.selected = true;
+          option.appendChild( document.createTextNode( c ) );
+          selectClass.appendChild( option );
+        });
+      
+      }
+
+      
+
       fileInfoDiv.appendChild( selectClass );
 
       let toEncrypt = document.createElement( "input" );
