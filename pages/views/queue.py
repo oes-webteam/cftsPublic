@@ -3,15 +3,18 @@
 from email import generator
 import random
 import datetime
+import pytz
 # from io import BytesIO, StringIO
 from zipfile import ZipFile
 from django.conf import settings
 from django.utils.functional import empty
+from django.utils import timezone
 from cfts import settings as cftsSettings
 
 # decorators
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.cache import never_cache
 
 # responses
 from django.shortcuts import render
@@ -28,11 +31,16 @@ from email.encoders import encode_base64
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 import mimetypes
+
+import logging
+
+logger = logging.getLogger('django')
 # ====================================================================
 
 
 @login_required
 @ensure_csrf_cookie
+@never_cache
 def queue(request):
     xfer_queues = []
     ds_networks = Network.objects.all()
@@ -55,6 +63,7 @@ def queue(request):
             'date_pulled',
             'user_pulled__username'
         ).filter(network__name=net.name).order_by('-date_pulled')[:1]
+
 
         # get all the xfer requests (pending and pulled) submitted for this network
         ds_requests = Request.objects.filter(
@@ -83,6 +92,7 @@ def queue(request):
             'centcom': ds_requests.aggregate(count=Count('request_id', filter=Q(pull__date_pulled__isnull=True, is_centcom=True))),
             'last_pull': last_pull
         }
+        
         # ... and add it to the list
         xfer_queues.append(queue)
 
@@ -127,17 +137,31 @@ def transferRequest( request, id ):
 
 @login_required
 def createZip(request, network_name, isCentcom, rejectPull):
+    
+    logger.error("Creating pull zip")
+    
     if rejectPull == 'false':
         print("New pull")
+        logger.error("New Pull")
+        
         # create pull
-        maxPull = Pull.objects.aggregate(Max('pull_number'))
-        pull_number = 1 if maxPull['pull_number__max'] == None else maxPull['pull_number__max'] + 1
+        try:
+            maxPull = Pull.objects.filter(network=Network.objects.get(name=network_name)).latest('date_pulled')#.aggregate(Max('pull_number'),Max('date_pulled'))
+            
+            if(datetime.datetime.now().date() > maxPull.date_pulled.date()):
+                pull_number = 1
+            else:
+                pull_number = 1 if maxPull.pull_number == None else maxPull.pull_number + 1
+                
+        except Pull.DoesNotExist:
+            pull_number = 1
 
         if isCentcom == "True":
             new_pull = Pull(
                 pull_number=pull_number,
                 network=Network.objects.get(name=network_name),
-                date_pulled=datetime.datetime.now(),
+                #date_pulled=datetime.datetime.now(),
+                date_pulled=timezone.now(),
                 user_pulled=request.user,
                 centcom_pull=True
             )
@@ -145,33 +169,38 @@ def createZip(request, network_name, isCentcom, rejectPull):
             new_pull = Pull(
                 pull_number=pull_number,
                 network=Network.objects.get(name=network_name),
-                date_pulled=datetime.datetime.now(),
+                #date_pulled=datetime.datetime.now(),
+                date_pulled=timezone.now(),
                 user_pulled=request.user,
             )
 
          # select Requests based on network and status
         if(isCentcom == "True"):
             qs = Request.objects.filter(
-                network__name=network_name, pull=None, is_centcom=True)
+                network__name=network_name, pull=None, is_centcom=True, is_submitted=True)
             for rqst in qs:
                 rqst.centcom_pull = True
 
         elif(isCentcom == "False"):
             qs = Request.objects.filter(
-                network__name=network_name, pull=None)
+                network__name=network_name, pull=None, is_submitted=True)
+            
         new_pull.save()
-
+        
+        pull=new_pull
 
     else:
         print("Recreate pull after rejections")
+        logger.error("Recreate Pull")
+        
         qs = Request.objects.filter(pull=rejectPull)
         pull = Pull.objects.filter(pull_id=rejectPull)[0]
         pull_number = pull.pull_number
 
     # create/overwrite zip file
-    zipPath = os.path.join(cftsSettings.PULLS_DIR+"\\") + network_name + "_" + str(pull_number) + ".zip"
-    # zipPath = os.path.join(
-    #     settings.STATICFILES_DIRS[0], "files\\") + network_name + "_" + str(pull_number) + ".zip"
+    zipPath = os.path.join(cftsSettings.PULLS_DIR+"\\") + network_name + "_" + str(pull_number)+ " " + str(pull.date_pulled.astimezone().strftime("%d%b %H%M")) + ".zip"
+    logger.error("Creating/Recreating this pull: ", str(zipPath))
+    
     zip = ZipFile(zipPath, "w")
 
    
@@ -181,6 +210,7 @@ def createZip(request, network_name, isCentcom, rejectPull):
     for rqst in qs:
         zip_folder = str(rqst.user) + "/request_1"
         theseFiles = rqst.files.filter(rejection_reason=None)
+        encryptRequest = False
 
         if theseFiles.exists():
             i = 2
@@ -193,18 +223,31 @@ def createZip(request, network_name, isCentcom, rejectPull):
 
             # add their files to the zip in the folder of their name
             for f in theseFiles:
+                if f.is_pii == True:
+                    encryptRequest = True
+                    
                 zip_path = os.path.join(zip_folder, str(f))
                 zip.write(f.file_object.path, zip_path)
 
             # create and add the target email file
-            email_file_name = '_email.txt'
+
+            if encryptRequest == True:
+                email_file_name = '_encrypt.txt'
+                
+            elif encryptRequest == False:
+                email_file_name = '_email.txt'
+            
             email_file_path = zip_folder + "/" + email_file_name
 
             if email_file_path in zip.namelist():
                 i = 1
                 print("txt file exists")
                 while True:
-                    email_file_name = "_email"+str(i)+".txt"
+                    if encryptRequest == True:
+                        email_file_name = "_encrypt"+str(i)+".txt"
+                    else:  
+                        email_file_name = "_email"+str(i)+".txt"
+
                     email_file_path = zip_folder + "/" + email_file_name
 
                     print("Trying " + email_file_name)
@@ -223,57 +266,13 @@ def createZip(request, network_name, isCentcom, rejectPull):
                 fp.write(emailString.encode('utf-8'))
                 fp.close()
             
-            #zip.write(email_file_name, os.path.join(zip_folder, email_file_name))
-            #os.remove(email_file_name)
-            
-
-            #msg = MIMEMultipart()
-
-            #msg['To'] = emailString
-            #msg['Subject'] = 'CFTS File Transfer'
-
-            #msg.attach(MIMEText('Attatched files transfered across domains from CFTS.'))
-
-            #for f in theseFiles:
-                #fileMime = mimetypes.guess_type(f.file_object.path)
-                
-                #file = open(f.file_object.path.encode('utf-8'),'rb')
-                #attachment = MIMEBase(fileMime[0],fileMime[1])
-                #attachment.set_payload(file.read())
-                #file.close()
-                #encode_base64(attachment)
-                #attachment.add_header('Content-Disposition','attachment',filename=f.file_object.path.split("\\")[-1])
-                #msg.attach(attachment)
-
-            #msg_file_name = '_email.eml'
-            #msgPath = zip_folder + "/" + msg_file_name
-
-            #if msgPath in zip.namelist():
-                #i = 1
-                #print("eml file exists")
-                #while True:
-                    #msg_file_name = "_email"+str(i)+".eml"
-                    #msgPath =zip_folder+"/"+msg_file_name
-                    #print("Trying " + msg_file_name)
-                    #if msgPath in zip.namelist():
-                        #i = i + 1
-                    #else:
-                        #break        
-
-
-            
-            #with zip.open(msgPath, 'w') as eml:
-                #gen = BytesGenerator(eml)
-                #gen.flatten(msg)
-
-            #zip.write(msg_file_name, os.path.join(zip_folder, msg_file_name))
-            #os.remove(msg_file_name)
             
         else:
             print("all files in request rejected")
         # update the record
         if rejectPull == "false":
             rqst.pull_id = new_pull.pull_id
+            rqst.date_pulled = new_pull.date_pulled
             rqst.save()
 
     zip.close()

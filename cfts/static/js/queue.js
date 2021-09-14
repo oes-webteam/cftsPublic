@@ -130,7 +130,121 @@ jQuery( document ).ready( function() {
     }
 
   });
+
+
+  /****************************/
+  /* Encrypt files in request */
+  /****************************/
+
+  $('.request-encrypt').click(e => {
+    e.preventDefault();
+
+    if($(e.target).hasClass('selected-encrypt')){
+      console.log("selcted encrypt clicked")
+
+      const $checkedItems = $( "[name='fileSelection']:checked[request_id='"+$( e.target ).attr('request_id')+"']");
+
+      if ($checkedItems.length == 0){
+        alert( ' Select 1 or more files to encrypt.' );
+      }
+      
+      else{
+        let data = [];
+      $checkedItems.each( i => {
+        data.push({ 
+          'fileID': $checkedItems[i].id.slice(4), 
+          'fileName': $( $checkedItems[i] ).attr( 'file_name' ),
+          'requestID': $( $checkedItems[i] ).attr( 'request_id' ),
+          'requestEmail': $( $checkedItems[i] ).attr( 'request_email' )
+        }) 
+      });
+	sendEncryptRequest(data)
+      }
+      
+    }
+
+    else{
+      console.log("request encrypt clicked")
+      const checkboxes = Array.from( document.querySelectorAll( 'input[type="checkbox"][request_id="'+$( e.target ).attr('request_id')+'"]' ) );
+      checkboxes.forEach( checkbox =>{
+        checkbox.removeAttribute("hidden");
+      });
   
+      $(e.target).text("Encrypt Selected")
+      $(e.target).addClass('selected-encrypt')
+    }
+
+  });
+
+  const sendEncryptRequest = (data) => {
+    console.log(data);
+
+    let csrftoken = getCookie('csrftoken');
+
+    let id_list = [];
+      data.forEach( ( f ) => {
+        id_list.push( f.fileID ) 
+       });
+
+      const postData = {
+        'request_id': data[0]['requestID'],  // doesn't matter which request we grab
+        'id_list': id_list
+      };
+
+      const setEncryptOnFiles = $.post( '/api-setencrypt', postData, 'json' ).then( 
+        // success
+        function( resp ) {
+           console.log( 'SUCCESS' );
+           console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
+	   $( "#forceReload" ).submit();
+        },
+        // fail 
+        function( resp, status ) {
+           console.log( 'FAIL' );
+           console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
+          // console.log( 'Response status: ' + status );
+        }
+      );
+    
+  };
+
+
+
+
+/***************************/
+/* Show duplicate requests */
+/***************************/
+
+  $('.show-dupe').click(e => {
+    e.preventDefault();
+
+    if($(e.target).hasClass('dupes-visable')){
+      console.log("hide dupes")
+
+      const dupes = Array.from( document.querySelectorAll( 'tr[request_hash="'+$( e.target ).attr('request_hash')+'"]' ) );
+      dupes.forEach( dupe =>{
+        dupe.classList.remove("dupe");
+      });
+
+      $(e.target).text("Show Duplicates")
+      $(e.target).removeClass('dupes-visable')
+     
+      
+    }
+
+    else{
+      console.log("show dupes")
+      const dupes = Array.from( document.querySelectorAll( 'tr[request_hash="'+$( e.target ).attr('request_hash')+'"]') );
+      dupes.forEach( dupe =>{
+        dupe.classList.add("dupe");
+      });
+  
+      $(e.target).text("Hide Duplicates")
+      $(e.target).addClass('dupes-visable')
+    }
+
+  });
+ 
 
   // REJECTION MODAL DEFINITIONS (POPUP)
   const checkSelection = ( selector ) => {
@@ -173,18 +287,10 @@ jQuery( document ).ready( function() {
       const setRejectOnFiles = $.post( '/api-setreject', postData, 'json' ).then( 
         // success
         function( resp ) {
-          // console.log( 'SUCCESS' );
-          // console.log( 'Server response: ' + resp );
-        },
-        // fail 
-        function( resp, status ) {
-          // console.log( 'FAIL' );
-          // console.log( 'Server response: ' + resp );
-          // console.log( 'Response status: ' + status );
-        }
-      );
+           console.log( 'SUCCESS' );
+           console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
 
-      // sort files back into their own requests
+// sort files back into their own requests
       data.forEach( ( selectedFile ) => {
         if ( !( selectedFile.requestID in requests ) )
           requests[ selectedFile.requestID ] = { 
@@ -211,19 +317,38 @@ jQuery( document ).ready( function() {
         body = body.replace( /<br>/g, '%0A' );
 
         // ... create an email with that user's files
-        let $anchor = $( "<a class='emailLink" + reject + "' target='_blank' href='mailto:" + email + "?subject=" + subject + "&body=" + body + "'></a>" );
+        let $anchor = $( "<a class='emailLink' target='_blank' href='mailto:" + email + "?subject=" + subject + "&body=" + body + "'></a>" );
         $( document.body ).append( $anchor );
-        window.open($('.emailLink'+reject).attr('href'),"reject"+reject)
+        //window.open($('.emailLink'+reject).attr('href'),"reject"+reject)
+
+        
         reject++;
       }
 
-      //$( '.emailLink' ).each( function() { $(this)[0].click(); } );  
+      $( '.emailLink' ).each( function() { $(this)[0].click(); } );  
      
       // close the dialog
       $( theDialog ).dialog( 'close' );
       
       // reload the page from server
       $( "#forceReload" ).submit();
+
+      alert("Files rejected successfuly");
+
+        },
+        // fail 
+        function( resp, status ) {
+	   // close the dialog
+           $( theDialog ).dialog( 'close' );
+	   alert("Failed to reject files")
+
+           console.log( 'FAIL' );
+           console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
+          // console.log( 'Response status: ' + status );
+        }
+      );
+
+      
 
     } else {
       /* bad user, no cookie */

@@ -22,6 +22,7 @@
         </li>
         {% if pull.date_complete != None %}
           <li>Completed by {{pull.user_complete}} </br>on {{pull.date_complete}}</li>
+	  <li>Burned to disk #{{pull.disk_number}}</li>
         {% elif pull.date_twoeye != None %}
           <li>Two eyed by {{pull.user_twoeye}} </br>on {{pull.date_twoeye}}</li>
         {% elif pull.date_oneeye != None %}
@@ -34,8 +35,8 @@
       <button class="pull-menu-btn">&hellip;</button>
       <!-- TODO: remove this from the flow of the document -->
       <ul class="pull-menu">
-        <li class="pull-menu-option download"><a href="getPull/{{pull.pull_network}}_{{pull.pull_number}}.zip">Download Again</a></li>
-        <li class="pull-menu-option download"><a href="scan/{{pull.pull_network}}_{{pull.pull_number}}.zip">Scan Pull</a></li>
+        <li class="pull-menu-option download"><a href="getPull/{{pull.pull_network}}_{{pull.pull_number}} {{pull.pull_date|date:"dM"}} {{pull.pull_date|time:"Hi"}}.zip">Download Again</a></li>
+        <li class="pull-menu-option download"><a href="scan/{{pull.pull_network}}_{{pull.pull_number}} {{pull.pull_date|date:"dM"}} {{pull.pull_date|time:"Hi"}}.zip">Scan Pull</a></li>
         {% if pull.date_oneeye == None %}
         <li class="pull-menu-option"><a href="{{pull.pull_id}}" class="oneeye">One-eye Complete</a></li>
         {% elif pull.date_twoeye == None %}

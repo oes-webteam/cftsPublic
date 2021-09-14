@@ -40,16 +40,13 @@ for root, subdirs, files in os.walk(zipExtractPath):
             requestPaths.append(subdirpath)
 
 
-msg = MIMEMultipart()
 
-
-msg['Subject'] = 'CFTS File Transfer'
-
-msg.attach(MIMEText('Attatched files transfered across domains from CFTS.'))
 
 for path in requestPaths:
-    print("scanning from request: ", path)
+    print("\nscanning from request: ", path)
     print("creating email file...")
+    msg = MIMEMultipart()
+
     for root, subdirs, files in os.walk(path):
         for f in files:
             filePath = os.path.join(root,f)
@@ -69,19 +66,40 @@ for path in requestPaths:
                 msg.attach(attachment)
 
         msg_file_name = '_email.eml'
-        msgPath = currentDir + "/" + msg_file_name
+        missing_email_name = '_special.eml'
+        
 
-        if msg_file_name in os.listdir(currentDir):
-            i = 1
-            print("eml file exists")
-            while True:
-                msg_file_name = "_email"+str(i)+".eml"
-                msgPath =currentDir+"/"+msg_file_name
-                print("Trying " + msg_file_name)
-                if msg_file_name in os.listdir(currentDir):
-                    i = i + 1
-                else:
-                    break        
+        if msg['To'] != None:
+            msgPath = currentDir + "/" + msg_file_name
+            msg['Subject'] = 'CFTS File Transfer'
+            msg.attach(MIMEText('Attatched files transfered across domains from CFTS.'))
+            if msg_file_name in os.listdir(currentDir):
+                i = 1
+                print("eml file exists")
+                while True:
+                    msg_file_name = "_email"+str(i)+".eml"
+                    msgPath =currentDir+"/"+msg_file_name
+                    print("Trying " + msg_file_name)
+                    if msg_file_name in os.listdir(currentDir):
+                        i = i + 1
+                    else:
+                        break
+        else:
+            msgPath = currentDir + "/" + missing_email_name
+            msg['Subject'] = 'Missing _email.txt file'
+            msg.attach(MIMEText('<b>!!!! The _email.txt file could not be found for this request, it may have been renamed. Check attached files. Is this PII? !!!!</b>', 'html'))
+            if missing_email_name in os.listdir(currentDir):
+                i = 1
+                print("special eml file exists")
+                while True:
+                    missing_email_name = "_special"+str(i)+".eml"
+                    msgPath =currentDir+"/"+missing_email_name
+                    print("Trying " + missing_email_name)
+                    if missing_email_name in os.listdir(currentDir):
+                        i = i + 1
+                    else:
+                        break
+            
 
 
         with open(msgPath, 'w') as eml:

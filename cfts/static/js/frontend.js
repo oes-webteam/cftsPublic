@@ -5,8 +5,10 @@ let filesInput = document.getElementById( "standard-upload-files" );
 let fileQueue = [];
 let fileInfo = {};
 let addEmail = document.getElementById( "addEmail" );
+let classifications = [''];
+let buggedPKIs = ['f7d359ebb99a6a8aac39b297745b741b']
 
-
+console.log("Cache test")
 /* *************************************************** */
 /* GET USER CERT INFORMATION FROM VAR IN FRONTEND.HTML */
 /* *************************************************** */
@@ -16,16 +18,46 @@ let addEmail = document.getElementById( "addEmail" );
   // console.log(subject)
   user = subject.split(".")
   // console.log(user)
-  $("#firstName").val(user[1])
-  $("#lastName").val(user[0]) 
+
+  if (buggedPKIs.includes(userHash) == false){
+	$("#firstName").val(user[1])
+  	$("#lastName").val(user[0]) 
+    }
+  
   $("#userID").val(userHash)
+
+/* ************************************* */
+/* Get classifications from Django admin */
+/* ****************************** ****** */
+  //Add the CSRF token to ajax requests
+  $.ajaxSetup({
+    beforeSend: function (xhr, settings) {
+      xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+        },
+    });
+      
+      
+    ajaxSettings = {
+    url: "api-getclassifications",
+    method: "GET",
+    contentType: false,
+    processData: false,
+    };
+    $.ajax(ajaxSettings).done(successHandler);
+    
+  function successHandler(data){
+    for(obj in data){
+      classifications.push(data[obj].fields.abbrev)
+        }
+    }
 
 
 /* ****************************************** */
 /* USER NOTIFICATION (NEEDS VAST IMPROVEMENT) */
 /* ****************************************** */
-notifyUser = ( msg ) => {
+notifyUserSuccess = ( msg ) => {
   $(".server-error").hide()
+  $(".danger-error").hide()
   let alertDiv = $( ".alert-success" );
   alertDiv.text( msg );  
   alertDiv.fadeIn();
@@ -34,8 +66,18 @@ notifyUser = ( msg ) => {
   }, 5000 );
 };
 
+notifyUserWarning = ( msg ) => {
+  $(".alert-success").hide()
+  $(".server-error").hide()
+  let alertDiv = $( ".danger-error" );
+  alertDiv.text( msg );  
+  alertDiv.fadeIn();
+};
+
+
 notifyUserError = ( msg ) => {
   $(".alert-success").hide()
+  $(".danger-error").hide()
   let alertDiv = $( ".server-error" );
   alertDiv.text( msg );  
   alertDiv.fadeIn();
@@ -85,7 +127,7 @@ const validateFile = ( thisFile ) => {
   if( filename.includes( "prf" ) || filename.includes( "lvy" ) || filename.includes( "levy" ) ) {
     // hard NO!!
     msg += "\nPRF and LVY files cannot be transferred per CFTS use policy. See Resources >> Cross Domain Users Guide for details.";
-    notifyUser( msg );
+    notifyUserError( msg );
     return false;
   }
 
@@ -156,40 +198,15 @@ const displayFileQueue = () => {
       selectClass.setAttribute( "id", "classification" + i );
       selectClass.required = true;
 
-      /* ************************************* */
-      /* Get classifications from Django admin */
-      /* ****************************** ****** */
-      //Add the CSRF token to ajax requests
-      $.ajaxSetup({
-        beforeSend: function (xhr, settings) {
-          xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
-        },
-        });
+    classifications.forEach(  c => {
+      let option = document.createElement( "option" );
+      option.setAttribute( "value", c );
+      if( fileQueue[i] && fileQueue[i].cls == c ) option.selected = true;
+      option.appendChild( document.createTextNode( c ) );
+      selectClass.appendChild( option );
+    });
       
       
-        ajaxSettings = {
-        url: "api-getclassifications",
-        method: "GET",
-        contentType: false,
-        processData: false,
-        };
-        $.ajax(ajaxSettings).done(successHandler);
-      
-      function successHandler(data){
-        let classifications = ['']
-        for(obj in data){
-          classifications.push(data[obj].fields.abbrev)
-        }
-
-        classifications.forEach(  c => {
-          let option = document.createElement( "option" );
-          option.setAttribute( "value", c );
-          if( fileQueue[i] && fileQueue[i].cls == c ) option.selected = true;
-          option.appendChild( document.createTextNode( c ) );
-          selectClass.appendChild( option );
-        });
-      
-      }
 
       
 

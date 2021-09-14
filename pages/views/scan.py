@@ -26,6 +26,9 @@ from pages.models import *
 # regular expressions
 import re
 
+import logging
+logger = logging.getLogger('django')
+
 # ====================================================================
 
 
@@ -83,18 +86,18 @@ def runScan(extractPath):
     scan_dir = os.path.abspath(extractPath)
 
     # \cfts\scan should contain all the user folders from the zip file
-    txt = re.compile('_email(\d+)?.txt')
-    eml = re.compile('_email(\d+)?.eml')
+    #txt = re.compile('_email(\d+)?.txt')
+    #eml = re.compile('_email(\d+)?.eml')
+    scanSkip = ["_email.txt", "_encrypt.txt"]
 
 
     for root, subdirs, files in os.walk(scan_dir):
 
         for filename in files:            
             fileList.append(root+"\\"+filename)
-
     for filename in fileList:
-        try:
-            if txt.match(filename.split("\\")[-1]) == None and eml.match(filename.split("\\")[-1]) == None:
+        if filename.split("\\")[-1] not in scanSkip:
+            try:
                 file_results = None
                 temp, ext = os.path.splitext(filename)
 
@@ -143,19 +146,19 @@ def runScan(extractPath):
                 else:
                     file_results = scanFile(filename)
 
-        except Exception as e:
-            file_results = []
-            result = {
-                'file': filename,
-                'findings': [str('Error in scan: ' + repr(e))]
-                }
-            file_results.append(result)
+            except Exception as e:
+                file_results = []
+                result = {
+                    'file': filename,
+                    'findings': [str('Error in scan: ' + repr(e))]
+                    }
+                file_results.append(result)
 
-        if(file_results is not None):
-            result = {}
-            result['file'] = filename
-            result['found'] = file_results
-            scan_results.append(result)
+            if(file_results is not None):
+                result = {}
+                result['file'] = filename
+                result['found'] = file_results
+                scan_results.append(result)
 
     return scan_results
 

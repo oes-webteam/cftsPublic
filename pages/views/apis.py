@@ -11,6 +11,7 @@ from django.utils.dateparse import parse_date
 
 # decorators
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import never_cache
 
 # responses
 from django.shortcuts import render, redirect
@@ -22,7 +23,10 @@ from cfts import settings as Settings
 # model/database stuff
 from pages.models import *
 
+import hashlib
 
+import logging
+logger = logging.getLogger('django')
 # ====================================================================
 
 
@@ -33,6 +37,9 @@ def setReject(request):
     reject_id = thestuff['reject_id']
     request_id = thestuff['request_id']
     id_list = thestuff['id_list[]']
+    
+    logger.error("Reject request ID: " + str(request_id))
+    logger.error("Reject file IDs: " + str(id_list))
 
     # update the files to set the rejection
     File.objects.filter(file_id__in=id_list).update(
@@ -41,6 +48,7 @@ def setReject(request):
     # recreate the zip file for the pull
     someRequest = Request.objects.get(request_id=request_id[0])
     network_name = someRequest.network.name
+    
     try:
         pull_number = someRequest.pull.pull_id
 
@@ -51,6 +59,33 @@ def setReject(request):
         print("Request not found in any pull.")
     return JsonResponse({'mystring': 'isgreat'})
 
+@login_required
+def setEncrypt(request):
+    thestuff = dict(request.POST.lists())
+
+    request_id = thestuff['request_id']
+    id_list = thestuff['id_list[]']
+    
+    logger.error("Encrypt request ID: " + str(request_id))
+    logger.error("Encrypt file IDs: " + str(id_list))
+    
+    # update the files to set the rejection
+    File.objects.filter(file_id__in=id_list).update(
+        is_pii=True)
+
+    # recreate the zip file for the pull
+    someRequest = Request.objects.get(request_id=request_id[0])
+    network_name = someRequest.network.name
+    
+    try:
+        pull_number = someRequest.pull.pull_id
+
+        url = 'create-zip/'+ str(network_name) +'/'+ str(someRequest.is_centcom)+'/'+ str(pull_number)
+        return redirect('create-zip',network_name=network_name,isCentcom=someRequest.is_centcom,rejectPull=pull_number)
+
+    except AttributeError:
+        print("Request not found in any pull.")
+    return JsonResponse({'mystring': 'isgreat'})
 
 @login_required
 def getUser(request, id):
@@ -164,10 +199,12 @@ def runNumbers(request):
 
 def process ( request ):
     resp = {}
-  
+    logger.error('Request Process Initiated')
+    
     if request.method == 'POST':
         form_data = request.POST
         form_files = request.FILES
+        requestData = ""
 
         # use the form data to create the necessary records for the request
         try:
@@ -176,7 +213,9 @@ def process ( request ):
         except Email.DoesNotExist:
             source_email = Email(address=form_data.get('userEmail'))
             source_email.save()
-    
+
+        requestData += form_data.get('userEmail')
+        
         destination_list = form_data.get( 'targetEmail' ).split( "," )
         target_list = []
         for destination in destination_list:
@@ -185,10 +224,18 @@ def process ( request ):
             except Email.DoesNotExist:
                 target_email = Email(address=destination)
                 target_email.save()
-
+                
+            requestData += destination
             target_list.append( target_email )
 
         # only check for unique users if userID is provided
+
+        buggedPKIs = ['f7d359ebb99a6a8aac39b297745b741b'] #[ acutally bugged hash, my hash for testing]
+
+        requestData += form_data.get('firstName').replace(" ","").lower()
+        requestData += form_data.get('lastName').replace(" ","").lower()
+
+        
         if form_data.get('userID') == "":
             print("Not able to get user ID, may create duplicate user.")
 
@@ -199,7 +246,20 @@ def process ( request ):
                 phone=form_data.get('userPhone')
             )
             user.save()
+            
+        # Make the check for the bugged PKI hash here
+        elif form_data.get('userID') in buggedPKIs:
+            print("Bugged user ID hash found")
 
+            user = User(
+                name_first=form_data.get('firstName')+ "_buggedPKI",
+                name_last=form_data.get('lastName'),
+                email=source_email,
+                phone=form_data.get('userPhone'),
+                notes=form_data.get('PKIinfo')
+            )
+            user.save()
+            
         else:
             try:
                 User.objects.filter(
@@ -223,7 +283,6 @@ def process ( request ):
                 )
                 
                 user.save()
-
         request = Request( 
             user = user, 
             network = Network.objects.get( name = form_data.get( 'network' ) ),  
@@ -233,31 +292,52 @@ def process ( request ):
         request.save()
         request.target_email.add( *target_list )
 
+        fileList=[]
+        
         # add files to the request
         file_info =  json.loads( form_data.get( 'fileInfo' ) )
         print( form_files.getlist( "files" ) )
-        for i, f in enumerate( form_files.getlist( "files" ) ):
+        for i, f in enumerate( form_files.getlist( "files" )):
             this_file = File(
                 file_object = f,
                 classification = Classification.objects.get( abbrev = file_info[ i ][ 'classification' ] ),
                 is_pii = file_info[ i ][ 'encrypt' ] == 'true',
                 is_centcom = form_data.get( 'isCentcom' )
-
             )
             this_file.save()
             request.files.add( this_file )
-    
+            fileList.append(str(f))
+
+        fileList.sort()
+        
+        for file in fileList:
+            requestData += file
+
+        
+        requestHash = hashlib.md5()
+        requestHash.update(requestData.encode())
+        requestHash = requestHash.hexdigest()
+        request.request_hash = requestHash
+        
+        if Request.objects.filter(request_hash=requestHash):
+            request.is_dupe=True
+        
         request.is_submitted = True
         request.save()
-
+        
         resp = {'status': 'success', 'request_id': request.pk}
+        logger.error('Request Process Successful')
+
 
     else:
         resp = {'status': 'fail', 'reason': 'bad-request-type',
                 'msg': "The 'api-processrequest' view only accepts POST requests."}
+        logger.error('Request Process Failed')
+
 
     return JsonResponse(resp)
 
+@never_cache
 def setConsentCookie(request):
     request.session.__setitem__('consent','consent given')
     request.session.set_expiry(0)

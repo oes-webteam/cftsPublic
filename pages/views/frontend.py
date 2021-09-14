@@ -5,9 +5,11 @@ from django import http
 from django.db.models import fields
 from django.http import request, JsonResponse, HttpResponse
 # responses
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.cache import never_cache
 from django.core import serializers
+from django.utils import cache
 
 # db/model stuff
 from pages.models import *
@@ -15,11 +17,14 @@ from pages.models import *
 
 
 @ensure_csrf_cookie
+@never_cache
 def frontend(request):
     browser = request.user_agent.browser.family
     nets = Network.objects.all()
     resources = ResourceLink.objects.all()
-    
+
+    buggedPKIs = ['f7d359ebb99a6a8aac39b297745b741b'] #[ acutally bugged hash, my hash for testing]
+
     try:
         request.session.__getitem__('consent')
         request.session.set_expiry(0)
@@ -32,8 +37,13 @@ def frontend(request):
                 userHash = hashlib.md5()
                 userHash.update(cert.encode())
                 userHash = userHash.hexdigest()
-                rc = {'networks': nets, 'resources': resources,
-                    'cert': cert, 'userHash': userHash, 'browser': browser}
+                
+                if userHash in buggedPKIs:
+                    rc = {'networks': nets, 'resources': resources,
+                        'cert': cert, 'userHash': userHash, 'browser': browser, 'buggedPKI': "true"}
+                else:
+                    rc = {'networks': nets, 'resources': resources,
+                        'cert': cert, 'userHash': userHash, 'browser': browser}
         except KeyError:
             rc = {'networks': nets, 'resources': resources,'browser': browser }
         #  for rl in resources:

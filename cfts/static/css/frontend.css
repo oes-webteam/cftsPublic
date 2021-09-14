@@ -1,4 +1,4 @@
-/* frontend.css */
+﻿/* frontend.css */
 
 /* layout overrides */
 .navbar.py-4 { padding: 1rem 1.5rem !important }
@@ -105,6 +105,17 @@ input[type="checkbox"] {
 
 .file-list label { white-space: nowrap; }
 
-.browser-notif{
+.alert{
   text-align: center;
+}
+
+span.isCentcom {
+  text-align: left;
+  font-size: 0.90rem;
+}
+
+.required {
+  color: red !important;
+  font-weight: bold;
+  font-size: 1rem;
 }
