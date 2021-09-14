@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% load static %}
 {% load util %}
 
@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="{% static 'css/queue.css' %}">    
 
 <!--  To make the tabs toggleable, add the data-toggle="tab" attribute to each link. Then add a .tab-pane class with a unique ID for every tab and wrap them inside a div element with class .tab-content.  -->
-<div class="container" style="margin-top: 200px;">
+<div class="container" style="margin-top: 105px;">
     <div class="card">
         <div class="card-header">
 
@@ -47,13 +47,24 @@
                             {% endfor %}
                         </div>
                         <div class="create-pull">
-                            <button class="btn btn-primary pull-button{% if network.pending.count == 0 %} disabled{% endif %}" id="pull{{network.name}}">Create {{ network.name }} Pull</button>                                 
+                            <button class="btn btn-primary pull-button{% if network.pending.count == 0 %} disabled{% endif %}" id="pull{{network.name}}">Create {{ network.name }} Pull</button> 
+                            <button class="btn btn-warning pull-button centcom{% if network.centcom.count == 0 %} disabled{% endif %}" id="pull{{network.name}}">Pull only Centcom</button> 
+                      
+                            
                         </div>
-                        {% for lp in network.last_pull %}
+
+                        {% if network.last_pull.count > 0 %}
+                            {% for lp in network.last_pull %}
+                            <div class="download-block">
+                                <a class="btn btn-primary download-button" id="dl{{network.name}}"
+                                    href="getPull/{{ network.name }}_{{ lp.pull_number }} {{lp.date_pulled|date:"dM"}} {{lp.date_pulled|time:"Hi"}}.zip">Download Current {{ network.name }} Zip</a>
+                                </div>
+                                {% endfor %}
+                        {% else %}
                         <div class="download-block">
-                            <a class="btn btn-primary download-button" id="dl{{network.name}}" href="/static/files/{{ network.name }}_{{ lp.pull_number }}.zip">Downoad Current {{ network.name }} Zip</a>
+                            <a class="btn btn-primary download-button" id="dl{{network.name}}" href="#" hidden></a>
                         </div>
-                        {% endfor %}
+                        {% endif %}
                         
                     </div>
 
@@ -65,9 +76,13 @@
                             <col width="20%" />
                         </colgroup>
                         {% for request in network.q %}
-                        <tr class="request-header{% if request.pull != None %} pending{% endif %}">
-                            <td><a href="{% url 'transfer-request' id=request.request_id %}">{{ request.user }}</a></td> <!-- link to request view -->
-                            <td{% if request.comments != None %} class="request-comments"> <a href="#" class="btn btn-primary comments">Show/Hide Comments</a> {% else %}>{% endif %}</td>
+			<tr class="request-header {% if request.pull != None %} pending{% endif %} {% if request.centcom_pull %}centcom{% endif %}" request_hash="{{request.request_hash}}">
+                            <td><a href="{% url 'transfer-request' id=request.request_id %}">{%if request.is_centcom%}<strong>{%endif%}{{ request.user }}{%if request.is_centcom%} &#x1f42a;</strong>{%endif%}</a></td> <!-- link to request view -->
+                            <td class="request-comments"> 
+				{% if request.is_dupe %}<a href="#" class="btn btn-info show-dupe" request_hash="{{request.request_hash}}">Show Duplicates</a> {% else %}{% endif %}
+				{% if request.comments != "" %}<a href="#" class="btn btn-primary comments">Show/Hide Comments</a> {% else %}{% endif %}
+				<a href="#" class="btn btn-warning request-encrypt" request_id="{{ request.request_id }}">Encrypt Files</a>
+				<a href="#" class="btn btn-danger request-reject" request_id="{{ request.request_id }}">Reject Files</a></td>
                             <td class="request-submitted">Submitted: {{ request.date_created|date:'db'|upper }} @ {{ request.date_created|time:'Hi' }}</td>
                         </tr>
                         {% if request.comments != None %}
@@ -78,14 +93,13 @@
                         {% for file in request.files.all %}
                         <tr class="{% if request.pull != None %}pending {% endif %}{% if file.rejection_reason != None %}rejected {% endif %}">
                             <td>
-                                <input type="checkbox" name="fileSelection" id="chk_{{ file.file_id }}" request_id="{{ request.request_id }}" request_email="{{ request.user.email }}" file_name="{{ file }}" />
-                                <button class="btn btn-danger btn-reject" id="btn_{{ file.file_id }}" request_id="{{ request.request_id }}" request_email="{{ request.user.email }}" file_name="{{ file }}">Reject</button>
+                                <input type="checkbox" name="fileSelection" id="chk_{{ file.file_id }}" request_id="{{ request.request_id }}" request_email="{{ request.user.email }}" file_name="{{ file }}" hidden/>
                                 <!-- Show encrypt flag? -->
                                 {% if file.is_pii or file.is_centcom_info %}
                                 <span title="PII: {{ file.is_pii }}&#10;CENTCOM Info: {{ file.is_centcom_info }}">🔒</span>
                                 {% endif %}
                             </td>
-                            <td colspan="2"><span title="{{ file }}">{{ file|truncatechars:50 }}</span></td>
+                            <td colspan="2"><a title="{{ file }}" href="getFile/{{file.file_object}}">{{ file }}</a></td>
                         </tr>
                         {% endfor %}
                         <!-- end files -->
@@ -94,9 +108,6 @@
                         <!-- end requests -->
                     </table>
                     </form>
-
-                    <!-- delete selected button -->
-                    <button class="btn btn-danger btn-reject-selected">Reject All Selected</button>
 
                 {% endif %}
                 </div>
@@ -120,6 +131,8 @@
         </div>
     </form>
 </div>
+
+{% include 'partials/_forceReloadForm.html' %}
 
 <script src="{% static 'js/queue.js' %}"></script>
 {% endblock %}

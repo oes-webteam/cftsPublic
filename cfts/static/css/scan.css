@@ -1,0 +1,29 @@
+#scan-results { display: none; }
+
+#scan-results h3, #loading-icon h3 {
+  color: red;
+}
+
+#rootList {
+  border-radius: 1.67ex;
+}
+
+.root-item {
+  border: 1px dashed red;
+  border-radius: 1.67ex;
+  max-width: 50vw;
+  min-width: 50vmax;
+  font-size: 1.25em;
+  font-weight: bold;
+}
+
+.scanned-list {
+  font-size: 0.75em;
+  font-weight: normal;
+}
+
+.scanned-item {}
+
+.inner-files {}
+
+.scanned-file {}

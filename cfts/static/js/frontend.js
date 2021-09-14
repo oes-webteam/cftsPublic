@@ -4,18 +4,83 @@ let dropArea = document.getElementById( "drop-zone" );
 let filesInput = document.getElementById( "standard-upload-files" );
 let fileQueue = [];
 let fileInfo = {};
+let addEmail = document.getElementById( "addEmail" );
+let classifications = [''];
+let buggedPKIs = ['f7d359ebb99a6a8aac39b297745b741b']
+
+console.log("Cache test")
+/* *************************************************** */
+/* GET USER CERT INFORMATION FROM VAR IN FRONTEND.HTML */
+/* *************************************************** */
+  // console.log(cert)
+  subject = cert.split("=")
+  subject = subject[subject.length-1]
+  // console.log(subject)
+  user = subject.split(".")
+  // console.log(user)
+
+  if (buggedPKIs.includes(userHash) == false){
+	$("#firstName").val(user[1])
+  	$("#lastName").val(user[0]) 
+    }
+  
+  $("#userID").val(userHash)
+
+/* ************************************* */
+/* Get classifications from Django admin */
+/* ****************************** ****** */
+  //Add the CSRF token to ajax requests
+  $.ajaxSetup({
+    beforeSend: function (xhr, settings) {
+      xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+        },
+    });
+      
+      
+    ajaxSettings = {
+    url: "api-getclassifications",
+    method: "GET",
+    contentType: false,
+    processData: false,
+    };
+    $.ajax(ajaxSettings).done(successHandler);
+    
+  function successHandler(data){
+    for(obj in data){
+      classifications.push(data[obj].fields.abbrev)
+        }
+    }
 
 
 /* ****************************************** */
 /* USER NOTIFICATION (NEEDS VAST IMPROVEMENT) */
 /* ****************************************** */
-notifyUser = ( msg ) => {
-  let alertDiv = $( ".alert" );
+notifyUserSuccess = ( msg ) => {
+  $(".server-error").hide()
+  $(".danger-error").hide()
+  let alertDiv = $( ".alert-success" );
   alertDiv.text( msg );  
   alertDiv.fadeIn();
   window.setTimeout( function() {
     alertDiv.fadeOut();
   }, 5000 );
+};
+
+notifyUserWarning = ( msg ) => {
+  $(".alert-success").hide()
+  $(".server-error").hide()
+  let alertDiv = $( ".danger-error" );
+  alertDiv.text( msg );  
+  alertDiv.fadeIn();
+};
+
+
+notifyUserError = ( msg ) => {
+  $(".alert-success").hide()
+  $(".danger-error").hide()
+  let alertDiv = $( ".server-error" );
+  alertDiv.text( msg );  
+  alertDiv.fadeIn();
 };
 
 
@@ -62,7 +127,7 @@ const validateFile = ( thisFile ) => {
   if( filename.includes( "prf" ) || filename.includes( "lvy" ) || filename.includes( "levy" ) ) {
     // hard NO!!
     msg += "\nPRF and LVY files cannot be transferred per CFTS use policy. See Resources >> Cross Domain Users Guide for details.";
-    notifyUser( msg );
+    notifyUserError( msg );
     return false;
   }
 
@@ -132,13 +197,19 @@ const displayFileQueue = () => {
       selectClass.setAttribute( "name", "classification" + i );
       selectClass.setAttribute( "id", "classification" + i );
       selectClass.required = true;
-      [ '', 'U', 'U//FOUO', 'C//REL', 'S//REL' ].forEach(  c => {
-        let option = document.createElement( "option" );
-        option.setAttribute( "value", c );
-        if( fileQueue[i] && fileQueue[i].cls == c ) option.selected = true;
-        option.appendChild( document.createTextNode( c ) );
-        selectClass.appendChild( option );
-      });
+
+    classifications.forEach(  c => {
+      let option = document.createElement( "option" );
+      option.setAttribute( "value", c );
+      if( fileQueue[i] && fileQueue[i].cls == c ) option.selected = true;
+      option.appendChild( document.createTextNode( c ) );
+      selectClass.appendChild( option );
+    });
+      
+      
+
+      
+
       fileInfoDiv.appendChild( selectClass );
 
       let toEncrypt = document.createElement( "input" );
@@ -185,6 +256,78 @@ const removeFileFromQueue = ( e ) => {
 /* ***************************************** */
 addHighlight = ( e ) => dropArea.classList.add( 'highlight-active' );
 removeHighlight = ( e ) => dropArea.classList.remove( 'highlight-active' );
+
+
+/* ******************* */
+/* REMOVE EXTRA EMAILS */
+/* ******************* */
+const deleteEmailField = ( e ) => {
+  preventDefaults( e );
+  console.log(e.parentNode)
+};
+
+/* ******************************* */
+/* ADD NEW DESTINATION EMAIL FIELD */
+/* ******************************* */
+const createEmailField = ( e ) => {
+  
+  preventDefaults( e );
+  let emailFields = document.getElementsByName('targetEmail');
+  let emailFieldEmpty = false;
+
+  emailFields.forEach(field => {
+    if(field.value == ""){
+      console.log("empty email field")
+      field.classList.add('is-invalid');
+      emailFieldEmpty = true;
+    }
+    else{
+      if(field.classList.contains('is-invalid')){
+        field.classList.remove('is-invalid');
+      }
+    }
+  })
+
+  if(emailFieldEmpty == false){
+    let theButton = e.target;
+    let count = document.getElementsByName( 'targetEmail' ).length - 1;
+    
+  //  let spacerSpan = document.createElement( 'span' );
+  //  spacerSpan.classList.add( 'w-100' );
+
+    let newField = document.createElement( 'input' );
+    newField.setAttribute( 'type', 'email' );
+    newField.setAttribute( 'name', 'targetEmail' );
+    newField.setAttribute( 'id', 'destination' + count );
+    newField.setAttribute( 'placeholder', 'Email Address' );
+    newField.classList.add( 'form-control' );
+
+    let appendSpan = document.createElement('span');
+    appendSpan.classList.add('input-group-text')
+    appendSpan.setAttribute('id', 'removeEmail' + count)
+    appendSpan.textContent="X"
+    appendSpan.addEventListener( "click", () => {
+      appendSpan.parentNode.parentNode.remove();
+    }, false );
+
+
+    let removeField = document.createElement('div');
+    removeField.classList.add('input-group-append')
+    removeField.appendChild(appendSpan);
+    
+    let formGroup = document.createElement( 'div' );
+    formGroup.classList.add( 'form-group', 'add-email', 'input-group' );
+    formGroup.appendChild( newField );
+    formGroup.appendChild(removeField);
+
+
+    // inputGroup.insertBefore( spacerSpan, inputGroup.children[ position ] )
+    theButton.parentElement.insertAdjacentElement( "beforeBegin", formGroup );
+  }
+}
+
+addEmail.addEventListener( 'click', createEmailField, false );
+
 
 
 /* *************** */

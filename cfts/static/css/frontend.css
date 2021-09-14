@@ -1,4 +1,4 @@
-/* frontend.css */
+﻿/* frontend.css */
 
 /* layout overrides */
 .navbar.py-4 { padding: 1rem 1.5rem !important }
@@ -18,9 +18,14 @@ label.custom-control-label {
 	line-height: 1.67em;
 }
 
-.input-group-prepend .input-group-text {
+.input-group-prepend .input-group-text, .input-group-append .input-group-text{
 	color: red !important;
 	font-weight: bold;
+}
+
+input[type="checkbox"] { 
+  margin-top: 0.5rem;
+  transform: scale(2) !important; 
 }
 
 /* file input button */
@@ -92,9 +97,25 @@ label.custom-control-label {
 }
 
 .file-list input[ type = checkbox ] {
-  position: relative;
+  /* position: relative; */
+  width: auto;
   margin-right: -3rem;
-  margin-left: -2.5rem;
+  margin-left: 8.8rem;
 }
 
 .file-list label { white-space: nowrap; }
+
+.alert{
+  text-align: center;
+}
+
+span.isCentcom {
+  text-align: left;
+  font-size: 0.90rem;
+}
+
+.required {
+  color: red !important;
+  font-weight: bold;
+  font-size: 1rem;
+}

@@ -11,16 +11,32 @@
   <ul class="grid-column" style="grid-column: {{ forloop.counter|add:1 }}">
   {% for pull in net %}
     {% if forloop.counter0 == 0 %}<h3 class="grid-column-header">{{ pull.pull_network }}</h3>{% endif %}
-    <li class="{% if pull.date_complete != None %}is-done{% elif pull.date_twoeye != None %}to-complete{% elif pull.date_oneeye != None %}to-twoeye{% endif%}">
+    <li class="{% if pull.date_complete != None %}is-done{% elif pull.date_twoeye != None %}to-complete{% elif pull.date_oneeye != None %}to-twoeye{% endif %} {% if pull.centcom_pull %}centcom{% endif %}">
+
       <ul>
-        <li><strong>{{ pull.pull_network }}_{{ pull.pull_number }}</strong></li>
-        <li>{{ pull.pull_date }}</li>
-        <li>{{ pull.pull_user }}</li>
+        <li class="title-line"><strong>{{ pull.pull_network }}_{{ pull.pull_number }} {% if pull.centcom_pull %}</br>Centcom Only{% endif %}</strong></li>
+        <li class="title-line status-imgs {% if pull.date_complete != None %}is-done{% elif pull.date_twoeye != None %}to-complete{% elif pull.date_oneeye != None %}to-twoeye{% endif %}">
+          <img src="{% if  pull.date_oneeye != None %}{% static 'img/asset 13.svg' %}{% else %}{% static 'img/transparent.png' %}{% endif %}" class="status-img" alt="One Eye" />    
+          <img src="{% if  pull.date_twoeye != None %}{% static 'img/asset 13.svg' %}{% else %}{% static 'img/transparent.png' %}{% endif %}" class="status-img" alt="Two Eye" />
+          <img src="{% if  pull.date_complete != None %}{% static 'img/asset 14.svg' %}{% else %}{% static 'img/transparent.png' %}{% endif %}" class="status-img" alt="Burned to Disk #{{pull.disk_number}}" />
+        </li>
+        {% if pull.date_complete != None %}
+          <li>Completed by {{pull.user_complete}} </br>on {{pull.date_complete}}</li>
+	  <li>Burned to disk #{{pull.disk_number}}</li>
+        {% elif pull.date_twoeye != None %}
+          <li>Two eyed by {{pull.user_twoeye}} </br>on {{pull.date_twoeye}}</li>
+        {% elif pull.date_oneeye != None %}
+          <li>One eyed by {{pull.user_oneeye}} </br>on {{pull.date_oneeye}}</li>
+        {% else %}
+          <li>Pulled by {{pull.pull_user}} </br>on {{pull.pull_date}} </li>
+        {% endif %}
       </ul>
+
       <button class="pull-menu-btn">&hellip;</button>
       <!-- TODO: remove this from the flow of the document -->
       <ul class="pull-menu">
-        <li class="pull-menu-option download"><a href="{% static 'files/' %}{{pull.pull_network}}_{{pull.pull_number}}.zip">Download Again</a></li>
+        <li class="pull-menu-option download"><a href="getPull/{{pull.pull_network}}_{{pull.pull_number}} {{pull.pull_date|date:"dM"}} {{pull.pull_date|time:"Hi"}}.zip">Download Again</a></li>
+        <li class="pull-menu-option download"><a href="scan/{{pull.pull_network}}_{{pull.pull_number}} {{pull.pull_date|date:"dM"}} {{pull.pull_date|time:"Hi"}}.zip">Scan Pull</a></li>
         {% if pull.date_oneeye == None %}
         <li class="pull-menu-option"><a href="{{pull.pull_id}}" class="oneeye">One-eye Complete</a></li>
         {% elif pull.date_twoeye == None %}

@@ -89,6 +89,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+Pipfile
+Pipfile.lock
 
 # Spyder project settings
 .spyderproject
@@ -107,6 +109,8 @@ venv.bak/
 
 # uploaded files from the user
 uploads/
+# uploaded files from the admin section
+templates/partials/files/
 # files created by the system
 cfts/static/files/*.zip
 # Visual Studio Code

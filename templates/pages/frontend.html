@@ -4,23 +4,40 @@
 <!-- begin content block variable -->
 <link rel="stylesheet" href="{% static 'css/frontend.css' %}" />
 
+
 <!--Cards Start Here -->
 <section id="boxes" class="py-5">
+
   <div class="container">
+    {% if rc.browser == "IE"%}<div class="alert alert-danger browser-notif" role="alert">This service <a class="alert-link">does not</a> support Internet Explorer. Please use Microsoft Edge, Google Chrome, or Firefox to utilize CFTS.</div>{% endif %}
+  
+    <div class="alert alert-warning encrypt-notif" role="alert">Please review the <a class="alert-link" href="{% url 'resources' "Combined_File_Transfer_Service_Policies.pdf" %}">CFTS Policies</a> before submitting your request. If your files contain CUI, PII, or PHI please mark them for encryption.</div>
+    
+    <div class="alert alert-danger fadein server-error" style="display: none;" role="alert"></div>
+
+    <div class="alert alert-danger fadein danger-error" style="display: none;" role="alert"></div>
+   
     <div class="alert alert-success fadein" style="display: none;" role="alert"></div>
 
     <form action="#" id="transfer-request-form" method="post" enctype="multipart/form-data" novalidate="true">
+      {% csrf_token %}
       <div class="row" id="form-row">
         <!-- Email -->
         <div class="col-lg-4">
           <div class="card text-center border-secondary mb-resp bg-light">
             <div class="card-body">
               <h3 class="text-gray-dark">User Information</h3>
-              <div class="form-group">
-                <input type="text" class="form-control" name="firstName" id="firstName" placeholder="First Name" />
+              <div class="form-group input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="firstNameRequired">*</span>
+                </div>
+                <input type="text" class="form-control" name="firstName" id="firstName" placeholder= "First Name" {% if rc.cert %}{% if rc.buggedPKI == "true" %}{% else %}readonly{% endif %}{% endif %} />
               </div>
-              <div class="form-group">
-                <input type="text" class="form-control" name="lastName" id="lastName" placeholder="Last Name" />
+              <div class="form-group input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="lastNameRequired">*</span>
+                </div>
+                <input type="text" class="form-control" name="lastName" id="lastName" placeholder="Last Name" {% if rc.cert %}{% if rc.buggedPKI == "true" %}{% else %}readonly{% endif %}{% endif %} />
               </div>
               <div class="form-group input-group">
                 <div class="input-group-prepend">
@@ -38,6 +55,30 @@
                 <span class="w-100"></span>
                 <small id="userEmailHelp" class="form-text text-muted">on this network</small>
               </div>
+              <input type="text" class="form-control" name="userPhone" id="userPhone"
+                  aria-describedby="userPhoneHelp userPhoneRequired" placeholder="Phone Number">
+                <br>
+              <div class="form-group input-group ">
+		    <span class="required">*</span>
+                    <span class="form-text isCentcom">This transfer is in support of the CENTCOM AOR</span>
+
+		    <div style=" margin-top: 0.5rem; display: grid; grid-template-columns: 50% 50%; width:100%;">
+		    	<div>
+			    <input type="radio" name="isCentcom" id="isCentcomYes" value="True">
+			    <label for="isCentcomYes">Yes</label> 
+			</div>
+
+			<div> 
+			    <input type="radio" name="isCentcom" id="isCentcomNo" value="False">
+			    <label for="isCentcomNo">No</label> 
+			</div>
+		   </div>
+		
+                <!--<input type="checkbox" class="form-check-input" name="isCentcom" id="isCentcom" value="True" />-->
+              </div>
+              <div class="form-group">
+                <input type="text" class="form-control" name="userID" id="userID"  hidden/>
+              </div>
 
               <!-- Drag and Drop-->
               <h3 class="text-gray-dark text-center">Add Files To Queue</h3>
@@ -46,7 +87,7 @@
                 <div class="upload-console-body">
                   <div class="form-group">
                     <!-- Added DIV to add margin to btn -->
-                    <label for="standard-upload-files" class="btn btn-primary"
+                    <label for="standard-upload-files" class="btn btn-success"
                       >Upload Files
                       <input type="file" name="files[]" id="standard-upload-files" multiple />
                       <!-- <input type="submit" value="Upload files" id="standard-upload" class="form-control-file mt-2"> -->
@@ -55,7 +96,7 @@
 
                   <!--<h3>Or drag and drop files below</h3>-->
                   <div class="upload-console-drop empty" id="drop-zone">
-                    Just drag and drop files here
+                    Drag and drop files here
                   </div>
                 </div>
               </div>
@@ -70,7 +111,7 @@
               <h3 class="text-gray-dark text-center">Request Queue</h3>
               <div class="file-list init">
                 <span>No files in queue.</span>
-                <small>Use the button above or drag and drop files into the indicated area.</small>
+                <small>Use the button to the left or drag and drop files into the indicated area.</small>
               </div>
             </div>
           </div>
@@ -90,7 +131,7 @@
                 {% endfor %}
               </div>
               <h3 class="text-gray-dark">Destination Email</h3>
-              <div class="form-group input-group">
+              <div class="form-group input-group" id="targetEmailGroup">
                 <div class="input-group-prepend">
                   <span class="input-group-text" id="targetEmailRequired">*</span>
                 </div>
@@ -104,11 +145,15 @@
                   required
                 />
                 <span class="w-100"></span>
-                <small id="targetEmailHelp" class="form-text text-muted">on the target network</small>
+                <small id="targetEmailHelp" class="form-text text-muted">on the target network</small>              
+              </div>
+              <div class="form-group">
+                <a href="#" id="addEmail" class="btn btn-success">Add Email</a>
               </div>
               <h3 class="text-gray-dark">Comments</h3>
               <div class="form-group">
                 <textarea class="form-control" name="comments" id="comments" placeholder="250 characters or less"></textarea>
+		<textarea class="form-control" name="PKIinfo" id="PKIinfo" placeholder="PKI debug information" hidden >{{rc.cert}}</textarea>
               </div>
             </div>
           </div>
@@ -120,10 +165,10 @@
         <div class="col-md-4"></div>
         <div class="col-md-4 mt-5 text-center">
           <!-- 
-                        TODO: Make this an actual <button> with a "click"
-                        eventHandler to avoid event bubble-up issues 
-                    -->
-          <button class="btn btn-secondary btn-block" role="button">Submit</button>
+              TODO: Make this an actual <button> with a "click"
+              eventHandler to avoid event bubble-up issues 
+          -->
+          <button class="btn btn-secondary btn-block" id="submitButton" role="button">Submit</button>
         </div>
         <div class="col-md-4"></div>
       </div>
@@ -133,6 +178,10 @@
   <!-- end .container -->
 </section>
 
+<script> 
+  var cert = "{{rc.cert}}"; 
+  var userHash = "{{rc.userHash}}";
+</script>
 <script src="{% static 'js/frontend.js' %}"></script>
 <script src="{% static 'js/process.js' %}"></script>
 {% endblock %}

@@ -60,8 +60,19 @@
             {% endfor %}
             </ul>
         </td>
-        <td class="xfer-email">{{ r.target_email }}</td>
-        <td class="xfer-pull">{{ r.pull }}</td>
+        <td class="xfer-email">
+            <ul class="email-list">
+                {%  for e in r.target_email.all %}
+                    <li>{{e}}</li>
+                {% endfor %}
+            </ul>
+        </td>
+        <td class="xfer-pull">
+	    <a href="getPull/{{r.pull}} {{r.date_pulled|date:"dM"}} {{r.date_pulled|time:"Hi"}}.zip">{{r.pull}} {% if r.pull.centcom_pull %}
+		Centcom Only
+            {% endif %}</a>
+	    
+	</td>
     </tr>
 {% endfor %}
 </table>
@@ -83,6 +94,5 @@
         </li>
     </ul>
 </div>
-
 <script src="{% static 'js/archive.js' %}"></script>
 {% endblock %}

@@ -32,13 +32,14 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'django_static_jquery_ui',
-    'pages.apps.PagesConfig', #came from the pages > apps.py tells django its an app
+    'pages.apps.PagesConfig',  # came from the pages > apps.py tells django its an app
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_user_agents',
 ]
 
 MIDDLEWARE = [
@@ -49,6 +50,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_user_agents.middleware.UserAgentMiddleware',
 ]
 
 ROOT_URLCONF = 'cfts.urls'
@@ -58,7 +60,8 @@ LOGIN_URL = '/admin/login/'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')], # Here we set the location of the templates
+        # Here we set the location of the templates
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -105,23 +108,77 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'America/New_York'
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
+
+# Error Logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        },
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue'
+        },
+    },
+    'formatters': {
+        'timestamp': {
+            'format': '{asctime} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'debugTrue': {
+            'level': 'ERROR',
+            'filters': ['require_debug_true'],
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/debug.log'),
+            'maxBytes': 1024*1024*1,
+            'backupCount': 5,
+            'formatter': 'timestamp'
+        },
+        'debugFalse': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/error.log'),
+            'maxBytes': 1024*1024*1,
+            'backupCount': 5,
+            'formatter': 'timestamp'
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['debugTrue', 'debugFalse'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    },
+}
+    
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
-
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'cfts\static')
 ]
+
+UPLOADS_DIR = os.path.join(BASE_DIR,'uploads')
+PULLS_DIR = os.path.join(BASE_DIR,'pulls')
+
+print("----------------------------------------------------")
+print("uploads path: ",os.path.abspath(UPLOADS_DIR))
+print("pulls path: ",os.path.abspath(PULLS_DIR))
+print("----------------------------------------------------")
+
+
+SCANTOOL_DIR = os.path.join (BASE_DIR, 'cfts\scan' )
+SCANTOOL_TEMPDIR = os.path.join( SCANTOOL_DIR, 'temp' )
