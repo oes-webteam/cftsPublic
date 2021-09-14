@@ -4,6 +4,8 @@ from . import static_views
 import pages.views as views
 
 urlpatterns = [
+    path('CFTS.cfm', views.frontend, name='index'),
+    path('cfts.cfm', views.frontend, name='index'),
     path('', views.frontend, name='index'),
     path('consent', static_views.consent, name='consent'),
     path('howTo', static_views.howTo, name='howTo'),
@@ -43,6 +45,7 @@ urlpatterns = [
     # APIs
     path('api-getuser/<uuid:id>', views.getUser, name='api-getuser'),
     path('api-setreject', views.setReject, name='api-setreject'),
+    path('api-setencrypt', views.setEncrypt, name='api-setencrypt'),
     path('api-numbers', views.runNumbers, name='api-numbers'),
     path('api-processrequest', views.process, name='api-processrequest'),
     path('api-setconsentcookie', views.setConsentCookie, name='api-setconsentcookie'),

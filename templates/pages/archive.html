@@ -67,10 +67,12 @@
                 {% endfor %}
             </ul>
         </td>
-        <td class="xfer-pull">{% if r.pull.centcom_pull %}
-        {{r.pull}} Centcom Only
-        {% else %}{{ r.pull }}
-        {% endif %}</td>
+        <td class="xfer-pull">
+	    <a href="getPull/{{r.pull}} {{r.date_pulled|date:"dM"}} {{r.date_pulled|time:"Hi"}}.zip">{{r.pull}} {% if r.pull.centcom_pull %}
+		Centcom Only
+            {% endif %}</a>
+	    
+	</td>
     </tr>
 {% endfor %}
 </table>

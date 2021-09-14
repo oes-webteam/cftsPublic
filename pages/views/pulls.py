@@ -28,10 +28,12 @@ def pulls( request ):
 
   networks = Network.objects.all()
 
-  # get last 10 pull data for each network
+  # get last 5 pull data for each network for current day and all past incomplete pulls
   for net in networks:
     # get information about the last pull that was done on each network
-    pulls = Pull.objects.filter( network__name=net.name ).order_by( '-date_pulled' )[:5]
+    pulls = Pull.objects.filter( network__name=net.name ).filter( date_pulled__date = datetime.datetime.now().date() ).order_by( '-date_pulled' )[:5]
+    incompletePulls = Pull.objects.filter( network__name=net.name ).filter( date_pulled__date__lt = datetime.datetime.now().date(), date_complete__isnull=True ).order_by( '-date_pulled' )
+    
     these_pulls = []
     for pull in pulls:
       this_pull = {
@@ -50,7 +52,27 @@ def pulls( request ):
         'centcom_pull': pull.centcom_pull
       }
       these_pulls.append( this_pull )
-    rc['pull_history'].append( these_pulls )
+
+    for pull in incompletePulls:
+      this_pull = {
+        'pull_id': pull.pull_id,
+        'pull_number': pull.pull_number,
+        'pull_date': pull.date_pulled,
+        'pull_user': pull.user_pulled,
+        'date_oneeye': pull.date_oneeye,
+        'user_oneeye': pull.user_oneeye,
+        'date_twoeye': pull.date_twoeye,
+        'user_twoeye': pull.user_twoeye,
+        'date_complete': pull.date_complete,
+        'user_complete': pull.user_complete,
+        'disk_number': pull.disc_number,
+        'pull_network': net.name,
+        'centcom_pull': pull.centcom_pull
+      }
+      these_pulls.append( this_pull )
+      
+    if len( these_pulls ) > 0:
+      rc['pull_history'].append( these_pulls )
 
   return render( request, 'pages/pulls.html', { 'rc': rc } )
 

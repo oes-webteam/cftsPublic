@@ -118,6 +118,14 @@ USE_TZ = True
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        },
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue'
+        },
+    },
     'formatters': {
         'timestamp': {
             'format': '{asctime} {message}',
@@ -125,16 +133,28 @@ LOGGING = {
         },
     },
     'handlers': {
-        'file': {
+        'debugTrue': {
             'level': 'ERROR',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'debug.log'),
+            'filters': ['require_debug_true'],
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/debug.log'),
+            'maxBytes': 1024*1024*1,
+            'backupCount': 5,
+            'formatter': 'timestamp'
+        },
+        'debugFalse': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/error.log'),
+            'maxBytes': 1024*1024*1,
+            'backupCount': 5,
             'formatter': 'timestamp'
         },
     },
     'loggers': {
         'django': {
-            'handlers': ['file'],
+            'handlers': ['debugTrue', 'debugFalse'],
             'level': 'ERROR',
             'propagate': True,
         },

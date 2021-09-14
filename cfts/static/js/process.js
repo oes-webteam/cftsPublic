@@ -25,36 +25,30 @@ function checkEmail(email, net, direction) {
       return domain.indexOf("smil") == -1 && domain.indexOf("cmil") == -1 && (check == "mil" || check == "gov") ? true : false;
     case "SIPR":
       return domainArray.slice(-2).join(".") == "smil.mil" ? true : false;
-    case "CX-SWA":
-      break;
-    case "BICES":
-      switch (direction) {
-        case "from":
-          return domainArray.slice(-2).join(".") == "bices.org" ? true : false;
-        case "to":
-          return domainArray.slice(-3).join(".") == "us.bices.org" ? true : false;
-        default:
-          notifyUser(
-            "ERROR: A system error has occurred. The 'checkEmail' function is being called in an impropper manner ('direction' == " +
-              direction +
-              "). Please notify the CFTS administrators of this error by emailing {{ SETTINGS.CFTS_ADMIN_EMAIL }}."
-          );
-          break;
-      }
-    case "CPN-X":
-      break;
-    case "CPN-SAU":
-      break;
-    case "CPN-JOR":
-      break;
+    //case "BICES":
+      //switch (direction) {
+        //case "from":
+          //return domainArray.slice(-2).join(".") == "bices.org" ? true : false;
+        //case "to":
+          //return domainArray.slice(-3).join(".") == "us.bices.org" ? true : false;
+        //default:
+          //notifyUserWarning(
+            //"ERROR: A system error has occurred. The 'checkEmail' function is being called in an impropper manner ('direction' == " +
+              //direction +
+              //"). Please notify the CFTS administrators of this error by emailing {{ SETTINGS.CFTS_ADMIN_EMAIL }}."
+          //);
+          //break;
+      //}
     default:
-      if (net.length)
-        notifyUser(
-          "ERROR: A system error has occurred. The network " +
-            net +
-            " is not recognized by the 'checkEmail' function. Please notify the CFTS administrators of this error by emailing {{ SETTINGS.CFTS_ADMIN_EMAIL }}."
-        );
-      break;
+      //if (net.length)
+        //notifyUserWarning(
+          //"ERROR: A system error has occurred. The network " +
+            //net +
+            //" is not recognized by the 'checkEmail' function. Please notify the CFTS administrators of this error by emailing {{ SETTINGS.CFTS_ADMIN_EMAIL }}."
+        //);
+      //break;
+	check = domainArray.pop();
+      return (check == "mil" || check == "gov" || check == "edu" || check == "org") ? true : false;
   }
   // fail by default
   return false;
@@ -107,6 +101,12 @@ function validateForm(form) {
     isValid = false;
   }
 
+  // is centcom
+  if (!form.elements.isCentcom.value.length) {
+    form.elements.isCentcom.forEach((elem) => errors.push(elem));
+    isValid = false;
+  }
+
   // target email(s)
   /* form has multiple emails */
   if( typeof form.elements.targetEmail.length != 'undefined' && form.elements.targetEmail.length > 1 ) {
@@ -137,7 +137,7 @@ function validateForm(form) {
   // process errors
   if (!isValid) {
     // it's just a bunch of screwing around and explosions until you write it down (aka: log it)
-    errors.forEach( ( elem ) => console.dir( elem ) );
+    //errors.forEach( ( elem ) => console.dir( elem ) );
 
     // mark everything good
     [ ...form.elements ].forEach( ( elem ) => elem.classList.add( "is-valid" ) );
@@ -174,7 +174,7 @@ function prepareFormData(form) {
     formData.append( 'targetEmail', emailList );
   }
 
-  if(form.elements.isCentcom.checked == false){
+  if(form.elements.isCentcom.value == "False"){
     formData.delete('isCentcom');
     formData.append('isCentcom', "False");
   }else{
@@ -221,7 +221,7 @@ function prepareFileInfo(formData) {
 /* ****************************** */
 function successHandler(r) {
   console.dir(r);
-  notifyUser("THANK YOU! Your files have been submitted. ");
+  notifyUserSuccess("THANK YOU! Your files have been submitted. ");
   // CLEAN UP!!
 
   email = $("#userEmail").val();
@@ -231,14 +231,23 @@ function successHandler(r) {
   resetFileQueue();
   resetAdditionalEmails();
   autoFileUserInfo(email,phone);
+
+  console.log("Request Process Successful");
+
+  // re-enable the submit button
+  $('#submitButton').prop('disabled',false);
 }
 
 function autoFileUserInfo(email,phone){
   subject = cert.split("=")
   subject = subject[subject.length-1]
   user = subject.split(".")
-  $("#firstName").val(user[1])
-  $("#lastName").val(user[0]) 
+  if (buggedPKIs.includes(userHash) == false){
+	$("#firstName").val(user[1])
+  	$("#lastName").val(user[0])
+	
+    } 
+  $("#PKIinfo").val(cert) 
   $("#userID").val(userHash)
   $("#userEmail").val(email)
   $("#userPhone").val(phone)
@@ -280,6 +289,11 @@ function failHandler(r, s) {
       r.statusText +
       '.  Please notify the CFTS administrators of this error. Contact info can be found by clicking "Contact Us" at the bottom of the page.'
   );
+
+  console.log("Request Process Failed");
+
+  // re-enable the submit button
+  $('#submitButton').prop('disabled',false);
 }
 
 
@@ -288,13 +302,17 @@ function failHandler(r, s) {
 /* THE ROOT FORM PROCESSING FUNCTION (EVERYTHING ELSE SUPPORTS THIS) */
 /* ***************************************************************** */
 function process(e) {
+  console.log("Request Process Initiated");
   preventDefaults(e);
+  
+  // disable the submit button once clicked, prevent duplicate submissions from multi clicks
+  $('#submitButton').prop('disabled',true);
 
   let isValid = validateForm(xferForm);
 
   if (isValid) {
     // Give user feedback that the submit action occurred and things are happening
-    notifyUser(
+    notifyUserSuccess(
       "Submitting the request now. This could take up to a few minutes depending upon the size of the files being transferred. Please stand by ... "
     );
 
@@ -321,7 +339,12 @@ function process(e) {
     };
     $.ajax(ajaxSettings).done(successHandler).fail(failHandler);
   } else {
+    console.log("Request Process Canceled");
+
     // notify the user there were validation errors
-    notifyUser("There are errors on the request form.  Please review and address the indicated fields.");
+    notifyUserWarning("There are errors on the request form.  Please review and address the indicated fields.");
+
+    // re-enable the submit button
+    $('#submitButton').prop('disabled',false);
   }
 }
