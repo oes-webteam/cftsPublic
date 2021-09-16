@@ -52,15 +52,17 @@ def setReject(request):
     try:
         pull_number = someRequest.pull.pull_id
 
-        url = 'create-zip/'+ str(network_name) +'/'+ str(someRequest.is_centcom)+'/'+ str(pull_number)
         return redirect('create-zip',network_name=network_name,isCentcom=someRequest.is_centcom,rejectPull=pull_number)
 
     except AttributeError:
         print("Request not found in any pull.")
-    return JsonResponse({'mystring': 'isgreat'})
+        return JsonResponse({'Response': 'File not part of pull, reject status set'})
+    
+    return JsonResponse({'error': 'error'})
 
 @login_required
 def setEncrypt(request):
+    
     thestuff = dict(request.POST.lists())
 
     request_id = thestuff['request_id']
@@ -80,7 +82,6 @@ def setEncrypt(request):
     try:
         pull_number = someRequest.pull.pull_id
 
-        url = 'create-zip/'+ str(network_name) +'/'+ str(someRequest.is_centcom)+'/'+ str(pull_number)
         return redirect('create-zip',network_name=network_name,isCentcom=someRequest.is_centcom,rejectPull=pull_number)
 
     except AttributeError:
