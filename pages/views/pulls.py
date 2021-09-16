@@ -4,10 +4,11 @@ import datetime
 
 # decorators
 from django.contrib.auth.decorators import login_required
+from django.core.serializers import serialize
 from django.http.response import FileResponse
 
 # responses
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.http import JsonResponse, FileResponse #, HttpResponse, FileResponse
 
 # model/database stuff
@@ -106,4 +107,12 @@ def getPull(request, fileName):
   response = FileResponse(
       open(os.path.join(settings.PULLS_DIR, fileName), 'rb'))
   return response
+
+@login_required
+def cancelPull(request, id):
+  thisPull = Pull.objects.get( pull_id = id )
+  requests = Request.objects.filter(pull = id).update(pull = None)
+  thisPull.delete()
+  return redirect('pulls')
+  
 
