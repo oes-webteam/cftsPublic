@@ -10,6 +10,8 @@ from django.conf import settings
 from django.utils.functional import empty
 from django.utils import timezone
 from cfts import settings as cftsSettings
+from django.core.serializers import serialize
+
 
 # decorators
 from django.contrib.auth.decorators import login_required
@@ -17,7 +19,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.cache import never_cache
 
 # responses
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.http import JsonResponse, FileResponse, response  # , HttpResponse,
 
 # model/database stuff
@@ -121,19 +123,26 @@ def queue(request):
 @login_required
 def transferRequest( request, id ):
     rqst = Request.objects.get( request_id = id )
+    user = User.objects.get( user_id = rqst.user.user_id )
+
     rc = { 
+        'User Name': user,
+        'User Email': user.email,
+        'Phone': user.phone,
+        'network': Network.objects.get( network_id = rqst.network.network_id ),
+        'Marked as Centcom': rqst.is_centcom,
+        'Part of pull': rqst.pull,
         'request_id': rqst.request_id,
         'date_created': rqst.date_created,
-        'user': User.objects.get( user_id = rqst.user.user_id ),
-        'phone': User.objects.get(user_id=rqst.user.user_id).phone,
-        'network': Network.objects.get( network_id = rqst.network.network_id ),
         'files': rqst.files.all(),
         'target_email': rqst.target_email.all(),
-        'is_submitted': rqst.is_submitted,
-        'is_centcom': rqst.is_centcom
     }
-    return render(request, 'pages/transfer-request.html', {'rc': rc})
+    return render(request, 'pages/transfer-request.html', {'rc': rc, 'centcom': rqst.is_centcom})
 
+@login_required
+def removeCentcom( request, id ):
+    Request.objects.filter(request_id = id).update(is_centcom=False)
+    return redirect('queue')
 
 @login_required
 def createZip(request, network_name, isCentcom, rejectPull):
