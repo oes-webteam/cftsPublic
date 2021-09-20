@@ -52,38 +52,6 @@ console.log("Cache test")
     }
 
 
-/* ****************************************** */
-/* USER NOTIFICATION (NEEDS VAST IMPROVEMENT) */
-/* ****************************************** */
-notifyUserSuccess = ( msg ) => {
-  $(".server-error").hide()
-  $(".danger-error").hide()
-  let alertDiv = $( ".alert-success" );
-  alertDiv.text( msg );  
-  alertDiv.fadeIn();
-  window.setTimeout( function() {
-    alertDiv.fadeOut();
-  }, 5000 );
-};
-
-notifyUserWarning = ( msg ) => {
-  $(".alert-success").hide()
-  $(".server-error").hide()
-  let alertDiv = $( ".danger-error" );
-  alertDiv.text( msg );  
-  alertDiv.fadeIn();
-};
-
-
-notifyUserError = ( msg ) => {
-  $(".alert-success").hide()
-  $(".danger-error").hide()
-  let alertDiv = $( ".server-error" );
-  alertDiv.text( msg );  
-  alertDiv.fadeIn();
-};
-
-
 /* ********************************************************* */
 /* ADD FILES TO THE QUEUE WHEN ADDED FROM FIELD OR DROP ZONE */
 /* ********************************************************* */

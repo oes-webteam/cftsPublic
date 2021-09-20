@@ -5,11 +5,11 @@ import datetime
 # decorators
 from django.contrib.auth.decorators import login_required
 from django.core.serializers import serialize
-from django.http.response import FileResponse
+from django.views.decorators.cache import never_cache
 
 # responses
 from django.shortcuts import redirect, render
-from django.http import JsonResponse, FileResponse #, HttpResponse, FileResponse
+from django.http import JsonResponse, FileResponse #, HttpResponse
 
 # model/database stuff
 from pages.models import *
@@ -20,6 +20,7 @@ from cfts import settings
 
 
 @login_required
+@never_cache
 def pulls( request ):
   # request context
   rc = {

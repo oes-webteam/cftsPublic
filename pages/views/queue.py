@@ -16,6 +16,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.cache import never_cache
 
+
 # responses
 from django.shortcuts import render
 from django.http import JsonResponse, FileResponse, response  # , HttpResponse,
@@ -137,12 +138,7 @@ def transferRequest( request, id ):
 
 @login_required
 def createZip(request, network_name, isCentcom, rejectPull):
-    
-    logger.error("Creating pull zip")
-    
     if rejectPull == 'false':
-        print("New pull")
-        logger.error("New Pull")
         
         # create pull
         try:
@@ -189,17 +185,13 @@ def createZip(request, network_name, isCentcom, rejectPull):
         
         pull=new_pull
 
-    else:
-        print("Recreate pull after rejections")
-        logger.error("Recreate Pull")
-        
+    else:        
         qs = Request.objects.filter(pull=rejectPull)
         pull = Pull.objects.filter(pull_id=rejectPull)[0]
         pull_number = pull.pull_number
 
     # create/overwrite zip file
     zipPath = os.path.join(cftsSettings.PULLS_DIR+"\\") + network_name + "_" + str(pull_number)+ " " + str(pull.date_pulled.astimezone().strftime("%d%b %H%M")) + ".zip"
-    logger.error("Creating/Recreating this pull: ", str(zipPath))
     
     zip = ZipFile(zipPath, "w")
 
@@ -215,7 +207,6 @@ def createZip(request, network_name, isCentcom, rejectPull):
         if theseFiles.exists():
             i = 2
             while zip_folder in requestDirs:
-                print("request folder already exists")
                 zip_folder = str(rqst.user) + "/request_" + str(i)
                 i+=1
 
