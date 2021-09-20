@@ -35,6 +35,7 @@ urlpatterns = [
     path('pulls-oneeye/<uuid:id>', views.pullsOneEye, name='pulls-oneeye'),
     path('pulls-twoeye/<uuid:id>', views.pullsTwoEye, name='pulls-twoeye'),
     path('pulls-done/<uuid:id>/<int:cd>', views.pullsDone, name='pulls-done'),
+    path('cancelPull/<uuid:id>/', views.cancelPull, name='cancelPull'),
 
     # archive
     path('archive', views.archive, name='archive'),
