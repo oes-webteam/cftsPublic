@@ -4,6 +4,9 @@ import datetime
 
 # decorators
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import never_cache
+
+
 from django.http.response import FileResponse
 
 # responses
@@ -19,6 +22,7 @@ from cfts import settings
 
 
 @login_required
+@never_cache
 def pulls( request ):
   # request context
   rc = {

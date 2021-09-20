@@ -31,6 +31,8 @@
 
 .queue-form tr.request-header { background-color: #F0F0F0; }
 
+
+
 .queue-form tr.pending, 
 .queue-form tr.request-header.pending { 
   background-color: #EEE; 

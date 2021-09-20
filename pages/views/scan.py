@@ -9,6 +9,7 @@ import shutil
 
 # decorators
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import never_cache
 
 # responses
 from django.shortcuts import render
@@ -33,6 +34,7 @@ logger = logging.getLogger('django')
 
 
 @login_required
+@never_cache
 def scan(request,pullZip):
     # request context
     rc = {
