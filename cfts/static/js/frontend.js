@@ -88,29 +88,35 @@ const addFiles = ( e ) => {
 /* ************************************************ */
 const validateFile = ( thisFile ) => {
   let isvalid = true;
-  let msg = thisFile.name;
+  let msg = "File error " + thisFile.name;
   
   // kick out the JOPES
   let filename = thisFile.name.toLowerCase();
   if( filename.includes( "prf" ) || filename.includes( "lvy" ) || filename.includes( "levy" ) ) {
     // hard NO!!
-    msg += "\nPRF and LVY files cannot be transferred per CFTS use policy. See Resources >> Cross Domain Users Guide for details.";
+    msg += ": PRF and LVY files cannot be transferred per CFTS use policy. See Resources >> 'CFTS Policies' for details.";
     notifyUserError( msg );
     return false;
   }
-
-  for( let o of fileQueue ) {
-    let qFile = o.object;
-
-    // make sure this file doesn't already exist in the queue
-    // (crappy version -- would like to do this with MD5 or SHA-1 hash in the future)
-    if( thisFile.name == qFile.name && thisFile.size == qFile.size ) {
-      msg += "\nA file of this name and size is already in the queue.";
-      notifyUser( msg );
-      isvalid = false;
-      break;
-    }
+  else if( filename.includes(".eml") || filename.includes(".msg")){
+    msg+=": .eml and .msg files must be converted to an accepted file format before submission. Use outlook to export these files to a PDF, docx, ect."
+    notifyUserError( msg );
+    return false;
   }
+      //did this ever work???
+  // for( let o of fileQueue ) {
+  //   let qFile = o.object;
+
+  //   // make sure this file doesn't already exist in the queue
+  //   // (crappy version -- would like to do this with MD5 or SHA-1 hash in the future)
+  //   // does this even do anything???
+  //   if( thisFile.name == qFile.name && thisFile.size == qFile.size ) {
+  //     msg += "\nA file of this name and size is already in the queue.";
+  //     notifyUser( msg );
+  //     isvalid = false;
+  //     break;
+  //   }
+  // }
 
   return isvalid;
 };
