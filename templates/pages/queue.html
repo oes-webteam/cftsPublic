@@ -18,7 +18,7 @@
 
             <ul class="nav nav-tabs mt-5">
             {% for network in rc.queues %}
-                <li class="nav-item{% if network.count == 0 %} disabled{% endif %}">
+                <li class="nav-item" {% if network.count == 0 %} hidden{% endif %}>
                     <a class="nav-link{% if forloop.counter0 == 0 %} active{% endif %}"
                     {% if network.count != 0 %} 
                         data-toggle="tab" 
