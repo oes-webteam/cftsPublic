@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+<!-- view wrapper -->
+{% load static %} {% block content %}
+<!-- begin content block variable -->
+<link rel="stylesheet" href="{% static 'css/feedback.css' %}" />
+
+
+<!--Cards Start Here -->
+<section id="boxes" class="py-5">
+
+  <div class="container">
+      
+    <div class="alert alert-danger fadein server-error" style="display: none;" role="alert"></div>
+
+    <div class="alert alert-danger fadein danger-error" style="display: none;" role="alert"></div>
+   
+    <div class="alert alert-success fadein" style="display: none;" role="alert"></div>
+
+    <form action="#" id="transfer-request-form" method="post" enctype="multipart/form-data" novalidate="true">
+      {% csrf_token %}
+      <div class="row" id="form-row">
+        <!-- Email -->
+        <div class="col-lg-4">
+          <div class="card text-center border-secondary mb-resp bg-light">
+            <div class="card-body">
+              <h3 class="text-gray-dark">User Information</h3>
+              <div class="form-group input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="firstNameRequired">*</span>
+                </div>
+                <input type="text" class="form-control" name="firstName" id="firstName" placeholder= "First Name" {% if rc.cert %}{% if rc.buggedPKI == "true" %}{% else %}readonly{% endif %}{% endif %} />
+              </div>
+              <div class="form-group input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="lastNameRequired">*</span>
+                </div>
+                <input type="text" class="form-control" name="lastName" id="lastName" placeholder="Last Name" {% if rc.cert %}{% if rc.buggedPKI == "true" %}{% else %}readonly{% endif %}{% endif %} />
+              </div>
+              <div class="form-group input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="userEmailRequired">*</span>
+                </div>
+                <input
+                  type="email"
+                  class="form-control"
+                  name="userEmail"
+                  id="userEmail"
+                  aria-describedby="userEmailHelp userEmailRequired"
+                  placeholder="Email Address"
+                  required
+                />
+                <span class="w-100"></span>
+              </div>
+            </div>
+              
+            </div>
+          </div>
+
+          <div class="col-lg-8">
+          <div class="card text-center border-secondary mb-resp bg-light">
+            <div class="card-body">
+
+                <h3 id="title">Title</h3>
+                <div class="form-group input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text" id="categoryRequired">*</span>
+                  </div>
+                  <input class="form-control" name="title" id="title"></input>
+                </div>
+
+                <h3>Category</h3>
+                <div class="form-group input-group">
+                  
+                  <div class="input-group-prepend">
+                    <span class="input-group-text" id="categoryRequired">*</span>
+                  </div>
+                  <select class="form-control category" name="category" id="category" >
+                  <option value="Feedback">Feedback</option>
+                  <option value="Bug Report">Bug Report</option>
+                  {% if user.is_authenticated %}
+                  <option value="Feature Request">Feature Request</option>
+                  {% endif %}
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <input type="text" class="form-control" name="userID" id="userID"  hidden/>
+                  <input type="checkbox" class="form-control" name="adminUser" id="adminUser" {% if user.is_authenticated %} value="True" {% else %} value="False"{% endif %} checked hidden/>
+                </div>
+
+                <h3 id="feedback_title">Feedback</h3>
+                <div class="form-group input-group">
+                  <textarea class="form-control feedback" name="feedback" id="feedback" placeholder="We'd love to hear your thoughts."></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- end #form-row -->
+
+      <div class="row" id="button-row">
+        <div class="col-md-4"></div>
+        <div class="col-md-4 mt-5 text-center">
+          <!-- 
+              TODO: Make this an actual <button> with a "click"
+              eventHandler to avoid event bubble-up issues 
+          -->
+          <button class="btn btn-secondary btn-block" id="submitButton" role="button">Submit</button>
+        </div>
+        <div class="col-md-4"></div>
+      </div>
+      <!-- end #button-row -->
+    </form>
+  </div>
+  <!-- end .container -->
+</section>
+
+<script> 
+  var cert = "{{rc.cert}}"; 
+  var userHash = "{{rc.userHash}}";
+</script>
+<script src="{% static 'js/notification.js' %}"></script>
+<script src="{% static 'js/feedback.js' %}"></script>
+{#  <script src="{% static 'js/process.js' %}"></script> #}
+{% endblock %}
+<!-- end content block variable -->
