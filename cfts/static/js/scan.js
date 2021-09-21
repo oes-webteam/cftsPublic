@@ -30,7 +30,14 @@ const callScan = function ( e ) {
       type: 'POST', // For jQuery < 1.9
       success: function( data ){
           loadingIcon.hidden = true
+	  notifyUserSuccess("Files Scanned Successfully")
           processResults( data );
+      },
+      error: function( data ){
+          oadingIcon.hidden = true
+	  responseText = data.responseText
+	  errorInfo = responseText.substring(data.responseText.indexOf("Exception Value"), data.responseText.indexOf("Python Executable"))
+          notifyUserError( "Error in scan, " + data.status + ": " + data.statusText+ " --  Show this to the web team: " + errorInfo);
       }
     });
   }
@@ -49,7 +56,14 @@ const callScan = function ( e ) {
       type: 'POST', // For jQuery < 1.9
       success: function( data ){
         loadingIcon.hidden = true
+	notifyUserSuccess("Files Scanned Successfully")
         processResults( data );
+      },
+      error: function( data ){
+          loadingIcon.hidden = true
+	  responseText = data.responseText
+	  errorInfo = responseText.substring(data.responseText.indexOf("Exception Value"), data.responseText.indexOf("Python Executable"))
+          notifyUserError( "Error in scan, " + data.status + ": " + data.statusText+ " --  Show this to the web team: " + errorInfo);
       }
     });
 
@@ -62,6 +76,7 @@ const callScan = function ( e ) {
 /* processResults( [json] ): returns void */
 /* Builds HTML display of scan results    */
 const processResults = function( results ) {
+console.log(results)
   try {
     let section = document.querySelector( '#scan-results' );
     let rootList = document.querySelector( '#rootList' );

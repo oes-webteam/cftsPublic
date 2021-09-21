@@ -61,8 +61,10 @@ jQuery( document ).ready( function() {
       }
 
     } else {
-      $.get( url, {}, ( resp, status ) => {
-        if( status == 'success' ) { 
+      $('.pull-button').prop('disabled', true);
+
+      $.get( url, {}, 'json').then(
+	function(resp, status){
           // TODO: AJAX success != pull success
           // display success to the user
           alert( 'Pull complete. New ZIP file created for ' + netName + '.  Click the download button to retrieve it.' );
@@ -81,13 +83,21 @@ jQuery( document ).ready( function() {
           // update last pulled info
           $( '.last-pull-info .date-pulled' ).text( resp.datePulled );
           $( '.last-pull-info .user-pulled' ).text( resp.userPulled );
+	  notifyUserSuccess("Pull Created Successfully")
 
           $( "#forceReload" ).submit();
 
-        } else {
+        }, 
+
+	function(resp, status){
             console.error( 'Shit broke, yo.' );
+	    alert("Failed to create pull, send error message to web team.")
+            responseText = resp.responseText
+	    errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"))
+
+	    notifyUserError("Error Creating Pull, send error message to web team:  " + errorInfo)
         }
-      });
+      );
     }
   });
 
@@ -193,15 +203,21 @@ jQuery( document ).ready( function() {
 
       const setEncryptOnFiles = $.post( '/api-setencrypt', postData, 'json' ).then( 
         // success
-        function( resp ) {
-           console.log( 'SUCCESS' );
-           console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
+        function( resp, status ) {
+           console.log( 'SUCCESS' );        
+           notifyUserSuccess("File Encryption Successful")
 	   $( "#forceReload" ).submit();
         },
         // fail 
         function( resp, status ) {
            console.log( 'FAIL' );
-           console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
+
+	   alert("Failed to encrypt files, send error message to web team.")
+	   responseText = resp.responseText
+	   errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"))
+
+           notifyUserError("Error encrypting file, send error message to web team: " + errorInfo)
+           //console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
           // console.log( 'Response status: ' + status );
         }
       );
@@ -288,6 +304,7 @@ jQuery( document ).ready( function() {
         // success
         function( resp ) {
            console.log( 'SUCCESS' );
+           notifyUserSuccess("File rejection Successful")
            console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
 
 // sort files back into their own requests
@@ -340,10 +357,14 @@ jQuery( document ).ready( function() {
         function( resp, status ) {
 	   // close the dialog
            $( theDialog ).dialog( 'close' );
-	   alert("Failed to reject files")
+	   alert("Failed to reject files, send error message to web team.")
 
            console.log( 'FAIL' );
-           console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
+	   responseText = resp.responseText
+	   errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"))
+
+           notifyUserError("Error rejecting file, send error message to web team: " + errorInfo)
+           //console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
           // console.log( 'Response status: ' + status );
         }
       );
