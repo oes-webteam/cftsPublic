@@ -1,4 +1,6 @@
 /* transfer-request.js */
+window.document.title = "Request Info";
+
 jQuery( document ).ready( function() {
   
   $( '.btn-back' ).click( e => {  

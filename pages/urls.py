@@ -35,6 +35,7 @@ urlpatterns = [
     path('pulls-oneeye/<uuid:id>', views.pullsOneEye, name='pulls-oneeye'),
     path('pulls-twoeye/<uuid:id>', views.pullsTwoEye, name='pulls-twoeye'),
     path('pulls-done/<uuid:id>/<int:cd>', views.pullsDone, name='pulls-done'),
+    path('cancelPull/<uuid:id>/', views.cancelPull, name='cancelPull'),
 
     # archive
     path('archive', views.archive, name='archive'),
@@ -54,6 +55,7 @@ urlpatterns = [
     path('api-processrequest', views.process, name='api-processrequest'),
     path('api-setconsentcookie', views.setConsentCookie, name='api-setconsentcookie'),
     path('api-getclassifications', views.getClassifications, name='api-getclassifications'),
+    path('api-removeCentcom/<uuid:id>', views.removeCentcom, name='api-removeCentcom'),
     
     
 
