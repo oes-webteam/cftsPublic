@@ -43,6 +43,10 @@ urlpatterns = [
     # reporting
     path('reports', views.reports, name='reports'),
 
+    # feedback
+    path('feedback', views.feedback, name='feedback'),
+    path('submitfeedback', views.submitFeedback, name='submitfeedback'),
+    
     # APIs
     path('api-getuser/<uuid:id>', views.getUser, name='api-getuser'),
     path('api-setreject', views.setReject, name='api-setreject'),
@@ -52,6 +56,7 @@ urlpatterns = [
     path('api-setconsentcookie', views.setConsentCookie, name='api-setconsentcookie'),
     path('api-getclassifications', views.getClassifications, name='api-getclassifications'),
     path('api-removeCentcom/<uuid:id>', views.removeCentcom, name='api-removeCentcom'),
+    
     
 
     # dev tools
