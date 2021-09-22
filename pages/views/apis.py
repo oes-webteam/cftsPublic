@@ -38,8 +38,6 @@ def setReject(request):
     request_id = thestuff['request_id']
     id_list = thestuff['id_list[]']
     
-    logger.error("Reject request ID: " + str(request_id))
-    logger.error("Reject file IDs: " + str(id_list))
 
     # update the files to set the rejection
     File.objects.filter(file_id__in=id_list).update(
@@ -67,9 +65,6 @@ def setEncrypt(request):
 
     request_id = thestuff['request_id']
     id_list = thestuff['id_list[]']
-    
-    logger.error("Encrypt request ID: " + str(request_id))
-    logger.error("Encrypt file IDs: " + str(id_list))
     
     # update the files to set the rejection
     File.objects.filter(file_id__in=id_list).update(
@@ -200,7 +195,6 @@ def runNumbers(request):
 
 def process ( request ):
     resp = {}
-    logger.error('Request Process Initiated')
     
     if request.method == 'POST':
         form_data = request.POST
@@ -320,20 +314,17 @@ def process ( request ):
         requestHash = requestHash.hexdigest()
         request.request_hash = requestHash
         
-        if Request.objects.filter(request_hash=requestHash):
+        if Request.objects.filter(pull__date_complete=None, request_hash=requestHash):
             request.is_dupe=True
         
         request.is_submitted = True
         request.save()
         
         resp = {'status': 'success', 'request_id': request.pk}
-        logger.error('Request Process Successful')
-
 
     else:
         resp = {'status': 'fail', 'reason': 'bad-request-type',
                 'msg': "The 'api-processrequest' view only accepts POST requests."}
-        logger.error('Request Process Failed')
 
 
     return JsonResponse(resp)
