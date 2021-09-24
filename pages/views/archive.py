@@ -1,6 +1,6 @@
 #====================================================================
 # core
-
+from django.core import paginator
 # decorators
 from django.contrib.auth.decorators import login_required
 
@@ -16,5 +16,10 @@ from pages.models import *
 def archive( request ):
   networks = Network.objects.all()
   requests = Request.objects.filter( pull__isnull = False )
-  rc = { 'requests': requests, 'networks': networks }
+  
+  requestPage = paginator.Paginator(requests, 25)
+  pageNum = request.GET.get('page')
+  pageObj = requestPage.get_page(pageNum)
+
+  rc = { 'requests': pageObj, 'networks': networks }
   return render( request, 'pages/archive.html', { 'rc': rc } )
