@@ -114,6 +114,7 @@ def runNumbers(request):
         "HQ": 0,
         "ARCENT": 0,
         "AFCENT": 0,
+        "NAVCENT": 0,
         "MARCENT": 0,
         "SOCCENT": 0,
         "OTHER": 0,

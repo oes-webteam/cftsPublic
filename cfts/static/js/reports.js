@@ -59,6 +59,7 @@ $( document ).ready( function( ) {
           $( '#CENTCOM-HQ' ).text("CENTCOM: " + resp.org_counts.HQ);
           $( '#ARCENT' ).text("ARCENT: " + resp.org_counts.ARCENT);
           $( '#AFCENT' ).text("AFCENT: " + resp.org_counts.AFCENT);
+          $( '#NAVCENT' ).text("NAVCENT: " + resp.org_counts.NAVCENT);
           $( '#MARCENT' ).text("MARCENT: " + resp.org_counts.MARCENT);
           $( '#SOCCENT' ).text("SOCCENT: " + resp.org_counts.SOCCENT);
           $( '#OTHER' ).text("OTHER: " + resp.org_counts.OTHER);
