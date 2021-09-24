@@ -100,6 +100,7 @@ def getUser(request, id):
 
 def runNumbers(request):
     unique_users = []
+    skipUsers = ['f7d359ebb99a6a8aac39b297745b741b', '00000.0000.0.0000000']
     files_reviewed = 0
     files_transfered = 0
     files_rejected = 0
@@ -115,6 +116,7 @@ def runNumbers(request):
         "other": 0
     }
     file_size = 0
+    
 
     start_date = datetime.strptime(
         request.POST.get('start_date'), "%m/%d/%Y").date()
@@ -127,7 +129,7 @@ def runNumbers(request):
 
     for rqst in requests_in_range:
 
-        if rqst.user.user_identifier != "00000.0000.0.0000000" and rqst.user not in unique_users:
+        if rqst.user.user_identifier not in skipUsers and rqst.user not in unique_users:
             unique_users.append(rqst.user)
 
         files_in_request = rqst.files.all()
