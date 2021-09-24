@@ -3,6 +3,6 @@
 
 .results { display: none; }
 .results h3 { color: red; }
-#reviewed, #transfered, #rejected, #centcom { font-size: 2em; }
+#reviewed, #transfered, #rejected, #centcom, #org { font-size: 2em; }
 
 .fileCount, #size{ font-size: 1.75em;}

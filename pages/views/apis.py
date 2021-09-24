@@ -113,6 +113,14 @@ def runNumbers(request):
         "img": 0,
         "other": 0
     }
+    org_counts= {
+        "HQ": 0,
+        "ARCENT": 0,
+        "AFCENT": 0,
+        "MARCENT": 0,
+        "SOCCENT": 0,
+        "OTHER": 0,
+    }
     file_size = 0
 
     start_date = datetime.strptime(
@@ -149,6 +157,10 @@ def runNumbers(request):
                         ext = str(c.split('.')[-1]).lower()
                         file_types.append(ext)
                         file_size = file_size + zip.getinfo(c).file_size
+                        org = str(f.org)
+                        if org != "":
+                            org_counts[org]+=1
+
                     file_count = len(contents)
             else:
                 file_size = file_size + os.stat(f.file_object.path).st_size            
@@ -162,6 +174,10 @@ def runNumbers(request):
                     centcom_files = centcom_files + file_count
             else:
                 files_rejected = files_rejected + file_count
+            
+            org = str(f.org)
+            if org != "":
+                org_counts[org]+=1
 
     # add up all file type counts
     pdfCount = file_types.count("pdf")
@@ -195,7 +211,7 @@ def runNumbers(request):
         file_size /= 1024
         i += 1
 
-    return JsonResponse({'files_reviewed': files_reviewed, 'files_transfered': files_transfered, 'files_rejected': files_rejected, 'centcom_files': centcom_files, 'file_types': file_type_counts, 'file_sizes': str(round(file_size,2))+" "+sizeSuffix[i] })
+    return JsonResponse({'org_counts': org_counts,'files_reviewed': files_reviewed, 'files_transfered': files_transfered, 'files_rejected': files_rejected, 'centcom_files': centcom_files, 'file_types': file_type_counts, 'file_sizes': str(round(file_size,2))+" "+sizeSuffix[i] })
 
 def process ( request ):
     resp = {}
@@ -287,6 +303,7 @@ def process ( request ):
             user = user, 
             network = Network.objects.get( name = form_data.get( 'network' ) ),  
             comments = form_data.get( 'comments' ),
+            org = form_data.get( 'organization' ),
             is_centcom = form_data.get( 'isCentcom' )
         )
         request.save()
@@ -302,6 +319,7 @@ def process ( request ):
                 file_object = f,
                 classification = Classification.objects.get( abbrev = file_info[ i ][ 'classification' ] ),
                 is_pii = file_info[ i ][ 'encrypt' ] == 'true',
+                 org = form_data.get( 'organization' ),
                 is_centcom = form_data.get( 'isCentcom' )
             )
             this_file.save()

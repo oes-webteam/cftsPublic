@@ -59,20 +59,21 @@
                   aria-describedby="userPhoneHelp userPhoneRequired" placeholder="Phone Number">
                 <br>
               <div class="form-group input-group ">
-		    <span class="required">*</span>
-                    <span class="form-text isCentcom">This transfer is in support of the CENTCOM AOR</span>
-
-		    <div style=" margin-top: 0.5rem; display: grid; grid-template-columns: 50% 50%; width:100%;">
-		    	<div>
-			    <input type="radio" name="isCentcom" id="isCentcomYes" value="True">
-			    <label for="isCentcomYes">Yes</label> 
-			</div>
-
-			<div> 
-			    <input type="radio" name="isCentcom" id="isCentcomNo" value="False">
-			    <label for="isCentcomNo">No</label> 
-			</div>
-		   </div>
+              <div class="input-group-prepend">
+                <span class="required">*</span>                
+              </div>
+                <span class="form-text isCentcom">Select your organization:</span>
+                <div style=" margin-top: 0.5rem; display: grid; grid-template-columns: 50% 50%; width:100%;">
+                  <select class="organization form-control" name="organization" id="organization" required>
+                    <option value=""></option>
+                    <option value="HQ">CENTCOM HQ</option>
+                    <option value="ARCENT">ARCENT</option>
+                    <option value="AFCENT">AFCENT</option>
+                    <option value="MARCENT">MARCENT</option>
+                    <option value="SOCCENT">SOCCENT</option>
+                    <option value="OTHER">OTHER</option>
+                  </select>
+                </div>
 		
                 <!--<input type="checkbox" class="form-check-input" name="isCentcom" id="isCentcom" value="True" />-->
               </div>
