@@ -10,14 +10,17 @@ from django.conf import settings
 from django.utils.functional import empty
 from django.utils import timezone
 from cfts import settings as cftsSettings
+from django.core.serializers import serialize
+
 
 # decorators
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.cache import never_cache
 
+
 # responses
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.http import JsonResponse, FileResponse, response  # , HttpResponse,
 
 # model/database stuff
@@ -93,7 +96,7 @@ def queue(request):
         xfer_queues, key=lambda k: k['order_by'], reverse=False)
 
     # get list of Rejections for the "Reject Files" button
-    ds_rejections = Rejection.objects.all()
+    ds_rejections = Rejection.objects.filter(visible=True)
     rejections = []
     for row in ds_rejections:
         rejections.append({
@@ -113,28 +116,30 @@ def queue(request):
 @login_required
 def transferRequest( request, id ):
     rqst = Request.objects.get( request_id = id )
+    user = User.objects.get( user_id = rqst.user.user_id )
+
     rc = { 
+        'User Name': user,
+        'User Email': user.email,
+        'Phone': user.phone,
+        'network': Network.objects.get( network_id = rqst.network.network_id ),
+        'Marked as Centcom': rqst.is_centcom,
+        'Part of pull': rqst.pull,
         'request_id': rqst.request_id,
         'date_created': rqst.date_created,
-        'user': User.objects.get( user_id = rqst.user.user_id ),
-        'phone': User.objects.get(user_id=rqst.user.user_id).phone,
-        'network': Network.objects.get( network_id = rqst.network.network_id ),
         'files': rqst.files.all(),
         'target_email': rqst.target_email.all(),
-        'is_submitted': rqst.is_submitted,
-        'is_centcom': rqst.is_centcom
     }
-    return render(request, 'pages/transfer-request.html', {'rc': rc})
+    return render(request, 'pages/transfer-request.html', {'rc': rc, 'centcom': rqst.is_centcom})
 
+@login_required
+def removeCentcom( request, id ):
+    Request.objects.filter(request_id = id).update(is_centcom=False)
+    return redirect('queue')
 
 @login_required
 def createZip(request, network_name, isCentcom, rejectPull):
-    
-    logger.error("Creating pull zip")
-    
     if rejectPull == 'false':
-        print("New pull")
-        logger.error("New Pull")
         
         # create pull
         try:
@@ -181,17 +186,13 @@ def createZip(request, network_name, isCentcom, rejectPull):
         
         pull=new_pull
 
-    else:
-        print("Recreate pull after rejections")
-        logger.error("Recreate Pull")
-        
+    else:        
         qs = Request.objects.filter(pull=rejectPull)
         pull = Pull.objects.filter(pull_id=rejectPull)[0]
         pull_number = pull.pull_number
 
     # create/overwrite zip file
     zipPath = os.path.join(cftsSettings.PULLS_DIR+"\\") + network_name + "_" + str(pull_number)+ " " + str(pull.date_pulled.astimezone().strftime("%d%b %H%M")) + ".zip"
-    logger.error("Creating/Recreating this pull: ", str(zipPath))
     
     zip = ZipFile(zipPath, "w")
 
@@ -207,7 +208,6 @@ def createZip(request, network_name, isCentcom, rejectPull):
         if theseFiles.exists():
             i = 2
             while zip_folder in requestDirs:
-                print("request folder already exists")
                 zip_folder = str(rqst.user) + "/request_" + str(i)
                 i+=1
 

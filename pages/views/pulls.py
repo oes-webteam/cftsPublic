@@ -4,11 +4,12 @@ import datetime
 
 # decorators
 from django.contrib.auth.decorators import login_required
-from django.http.response import FileResponse
+from django.core.serializers import serialize
+from django.views.decorators.cache import never_cache
 
 # responses
-from django.shortcuts import render
-from django.http import JsonResponse, FileResponse #, HttpResponse, FileResponse
+from django.shortcuts import redirect, render
+from django.http import JsonResponse, FileResponse #, HttpResponse
 
 # model/database stuff
 from pages.models import *
@@ -19,6 +20,7 @@ from cfts import settings
 
 
 @login_required
+@never_cache
 def pulls( request ):
   # request context
   rc = {
@@ -106,4 +108,12 @@ def getPull(request, fileName):
   response = FileResponse(
       open(os.path.join(settings.PULLS_DIR, fileName), 'rb'))
   return response
+
+@login_required
+def cancelPull(request, id):
+  thisPull = Pull.objects.get( pull_id = id )
+  requests = Request.objects.filter(pull = id).update(pull = None)
+  thisPull.delete()
+  return redirect('pulls')
+  
 

@@ -151,10 +151,15 @@ LOGGING = {
             'backupCount': 5,
             'formatter': 'timestamp'
         },
+        'console': {
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'timestamp'
+        },
     },
     'loggers': {
         'django': {
-            'handlers': ['debugTrue', 'debugFalse'],
+            'handlers': ['debugTrue', 'debugFalse', 'console'],
             'level': 'ERROR',
             'propagate': True,
         },
