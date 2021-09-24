@@ -290,50 +290,16 @@ jQuery( document ).ready( function() {
            console.log( 'SUCCESS' );
            console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
 
-// sort files back into their own requests
-      data.forEach( ( selectedFile ) => {
-        if ( !( selectedFile.requestID in requests ) )
-          requests[ selectedFile.requestID ] = { 
-            'email': selectedFile.requestEmail,
-            'files': [{ 'id': selectedFile.fileID, 'name': selectedFile.fileName }]
-          };
-        else
-          requests[ selectedFile.requestID ].files.push( { 'id': selectedFile.fileID, 'name': selectedFile.fileName } );
-      });
+      // download eml file
+      let $anchor = $( "<a class='emailLink' target='_blank' href='/api-geteml/"+ resp.emlName +"'></a>" );
+      $( document.body ).append( $anchor );
+      window.open($('.emailLink').attr('href'))
 
-      let reject = 0
-      // for each request ...
-      for( r in requests ) {
-        const email = requests[r].email;
-        let subject = $this.attr( 'data-subject' );
-        let body = $this.attr( 'data-text' );
-
-        // replace template variables in the body of the email
-        let filesList = "";
-        requests[r].files.forEach( ( i ) => {
-          filesList += "  - " + i.name + "<br>";
-        });
-        body = body.replace( '^files^', filesList );
-        body = body.replace( /<br>/g, '%0A' );
-
-        // ... create an email with that user's files
-        let $anchor = $( "<a class='emailLink' target='_blank' href='mailto:" + email + "?subject=" + subject + "&body=" + body + "'></a>" );
-        $( document.body ).append( $anchor );
-        //window.open($('.emailLink'+reject).attr('href'),"reject"+reject)
-
-        
-        reject++;
-      }
-
-      $( '.emailLink' ).each( function() { $(this)[0].click(); } );  
-     
       // close the dialog
       $( theDialog ).dialog( 'close' );
       
       // reload the page from server
       $( "#forceReload" ).submit();
-
-      alert("Files rejected successfuly");
 
         },
         // fail 

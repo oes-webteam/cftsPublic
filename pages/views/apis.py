@@ -5,6 +5,7 @@ import os
 from datetime import datetime
 from zipfile import ZipFile
 from django.conf import settings
+from django.http.response import FileResponse
 
 # utilities
 from django.utils.dateparse import parse_date
@@ -23,7 +24,20 @@ from cfts import settings as Settings
 # model/database stuff
 from pages.models import *
 
+from pages.views import createZip
+
 import hashlib
+
+import re
+import shutil
+
+# email creation
+from email.generator import BytesGenerator, Generator
+from email.mime.text import MIMEText
+from email.encoders import encode_base64
+from email.mime.base import MIMEBase
+from email.mime.multipart import MIMEMultipart
+import mimetypes
 
 import logging
 logger = logging.getLogger('django')
@@ -38,9 +52,6 @@ def setReject(request):
     request_id = thestuff['request_id']
     id_list = thestuff['id_list[]']
     
-    logger.error("Reject request ID: " + str(request_id))
-    logger.error("Reject file IDs: " + str(id_list))
-
     # update the files to set the rejection
     File.objects.filter(file_id__in=id_list).update(
         rejection_reason_id=reject_id[0])
@@ -51,13 +62,56 @@ def setReject(request):
     
     try:
         pull_number = someRequest.pull.pull_id
-
-        url = 'create-zip/'+ str(network_name) +'/'+ str(someRequest.is_centcom)+'/'+ str(pull_number)
-        return redirect('create-zip',network_name=network_name,isCentcom=someRequest.is_centcom,rejectPull=pull_number)
+        createZip(request, network_name, someRequest.is_centcom, pull_number)
 
     except AttributeError:
         print("Request not found in any pull.")
-    return JsonResponse({'mystring': 'isgreat'})
+    
+    emlName = createEml(request,request_id,id_list,reject_id)    
+    return JsonResponse({'emlName': emlName})
+    
+@login_required
+def createEml( request, request_id, files_list, reject_id ):
+    
+    rqst = Request.objects.get(request_id=request_id[0])
+    rejection = Rejection.objects.get(rejection_id=reject_id[0])
+    
+
+    emlName = rqst.user.__str__() + "reject_1.eml"
+    msgPath = Settings.TEMP_FILES_DIR + "\\" + emlName
+    
+    if emlName in os.listdir(Settings.TEMP_FILES_DIR):
+                i = 1
+                print("eml file exists")
+                while True:
+                    emlName = rqst.user.__str__() + "reject_" + str(i) + ".eml"
+                    msgPath = Settings.TEMP_FILES_DIR + "\\" + emlName
+                    print("Trying " + emlName)
+                    if emlName in os.listdir(Settings.TEMP_FILES_DIR):
+                        i = i + 1
+                    else:
+                        break
+
+    msg = MIMEMultipart()
+    
+    msg['To'] = str(rqst.user.email)
+    msg['Subject'] = rejection.subject
+    msgBody = str(rejection.text) + "\n"
+    for file in File.objects.filter(file_id__in=files_list):
+        msgBody += str(file.file_object).split("/")[-1] + " "
+
+    msg.attach(MIMEText(msgBody))
+    
+    with open(msgPath, 'w') as eml:
+        gen = Generator(eml)
+        gen.flatten(msg)
+
+    return emlName
+
+@login_required
+def getEml(request, emlName):
+    return FileResponse(open(os.path.join("tempFiles", emlName), "rb"))
+
 
 @login_required
 def setEncrypt(request):
