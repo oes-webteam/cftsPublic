@@ -38,8 +38,6 @@ def setReject(request):
     request_id = thestuff['request_id']
     id_list = thestuff['id_list[]']
     
-    logger.error("Reject request ID: " + str(request_id))
-    logger.error("Reject file IDs: " + str(id_list))
 
     # update the files to set the rejection
     File.objects.filter(file_id__in=id_list).update(
@@ -67,9 +65,6 @@ def setEncrypt(request):
 
     request_id = thestuff['request_id']
     id_list = thestuff['id_list[]']
-    
-    logger.error("Encrypt request ID: " + str(request_id))
-    logger.error("Encrypt file IDs: " + str(id_list))
     
     # update the files to set the rejection
     File.objects.filter(file_id__in=id_list).update(
@@ -100,6 +95,7 @@ def getUser(request, id):
     return JsonResponse(data)
 
 def runNumbers(request):
+    unique_users = []
     files_reviewed = 0
     files_transfered = 0
     files_rejected = 0
@@ -126,6 +122,9 @@ def runNumbers(request):
         pull__date_complete__date__range=(start_date, end_date))
 
     for rqst in requests_in_range:
+
+        if rqst.user.user_identifier != "00000.0000.0.0000000" and rqst.user not in unique_users:
+            unique_users.append(rqst.user)
 
         files_in_request = rqst.files.all()
 
@@ -196,11 +195,12 @@ def runNumbers(request):
         file_size /= 1024
         i += 1
 
-    return JsonResponse({'files_reviewed': files_reviewed, 'files_transfered': files_transfered, 'files_rejected': files_rejected, 'centcom_files': centcom_files, 'file_types': file_type_counts, 'file_sizes': str(round(file_size,2))+" "+sizeSuffix[i] })
+    unique_users_count = len(unique_users)
+
+    return JsonResponse({'files_reviewed': files_reviewed, 'files_transfered': files_transfered, 'files_rejected': files_rejected, 'centcom_files': centcom_files, 'file_types': file_type_counts, 'file_sizes': str(round(file_size,2))+" "+sizeSuffix[i], 'user_count': unique_users_count })
 
 def process ( request ):
     resp = {}
-    logger.error('Request Process Initiated')
     
     if request.method == 'POST':
         form_data = request.POST
@@ -320,20 +320,17 @@ def process ( request ):
         requestHash = requestHash.hexdigest()
         request.request_hash = requestHash
         
-        if Request.objects.filter(request_hash=requestHash):
+        if Request.objects.filter(pull__date_complete=None, request_hash=requestHash):
             request.is_dupe=True
         
         request.is_submitted = True
         request.save()
         
         resp = {'status': 'success', 'request_id': request.pk}
-        logger.error('Request Process Successful')
-
 
     else:
         resp = {'status': 'fail', 'reason': 'bad-request-type',
                 'msg': "The 'api-processrequest' view only accepts POST requests."}
-        logger.error('Request Process Failed')
 
 
     return JsonResponse(resp)

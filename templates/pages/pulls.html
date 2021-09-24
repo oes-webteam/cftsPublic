@@ -20,23 +20,28 @@
           <img src="{% if  pull.date_twoeye != None %}{% static 'img/asset 13.svg' %}{% else %}{% static 'img/transparent.png' %}{% endif %}" class="status-img" alt="Two Eye" />
           <img src="{% if  pull.date_complete != None %}{% static 'img/asset 14.svg' %}{% else %}{% static 'img/transparent.png' %}{% endif %}" class="status-img" alt="Burned to Disk #{{pull.disk_number}}" />
         </li>
+
+        <li>Pulled by {{pull.pull_user}} on {{pull.pull_date}} </li>
+        {% if pull.date_oneeye != None %}
+          <li>One eyed by {{pull.user_oneeye}} on {{pull.date_oneeye}}</li>
+        {% endif %}
+
+        {% if pull.date_twoeye != None %}
+          <li>Two eyed by {{pull.user_twoeye}} on {{pull.date_twoeye}}</li>
+        {% endif %}
+
         {% if pull.date_complete != None %}
-          <li>Completed by {{pull.user_complete}} </br>on {{pull.date_complete}}</li>
-	  <li>Burned to disk #{{pull.disk_number}}</li>
-        {% elif pull.date_twoeye != None %}
-          <li>Two eyed by {{pull.user_twoeye}} </br>on {{pull.date_twoeye}}</li>
-        {% elif pull.date_oneeye != None %}
-          <li>One eyed by {{pull.user_oneeye}} </br>on {{pull.date_oneeye}}</li>
-        {% else %}
-          <li>Pulled by {{pull.pull_user}} </br>on {{pull.pull_date}} </li>
+          <li>Completed by {{pull.user_complete}} on {{pull.date_complete}}</li>
+	        <li>Burned to disk #{{pull.disk_number}}</li>
         {% endif %}
       </ul>
 
       <button class="pull-menu-btn">&hellip;</button>
       <!-- TODO: remove this from the flow of the document -->
       <ul class="pull-menu">
-        <li class="pull-menu-option download"><a href="getPull/{{pull.pull_network}}_{{pull.pull_number}} {{pull.pull_date|date:"dM"}} {{pull.pull_date|time:"Hi"}}.zip">Download Again</a></li>
-        <li class="pull-menu-option download"><a href="scan/{{pull.pull_network}}_{{pull.pull_number}} {{pull.pull_date|date:"dM"}} {{pull.pull_date|time:"Hi"}}.zip">Scan Pull</a></li>
+        <li class="pull-menu-option highlight"><a href="getPull/{{pull.pull_network}}_{{pull.pull_number}} {{pull.pull_date|date:"dM"}} {{pull.pull_date|time:"Hi"}}.zip">Download Again</a></li>
+        <li class="pull-menu-option highlight"><a href="scan/{{pull.pull_network}}_{{pull.pull_number}} {{pull.pull_date|date:"dM"}} {{pull.pull_date|time:"Hi"}}.zip">Scan Pull</a></li>
+        {% if pull.date_complete == None %}<li class="pull-menu-option highlight"><a href="cancelPull/{{pull.pull_id}}">Cancel Pull</a></li>{% endif %}
         {% if pull.date_oneeye == None %}
         <li class="pull-menu-option"><a href="{{pull.pull_id}}" class="oneeye">One-eye Complete</a></li>
         {% elif pull.date_twoeye == None %}

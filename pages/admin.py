@@ -1,3 +1,4 @@
+from pages.views.feedback import feedback
 from django.contrib import admin
 from pages.models import *
 
@@ -12,3 +13,4 @@ admin.site.register( Rejection )
 admin.site.register( Request )
 admin.site.register( ResourceLink )
 admin.site.register( DirtyWord )
+admin.site.register( Feedback )

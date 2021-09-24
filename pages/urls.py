@@ -35,6 +35,7 @@ urlpatterns = [
     path('pulls-oneeye/<uuid:id>', views.pullsOneEye, name='pulls-oneeye'),
     path('pulls-twoeye/<uuid:id>', views.pullsTwoEye, name='pulls-twoeye'),
     path('pulls-done/<uuid:id>/<int:cd>', views.pullsDone, name='pulls-done'),
+    path('cancelPull/<uuid:id>/', views.cancelPull, name='cancelPull'),
 
     # archive
     path('archive', views.archive, name='archive'),
@@ -42,6 +43,10 @@ urlpatterns = [
     # reporting
     path('reports', views.reports, name='reports'),
 
+    # feedback
+    path('feedback', views.feedback, name='feedback'),
+    path('submitfeedback', views.submitFeedback, name='submitfeedback'),
+    
     # APIs
     path('api-getuser/<uuid:id>', views.getUser, name='api-getuser'),
     path('api-setreject', views.setReject, name='api-setreject'),
@@ -52,7 +57,6 @@ urlpatterns = [
     path('api-getclassifications', views.getClassifications, name='api-getclassifications'),
     path('api-removeCentcom/<uuid:id>', views.removeCentcom, name='api-removeCentcom'),
     path('api-requestnotes/<uuid:requestid>', views.requestNotes, name='api-requestnotes'),
-    
 
     # dev tools
     path('tools-makefiles', views.makeFiles, name='make-files'),

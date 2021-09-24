@@ -10,6 +10,7 @@
     <div class="container" style="margin-top: 200px;">
         <button type="button" class="btn btn-primary btn-back" href="{% url 'queue' %}">Back</button>
         <a class="btn btn-info" id="noteBtn" href="#">Save Notes</a>
+
         {% if centcom == True %}<a class="btn btn-danger" href="{% url 'api-removeCentcom' rc.request_id %}">Remove Centcom Status</a>{% endif %}
         <div class="card">
         {% csrf_token %}

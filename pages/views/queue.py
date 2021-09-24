@@ -104,7 +104,7 @@ def queue(request):
         xfer_queues, key=lambda k: k['order_by'], reverse=False)
 
     # get list of Rejections for the "Reject Files" button
-    ds_rejections = Rejection.objects.all()
+    ds_rejections = Rejection.objects.filter(visible=True)
     rejections = []
     for row in ds_rejections:
         rejections.append({
@@ -146,7 +146,6 @@ def requestNotes( request, requestid ):
   notes = postData['notes'][0]
   Request.objects.filter(request_id=requestid).update(notes=notes)
   return JsonResponse({'response': "Notes saved"})
-
 
 @login_required
 def removeCentcom( request, id ):
