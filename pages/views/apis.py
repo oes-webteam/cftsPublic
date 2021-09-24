@@ -298,8 +298,10 @@ def process ( request ):
         file_info =  json.loads( form_data.get( 'fileInfo' ) )
         print( form_files.getlist( "files" ) )
         for i, f in enumerate( form_files.getlist( "files" )):
+            print(f)
             this_file = File(
                 file_object = f,
+                file_name = f,
                 classification = Classification.objects.get( abbrev = file_info[ i ][ 'classification' ] ),
                 is_pii = file_info[ i ][ 'encrypt' ] == 'true',
                 is_centcom = form_data.get( 'isCentcom' )
