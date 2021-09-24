@@ -51,6 +51,7 @@ urlpatterns = [
     path('api-setconsentcookie', views.setConsentCookie, name='api-setconsentcookie'),
     path('api-getclassifications', views.getClassifications, name='api-getclassifications'),
     path('api-removeCentcom/<uuid:id>', views.removeCentcom, name='api-removeCentcom'),
+    path('api-requestnotes/<uuid:requestid>', views.requestNotes, name='api-requestnotes'),
     
 
     # dev tools

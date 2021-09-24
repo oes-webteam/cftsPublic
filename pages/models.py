@@ -161,6 +161,7 @@ class Request(models.Model):
   date_pulled = models.DateTimeField(null=True, blank=True)
   request_hash = models.CharField(max_length=255, default="")
   is_dupe = models.BooleanField(default=False)
+  notes = models.TextField(null=True, blank=True)
   #is_rejected = models.BooleanField(default=False)
 
   class Meta:

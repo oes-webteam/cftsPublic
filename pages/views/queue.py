@@ -138,7 +138,15 @@ def transferRequest( request, id ):
         'files': rqst.files.all(),
         'target_email': rqst.target_email.all(),
     }
-    return render(request, 'pages/transfer-request.html', {'rc': rc, 'centcom': rqst.is_centcom})
+    return render(request, 'pages/transfer-request.html', {'rc': rc, 'centcom': rqst.is_centcom, 'notes': rqst.notes})
+
+@login_required
+def requestNotes( request, requestid ):
+  postData = dict(request.POST.lists())
+  notes = postData['notes'][0]
+  Request.objects.filter(request_id=requestid).update(notes=notes)
+  return JsonResponse({'response': "Notes saved"})
+
 
 @login_required
 def removeCentcom( request, id ):
@@ -236,6 +244,8 @@ def createZip(request, network_name, isCentcom, rejectPull):
                 
             elif encryptRequest == False:
                 email_file_name = '_email.txt'
+
+            notes_file_name = zip_folder + "/_notes.txt"
             
             email_file_path = zip_folder + "/" + email_file_name
 
@@ -265,6 +275,13 @@ def createZip(request, network_name, isCentcom, rejectPull):
                 
                 fp.write(emailString.encode('utf-8'))
                 fp.close()
+                
+            if rqst.notes != None:
+                with zip.open(notes_file_name, 'w') as nfp:
+                    notes = rqst.notes
+                    print(notes)
+                    nfp.write(notes.encode('utf-8'))
+                    nfp.close()
             
             
         else:

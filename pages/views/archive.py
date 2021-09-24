@@ -3,6 +3,7 @@
 
 # decorators
 from django.contrib.auth.decorators import login_required
+from django.http.response import JsonResponse
 
 # responses
 from django.shortcuts import render
