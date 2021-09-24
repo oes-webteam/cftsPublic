@@ -154,7 +154,7 @@
               <h3 class="text-gray-dark">Comments</h3>
               <div class="form-group">
                 <textarea class="form-control" name="comments" id="comments" placeholder="250 characters or less"></textarea>
-		<textarea class="form-control" name="PKIinfo" id="PKIinfo" placeholder="PKI debug information" hidden >{{rc.cert}}</textarea>
+		<textarea class="form-control" name="PKIinfo" id="PKIinfo" placeholder="PKI debug information" hidden>{{rc.cert}}</textarea>
               </div>
             </div>
           </div>
@@ -183,6 +183,7 @@
   var cert = "{{rc.cert}}"; 
   var userHash = "{{rc.userHash}}";
 </script>
+<script src="{% static 'js/notification.js' %}"></script>
 <script src="{% static 'js/frontend.js' %}"></script>
 <script src="{% static 'js/process.js' %}"></script>
 {% endblock %}

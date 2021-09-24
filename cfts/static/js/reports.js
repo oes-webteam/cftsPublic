@@ -46,6 +46,7 @@ $( document ).ready( function( ) {
           $( '#transfered' ).text( resp.files_transfered );
           $( '#centcom' ).text( resp.centcom_files );
           $( '#rejected' ).text( resp.files_rejected );
+          $( '#users' ).text( resp.user_count );
           
           $( '#excel' ).text("Excel files: " + resp.file_types.excel);
           $( '#word' ).text("Word files: " + resp.file_types.word);

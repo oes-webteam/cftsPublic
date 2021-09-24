@@ -106,8 +106,8 @@
 }
 
 /* download option */
-.pull-menu-option.download {  }
-.pull-menu-option.download a { color: rgb(65,90,245); }
+.pull-menu-option.highlight {  }
+.pull-menu-option.highlight a { color: rgb(65,90,245); }
 
 /* complete options */
 .pull-menu-option.complete { 

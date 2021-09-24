@@ -50,6 +50,7 @@ class Rejection(models.Model):
   name = models.CharField(max_length=50)
   subject = models.CharField(max_length=255)
   text = models.TextField()
+  visible = models.BooleanField(default=True)
 
   def __str__(self):
     return self.name
@@ -82,6 +83,7 @@ class Network(models.Model):
   name = models.CharField(max_length=50)
   classifications = models.ManyToManyField(Classification)
   sort_order = models.IntegerField()
+  visible = models.BooleanField(default=True)
 
   class Meta:
     ordering = ['sort_order']
@@ -182,6 +184,21 @@ class DirtyWord(models.Model):
 
   def __str__(self):
     return self.word
+
+class Feedback(models.Model):
+  feedback_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+  title = models.CharField(max_length=150, default="")
+  body = models.TextField(default="")
+  user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+  category = models.CharField(max_length=50, default="")
+  admin_feedback = models.BooleanField(default=False)
+  date_submitted = models.DateTimeField(auto_now_add=True)
+
+  class Meta:
+    ordering = ['-date_submitted']
+
+  def __str__(self):
+    return self.title
 
 #  def pending_by_network( self, netName ):
 #   return self.__class__.objects.filter( network__name=netName, is_submitted=True, date_complete__isnull=True ).order_by( '-date_created' )

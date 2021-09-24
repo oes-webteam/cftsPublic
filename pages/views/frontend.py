@@ -20,7 +20,7 @@ from pages.models import *
 @never_cache
 def frontend(request):
     browser = request.user_agent.browser.family
-    nets = Network.objects.all()
+    nets = Network.objects.filter(visible=True)
     resources = ResourceLink.objects.all()
 
     buggedPKIs = ['f7d359ebb99a6a8aac39b297745b741b'] #[ acutally bugged hash, my hash for testing]
