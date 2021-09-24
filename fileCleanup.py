@@ -7,10 +7,7 @@ from datetime import datetime
 uploadsPath = settings.UPLOADS_DIR
 pullsPath = settings.PULLS_DIR
 tempFilesPath = settings.TEMP_FILES_DIR
-print("Uploads folder path: ", uploadsPath)
-print("Pulls folder path: ", pullsPath, "\n")
-
-
+scanPath = os.path.join(settings.BASE_DIR,"cfts\\scan")
 
 # get all files in folder
 def deleteFiles(directory, maxAge):
@@ -37,3 +34,4 @@ def deleteFiles(directory, maxAge):
 deleteFiles(uploadsPath, 30)
 deleteFiles(pullsPath, 30)
 deleteFiles(tempFilesPath, 1)
+deleteFiles(scanPath, 1)
