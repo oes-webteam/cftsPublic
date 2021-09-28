@@ -51,7 +51,11 @@ class Rejection(models.Model):
   subject = models.CharField(max_length=255)
   text = models.TextField()
   visible = models.BooleanField(default=True)
+  sort_order = models.IntegerField(default=99)
 
+  class Meta:
+    ordering = ['sort_order']
+    
   def __str__(self):
     return self.name
 
