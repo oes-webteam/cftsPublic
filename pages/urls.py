@@ -57,7 +57,7 @@ urlpatterns = [
     path('api-getclassifications', views.getClassifications, name='api-getclassifications'),
     path('api-geteml/<str:emlName>', views.getEml, name='api-geteml'),
     path('api-removeCentcom/<uuid:id>', views.removeCentcom, name='api-removeCentcom'),
-        
+    path('api-requestnotes/<uuid:requestid>', views.requestNotes, name='api-requestnotes'),
 
     # dev tools
     path('tools-makefiles', views.makeFiles, name='make-files'),
