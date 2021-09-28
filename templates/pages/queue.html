@@ -1,4 +1,4 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 {% load util %}
 
@@ -93,7 +93,7 @@
                         {% for file in request.files.all %}
                         <tr class="{% if request.pull != None %}pending {% endif %}{% if file.rejection_reason != None %}rejected {% endif %}">
                             <td>
-                                <input type="checkbox" name="fileSelection" id="chk_{{ file.file_id }}" request_id="{{ request.request_id }}" request_email="{{ request.user.email }}" file_name="{{ file }}" hidden/>
+                                <input type="checkbox" name="fileSelection" id="chk_{{ file.file_id }}" request_id="{{ request.request_id }}" request_email="{{ request.user.email }}" file_name="{{ file }}" {% if file.rejection_reason != None %} rejected {% else %} not-rejected {% endif %} hidden/>
                                 <!-- Show encrypt flag? -->
                                 {% if file.is_pii or file.is_centcom_info %}
                                 <span title="PII: {{ file.is_pii }}&#10;CENTCOM Info: {{ file.is_centcom_info }}">🔒</span>

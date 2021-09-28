@@ -37,9 +37,6 @@ def setReject(request):
     reject_id = thestuff['reject_id']
     request_id = thestuff['request_id']
     id_list = thestuff['id_list[]']
-    
-    logger.error("Reject request ID: " + str(request_id))
-    logger.error("Reject file IDs: " + str(id_list))
 
     # update the files to set the rejection
     File.objects.filter(file_id__in=id_list).update(
@@ -60,14 +57,37 @@ def setReject(request):
     return JsonResponse({'mystring': 'isgreat'})
 
 @login_required
+def unReject(request):
+    thestuff = dict(request.POST.lists())
+
+    request_id = thestuff['request_id']
+    id_list = thestuff['id_list[]']
+
+    # update the files to set the rejection
+    File.objects.filter(file_id__in=id_list).update(
+        rejection_reason_id=None)
+
+    # recreate the zip file for the pull
+    someRequest = Request.objects.get(request_id=request_id[0])
+    network_name = someRequest.network.name
+    
+    try:
+        pull_number = someRequest.pull.pull_id
+
+        return redirect('create-zip',network_name=network_name,isCentcom=someRequest.is_centcom,rejectPull=pull_number)
+
+    except AttributeError:
+        print("Request not found in any pull.")
+        return JsonResponse({'Response': 'File not part of pull, reject status reset'})
+    
+    return JsonResponse({'error': 'error'})
+
+@login_required
 def setEncrypt(request):
     thestuff = dict(request.POST.lists())
 
     request_id = thestuff['request_id']
     id_list = thestuff['id_list[]']
-    
-    logger.error("Encrypt request ID: " + str(request_id))
-    logger.error("Encrypt file IDs: " + str(id_list))
     
     # update the files to set the rejection
     File.objects.filter(file_id__in=id_list).update(
@@ -199,7 +219,6 @@ def runNumbers(request):
 
 def process ( request ):
     resp = {}
-    logger.error('Request Process Initiated')
     
     if request.method == 'POST':
         form_data = request.POST
@@ -326,13 +345,11 @@ def process ( request ):
         request.save()
         
         resp = {'status': 'success', 'request_id': request.pk}
-        logger.error('Request Process Successful')
 
 
     else:
         resp = {'status': 'fail', 'reason': 'bad-request-type',
                 'msg': "The 'api-processrequest' view only accepts POST requests."}
-        logger.error('Request Process Failed')
 
 
     return JsonResponse(resp)

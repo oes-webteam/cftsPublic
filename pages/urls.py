@@ -45,6 +45,7 @@ urlpatterns = [
     # APIs
     path('api-getuser/<uuid:id>', views.getUser, name='api-getuser'),
     path('api-setreject', views.setReject, name='api-setreject'),
+    path('api-unreject', views.unReject, name='api-unreject'),
     path('api-setencrypt', views.setEncrypt, name='api-setencrypt'),
     path('api-numbers', views.runNumbers, name='api-numbers'),
     path('api-processrequest', views.process, name='api-processrequest'),
