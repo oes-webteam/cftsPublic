@@ -205,7 +205,7 @@ class Feedback(models.Model):
     ordering = ['-date_submitted']
 
   def __str__(self):
-    return self.title
+    return str(self.date_submitted.strftime("%b %d %H:%M")) + ": " + self.title
 
 #  def pending_by_network( self, netName ):
 #   return self.__class__.objects.filter( network__name=netName, is_submitted=True, date_complete__isnull=True ).order_by( '-date_created' )
