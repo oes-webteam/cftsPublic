@@ -55,9 +55,9 @@ urlpatterns = [
     path('api-processrequest', views.process, name='api-processrequest'),
     path('api-setconsentcookie', views.setConsentCookie, name='api-setconsentcookie'),
     path('api-getclassifications', views.getClassifications, name='api-getclassifications'),
+    path('api-geteml/<str:emlName>', views.getEml, name='api-geteml'),
     path('api-removeCentcom/<uuid:id>', views.removeCentcom, name='api-removeCentcom'),
-    
-    
+        
 
     # dev tools
     path('tools-makefiles', views.makeFiles, name='make-files'),

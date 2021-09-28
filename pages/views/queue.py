@@ -27,14 +27,6 @@ from django.http import JsonResponse, FileResponse, response  # , HttpResponse,
 from pages.models import *
 from django.db.models import Max, Count, Q, Sum
 
-# email creation
-from email.generator import BytesGenerator
-from email.mime.text import MIMEText
-from email.encoders import encode_base64
-from email.mime.base import MIMEBase
-from email.mime.multipart import MIMEMultipart
-import mimetypes
-
 import logging
 
 logger = logging.getLogger('django')
