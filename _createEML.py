@@ -32,6 +32,7 @@ zip.extractall(zipExtractPath)
 requestRE = re.compile('request_\d+')
 email = re.compile('_email(\d+)?.txt')
 encrypt = re.compile('_encrypt(\d+)?.txt')
+notes = re.compile('_notes(\d+)?.txt')
 
 requestPaths = []
 for root, subdirs, files in os.walk(zipExtractPath):
@@ -69,7 +70,8 @@ for path in requestPaths:
                 with open(filePath,'r') as _email:
                     msg['To'] = "".join(_email.read().splitlines())
                     _email.close()
-            else:
+                    
+            elif notes.match(f) == None:
                 fileMime = mimetypes.guess_type(filePath)
                 file = open(filePath.encode('utf-8'),'rb')
                 attachment = MIMEBase(fileMime[0],fileMime[1])
@@ -90,6 +92,8 @@ for path in requestPaths:
             emlFile = "__ENCRYPTED" + emlBase
             msgPath = currentDir + "/" + emlFile
 
+        msg.add_header('X-Unsent', '1')
+        
         with open(msgPath, 'w') as eml:
             gen = Generator(eml)
             gen.flatten(msg)

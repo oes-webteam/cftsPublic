@@ -101,6 +101,8 @@ def createEml( request, request_id, files_list, reject_id ):
         msgBody += str(file.file_object).split("/")[-1] + " "
 
     msg.attach(MIMEText(msgBody))
+
+    msg.add_header('X-Unsent', '1')
     
     with open(msgPath, 'w') as eml:
         gen = Generator(eml)
