@@ -102,8 +102,8 @@ function validateForm(form) {
   }
 
   // is centcom
-  if (!form.elements.isCentcom.value.length) {
-    form.elements.isCentcom.forEach((elem) => errors.push(elem));
+  if (!form.elements.organization.value != "") {
+    errors.push( form.elements.organization );
     isValid = false;
   }
 
@@ -174,7 +174,7 @@ function prepareFormData(form) {
     formData.append( 'targetEmail', emailList );
   }
 
-  if(form.elements.isCentcom.value == "False"){
+  if(form.elements.organization.value == "OTHER"){
     formData.delete('isCentcom');
     formData.append('isCentcom', "False");
   }else{

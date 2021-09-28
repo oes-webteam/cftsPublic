@@ -2,11 +2,11 @@ import uuid
 import os
 from django.conf import settings
 from django.db import models
+from django.db.models import F
 
 def randomize_path(instance, filename):
   path = str(uuid.uuid4())
   return os.path.join('uploads/', path, filename)
-
 
 class ResourceLink(models.Model):
   resourcelink_id = models.UUIDField(
@@ -51,7 +51,11 @@ class Rejection(models.Model):
   subject = models.CharField(max_length=255)
   text = models.TextField()
   visible = models.BooleanField(default=True)
+  sort_order = models.IntegerField(default=99)
 
+  class Meta:
+    ordering = ['sort_order']
+    
   def __str__(self):
     return self.name
 
@@ -60,6 +64,7 @@ class File(models.Model):
   file_id = models.UUIDField(
     primary_key=True, default=uuid.uuid4, editable=False)
   file_object = models.FileField(upload_to=randomize_path, max_length=500)
+  file_name = models.CharField(max_length=255, null=True, blank=True, default=None)
   file_hash = models.CharField(max_length=40, blank=True, null=True)
   classification = models.ForeignKey(
     Classification, on_delete=models.DO_NOTHING)
@@ -68,9 +73,11 @@ class File(models.Model):
   rejection_reason = models.ForeignKey(
     Rejection, on_delete=models.DO_NOTHING, null=True, blank=True)
   rejection_text = models.TextField(default=None, blank=True, null=True)
+  org = models.CharField(max_length=50, default="")
+  NDCI = models.BooleanField(default=False)
 
   class Meta:
-    ordering = ['file_object']
+    ordering = [F('file_name').asc(nulls_last=True)]
 
   def __str__(self):
     return os.path.basename(self.file_object.name)
@@ -163,6 +170,8 @@ class Request(models.Model):
   date_pulled = models.DateTimeField(null=True, blank=True)
   request_hash = models.CharField(max_length=255, default="")
   is_dupe = models.BooleanField(default=False)
+  org = models.CharField(max_length=50, default="")
+  notes = models.TextField(null=True, blank=True)
   #is_rejected = models.BooleanField(default=False)
 
   class Meta:
@@ -196,7 +205,7 @@ class Feedback(models.Model):
     ordering = ['-date_submitted']
 
   def __str__(self):
-    return self.title
+    return str(self.date_submitted.strftime("%b %d %H:%M")) + ": " + self.title
 
 #  def pending_by_network( self, netName ):
 #   return self.__class__.objects.filter( network__name=netName, is_submitted=True, date_complete__isnull=True ).order_by( '-date_created' )
