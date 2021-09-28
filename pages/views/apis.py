@@ -298,7 +298,6 @@ def process ( request ):
         file_info =  json.loads( form_data.get( 'fileInfo' ) )
         print( form_files.getlist( "files" ) )
         for i, f in enumerate( form_files.getlist( "files" )):
-            print(f)
             this_file = File(
                 file_object = f,
                 file_name = f,
