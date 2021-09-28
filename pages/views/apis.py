@@ -359,6 +359,7 @@ def process ( request ):
         for i, f in enumerate( form_files.getlist( "files" )):
             this_file = File(
                 file_object = f,
+                file_name = f,
                 classification = Classification.objects.get( abbrev = file_info[ i ][ 'classification' ] ),
                 is_pii = file_info[ i ][ 'encrypt' ] == 'true',
                 is_centcom = form_data.get( 'isCentcom' )
