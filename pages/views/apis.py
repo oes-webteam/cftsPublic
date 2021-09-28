@@ -49,12 +49,13 @@ def setReject(request):
     try:
         pull_number = someRequest.pull.pull_id
 
-        url = 'create-zip/'+ str(network_name) +'/'+ str(someRequest.is_centcom)+'/'+ str(pull_number)
         return redirect('create-zip',network_name=network_name,isCentcom=someRequest.is_centcom,rejectPull=pull_number)
 
     except AttributeError:
         print("Request not found in any pull.")
-    return JsonResponse({'mystring': 'isgreat'})
+        return JsonResponse({'Response': 'File not part of pull, reject status set'})
+    
+    return JsonResponse({'error': 'error'})
 
 @login_required
 def unReject(request):
@@ -100,7 +101,6 @@ def setEncrypt(request):
     try:
         pull_number = someRequest.pull.pull_id
 
-        url = 'create-zip/'+ str(network_name) +'/'+ str(someRequest.is_centcom)+'/'+ str(pull_number)
         return redirect('create-zip',network_name=network_name,isCentcom=someRequest.is_centcom,rejectPull=pull_number)
 
     except AttributeError:
@@ -119,6 +119,7 @@ def getUser(request, id):
     return JsonResponse(data)
 
 def runNumbers(request):
+    unique_users = []
     files_reviewed = 0
     files_transfered = 0
     files_rejected = 0
@@ -145,6 +146,9 @@ def runNumbers(request):
         pull__date_complete__date__range=(start_date, end_date))
 
     for rqst in requests_in_range:
+
+        if rqst.user.user_identifier != "00000.0000.0.0000000" and rqst.user not in unique_users:
+            unique_users.append(rqst.user)
 
         files_in_request = rqst.files.all()
 
@@ -215,7 +219,9 @@ def runNumbers(request):
         file_size /= 1024
         i += 1
 
-    return JsonResponse({'files_reviewed': files_reviewed, 'files_transfered': files_transfered, 'files_rejected': files_rejected, 'centcom_files': centcom_files, 'file_types': file_type_counts, 'file_sizes': str(round(file_size,2))+" "+sizeSuffix[i] })
+    unique_users_count = len(unique_users)
+
+    return JsonResponse({'files_reviewed': files_reviewed, 'files_transfered': files_transfered, 'files_rejected': files_rejected, 'centcom_files': centcom_files, 'file_types': file_type_counts, 'file_sizes': str(round(file_size,2))+" "+sizeSuffix[i], 'user_count': unique_users_count })
 
 def process ( request ):
     resp = {}
@@ -338,14 +344,13 @@ def process ( request ):
         requestHash = requestHash.hexdigest()
         request.request_hash = requestHash
         
-        if Request.objects.filter(request_hash=requestHash):
+        if Request.objects.filter(pull__date_complete=None, request_hash=requestHash):
             request.is_dupe=True
         
         request.is_submitted = True
         request.save()
         
         resp = {'status': 'success', 'request_id': request.pk}
-
 
     else:
         resp = {'status': 'fail', 'reason': 'bad-request-type',

@@ -45,6 +45,11 @@
           {% endfor %}
           </div>
         </li>
+
+        <li class="nav-item">
+          <a href="{% url 'feedback' %}" class="nav-link">Submit Feedback</a>
+        </li>
+
         {% if user.is_authenticated %}
         <li class="nav-item dropdown">
           <a

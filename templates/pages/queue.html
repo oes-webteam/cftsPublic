@@ -10,9 +10,15 @@
     <div class="card">
         <div class="card-header">
 
+		<div class="alert alert-danger fadein server-error" style="display: none;" role="alert"></div>
+
+    		<div class="alert alert-danger fadein danger-error" style="display: none;" role="alert"></div>
+   
+    		<div class="alert alert-success fadein" style="display: none;" role="alert"></div>
+
             <ul class="nav nav-tabs mt-5">
             {% for network in rc.queues %}
-                <li class="nav-item{% if network.count == 0 %} disabled{% endif %}">
+                <li class="nav-item" {% if network.count == 0 %} hidden{% endif %}>
                     <a class="nav-link{% if forloop.counter0 == 0 %} active{% endif %}"
                     {% if network.count != 0 %} 
                         data-toggle="tab" 
@@ -77,7 +83,7 @@
                         </colgroup>
                         {% for request in network.q %}
 			<tr class="request-header {% if request.pull != None %} pending{% endif %} {% if request.centcom_pull %}centcom{% endif %}" request_hash="{{request.request_hash}}">
-                            <td><a href="{% url 'transfer-request' id=request.request_id %}">{%if request.is_centcom%}<strong>{%endif%}{{ request.user }}{%if request.is_centcom%} &#x1f42a;</strong>{%endif%}</a></td> <!-- link to request view -->
+                            <td><a href="{% url 'admin:pages_request_change' request.request_id %}">{%if request.is_centcom%}<strong>{%endif%}{{ request.user }}{%if request.is_centcom%} &#x1f42a;</strong>{%endif%}</a></td> <!-- link to request view -->
                             <td class="request-comments"> 
 				{% if request.is_dupe %}<a href="#" class="btn btn-info show-dupe" request_hash="{{request.request_hash}}">Show Duplicates</a> {% else %}{% endif %}
 				{% if request.comments != "" %}<a href="#" class="btn btn-primary comments">Show/Hide Comments</a> {% else %}{% endif %}
@@ -133,7 +139,7 @@
 </div>
 
 {% include 'partials/_forceReloadForm.html' %}
-
+<script src="{% static 'js/notification.js' %}"></script>
 <script src="{% static 'js/queue.js' %}"></script>
 {% endblock %}
     
