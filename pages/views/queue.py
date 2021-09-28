@@ -129,6 +129,10 @@ def transferRequest( request, id ):
         'date_created': rqst.date_created,
         'files': rqst.files.all(),
         'target_email': rqst.target_email.all(),
+        'is_submitted': rqst.is_submitted,
+        'is_centcom': rqst.is_centcom,
+        'org': rqst.org,
+
     }
     return render(request, 'pages/transfer-request.html', {'rc': rc, 'centcom': rqst.is_centcom, 'notes': rqst.notes})
 

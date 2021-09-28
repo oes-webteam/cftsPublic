@@ -73,6 +73,7 @@ class File(models.Model):
   rejection_reason = models.ForeignKey(
     Rejection, on_delete=models.DO_NOTHING, null=True, blank=True)
   rejection_text = models.TextField(default=None, blank=True, null=True)
+  org = models.CharField(max_length=50, default="")
   NDCI = models.BooleanField(default=False)
 
   class Meta:
@@ -169,6 +170,7 @@ class Request(models.Model):
   date_pulled = models.DateTimeField(null=True, blank=True)
   request_hash = models.CharField(max_length=255, default="")
   is_dupe = models.BooleanField(default=False)
+  org = models.CharField(max_length=50, default="")
   notes = models.TextField(null=True, blank=True)
   #is_rejected = models.BooleanField(default=False)
 
