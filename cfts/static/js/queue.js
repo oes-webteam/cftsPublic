@@ -107,25 +107,50 @@ jQuery( document ).ready( function() {
     if($(e.target).hasClass('selected-reject')){
       console.log("selcted reject clicked")
 
-      const $checkedItems = $( "[name='fileSelection']:checked[request_id='"+$( e.target ).attr('request_id')+"']");
+      const $checkedItems = $( "[name='fileSelection']:checked[request_id='"+$( e.target ).attr('request_id')+"'][not-rejected]");
+      const $checkedItemsRejected = $( "[name='fileSelection']:checked[request_id='"+$( e.target ).attr('request_id')+"'][rejected]");
 
-      if ($checkedItems.length == 0){
-        alert( ' Select 1 or more files to reject.' );
+      // no files selected to reject or un-reject
+      if ($checkedItems.length == 0 && $checkedItemsRejected.length == 0){
+        alert( 'Select 1 or more files to change rejection status.' );
       }
-      
-      else{
+
+      // selected files are a mix of rejected and not rejected files
+      else if ($checkedItems.length > 0 && $checkedItemsRejected.length > 0){
+        alert( 'Cannot process a mix of rejected and non-rejected files. Rejection and un-rejection are seperate processes. Please select only files to reject or only files to un-reject.' );
+      }
+
+      // files to reject
+      else if ($checkedItems.length > 0){
+        console.log("not rejected yet")
         let data = [];
-      $checkedItems.each( i => {
-        data.push({ 
-          'fileID': $checkedItems[i].id.slice(4), 
-          'fileName': $( $checkedItems[i] ).attr( 'file_name' ),
-          'requestID': $( $checkedItems[i] ).attr( 'request_id' ),
-          'requestEmail': $( $checkedItems[i] ).attr( 'request_email' )
-        }) 
-      });
+        $checkedItems.each( i => {
+          data.push({ 
+            'fileID': $checkedItems[i].id.slice(4), 
+            'fileName': $( $checkedItems[i] ).attr( 'file_name' ),
+            'requestID': $( $checkedItems[i] ).attr( 'request_id' ),
+            'requestEmail': $( $checkedItems[i] ).attr( 'request_email' )
+          }) 
+        });
       rejectDialog.data( 'data', data ).dialog( 'open' );
       }
-      
+
+      //files to un-reject
+      else if ($checkedItemsRejected.length > 0){
+        console.log("already rejected")
+          let data = [];
+          $checkedItemsRejected.each( i => {
+            data.push({ 
+              'fileID': $checkedItemsRejected[i].id.slice(4), 
+              'fileName': $( $checkedItemsRejected[i] ).attr( 'file_name' ),
+              'requestID': $( $checkedItemsRejected[i] ).attr( 'request_id' ),
+              'requestEmail': $( $checkedItemsRejected[i] ).attr( 'request_email' ),
+        'unreject': true
+            }) 
+          });
+        sendUnrejectRequest(data)
+        }
+        
     }
 
     else{
@@ -140,6 +165,44 @@ jQuery( document ).ready( function() {
     }
 
   });
+
+const sendUnrejectRequest = (data) => {
+    console.log(data);
+
+    let csrftoken = getCookie('csrftoken');
+
+    let id_list = [];
+      data.forEach( ( f ) => {
+        id_list.push( f.fileID ) 
+       });
+
+      const postData = {
+        'request_id': data[0]['requestID'],  // doesn't matter which request we grab
+        'id_list': id_list
+      };
+
+      const setUnrejectOnFiles = $.post( '/api-unreject', postData, 'json' ).then( 
+        // success
+        function( resp, status ) {
+           console.log( 'SUCCESS' );        
+           notifyUserSuccess("File Unreject Successful")
+	   $( "#forceReload" ).submit();
+        },
+        // fail 
+        function( resp, status ) {
+           console.log( 'FAIL' );
+
+	   alert("Failed to unreject files, send error message to web team.")
+	   responseText = resp.responseText
+	   errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"))
+
+           notifyUserError("Error unrejecting file, send error message to web team: " + errorInfo)
+           //console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
+          // console.log( 'Response status: ' + status );
+        }
+      );
+    
+  };
 
 
   /****************************/

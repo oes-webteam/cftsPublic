@@ -51,7 +51,7 @@ def setReject(request):
     reject_id = thestuff['reject_id']
     request_id = thestuff['request_id']
     id_list = thestuff['id_list[]']
-    
+
     # update the files to set the rejection
     File.objects.filter(file_id__in=id_list).update(
         rejection_reason_id=reject_id[0])
@@ -115,8 +115,33 @@ def getEml(request, emlName):
     return FileResponse(open(os.path.join("tempFiles", emlName), "rb"))
 
 @login_required
-def setEncrypt(request):
+def unReject(request):
+    thestuff = dict(request.POST.lists())
+
+    request_id = thestuff['request_id']
+    id_list = thestuff['id_list[]']
+
+    # update the files to set the rejection
+    File.objects.filter(file_id__in=id_list).update(
+        rejection_reason_id=None)
+
+    # recreate the zip file for the pull
+    someRequest = Request.objects.get(request_id=request_id[0])
+    network_name = someRequest.network.name
     
+    try:
+        pull_number = someRequest.pull.pull_id
+
+        return redirect('create-zip',network_name=network_name,isCentcom=someRequest.is_centcom,rejectPull=pull_number)
+
+    except AttributeError:
+        print("Request not found in any pull.")
+        return JsonResponse({'Response': 'File not part of pull, reject status reset'})
+    
+    return JsonResponse({'error': 'error'})
+
+@login_required
+def setEncrypt(request):
     thestuff = dict(request.POST.lists())
 
     request_id = thestuff['request_id']
