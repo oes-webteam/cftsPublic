@@ -107,25 +107,50 @@ jQuery( document ).ready( function() {
     if($(e.target).hasClass('selected-reject')){
       console.log("selcted reject clicked")
 
-      const $checkedItems = $( "[name='fileSelection']:checked[request_id='"+$( e.target ).attr('request_id')+"']");
+      const $checkedItems = $( "[name='fileSelection']:checked[request_id='"+$( e.target ).attr('request_id')+"'][not-rejected]");
+      const $checkedItemsRejected = $( "[name='fileSelection']:checked[request_id='"+$( e.target ).attr('request_id')+"'][rejected]");
 
-      if ($checkedItems.length == 0){
-        alert( ' Select 1 or more files to reject.' );
+      // no files selected to reject or un-reject
+      if ($checkedItems.length == 0 && $checkedItemsRejected.length == 0){
+        alert( 'Select 1 or more files to change rejection status.' );
       }
-      
-      else{
+
+      // selected files are a mix of rejected and not rejected files
+      else if ($checkedItems.length > 0 && $checkedItemsRejected.length > 0){
+        alert( 'Cannot process a mix of rejected and non-rejected files. Rejection and un-rejection are seperate processes. Please select only files to reject or only files to un-reject.' );
+      }
+
+      // files to reject
+      else if ($checkedItems.length > 0){
+        console.log("not rejected yet")
         let data = [];
-      $checkedItems.each( i => {
-        data.push({ 
-          'fileID': $checkedItems[i].id.slice(4), 
-          'fileName': $( $checkedItems[i] ).attr( 'file_name' ),
-          'requestID': $( $checkedItems[i] ).attr( 'request_id' ),
-          'requestEmail': $( $checkedItems[i] ).attr( 'request_email' )
-        }) 
-      });
+        $checkedItems.each( i => {
+          data.push({ 
+            'fileID': $checkedItems[i].id.slice(4), 
+            'fileName': $( $checkedItems[i] ).attr( 'file_name' ),
+            'requestID': $( $checkedItems[i] ).attr( 'request_id' ),
+            'requestEmail': $( $checkedItems[i] ).attr( 'request_email' )
+          }) 
+        });
       rejectDialog.data( 'data', data ).dialog( 'open' );
       }
-      
+
+      //files to un-reject
+      else if ($checkedItemsRejected.length > 0){
+        console.log("already rejected")
+          let data = [];
+          $checkedItemsRejected.each( i => {
+            data.push({ 
+              'fileID': $checkedItemsRejected[i].id.slice(4), 
+              'fileName': $( $checkedItemsRejected[i] ).attr( 'file_name' ),
+              'requestID': $( $checkedItemsRejected[i] ).attr( 'request_id' ),
+              'requestEmail': $( $checkedItemsRejected[i] ).attr( 'request_email' ),
+        'unreject': true
+            }) 
+          });
+        sendUnrejectRequest(data)
+        }
+        
     }
 
     else{
@@ -140,6 +165,44 @@ jQuery( document ).ready( function() {
     }
 
   });
+
+const sendUnrejectRequest = (data) => {
+    console.log(data);
+
+    let csrftoken = getCookie('csrftoken');
+
+    let id_list = [];
+      data.forEach( ( f ) => {
+        id_list.push( f.fileID ) 
+       });
+
+      const postData = {
+        'request_id': data[0]['requestID'],  // doesn't matter which request we grab
+        'id_list': id_list
+      };
+
+      const setUnrejectOnFiles = $.post( '/api-unreject', postData, 'json' ).then( 
+        // success
+        function( resp, status ) {
+           console.log( 'SUCCESS' );        
+           notifyUserSuccess("File Unreject Successful")
+	   $( "#forceReload" ).submit();
+        },
+        // fail 
+        function( resp, status ) {
+           console.log( 'FAIL' );
+
+	   alert("Failed to unreject files, send error message to web team.")
+	   responseText = resp.responseText
+	   errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"))
+
+           notifyUserError("Error unrejecting file, send error message to web team: " + errorInfo)
+           //console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
+          // console.log( 'Response status: ' + status );
+        }
+      );
+    
+  };
 
 
   /****************************/
@@ -307,50 +370,16 @@ jQuery( document ).ready( function() {
            notifyUserSuccess("File rejection Successful")
            console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
 
-// sort files back into their own requests
-      data.forEach( ( selectedFile ) => {
-        if ( !( selectedFile.requestID in requests ) )
-          requests[ selectedFile.requestID ] = { 
-            'email': selectedFile.requestEmail,
-            'files': [{ 'id': selectedFile.fileID, 'name': selectedFile.fileName }]
-          };
-        else
-          requests[ selectedFile.requestID ].files.push( { 'id': selectedFile.fileID, 'name': selectedFile.fileName } );
-      });
+      // download eml file
+      let $anchor = $( "<a class='emailLink' target='_blank' href='/api-geteml/"+ resp.emlName +"'></a>" );
+      $( document.body ).append( $anchor );
+      window.open($('.emailLink').attr('href'))
 
-      let reject = 0
-      // for each request ...
-      for( r in requests ) {
-        const email = requests[r].email;
-        let subject = $this.attr( 'data-subject' );
-        let body = $this.attr( 'data-text' );
-
-        // replace template variables in the body of the email
-        let filesList = "";
-        requests[r].files.forEach( ( i ) => {
-          filesList += "  - " + i.name + "<br>";
-        });
-        body = body.replace( '^files^', filesList );
-        body = body.replace( /<br>/g, '%0A' );
-
-        // ... create an email with that user's files
-        let $anchor = $( "<a class='emailLink' target='_blank' href='mailto:" + email + "?subject=" + subject + "&body=" + body + "'></a>" );
-        $( document.body ).append( $anchor );
-        //window.open($('.emailLink'+reject).attr('href'),"reject"+reject)
-
-        
-        reject++;
-      }
-
-      $( '.emailLink' ).each( function() { $(this)[0].click(); } );  
-     
       // close the dialog
       $( theDialog ).dialog( 'close' );
       
       // reload the page from server
       $( "#forceReload" ).submit();
-
-      alert("Files rejected successfuly");
 
         },
         // fail 

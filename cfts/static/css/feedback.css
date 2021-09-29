@@ -1,0 +1,54 @@
+﻿/* frontend.css */
+
+/* layout overrides */
+.navbar.py-4 { padding: 1rem 1.5rem !important }
+#boxes.py-5 { padding: 1.5rem 0 !important }
+
+.card-body { min-height: 500px; }
+
+#boxes { margin-bottom: 100px; }
+
+.card-body h3 { line-height: 1.5em; }
+ 
+.spacer { line-height: 2em; }
+
+.sub_btn { font-size: 1.4rem; }
+
+.row{
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: -15px;
+  margin-left: -15px;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+  align-content: center;
+}
+
+textarea.form-control{
+  height: 11rem;
+}
+
+label.custom-control-label {
+	line-height: 1.67em;
+}
+
+.input-group-prepend .input-group-text, .input-group-append .input-group-text{
+	color: red !important;
+	font-weight: bold;
+}
+
+input[type="checkbox"] { 
+  margin-top: 0.5rem;
+  transform: scale(2) !important; 
+}
+
+.alert{
+  text-align: center;
+}
+
+.required {
+  color: red !important;
+  font-weight: bold;
+  font-size: 1rem;
+}

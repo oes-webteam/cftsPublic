@@ -5,6 +5,7 @@ import os
 from datetime import datetime
 from zipfile import ZipFile
 from django.conf import settings
+from django.http.response import FileResponse
 
 # utilities
 from django.utils.dateparse import parse_date
@@ -23,7 +24,20 @@ from cfts import settings as Settings
 # model/database stuff
 from pages.models import *
 
+from pages.views import createZip
+
 import hashlib
+
+import re
+import shutil
+
+# email creation
+from email.generator import BytesGenerator, Generator
+from email.mime.text import MIMEText
+from email.encoders import encode_base64
+from email.mime.base import MIMEBase
+from email.mime.multipart import MIMEMultipart
+import mimetypes
 
 import logging
 logger = logging.getLogger('django')
@@ -37,13 +51,79 @@ def setReject(request):
     reject_id = thestuff['reject_id']
     request_id = thestuff['request_id']
     id_list = thestuff['id_list[]']
-    
-    logger.error("Reject request ID: " + str(request_id))
-    logger.error("Reject file IDs: " + str(id_list))
 
     # update the files to set the rejection
     File.objects.filter(file_id__in=id_list).update(
         rejection_reason_id=reject_id[0])
+
+    # recreate the zip file for the pull
+    someRequest = Request.objects.get(request_id=request_id[0])
+    network_name = someRequest.network.name
+    
+    try:
+        pull_number = someRequest.pull.pull_id
+        createZip(request, network_name, someRequest.is_centcom, pull_number)
+
+    except AttributeError:
+        print("Request not found in any pull.")
+    
+    emlName = createEml(request,request_id,id_list,reject_id)    
+    return JsonResponse({'emlName': emlName})
+    
+@login_required
+def createEml( request, request_id, files_list, reject_id ):
+    
+    rqst = Request.objects.get(request_id=request_id[0])
+    rejection = Rejection.objects.get(rejection_id=reject_id[0])
+    
+
+    emlName = rqst.user.__str__() + "reject_1.eml"
+    msgPath = Settings.TEMP_FILES_DIR + "\\" + emlName
+    
+    if emlName in os.listdir(Settings.TEMP_FILES_DIR):
+                i = 1
+                print("eml file exists")
+                while True:
+                    emlName = rqst.user.__str__() + "reject_" + str(i) + ".eml"
+                    msgPath = Settings.TEMP_FILES_DIR + "\\" + emlName
+                    print("Trying " + emlName)
+                    if emlName in os.listdir(Settings.TEMP_FILES_DIR):
+                        i = i + 1
+                    else:
+                        break
+
+    msg = MIMEMultipart()
+    
+    msg['To'] = str(rqst.user.email)
+    msg['Subject'] = rejection.subject
+    msgBody = str(rejection.text) + "\n"
+    for file in File.objects.filter(file_id__in=files_list):
+        msgBody += str(file.file_object).split("/")[-1] + " "
+
+    msg.attach(MIMEText(msgBody))
+
+    msg.add_header('X-Unsent', '1')
+    
+    with open(msgPath, 'w') as eml:
+        gen = Generator(eml)
+        gen.flatten(msg)
+
+    return emlName
+
+@login_required
+def getEml(request, emlName):
+    return FileResponse(open(os.path.join("tempFiles", emlName), "rb"))
+
+@login_required
+def unReject(request):
+    thestuff = dict(request.POST.lists())
+
+    request_id = thestuff['request_id']
+    id_list = thestuff['id_list[]']
+
+    # update the files to set the rejection
+    File.objects.filter(file_id__in=id_list).update(
+        rejection_reason_id=None)
 
     # recreate the zip file for the pull
     someRequest = Request.objects.get(request_id=request_id[0])
@@ -56,20 +136,16 @@ def setReject(request):
 
     except AttributeError:
         print("Request not found in any pull.")
-        return JsonResponse({'Response': 'File not part of pull, reject status set'})
+        return JsonResponse({'Response': 'File not part of pull, reject status reset'})
     
     return JsonResponse({'error': 'error'})
 
 @login_required
 def setEncrypt(request):
-    
     thestuff = dict(request.POST.lists())
 
     request_id = thestuff['request_id']
     id_list = thestuff['id_list[]']
-    
-    logger.error("Encrypt request ID: " + str(request_id))
-    logger.error("Encrypt file IDs: " + str(id_list))
     
     # update the files to set the rejection
     File.objects.filter(file_id__in=id_list).update(
@@ -100,6 +176,8 @@ def getUser(request, id):
     return JsonResponse(data)
 
 def runNumbers(request):
+    unique_users = []
+    skipUsers = ['f7d359ebb99a6a8aac39b297745b741b', '00000.0000.0.0000000']
     files_reviewed = 0
     files_transfered = 0
     files_rejected = 0
@@ -114,7 +192,17 @@ def runNumbers(request):
         "img": 0,
         "other": 0
     }
+    org_counts= {
+        "HQ": 0,
+        "ARCENT": 0,
+        "AFCENT": 0,
+        "NAVCENT": 0,
+        "MARCENT": 0,
+        "SOCCENT": 0,
+        "OTHER": 0,
+    }
     file_size = 0
+    
 
     start_date = datetime.strptime(
         request.POST.get('start_date'), "%m/%d/%Y").date()
@@ -126,6 +214,9 @@ def runNumbers(request):
         pull__date_complete__date__range=(start_date, end_date))
 
     for rqst in requests_in_range:
+
+        if rqst.user.user_identifier not in skipUsers and rqst.user not in unique_users:
+            unique_users.append(rqst.user)
 
         files_in_request = rqst.files.all()
 
@@ -150,6 +241,10 @@ def runNumbers(request):
                         ext = str(c.split('.')[-1]).lower()
                         file_types.append(ext)
                         file_size = file_size + zip.getinfo(c).file_size
+                        org = str(f.org)
+                        if org != "":
+                            org_counts[org]+=1
+
                     file_count = len(contents)
             else:
                 file_size = file_size + os.stat(f.file_object.path).st_size            
@@ -163,6 +258,10 @@ def runNumbers(request):
                     centcom_files = centcom_files + file_count
             else:
                 files_rejected = files_rejected + file_count
+            
+            org = str(f.org)
+            if org != "":
+                org_counts[org]+=1
 
     # add up all file type counts
     pdfCount = file_types.count("pdf")
@@ -196,11 +295,11 @@ def runNumbers(request):
         file_size /= 1024
         i += 1
 
-    return JsonResponse({'files_reviewed': files_reviewed, 'files_transfered': files_transfered, 'files_rejected': files_rejected, 'centcom_files': centcom_files, 'file_types': file_type_counts, 'file_sizes': str(round(file_size,2))+" "+sizeSuffix[i] })
+    unique_users_count = len(unique_users)
+    return JsonResponse({'org_counts': org_counts,'files_reviewed': files_reviewed, 'files_transfered': files_transfered, 'files_rejected': files_rejected, 'centcom_files': centcom_files, 'file_types': file_type_counts, 'file_sizes': str(round(file_size,2))+" "+sizeSuffix[i], 'user_count': unique_users_count })
 
 def process ( request ):
     resp = {}
-    logger.error('Request Process Initiated')
     
     if request.method == 'POST':
         form_data = request.POST
@@ -288,6 +387,7 @@ def process ( request ):
             user = user, 
             network = Network.objects.get( name = form_data.get( 'network' ) ),  
             comments = form_data.get( 'comments' ),
+            org = form_data.get( 'organization' ),
             is_centcom = form_data.get( 'isCentcom' )
         )
         request.save()
@@ -301,8 +401,10 @@ def process ( request ):
         for i, f in enumerate( form_files.getlist( "files" )):
             this_file = File(
                 file_object = f,
+                file_name = f,
                 classification = Classification.objects.get( abbrev = file_info[ i ][ 'classification' ] ),
                 is_pii = file_info[ i ][ 'encrypt' ] == 'true',
+                 org = form_data.get( 'organization' ),
                 is_centcom = form_data.get( 'isCentcom' )
             )
             this_file.save()
@@ -320,20 +422,17 @@ def process ( request ):
         requestHash = requestHash.hexdigest()
         request.request_hash = requestHash
         
-        if Request.objects.filter(request_hash=requestHash):
+        if Request.objects.filter(pull__date_complete=None, request_hash=requestHash):
             request.is_dupe=True
         
         request.is_submitted = True
         request.save()
         
         resp = {'status': 'success', 'request_id': request.pk}
-        logger.error('Request Process Successful')
-
 
     else:
         resp = {'status': 'fail', 'reason': 'bad-request-type',
                 'msg': "The 'api-processrequest' view only accepts POST requests."}
-        logger.error('Request Process Failed')
 
 
     return JsonResponse(resp)
