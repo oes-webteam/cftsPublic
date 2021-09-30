@@ -55,7 +55,7 @@
             <ul class="file-list">
             {%  for f in r.files.all %}
                 {% with f.file_object.name|split:"/" as name %}
-                <li x-file-name="{{ name.2 }}">{{ name.2|truncatechars:50 }}</li>
+                <li x-file-name="{{ name.2 }}"><a href="{% url 'admin:pages_file_change' f.file_id %}">{{ name.2|truncatechars:50 }}</a></li>
                 {% endwith %}
             {% endfor %}
             </ul>
