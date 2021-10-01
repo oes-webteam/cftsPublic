@@ -395,9 +395,10 @@ def process ( request ):
         )
         request.save()
         request.target_email.add( *target_list )
-        if form_data.get('userEmail').split("@")[0] not in destSplit_list:
-            request.destFlag = True
-            
+        if form_data.get( 'network' ) == "NIPR":
+            if form_data.get('userEmail').split("@")[0] not in destSplit_list:
+                request.destFlag = True
+
         fileList=[]
         
         # add files to the request
