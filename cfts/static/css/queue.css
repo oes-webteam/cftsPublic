@@ -22,8 +22,6 @@
     font-style: italic;
     line-height: 1rem;
   }
-  .create-pull {}
-  .download-block {}
 
 .queue-form { padding: 2.3rem 0 1rem; }
 .queue-form table {}
@@ -98,3 +96,18 @@
 .btn-reject-selected { padding: 0.135rem 0.5rem; }
 
 .queue-form tr.request-header.dupe { background-color: #5bc2f9; }
+
+.networks{
+  background-color: #F7F7F7;
+  top: 110px
+}
+.network-header{
+  top: 152px;
+  background-color: #fff;
+  opacity: 1;
+}
+
+#network-header{
+  justify-content: space-between;
+  outline: 8.5px solid #fff;
+}

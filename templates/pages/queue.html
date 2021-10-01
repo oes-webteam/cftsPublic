@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% load static %}
 {% load util %}
 
@@ -10,13 +10,13 @@
     <div class="card">
         <div class="card-header">
 
-		<div class="alert alert-danger fadein server-error" style="display: none;" role="alert"></div>
+        <div class="alert alert-danger fadein server-error" style="display: none;" role="alert"></div>
 
-    		<div class="alert alert-danger fadein danger-error" style="display: none;" role="alert"></div>
-   
-    		<div class="alert alert-success fadein" style="display: none;" role="alert"></div>
+        <div class="alert alert-danger fadein danger-error" style="display: none;" role="alert"></div>
 
-            <ul class="nav nav-tabs mt-5">
+        <div class="alert alert-success fadein" style="display: none;" role="alert"></div>
+
+            <ul class="nav nav-tabs networks sticky-top mt-5">
             {% for network in rc.queues %}
                 <li class="nav-item" {% if network.count == 0 %} hidden{% endif %}>
                     <a class="nav-link{% if forloop.counter0 == 0 %} active{% endif %}"
@@ -36,7 +36,7 @@
                 {% if network.count == 0 %}
                     {{ rc.empty }}
                 {% else %}
-                    <div class="network-header">
+                    <div id="network-header" class="nav sticky-top network-header">
                         
                         <div class="pending-info">
                             Pending Requests: {{ network.pending.count }} ({{network.file_count.files_in_dataset}} Files)
@@ -52,26 +52,22 @@
                             </span>
                             {% endfor %}
                         </div>
-                        <div class="create-pull">
+
+                        <div class="pull-button-group">
                             <button class="btn btn-primary pull-button{% if network.pending.count == 0 %} disabled{% endif %}" id="pull{{network.name}}">Create {{ network.name }} Pull</button> 
                             <button class="btn btn-warning pull-button centcom{% if network.centcom.count == 0 %} disabled{% endif %}" id="pull{{network.name}}">Pull only Centcom</button> 
-                      
+
                             
-                        </div>
 
                         {% if network.last_pull.count > 0 %}
                             {% for lp in network.last_pull %}
-                            <div class="download-block">
                                 <a class="btn btn-primary download-button" id="dl{{network.name}}"
                                     href="getPull/{{ network.name }}_{{ lp.pull_number }} {{lp.date_pulled|date:"dM"}} {{lp.date_pulled|time:"Hi"}}.zip">Download Current {{ network.name }} Zip</a>
-                                </div>
                                 {% endfor %}
                         {% else %}
-                        <div class="download-block">
                             <a class="btn btn-primary download-button" id="dl{{network.name}}" href="#" hidden></a>
-                        </div>
                         {% endif %}
-                        
+                        </div>
                     </div>
 
                     <form class="queue-form">
