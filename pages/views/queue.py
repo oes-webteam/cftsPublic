@@ -39,6 +39,7 @@ logger = logging.getLogger('django')
 def queue(request):
     xfer_queues = []
     ds_networks = Network.objects.all()
+    activeSelected = False
     empty = random.choice([
         'These pipes are clean.',
         'LZ is clear.',
@@ -82,11 +83,16 @@ def queue(request):
             'order_by': net.sort_order,
             'file_count': file_count,
             'count': ds_requests.count(),
+            'activeNet': False,
             'pending': ds_requests.aggregate(count=Count('request_id', filter=Q(pull__date_pulled__isnull=True))),
             'q': ds_requests,
             'centcom': ds_requests.aggregate(count=Count('request_id', filter=Q(pull__date_pulled__isnull=True, is_centcom=True))),
             'last_pull': last_pull
         }
+
+        if activeSelected == False and queue['count'] > 0:
+            queue['activeNet'] = True
+            activeSelected = True
         
         # ... and add it to the list
         xfer_queues.append(queue)
