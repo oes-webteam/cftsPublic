@@ -88,15 +88,31 @@
                             <td><a href="{% url 'transfer-request' request.request_id %}">{%if request.is_centcom%}<strong>{%endif%}{{ request.user }}{%if request.is_centcom%} &#x1f42a;</strong>{%endif%}</a></td> <!-- link to request view -->
                             <td class="request-comments"> 
 				{% if request.is_dupe %}<a href="#" class="btn btn-info show-dupe" request_hash="{{request.request_hash}}">Show Duplicates</a> {% else %}{% endif %}
-				{% if request.comments != "" %}<a href="#" class="btn btn-primary comments">Show/Hide Comments</a> {% else %}{% endif %}
+				{% if request.comments != "" or request.destFlag %}<a href="#" class="btn btn-primary comments info-hide">Show Request Info</a> {% else %}{% endif %}
 				</td>
                             <td class="request-submitted">Submitted: {{ request.date_created|date:'db'|upper }} @ {{ request.date_created|time:'Hi' }}</td>
                         </tr>
-                        {% if request.comments != None %}
+
+                        {% if request.comments != "" %}
                         <tr class="request-header{% if request.pull != None %} pending{% endif %}">
-                            <td colspan="3" class="comments-text"><div>{{ request.comments|linebreaksbr }}</div></td>
+                            <td colspan="3" class="req-info comments-text"><div>
+                            Comments: {{ request.comments|linebreaksbr }}
+                            </div></td>
                         </tr>
                         {% endif %}
+
+                        <!-- only shows warnings when destFlag is true, later requests will need to have a general warning flag to know when to display and use the specific warning flags to render text -->
+                        {% if request.destFlag %}
+                        <tr class="request-header{% if request.pull != None %} pending{% endif %}">
+                            <td colspan="3" class="req-info warnings"><div>
+                                Warnings: 
+                                {% if request.destFlag %}Submitter is not the primary destination{% endif %}
+                                
+                                </div></td>
+                        </tr>
+                        {% endif %}
+                        
+
                         {% for file in request.files.all %}
                         <tr class="{% if request.pull != None %}pending {% endif %}{% if file.rejection_reason != None %}rejected {% endif %}">
                             <td>

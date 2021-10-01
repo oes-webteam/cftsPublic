@@ -82,8 +82,8 @@
 .queue-form .request-submitted { 
   text-align: right; 
 }
-.queue-form tr.request-header td.comments-text { margin: 0; padding: 0; }
-.queue-form .comments-text div { 
+.queue-form tr.request-header td.req-info { margin: 0; padding: 0; }
+.queue-form .req-info div { 
   display: none; 
   line-height: 1.33em;
   padding: 0.33rem 1rem; 

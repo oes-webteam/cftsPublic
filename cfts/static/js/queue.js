@@ -446,8 +446,22 @@ const sendUnrejectRequest = (data) => {
   const showComments = ( e ) => {
     e.preventDefault();
     $this = $( e.target );
-    $this.parents( "tr" ).next().find( ".comments-text div" ).slideToggle( "fast" );
+    $this.parents( "tr" ).next().find( ".req-info div" ).slideToggle( "fast" );
+    $this.parents( "tr" ).next().next().find( ".req-info div" ).slideToggle( "fast" );
+
+    if ($this.hasClass("info-hide")){
+      $(e.target).text("Hide Request Info")
+      $(e.target).addClass('info-show')
+      $(e.target).removeClass('info-hide')
+    }
+    else{
+      $(e.target).text("Show Request Info")
+      $(e.target).addClass('info-hide')
+      $(e.target).removeClass('info-show')
+    }
+
   };
+
   $( ".btn.comments" ).click( showComments );
 
 

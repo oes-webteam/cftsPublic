@@ -317,8 +317,11 @@ def process ( request ):
         requestData += form_data.get('userEmail')
         
         destination_list = form_data.get( 'targetEmail' ).split( "," )
+        destSplit_list = []
+
         target_list = []
         for destination in destination_list:
+            destSplit_list.append(destination.split("@")[0])
             try:
                 target_email = Email.objects.get(address=destination)
             except Email.DoesNotExist:
@@ -392,7 +395,9 @@ def process ( request ):
         )
         request.save()
         request.target_email.add( *target_list )
-
+        if form_data.get('userEmail').split("@")[0] not in destSplit_list:
+            request.destFlag = True
+            
         fileList=[]
         
         # add files to the request
