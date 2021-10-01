@@ -46,7 +46,11 @@ def queue(request):
         'Nothing here. Why not work on metadata?',
         'Queue is empty -- just like my wallet.',
         "There's nothing here? Huh. That's gotta be an error ... ",
-        "Xander was here."
+        "Xander was here.",
+        "Is PKI working yet?",
+        "It's probably the weekend right?",
+        "Shoot a dart at Ron, tell him Xander told you to.",
+        "I'll code tetris into this page one day."
     ])
 
     ########################
@@ -113,7 +117,7 @@ def queue(request):
         })
 
     # create the request context
-    rc = {'queues': xfer_queues, 'empty': empty, 'rejections': rejections}
+    rc = {'queues': xfer_queues, 'empty': empty, 'rejections': rejections, 'easterEgg': activeSelected}
 
     # roll that beautiful bean footage
     return render(request, 'pages/queue.html', {'rc': rc})
