@@ -54,6 +54,8 @@
                         </div>
 
                         <div class="pull-button-group">
+                            <a href="#" class="btn btn-warning request-encrypt">Encrypt Files</a>
+                            <a href="#" class="btn btn-danger request-reject">Reject Files</a>
                             <button class="btn btn-primary pull-button{% if network.pending.count == 0 %} disabled{% endif %}" id="pull{{network.name}}">Create {{ network.name }} Pull</button> 
                             <button class="btn btn-warning pull-button centcom{% if network.centcom.count == 0 %} disabled{% endif %}" id="pull{{network.name}}">Pull only Centcom</button> 
 
@@ -83,8 +85,7 @@
                             <td class="request-comments"> 
 				{% if request.is_dupe %}<a href="#" class="btn btn-info show-dupe" request_hash="{{request.request_hash}}">Show Duplicates</a> {% else %}{% endif %}
 				{% if request.comments != "" %}<a href="#" class="btn btn-primary comments">Show/Hide Comments</a> {% else %}{% endif %}
-				<a href="#" class="btn btn-warning request-encrypt" request_id="{{ request.request_id }}">Encrypt Files</a>
-				<a href="#" class="btn btn-danger request-reject" request_id="{{ request.request_id }}">Reject Files</a></td>
+				</td>
                             <td class="request-submitted">Submitted: {{ request.date_created|date:'db'|upper }} @ {{ request.date_created|time:'Hi' }}</td>
                         </tr>
                         {% if request.comments != None %}
