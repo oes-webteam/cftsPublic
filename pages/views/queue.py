@@ -10,27 +10,22 @@ from django.conf import settings
 from django.utils.functional import empty
 from django.utils import timezone
 from cfts import settings as cftsSettings
+from django.core.serializers import serialize
+
 
 # decorators
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.cache import never_cache
 
+
 # responses
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.http import JsonResponse, FileResponse, response  # , HttpResponse,
 
 # model/database stuff
 from pages.models import *
 from django.db.models import Max, Count, Q, Sum
-
-# email creation
-from email.generator import BytesGenerator
-from email.mime.text import MIMEText
-from email.encoders import encode_base64
-from email.mime.base import MIMEBase
-from email.mime.multipart import MIMEMultipart
-import mimetypes
 
 import logging
 
@@ -101,7 +96,7 @@ def queue(request):
         xfer_queues, key=lambda k: k['order_by'], reverse=False)
 
     # get list of Rejections for the "Reject Files" button
-    ds_rejections = Rejection.objects.all()
+    ds_rejections = Rejection.objects.filter(visible=True)
     rejections = []
     for row in ds_rejections:
         rejections.append({
@@ -121,28 +116,41 @@ def queue(request):
 @login_required
 def transferRequest( request, id ):
     rqst = Request.objects.get( request_id = id )
+    user = User.objects.get( user_id = rqst.user.user_id )
+
     rc = { 
+        'User Name': user,
+        'User Email': user.email,
+        'Phone': user.phone,
+        'network': Network.objects.get( network_id = rqst.network.network_id ),
+        'Marked as Centcom': rqst.is_centcom,
+        'Part of pull': rqst.pull,
         'request_id': rqst.request_id,
         'date_created': rqst.date_created,
-        'user': User.objects.get( user_id = rqst.user.user_id ),
-        'phone': User.objects.get(user_id=rqst.user.user_id).phone,
-        'network': Network.objects.get( network_id = rqst.network.network_id ),
         'files': rqst.files.all(),
         'target_email': rqst.target_email.all(),
         'is_submitted': rqst.is_submitted,
-        'is_centcom': rqst.is_centcom
-    }
-    return render(request, 'pages/transfer-request.html', {'rc': rc})
+        'is_centcom': rqst.is_centcom,
+        'org': rqst.org,
 
+    }
+    return render(request, 'pages/transfer-request.html', {'rc': rc, 'centcom': rqst.is_centcom, 'notes': rqst.notes})
+
+@login_required
+def requestNotes( request, requestid ):
+  postData = dict(request.POST.lists())
+  notes = postData['notes'][0]
+  Request.objects.filter(request_id=requestid).update(notes=notes)
+  return JsonResponse({'response': "Notes saved"})
+
+@login_required
+def removeCentcom( request, id ):
+    Request.objects.filter(request_id = id).update(is_centcom=False)
+    return redirect('queue')
 
 @login_required
 def createZip(request, network_name, isCentcom, rejectPull):
-    
-    logger.error("Creating pull zip")
-    
     if rejectPull == 'false':
-        print("New pull")
-        logger.error("New Pull")
         
         # create pull
         try:
@@ -189,17 +197,13 @@ def createZip(request, network_name, isCentcom, rejectPull):
         
         pull=new_pull
 
-    else:
-        print("Recreate pull after rejections")
-        logger.error("Recreate Pull")
-        
+    else:        
         qs = Request.objects.filter(pull=rejectPull)
         pull = Pull.objects.filter(pull_id=rejectPull)[0]
         pull_number = pull.pull_number
 
     # create/overwrite zip file
     zipPath = os.path.join(cftsSettings.PULLS_DIR+"\\") + network_name + "_" + str(pull_number)+ " " + str(pull.date_pulled.astimezone().strftime("%d%b %H%M")) + ".zip"
-    logger.error("Creating/Recreating this pull: ", str(zipPath))
     
     zip = ZipFile(zipPath, "w")
 
@@ -215,7 +219,6 @@ def createZip(request, network_name, isCentcom, rejectPull):
         if theseFiles.exists():
             i = 2
             while zip_folder in requestDirs:
-                print("request folder already exists")
                 zip_folder = str(rqst.user) + "/request_" + str(i)
                 i+=1
 
@@ -236,6 +239,8 @@ def createZip(request, network_name, isCentcom, rejectPull):
                 
             elif encryptRequest == False:
                 email_file_name = '_email.txt'
+
+            notes_file_name = zip_folder + "/_notes.txt"
             
             email_file_path = zip_folder + "/" + email_file_name
 
@@ -265,6 +270,13 @@ def createZip(request, network_name, isCentcom, rejectPull):
                 
                 fp.write(emailString.encode('utf-8'))
                 fp.close()
+                
+            if rqst.notes != None:
+                with zip.open(notes_file_name, 'w') as nfp:
+                    notes = rqst.notes
+                    print(notes)
+                    nfp.write(notes.encode('utf-8'))
+                    nfp.close()
             
             
         else:

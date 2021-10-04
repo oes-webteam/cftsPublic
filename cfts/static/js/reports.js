@@ -46,6 +46,7 @@ $( document ).ready( function( ) {
           $( '#transfered' ).text( resp.files_transfered );
           $( '#centcom' ).text( resp.centcom_files );
           $( '#rejected' ).text( resp.files_rejected );
+          $( '#users' ).text( resp.user_count );
           
           $( '#excel' ).text("Excel files: " + resp.file_types.excel);
           $( '#word' ).text("Word files: " + resp.file_types.word);
@@ -54,6 +55,14 @@ $( document ).ready( function( ) {
           $( '#pdf' ).text("PDF files: " + resp.file_types.pdf);
           $( '#img' ).text("Image files: " + resp.file_types.img);
           $( '#other' ).text("Other files: " + resp.file_types.other);
+
+          $( '#CENTCOM-HQ' ).text("CENTCOM: " + resp.org_counts.HQ);
+          $( '#ARCENT' ).text("ARCENT: " + resp.org_counts.ARCENT);
+          $( '#AFCENT' ).text("AFCENT: " + resp.org_counts.AFCENT);
+          $( '#NAVCENT' ).text("NAVCENT: " + resp.org_counts.NAVCENT);
+          $( '#MARCENT' ).text("MARCENT: " + resp.org_counts.MARCENT);
+          $( '#SOCCENT' ).text("SOCCENT: " + resp.org_counts.SOCCENT);
+          $( '#OTHER' ).text("OTHER: " + resp.org_counts.OTHER);
 
           $( '#size' ).text(resp.file_sizes);
 
