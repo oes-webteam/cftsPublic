@@ -37,18 +37,22 @@
         <td class="form-group">
             <input type="text" class="form-control filter" name="filterPull" placeholder="Pull" />
         </td>
+        <td class="form-group">
+            <input type="text" class="form-control filter" name="filterOrg" placeholder="Org" />
+        </td>
     </tr>
     <tr>
-        <th style="width: 20em;">User</th>  <!-- add filter by user -->
+        <th style="width: 15em;">User</th>  <!-- add filter by user -->
         <th>Date Created</th>
-        <th>Network</th>
+        <th style="width: 12em;">Network</th>
         <th>Files</th>
-        <th>Target Email</th>
+        <th >Target Email</th>
         <th>Pull</th> <!-- add filter by pull -->
+        <th style="width: 10em;">Org</th>
     </tr>
 {% for r in rc.requests %}
     <tr class="data-row">
-        <td class="xfer-user"><a href="#" class="user" id="{{ r.user.user_id }}">{{ r.user }}</a></td>
+        <td class="xfer-user"><a href="{% url 'admin:pages_request_change' r.request_id %}" class="user" id="{{ r.user.user_id }}">{{ r.user }}</a></td>
         <td class="xfer-date">{{ r.date_created|date:"m/d/Y Hi" }}</td>
         <td class="xfer-net">{{ r.network }}</td>
         <td class="xfer-files">
@@ -68,11 +72,13 @@
             </ul>
         </td>
         <td class="xfer-pull">
-	    <a href="getPull/{{r.pull}} {{r.date_pulled|date:"dM"}} {{r.date_pulled|time:"Hi"}}.zip">{{r.pull}} {% if r.pull.centcom_pull %}
-		Centcom Only
+        <a href="getPull/{{r.pull}} {{r.date_pulled|date:"dM"}} {{r.date_pulled|time:"Hi"}}.zip">{{r.pull}} {% if r.pull.centcom_pull %}
+        Centcom Only
             {% endif %}</a>
-	    
-	</td>
+        </td>
+        <td class="xfer-org">
+        <div>{{r.org}}</div>
+        </td>
     </tr>
 {% endfor %}
 </table>
