@@ -394,6 +394,9 @@ def process ( request ):
             is_centcom = form_data.get( 'isCentcom' )
         )
         request.save()
+
+        requestData += form_data.get( 'network' )
+
         request.target_email.add( *target_list )
         if form_data.get( 'network' ) == "NIPR":
             if form_data.get('userEmail').split("@")[0] not in destSplit_list:
