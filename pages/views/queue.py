@@ -3,6 +3,8 @@
 from email import generator
 import random
 import datetime
+from django.db.models.expressions import When
+from django.db.models.fields import IntegerField
 import pytz
 # from io import BytesIO, StringIO
 from zipfile import ZipFile
@@ -26,6 +28,7 @@ from django.http import JsonResponse, FileResponse, response  # , HttpResponse,
 # model/database stuff
 from pages.models import *
 from django.db.models import Max, Count, Q, Sum
+from django.db.models import Case, When
 
 import logging
 
@@ -71,7 +74,14 @@ def queue(request):
             is_submitted=True,
             pull__date_complete__isnull=True,
             #files__in=File.objects.filter( rejection_reason__isnull=True )
-        ).order_by('-date_created')
+        ).annotate(org_order = Case(
+            When(org='HQ', then=1), 
+            When(org='AFCENT', then=2), 
+            When(org='ARCENT', then=3), 
+            When(org='MARCENT', then=4), 
+            When(org='NAVCENT', then=5), 
+            When(org='SOCCENT', then=6), 
+            When(org='OTHER', then=7), output_field=IntegerField())).order_by('org_order', 'user__str__','-date_created')
 
         # count how many total files are in all the pending requests (excluding ones that have already been pulled)
         file_count = ds_requests.annotate(
