@@ -101,7 +101,8 @@ def queue(request):
             'pending': ds_requests.aggregate(count=Count('request_id', filter=Q(pull__date_pulled__isnull=True))),
             'q': ds_requests,
             'centcom': ds_requests.aggregate(count=Count('request_id', filter=Q(pull__date_pulled__isnull=True, is_centcom=True))),
-            'last_pull': last_pull
+            'last_pull': last_pull,
+            'orgs': ds_requests.values_list('org',flat=True)
         }
 
         if activeSelected == False and queue['count'] > 0:

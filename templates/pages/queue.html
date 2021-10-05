@@ -83,58 +83,68 @@
                             <col />
                             <col width="20%" />
                         </colgroup>
-                        {% for request in network.q %}
-			<tr class="request-header {% if request.pull != None %} pending{% endif %} {% if request.centcom_pull %}centcom{% endif %}" request_hash="{{request.request_hash}}">
-                            <td><a href="{% url 'transfer-request' request.request_id %}">{%if request.is_centcom%}<strong>{%endif%}{{ request.user }}{%if request.is_centcom%} &#x1f42a;</strong>{%endif%}</a></td> <!-- link to request view -->
-                            <td class="request-comments"> 
-				{% if request.is_dupe %}<a href="#" class="btn btn-info show-dupe" request_hash="{{request.request_hash}}">Show Duplicates</a> {% else %}{% endif %}
-				{% if request.comments != "" or request.destFlag %}<a href="#" class="btn btn-primary comments info-hide">Show Request Info</a> {% else %}{% endif %}
-				</td>
-                            <td class="request-submitted">Submitted: {{ request.date_created|date:'db'|upper }} @ {{ request.date_created|time:'Hi' }}</td>
-                        </tr>
 
-                        {% if request.comments != "" %}
-                        <tr class="request-header{% if request.pull != None %} pending{% endif %}">
-                            <td colspan="3" class="req-info comments-text"><div>
-                            Comments: {{ request.comments|linebreaksbr }}
-                            </div></td>
-                        </tr>
-                        {% endif %}
-
-                        <!-- only shows warnings when destFlag is true, later requests will need to have a general warning flag to know when to display and use the specific warning flags to render text -->
-                        {% if request.destFlag %}
-                        <tr class="request-header{% if request.pull != None %} pending{% endif %}">
-                            <td colspan="3" class="req-info warnings"><div>
-                                Warnings: 
-                                {% if request.destFlag %}Submitter is not the primary destination{% endif %}
-                                
-                                </div></td>
-                        </tr>
+                        {% if "HQ" in network.orgs %}<td class="org-header" colspan="3">HQ Requests:</td>
+                            {% for request in network.q %}
+                                {% if request.org == "HQ" %}
+                                    {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                {% endif %}
+                            {% endfor %}
                         {% endif %}
                         
-
-                        {% for file in request.files.all %}
-                        <tr class="{% if request.pull != None %}pending {% endif %}{% if file.rejection_reason != None %}rejected {% endif %}">
-                            <td>
-                                <input type="checkbox" name="fileSelection" id="chk_{{ file.file_id }}" request_id="{{ request.request_id }}" request_email="{{ request.user.email }}" file_name="{{ file }}" {% if file.rejection_reason != None %} rejected {% else %} not-rejected {% endif %} hidden/>
-                                <!-- Show encrypt flag? -->
-                                {% if file.is_pii or file.is_centcom_info %}
-                                <span title="PII: {{ file.is_pii }}&#10;CENTCOM Info: {{ file.is_centcom_info }}">🔒</span>
+                        {% if "AFCENT" in network.orgs %}<td class="org-header" colspan="3">AFCENT Requests:</td>
+                            {% for request in network.q %}
+                                {% if request.org == "AFCENT" %}
+                                    {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
                                 {% endif %}
-                            </td>
-                            <td colspan="2"><a title="{{ file }}" href="getFile/{{file.file_object}}">{{ file }}</a></td>
-                        </tr>
-                        {% endfor %}
-                        <!-- end files -->
-                        {% if not forloop.last %}<tr class="spacing"><td colspan="3">&nbsp;</td></tr>{% endif %}
-                        {% endfor %}
-                        <!-- end requests -->
+                            {% endfor %}
+                        {% endif %}
+                        
+                        {% if "ARCENT" in network.orgs %}<td class="org-header" colspan="3">ARCENT Requests:</td>
+                            {% for request in network.q %}
+                                {% if request.org == "ARCENT" %}
+                                    {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+
+                        {% if "MARCENT" in network.orgs %}<td class="org-header" colspan="3">MARCENT Requests:</td>
+                            {% for request in network.q %}
+                                {% if request.org == "MARCENT" %}
+                                    {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+
+                        {% if "NAVCENT" in network.orgs %}<td class="org-header" colspan="3">NAVCENT Requests:</td>
+                            {% for request in network.q %}
+                                {% if request.org == "NAVCENT" %}
+                                    {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+
+                        {% if "SOCCENT" in network.orgs %}<td class="org-header" colspan="3">SOCCENT Requests:</td>
+                            {% for request in network.q %}
+                                {% if request.org == "SOCCENT" %}
+                                    {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+
+                        {% if "OTHER" in network.orgs %}<td class="org-header" colspan="3">OTHER Requests:</td>
+                            {% for request in network.q %}
+                                {% if request.org == "OTHER" %}
+                                    {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
                     </table>
                     </form>
 
                 {% endif %}
                 </div>
-            {% endfor %}
+            {% endfor %} 
             </div>
 
         </div> <!-- END card-header -->

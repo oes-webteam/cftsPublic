@@ -117,3 +117,12 @@
   width: 150px;
   padding: 2px;
 }
+
+.org-header { 
+  float: left; 
+  font-size: 1.5rem;
+  line-height: 1.5rem;
+  text-align: left;
+  white-space: nowrap;
+  padding: .5rem 0 .5rem 0 !important;
+}
