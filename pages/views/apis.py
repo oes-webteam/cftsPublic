@@ -215,8 +215,8 @@ def runNumbers(request):
 
     for rqst in requests_in_range:
 
-        if rqst.user.user_identifier not in skipUsers and rqst.user not in unique_users:
-            unique_users.append(rqst.user)
+        if rqst.user.user_identifier not in skipUsers and rqst.user.user_identifier not in unique_users:
+            unique_users.append(rqst.user.user_identifier)
 
         files_in_request = rqst.files.all()
 
@@ -404,7 +404,7 @@ def process ( request ):
                 file_name = f,
                 classification = Classification.objects.get( abbrev = file_info[ i ][ 'classification' ] ),
                 is_pii = file_info[ i ][ 'encrypt' ] == 'true',
-                 org = form_data.get( 'organization' ),
+                org = form_data.get( 'organization' ),
                 is_centcom = form_data.get( 'isCentcom' )
             )
             this_file.save()
