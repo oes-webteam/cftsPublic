@@ -16,6 +16,10 @@ urlpatterns = [
 
     # frontend
     path('frontend', views.frontend, name='frontend'),
+    
+    # user requests
+    path('my-requests', views.userRequests, name='userRequests'),
+    path('my-requests/<uuid:id>', views.userRequests, name='userRequests'),
 
     # queue
     path('queue', views.queue, name='queue'),

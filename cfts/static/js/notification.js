@@ -9,9 +9,9 @@ notifyUserSuccess = ( msg ) => {
   let alertDiv = $( ".alert-success" );
   alertDiv.text( msg );  
   alertDiv.fadeIn();
-  window.setTimeout( function() {
-    alertDiv.fadeOut();
-  }, 5000 );
+  // window.setTimeout( function() {
+  //   alertDiv.fadeOut();
+  // }, 5000 );
 };
 
 notifyUserWarning = ( msg ) => {

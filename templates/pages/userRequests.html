@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load util %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/archive.css' %}">
+<div class="container" style="margin-top: 200px;">
+<!-- search form -->
+
+<!-- search by date -->
+
+<!-- filter inputs -->
+<table class="data-table">
+    <tr>
+        <th>User</th>  <!-- add filter by user -->
+        <th>Date Submitted</th>
+        <th>Network</th>
+        <th>Files</th>
+        <th>Target Email</th>
+        <th>Status</th> <!-- add filter by pull -->
+    </tr>
+{% for r in rc.requests %}
+    <tr class="data-row">
+        <td class="xfer-user"><a href="#" class="user" id="{{ r.user.user_id }}">{{ r.user }}</a></td>
+        <td class="xfer-date">{{ r.date_created|date:"m/d/Y Hi" }}</td>
+        <td class="xfer-net">{{ r.network }}</td>
+        <td class="xfer-files">
+            <ul class="file-list">
+            {%  for f in r.files.all %}
+                {% with f.file_object.name|split:"/" as name %}
+                <li x-file-name="{{ name.2 }}">{{ name.2|truncatechars:50 }}</li>
+                {% endwith %}
+            {% endfor %}
+            </ul>
+        </td>
+        <td class="xfer-email">
+            <ul class="email-list">
+                {%  for e in r.target_email.all %}
+                    <li>{{e}}</li>
+                {% endfor %}
+            </ul>
+        </td>
+        <td class="xfer-status">
+            <img src="{% static 'img/deep blue Status.svg' %}" class="status-img"></img>
+            {% if r.pull.date_pulled == None %}<img src="{% static 'img/grey Status.svg' %}" class="status-img"></img>{% else %}<img src="{% static 'img/blue Status.svg' %}" class="status-img"></img>{% endif %}
+            {% if r.pull.date_oneeye == None %}<img src="{% static 'img/grey Status.svg' %}" class="status-img"></img>{% else %}<img src="{% static 'img/red Status.svg' %}" class="status-img"></img>{% endif %}
+            {% if r.pull.date_twoeye == None %}<img src="{% static 'img/grey Status.svg' %}" class="status-img"></img>{% else %}<img src="{% static 'img/yellow Status.svg' %}" class="status-img"></img>{% endif %}
+            {% if r.pull.date_complete == None %}<img src="{% static 'img/grey Status.svg' %}" class="status-img"></img>{% else %}<img src="{% static 'img/green Status.svg' %}" class="status-img"></img>{% endif %}
+        </td>	    
+	</td>
+    </tr>
+{% endfor %}
+</table>
+
+<div class="pagination">
+    <span class="step-links">
+        {% if rc.requests.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ rc.requests.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ rc.requests.number }} of {{ rc.requests.paginator.num_pages }}.
+        </span>
+
+        {% if rc.requests.has_next %}
+            <a href="?page={{ rc.requests.next_page_number }}">next</a>
+            <a href="?page={{ rc.requests.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+
+</div>
+<script>window.document.title = "My Requests"</script>
+{% endblock %}
