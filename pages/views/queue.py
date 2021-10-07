@@ -99,10 +99,11 @@ def queue(request):
             'count': ds_requests.count(),
             'activeNet': False,
             'pending': ds_requests.aggregate(count=Count('request_id', filter=Q(pull__date_pulled__isnull=True))),
+            'pulled': ds_requests.aggregate(count=Count('request_id', filter=Q(pull__date_pulled__isnull=False))),
             'q': ds_requests,
             'centcom': ds_requests.aggregate(count=Count('request_id', filter=Q(pull__date_pulled__isnull=True, is_centcom=True))),
             'last_pull': last_pull,
-            'orgs': ds_requests.values_list('org',flat=True)
+            'orgs': ds_requests.filter(pull__date_pulled__isnull=True).values_list('org', flat=True)
         }
 
         if activeSelected == False and queue['count'] > 0:

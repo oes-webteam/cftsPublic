@@ -83,11 +83,13 @@
                             <col />
                             <col width="20%" />
                         </colgroup>
-
+                        
                         {% if "HQ" in network.orgs %}<td class="org-header" colspan="3">HQ Requests:</td>
                             {% for request in network.q %}
                                 {% if request.org == "HQ" %}
-                                    {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                    {% if request.pull == None %} 
+                                        {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                    {% endif %}
                                 {% endif %}
                             {% endfor %}
                         {% endif %}
@@ -95,7 +97,9 @@
                         {% if "AFCENT" in network.orgs %}<td class="org-header" colspan="3">AFCENT Requests:</td>
                             {% for request in network.q %}
                                 {% if request.org == "AFCENT" %}
-                                    {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                    {% if request.pull == None %} 
+                                        {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                    {% endif %}
                                 {% endif %}
                             {% endfor %}
                         {% endif %}
@@ -103,7 +107,9 @@
                         {% if "ARCENT" in network.orgs %}<td class="org-header" colspan="3">ARCENT Requests:</td>
                             {% for request in network.q %}
                                 {% if request.org == "ARCENT" %}
-                                    {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                    {% if request.pull == None %} 
+                                        {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                    {% endif %}
                                 {% endif %}
                             {% endfor %}
                         {% endif %}
@@ -111,7 +117,9 @@
                         {% if "MARCENT" in network.orgs %}<td class="org-header" colspan="3">MARCENT Requests:</td>
                             {% for request in network.q %}
                                 {% if request.org == "MARCENT" %}
-                                    {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                    {% if request.pull == None %} 
+                                        {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                    {% endif %}
                                 {% endif %}
                             {% endfor %}
                         {% endif %}
@@ -119,7 +127,9 @@
                         {% if "NAVCENT" in network.orgs %}<td class="org-header" colspan="3">NAVCENT Requests:</td>
                             {% for request in network.q %}
                                 {% if request.org == "NAVCENT" %}
-                                    {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                    {% if request.pull == None %} 
+                                        {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                    {% endif %}
                                 {% endif %}
                             {% endfor %}
                         {% endif %}
@@ -127,7 +137,9 @@
                         {% if "SOCCENT" in network.orgs %}<td class="org-header" colspan="3">SOCCENT Requests:</td>
                             {% for request in network.q %}
                                 {% if request.org == "SOCCENT" %}
-                                    {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                    {% if request.pull == None %} 
+                                        {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                    {% endif %}
                                 {% endif %}
                             {% endfor %}
                         {% endif %}
@@ -135,10 +147,21 @@
                         {% if "OTHER" in network.orgs %}<td class="org-header" colspan="3">OTHER Requests:</td>
                             {% for request in network.q %}
                                 {% if request.org == "OTHER" %}
+                                    {% if request.pull == None %} 
+                                        {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+
+                        {% if network.pulled.count > 0 %}<td class="org-header" colspan="3">Pulled Requests ({{network.pulled.count}}):</td>
+                            {% for request in network.q %}
+                                {% if request.pull != None %} 
                                     {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
                                 {% endif %}
                             {% endfor %}
                         {% endif %}
+
                     </table>
                     </form>
 
