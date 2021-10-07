@@ -166,6 +166,8 @@ def runScan(extractPath):
 
 def scanOfficeFile(office_file):
     results = None
+    printBin = re.compile('printerSettings(\d+).bin')
+
     # treat as a zip and extract to \cfts\scan\temp directory
     try:
         zf = ZipFile(office_file)
@@ -174,12 +176,13 @@ def scanOfficeFile(office_file):
         # step through the contents of the scantool 'temp' folder
         for root, subdirs, files in os.walk(os.path.dirname(office_file)+"\\office"):
             for filename in files:
-                file_path = os.path.join(root, filename)
-                findings = scanFile(file_path)
-                if(findings is not None):
-                    if(results is None):
-                        results = []
-                    results.append(findings)
+                if printBin.match(filename.split("\\")[-1]) == None:
+                    file_path = os.path.join(root, filename)
+                    findings = scanFile(file_path)
+                    if(findings is not None):
+                        if(results is None):
+                            results = []
+                        results.append(findings)
 
     except BadZipFile:
         if results is None:
