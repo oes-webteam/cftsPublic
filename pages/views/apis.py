@@ -40,6 +40,8 @@ from email.mime.multipart import MIMEMultipart
 import mimetypes
 
 import logging
+
+from pages.views.queue import requestNotes
 logger = logging.getLogger('django')
 # ====================================================================
 
@@ -55,6 +57,9 @@ def setReject(request):
     # update the files to set the rejection
     File.objects.filter(file_id__in=id_list).update(
         rejection_reason_id=reject_id[0])
+    
+    # update request with the has_rejected flag
+    Request.objects.filter(request_id=request_id[0]).update(has_rejected=True)
 
     # recreate the zip file for the pull
     someRequest = Request.objects.get(request_id=request_id[0])
@@ -125,6 +130,16 @@ def unReject(request):
     File.objects.filter(file_id__in=id_list).update(
         rejection_reason_id=None)
 
+    # check if the request has rejected files in it
+    files = Request.objects.get(request_id=request_id[0]).files.all()
+    has_rejected = False
+
+    for file in files:
+        if file.rejection_reason_id != None:
+            has_rejected = True
+    
+    if has_rejected == False:
+        Request.objects.filter(request_id=request_id[0]).update(has_rejected=False)
     # recreate the zip file for the pull
     someRequest = Request.objects.get(request_id=request_id[0])
     network_name = someRequest.network.name

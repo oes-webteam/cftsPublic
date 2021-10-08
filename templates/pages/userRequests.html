@@ -3,12 +3,12 @@
 {% load util %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/archive.css' %}">
-<div class="container" style="margin-top: 200px;">
+<link rel="stylesheet" href="{% static 'css/requests.css' %}">
+<div class="container" style="margin-top: 155px;">
 <!-- search form -->
 
 <!-- search by date -->
-
+{% comment %} 
 <!-- filter inputs -->
 <table class="data-table">
     <tr>
@@ -47,29 +47,99 @@
             {% if r.pull.date_twoeye == None %}<img src="{% static 'img/grey Status.svg' %}" class="status-img"></img>{% else %}<img src="{% static 'img/yellow Status.svg' %}" class="status-img"></img>{% endif %}
             {% if r.pull.date_complete == None %}<img src="{% static 'img/grey Status.svg' %}" class="status-img"></img>{% else %}<img src="{% static 'img/green Status.svg' %}" class="status-img"></img>{% endif %}
         </td>	    
-	</td>
     </tr>
 {% endfor %}
-</table>
+</table> {% endcomment %}
 
-<div class="pagination">
-    <span class="step-links">
-        {% if rc.requests.has_previous %}
-            <a href="?page=1">&laquo; first</a>
-            <a href="?page={{ rc.requests.previous_page_number }}">previous</a>
-        {% endif %}
 
-        <span class="current">
-            Page {{ rc.requests.number }} of {{ rc.requests.paginator.num_pages }}.
-        </span>
+<div class="container">
+    {% if rc.userHash and rc.buggedPKI != "true" %}
+        <h3>{{rc.firstName}} {{rc.lastName}}'s Requests</h3>
+        <div class="row">
+        {% for r in rc.requests %}
+            <div class="col-3">
+                <div class="card bg-light
+                {% if r.has_rejected == True %}
+                    border-red
+                {% elif r.pull.date_complete != None %}
+                    border-green
+                {% endif %}
+                ">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ r.user }}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">{{ r.date_created|date:'d M'|upper }}  {{ r.date_created|time:'Hi' }}</h6>
+                        <p class="card-text mb-4 text-muted">{{ r.network }}</p>
 
-        {% if rc.requests.has_next %}
-            <a href="?page={{ rc.requests.next_page_number }}">next</a>
-            <a href="?page={{ rc.requests.paginator.num_pages }}">last &raquo;</a>
-        {% endif %}
-    </span>
+                        <p class="card-text">Request Status: 
+                            {% if r.pull.date_pulled == None %} 
+                                Submitted
+                            {% elif r.pull.date_oneeye == None %} 
+                                Initial review
+                            {% elif r.pull.date_twoeye == None %}
+                                Secondary review
+                            {% elif r.pull.date_complete == None %}
+                                Awaiting transfer to destination network
+                            {% elif r.pull.date_complete != None %}
+                                Inbound to destination network
+                            {% endif %}
+                        </p>
+
+                        <ul class="file-list">
+                        {%  for f in r.files.all|slice:":3" %}
+                            {% with f.file_object.name|split:"/" as name %}
+                            <li x-file-name="{{ name.2 }}">{{ name.2|truncatechars:50 }}</li>
+                            {% endwith %}
+                        {% endfor %}
+                        {% if r.files.count > 3 %}...{% endif %}
+                        </ul>
+                        
+                        <ul class="email-list">
+                            {%  for e in r.target_email.all|slice:":2" %}
+                                <li>{{e}}</li>
+                            {% endfor %}
+                            {% if r.target_email.count > 2 %}...{% endif %}
+
+                        </ul>
+
+                        {% comment %} 
+                        <td class="xfer-status">
+                            <img src="{% static 'img/deep blue Status.svg' %}" class="status-img"></img>
+                            {% if r.pull.date_pulled == None %}<img src="{% static 'img/grey Status.svg' %}" class="status-img"></img>{% else %}<img src="{% static 'img/blue Status.svg' %}" class="status-img"></img>{% endif %}
+                            {% if r.pull.date_oneeye == None %}<img src="{% static 'img/grey Status.svg' %}" class="status-img"></img>{% else %}<img src="{% static 'img/red Status.svg' %}" class="status-img"></img>{% endif %}
+                            {% if r.pull.date_twoeye == None %}<img src="{% static 'img/grey Status.svg' %}" class="status-img"></img>{% else %}<img src="{% static 'img/yellow Status.svg' %}" class="status-img"></img>{% endif %}
+                            {% if r.pull.date_complete == None %}<img src="{% static 'img/grey Status.svg' %}" class="status-img"></img>{% else %}<img src="{% static 'img/green Status.svg' %}" class="status-img"></img>{% endif %}
+                        </td>	
+                        {% endcomment %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+        
+        <div class="pagination">
+            <span class="step-links">
+                {% if rc.requests.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ rc.requests.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ rc.requests.number }} of {{ rc.requests.paginator.num_pages }}.
+                </span>
+
+                {% if rc.requests.has_next %}
+                    <a href="?page={{ rc.requests.next_page_number }}">next</a>
+                    <a href="?page={{ rc.requests.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+    {% else %}
+    <h3>Unable to read your user information.</h3>
+    {% endif %}
+    
 </div>
 
-</div>
+
+
 <script>window.document.title = "My Requests"</script>
 {% endblock %}

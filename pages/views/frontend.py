@@ -77,15 +77,15 @@ def userRequests(request):
                     rc = {'resources': resources, 'cert': cert, 'userHash': userHash, 'buggedPKI': "true"}
                 else:
                     requests = Request.objects.filter( user__user_identifier=userHash )
-
-                    requestPage = paginator.Paginator(requests, 25)
+                    user = User.objects.get(user_identifier=userHash)
+                    requestPage = paginator.Paginator(requests, 12)
                     pageNum = request.GET.get('page')
                     pageObj = requestPage.get_page(pageNum)
 
-                    rc = {'requests': pageObj,'resources': resources, 'cert': cert, 'userHash': userHash}
+                    rc = {'requests': pageObj,'resources': resources, 'cert': cert, 'userHash': userHash, 'firstName': user.name_first, 'lastName': user.name_last}
     except KeyError:
         requests = Request.objects.all()
-        requestPage = paginator.Paginator(requests, 25)
+        requestPage = paginator.Paginator(requests, 12)
         pageNum = request.GET.get('page')
         pageObj = requestPage.get_page(pageNum)
 

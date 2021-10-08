@@ -172,7 +172,7 @@ class Request(models.Model):
   is_dupe = models.BooleanField(default=False)
   org = models.CharField(max_length=50, default="")
   notes = models.TextField(null=True, blank=True)
-  #is_rejected = models.BooleanField(default=False)
+  has_rejected = models.BooleanField(default=False)
 
   class Meta:
     ordering = ['-date_created']
