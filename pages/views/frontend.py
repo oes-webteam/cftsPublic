@@ -66,7 +66,13 @@ def userRequests(request):
     try:
             cert = request.META['CERT_SUBJECT']
             if cert =="":
-                rc = {'resources': resources}
+                # requests = Request.objects.all()
+                # requestPage = paginator.Paginator(requests, 8)
+                # pageNum = request.GET.get('page')
+                # pageObj = requestPage.get_page(pageNum)
+
+                # rc = {'requests': pageObj,'resources': resources}
+                rc = {'resources': resources, 'buggedPKI': "true"}
 
             else:
                 userHash = hashlib.md5()
@@ -78,16 +84,42 @@ def userRequests(request):
                 else:
                     requests = Request.objects.filter( user__user_identifier=userHash )
                     user = User.objects.get(user_identifier=userHash)
-                    requestPage = paginator.Paginator(requests, 12)
+                    requestPage = paginator.Paginator(requests, 8)
                     pageNum = request.GET.get('page')
                     pageObj = requestPage.get_page(pageNum)
 
                     rc = {'requests': pageObj,'resources': resources, 'cert': cert, 'userHash': userHash, 'firstName': user.name_first, 'lastName': user.name_last}
     except KeyError:
-        requests = Request.objects.all()
-        requestPage = paginator.Paginator(requests, 12)
-        pageNum = request.GET.get('page')
-        pageObj = requestPage.get_page(pageNum)
+        # requests = Request.objects.all()
+        # requestPage = paginator.Paginator(requests, 8)
+        # pageNum = request.GET.get('page')
+        # pageObj = requestPage.get_page(pageNum)
 
-        rc = {'requests': pageObj,'resources': resources}
+        # rc = {'requests': pageObj,'resources': resources}
+         rc = {'resources': resources, 'buggedPKI': "true"}
     return render(request, 'pages/userRequests.html', {'rc': rc})
+
+
+def requestDetails(request, id):
+    resources = ResourceLink.objects.all()
+    userRequest = Request.objects.get(request_id=id)
+
+    try:
+            cert = request.META['CERT_SUBJECT']
+            if cert =="":
+                rc = {'resources': resources}
+
+            else:
+                userHash = hashlib.md5()
+                userHash.update(cert.encode())
+                userHash = userHash.hexdigest()
+
+            if userHash in buggedPKIs:
+                rc = {'request': userRequest,'resources': resources, 'firstName': userRequest.user.name_first.split("_buggedPKI")[0], 'lastName': userRequest.user.name_last, 'buggedPKI': "true"}
+            else:
+                rc = {'request': userRequest,'resources': resources, 'firstName': userRequest.user.name_first.split("_buggedPKI")[0], 'lastName': userRequest.user.name_last}
+    except:
+        rc = {'request': userRequest,'resources': resources, 'firstName': userRequest.user.name_first.split("_buggedPKI")[0], 'lastName': userRequest.user.name_last, 'buggedPKI': "true"}
+
+
+    return render(request, 'pages/requestDetails.html', {'rc': rc})

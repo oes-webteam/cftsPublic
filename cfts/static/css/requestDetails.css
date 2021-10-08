@@ -27,15 +27,27 @@ ul.file-list, ul.email-list {
 
 th{
   text-indent: .5rem;
+  white-space: nowrap;
+
 }
 
 .status-icons{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.btn-back{
+  margin-right: 18rem;
+}
+
+.status-text{
   text-align: center;
 }
 
 .status-img{
-  height: 41px;
-  width: 32px;
+  width: 80px;
 }
 
 .card, .card:hover{
@@ -57,4 +69,9 @@ th{
 
 .border-green{
   border-color: #06D6A0;
+}
+
+.rejected{
+  color: #DD0000; 
+  text-decoration: line-through; 
 }

@@ -7,7 +7,7 @@ notifyUserSuccess = ( msg ) => {
   $(".server-error").hide()
   $(".danger-error").hide()
   let alertDiv = $( ".alert-success" );
-  alertDiv.text( msg );  
+  alertDiv.html( msg );  
   alertDiv.fadeIn();
   // window.setTimeout( function() {
   //   alertDiv.fadeOut();

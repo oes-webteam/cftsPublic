@@ -19,7 +19,7 @@ urlpatterns = [
     
     # user requests
     path('my-requests', views.userRequests, name='userRequests'),
-    path('my-requests/<uuid:id>', views.userRequests, name='userRequests'),
+    path('request/<uuid:id>', views.requestDetails, name='userRequests'),
 
     # queue
     path('queue', views.queue, name='queue'),

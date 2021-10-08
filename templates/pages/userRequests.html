@@ -4,73 +4,20 @@
 
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/requests.css' %}">
+
 <div class="container" style="margin-top: 155px;">
-<!-- search form -->
-
-<!-- search by date -->
-{% comment %} 
-<!-- filter inputs -->
-<table class="data-table">
-    <tr>
-        <th>User</th>  <!-- add filter by user -->
-        <th>Date Submitted</th>
-        <th>Network</th>
-        <th>Files</th>
-        <th>Target Email</th>
-        <th>Status</th> <!-- add filter by pull -->
-    </tr>
-{% for r in rc.requests %}
-    <tr class="data-row">
-        <td class="xfer-user"><a href="#" class="user" id="{{ r.user.user_id }}">{{ r.user }}</a></td>
-        <td class="xfer-date">{{ r.date_created|date:"m/d/Y Hi" }}</td>
-        <td class="xfer-net">{{ r.network }}</td>
-        <td class="xfer-files">
-            <ul class="file-list">
-            {%  for f in r.files.all %}
-                {% with f.file_object.name|split:"/" as name %}
-                <li x-file-name="{{ name.2 }}">{{ name.2|truncatechars:50 }}</li>
-                {% endwith %}
-            {% endfor %}
-            </ul>
-        </td>
-        <td class="xfer-email">
-            <ul class="email-list">
-                {%  for e in r.target_email.all %}
-                    <li>{{e}}</li>
-                {% endfor %}
-            </ul>
-        </td>
-        <td class="xfer-status">
-            <img src="{% static 'img/deep blue Status.svg' %}" class="status-img"></img>
-            {% if r.pull.date_pulled == None %}<img src="{% static 'img/grey Status.svg' %}" class="status-img"></img>{% else %}<img src="{% static 'img/blue Status.svg' %}" class="status-img"></img>{% endif %}
-            {% if r.pull.date_oneeye == None %}<img src="{% static 'img/grey Status.svg' %}" class="status-img"></img>{% else %}<img src="{% static 'img/red Status.svg' %}" class="status-img"></img>{% endif %}
-            {% if r.pull.date_twoeye == None %}<img src="{% static 'img/grey Status.svg' %}" class="status-img"></img>{% else %}<img src="{% static 'img/yellow Status.svg' %}" class="status-img"></img>{% endif %}
-            {% if r.pull.date_complete == None %}<img src="{% static 'img/grey Status.svg' %}" class="status-img"></img>{% else %}<img src="{% static 'img/green Status.svg' %}" class="status-img"></img>{% endif %}
-        </td>	    
-    </tr>
-{% endfor %}
-</table> {% endcomment %}
-
-
-<div class="container">
     {% if rc.userHash and rc.buggedPKI != "true" %}
         <h3>{{rc.firstName}} {{rc.lastName}}'s Requests</h3>
         <div class="row">
         {% for r in rc.requests %}
             <div class="col-3">
-                <div class="card bg-light
-                {% if r.has_rejected == True %}
-                    border-red
-                {% elif r.pull.date_complete != None %}
-                    border-green
-                {% endif %}
-                ">
+                <a class="card bg-light{% if r.has_rejected == True %} border-red{% elif r.pull.date_complete != None %} border-green{% endif %}" href="request/{{r.request_id}}">
                     <div class="card-body">
                         <h5 class="card-title">{{ r.user }}</h5>
                         <h6 class="card-subtitle mb-2 text-muted">{{ r.date_created|date:'d M'|upper }}  {{ r.date_created|time:'Hi' }}</h6>
                         <p class="card-text mb-4 text-muted">{{ r.network }}</p>
 
-                        <p class="card-text">Request Status: 
+                        <b class="card-text">Request Status: 
                             {% if r.pull.date_pulled == None %} 
                                 Submitted
                             {% elif r.pull.date_oneeye == None %} 
@@ -82,8 +29,11 @@
                             {% elif r.pull.date_complete != None %}
                                 Inbound to destination network
                             {% endif %}
-                        </p>
-
+                        </b>
+                        <br><br>
+                        {% if r.has_rejected == True %}
+                        <p class="card-text" style="color: red;">Request has rejected files!</p>
+                        {% endif %}
                         <ul class="file-list">
                         {%  for f in r.files.all|slice:":3" %}
                             {% with f.file_object.name|split:"/" as name %}
@@ -98,20 +48,10 @@
                                 <li>{{e}}</li>
                             {% endfor %}
                             {% if r.target_email.count > 2 %}...{% endif %}
-
                         </ul>
 
-                        {% comment %} 
-                        <td class="xfer-status">
-                            <img src="{% static 'img/deep blue Status.svg' %}" class="status-img"></img>
-                            {% if r.pull.date_pulled == None %}<img src="{% static 'img/grey Status.svg' %}" class="status-img"></img>{% else %}<img src="{% static 'img/blue Status.svg' %}" class="status-img"></img>{% endif %}
-                            {% if r.pull.date_oneeye == None %}<img src="{% static 'img/grey Status.svg' %}" class="status-img"></img>{% else %}<img src="{% static 'img/red Status.svg' %}" class="status-img"></img>{% endif %}
-                            {% if r.pull.date_twoeye == None %}<img src="{% static 'img/grey Status.svg' %}" class="status-img"></img>{% else %}<img src="{% static 'img/yellow Status.svg' %}" class="status-img"></img>{% endif %}
-                            {% if r.pull.date_complete == None %}<img src="{% static 'img/grey Status.svg' %}" class="status-img"></img>{% else %}<img src="{% static 'img/green Status.svg' %}" class="status-img"></img>{% endif %}
-                        </td>	
-                        {% endcomment %}
                     </div>
-                </div>
+                </a>
             </div>
         {% endfor %}
         </div>
