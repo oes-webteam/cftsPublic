@@ -115,3 +115,4 @@ templates/partials/files/
 cfts/static/files/*.zip
 # Visual Studio Code
 .vscode/
+.idea/
