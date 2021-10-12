@@ -18,7 +18,9 @@
                         <p class="card-text mb-4 text-muted">{{ r.network }}</p>
 
                         <b class="card-text">Request Status: 
-                            {% if r.pull.date_pulled == None %} 
+                            {% if r.all_rejected == True %}
+                                Rejected
+                            {% elif r.pull.date_pulled == None %} 
                                 Submitted
                             {% elif r.pull.date_oneeye == None %} 
                                 Initial review

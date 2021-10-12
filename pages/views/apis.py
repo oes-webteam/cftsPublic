@@ -16,6 +16,9 @@ from django.views.decorators.cache import never_cache
 
 # responses
 from django.shortcuts import render, redirect
+from django.template.loader import render_to_string
+from django.template import Template, Context
+
 # , HttpResponse, FileResponse
 from django.http import JsonResponse, HttpResponseRedirect
 
@@ -61,6 +64,17 @@ def setReject(request):
     # update request with the has_rejected flag
     Request.objects.filter(request_id=request_id[0]).update(has_rejected=True)
 
+    # check if all files in the request are rejected
+    files = Request.objects.get(request_id=request_id[0]).files.all()
+    all_rejected = True
+
+    for file in files:
+        if file.rejection_reason_id == None:
+            all_rejected = False
+    
+    if all_rejected == True:
+        Request.objects.filter(request_id=request_id[0]).update(all_rejected=True)
+
     # recreate the zip file for the pull
     someRequest = Request.objects.get(request_id=request_id[0])
     network_name = someRequest.network.name
@@ -83,14 +97,14 @@ def createEml( request, request_id, files_list, reject_id ):
     
 
     emlName = rqst.user.__str__() + "reject_1.eml"
-    msgPath = Settings.TEMP_FILES_DIR + "\\" + emlName
+    msgPath = os.path.join(Settings.TEMP_FILES_DIR, emlName)
     
     if emlName in os.listdir(Settings.TEMP_FILES_DIR):
                 i = 1
                 print("eml file exists")
                 while True:
                     emlName = rqst.user.__str__() + "reject_" + str(i) + ".eml"
-                    msgPath = Settings.TEMP_FILES_DIR + "\\" + emlName
+                    msgPath = os.path.join(Settings.TEMP_FILES_DIR, emlName)
                     print("Trying " + emlName)
                     if emlName in os.listdir(Settings.TEMP_FILES_DIR):
                         i = i + 1
@@ -100,16 +114,25 @@ def createEml( request, request_id, files_list, reject_id ):
     msg = MIMEMultipart()
     
     msg['To'] = str(rqst.user.email)
-    msg['Subject'] = rejection.subject
-    msgBody = str(rejection.text) + "\n"
-    for file in File.objects.filter(file_id__in=files_list):
-        msgBody += str(file.file_object).split("/")[-1] + " "
+    msg['Subject'] = "CFTS File Rejection"
+    
+    msgBody = "The following files have been rejected from your transfer request:\n"
+
+    files = File.objects.filter(file_id__in=files_list)       
+    for file in files:
+        if file == files.last():
+            msgBody += str(file.file_object).split("/")[-1] + " "
+        else:
+            msgBody += str(file.file_object).split("/")[-1] + ", "
+
+        
+    msgBody += render_to_string('partials/Queue_partials/rejectionEmailTemplate.html', {'request': rqst, 'rejection': rejection, 'firstName': rqst.user.name_first.split('_buggedPKI')[0]})
 
     msg.attach(MIMEText(msgBody))
 
     msg.add_header('X-Unsent', '1')
-    
-    with open(msgPath, 'w') as eml:
+
+    with open(msgPath, 'w+') as eml:
         gen = Generator(eml)
         gen.flatten(msg)
 
@@ -140,6 +163,11 @@ def unReject(request):
     
     if has_rejected == False:
         Request.objects.filter(request_id=request_id[0]).update(has_rejected=False)
+
+    # remove all_rejected flag from request
+    Request.objects.filter(request_id=request_id[0]).update(all_rejected=False)
+
+    
     # recreate the zip file for the pull
     someRequest = Request.objects.get(request_id=request_id[0])
     network_name = someRequest.network.name

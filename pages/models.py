@@ -173,6 +173,8 @@ class Request(models.Model):
   org = models.CharField(max_length=50, default="")
   notes = models.TextField(null=True, blank=True)
   has_rejected = models.BooleanField(default=False)
+  all_rejected = models.BooleanField(default=False)
+
 
   class Meta:
     ordering = ['-date_created']

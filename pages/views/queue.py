@@ -132,7 +132,8 @@ def transferRequest( request, id ):
         'is_submitted': rqst.is_submitted,
         'is_centcom': rqst.is_centcom,
         'org': rqst.org,
-
+        'has rejected files': rqst.has_rejected,
+        'all files rejected': rqst.all_rejected,
     }
     return render(request, 'pages/transfer-request.html', {'rc': rc, 'centcom': rqst.is_centcom, 'notes': rqst.notes})
 

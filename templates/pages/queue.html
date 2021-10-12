@@ -44,7 +44,7 @@
                             {% for lp in network.last_pull %}
                             <span class="last-pull-info">Last pull created: 
                                 <span class="date-pulled">
-                                    {{ lp.date_pulled|date:'db'|upper }} @ {{ lp.date_pulled|time:'Hi' }}
+                                    {{ lp.date_pulled|date:'d b'|upper }} @ {{ lp.date_pulled|time:'Hi' }}
                                 </span> 
                                 by <span class="user-pulled">
                                     {{ lp.user_pulled__username }}
@@ -89,7 +89,7 @@
 				{% if request.comments != "" %}<a href="#" class="btn btn-primary comments">Show/Hide Comments</a> {% else %}{% endif %}
 				<a href="#" class="btn btn-warning request-encrypt" request_id="{{ request.request_id }}">Encrypt Files</a>
 				<a href="#" class="btn btn-danger request-reject" request_id="{{ request.request_id }}">Reject Files</a></td>
-                            <td class="request-submitted">Submitted: {{ request.date_created|date:'db'|upper }} @ {{ request.date_created|time:'Hi' }}</td>
+                            <td class="request-submitted">Submitted: {{ request.date_created|date:'d b'|upper }} @ {{ request.date_created|time:'Hi' }}</td>
                         </tr>
                         {% if request.comments != None %}
                         <tr class="request-header{% if request.pull != None %} pending{% endif %}">

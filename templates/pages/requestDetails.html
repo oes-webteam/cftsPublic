@@ -13,7 +13,9 @@
                 <a type="button" class="btn btn-primary btn-back" href="{% url 'userRequests' %}">Back</a>
             {% endif %}
             <h3 class="status-text">Request Status: 
-                    {% if rc.request.pull.date_pulled == None %} 
+                    {% if rc.request.all_rejected == True %}
+                        Rejected
+                    {% elif rc.request.pull.date_pulled == None %} 
                         Submitted
                     {% elif rc.request.pull.date_oneeye == None %} 
                         Initial review
@@ -24,7 +26,7 @@
                     {% elif rc.request.pull.date_complete != None %}
                         Inbound to destination network
                     {% endif %}
-                </h3>             
+                </h3>
                 
                 <div class="status-icons" >
                     {% if rc.request.pull.date_complete != None %}
@@ -32,27 +34,51 @@
                     <img src="{% static 'img/blue Status.svg' %}" class="status-img"></img>
                     <img src="{% static 'img/blue Status.svg' %}" class="status-img"></img>
                     <img src="{% static 'img/blue Status.svg' %}" class="status-img"></img>
-                    <img src="{% static 'img/deep blue Status.svg' %}" class="status-img"></img>
+                        {% if rc.request.all_rejected == True %}
+                            <img src="{% static 'img/red Status.svg' %}" class="status-img"></img>
+                            {% else %}
+                            <img src="{% static 'img/green Status.svg' %}" class="status-img"></img>
+                        {% endif %}
+
                     {% elif rc.request.pull.date_twoeye != None %}
                     <img src="{% static 'img/blue Status.svg' %}" class="status-img"></img>
                     <img src="{% static 'img/blue Status.svg' %}" class="status-img"></img>
                     <img src="{% static 'img/blue Status.svg' %}" class="status-img"></img>
-                    <img src="{% static 'img/deep blue Status.svg' %}" class="status-img"></img>
+                        {% if rc.request.all_rejected == True %}
+                            <img src="{% static 'img/red Status.svg' %}" class="status-img"></img>
+                            {% else %}
+                            <img src="{% static 'img/deep blue Status.svg' %}" class="status-img"></img>
+                        {% endif %}
                     <img src="{% static 'img/grey Status.svg' %}" class="status-img"></img>
+
                     {% elif rc.request.pull.date_oneeye != None %}
                     <img src="{% static 'img/blue Status.svg' %}" class="status-img"></img>
                     <img src="{% static 'img/blue Status.svg' %}" class="status-img"></img>
-                    <img src="{% static 'img/deep blue Status.svg' %}" class="status-img"></img>
+                        {% if rc.request.all_rejected == True %}
+                            <img src="{% static 'img/red Status.svg' %}" class="status-img"></img>
+                            {% else %}
+                            <img src="{% static 'img/deep blue Status.svg' %}" class="status-img"></img>
+                        {% endif %}
                     <img src="{% static 'img/grey Status.svg' %}" class="status-img"></img>
                     <img src="{% static 'img/grey Status.svg' %}" class="status-img"></img>
+
                     {% elif rc.request.pull.date_pulled != None %}
                     <img src="{% static 'img/blue Status.svg' %}" class="status-img"></img>
-                    <img src="{% static 'img/deep blue Status.svg' %}" class="status-img"></img>
+                        {% if rc.request.all_rejected == True %}
+                            <img src="{% static 'img/red Status.svg' %}" class="status-img"></img>
+                            {% else %}
+                            <img src="{% static 'img/deep blue Status.svg' %}" class="status-img"></img>
+                        {% endif %}
                     <img src="{% static 'img/grey Status.svg' %}" class="status-img"></img>
                     <img src="{% static 'img/grey Status.svg' %}" class="status-img"></img>
                     <img src="{% static 'img/grey Status.svg' %}" class="status-img"></img>
+
                     {% else%}
-                    <img src="{% static 'img/deep blue Status.svg' %}" class="status-img"></img>
+                        {% if rc.request.all_rejected == True %}
+                            <img src="{% static 'img/red Status.svg' %}" class="status-img"></img>
+                            {% else %}
+                            <img src="{% static 'img/deep blue Status.svg' %}" class="status-img"></img>
+                        {% endif %}
                     <img src="{% static 'img/grey Status.svg' %}" class="status-img"></img>
                     <img src="{% static 'img/grey Status.svg' %}" class="status-img"></img>
                     <img src="{% static 'img/grey Status.svg' %}" class="status-img"></img>
