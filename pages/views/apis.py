@@ -126,9 +126,9 @@ def createEml( request, request_id, files_list, reject_id ):
             msgBody += str(file.file_object).split("/")[-1] + ", "
 
         
-    msgBody += render_to_string('partials/Queue_partials/rejectionEmailTemplate.html', {'request': rqst, 'rejection': rejection, 'firstName': rqst.user.name_first.split('_buggedPKI')[0]})
+    msgBody += render_to_string('partials/Queue_partials/rejectionEmailTemplate.html', {'rqst': rqst, 'rejection': rejection, 'firstName': rqst.user.name_first.split('_buggedPKI')[0]}, request)
 
-    msg.attach(MIMEText(msgBody))
+    msg.attach(MIMEText(msgBody, 'html'))
 
     msg.add_header('X-Unsent', '1')
 

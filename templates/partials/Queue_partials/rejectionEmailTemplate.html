@@ -8,8 +8,8 @@ Our policy is available on the main page of CFTS.
 Continued failure to follow our policy will result in you no longer being able to utilize our service.
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------
-Request: {{request.user.name_last}}, {{firstName}} ({{ request.date_created|date:'d M' }} {{ request.date_created|time:'H:i:s' }})
-Click <a href="{% url 'userRequests' request.request_id %}">here</a> to view your request details.
+Request: {{rqst.user.name_last}}, {{firstName}} ({{ rqst.date_created|date:'d M' }} {{ rqst.date_created|time:'H:i:s' }})
+Click <a href="{{request.get_host}}{% url 'userRequests' rqst.request_id %}">here</a> to see your request details.
 
 Rejection reason: {{rejection.subject}}
 
