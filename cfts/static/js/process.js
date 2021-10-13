@@ -221,7 +221,12 @@ function prepareFileInfo(formData) {
 /* ****************************** */
 function successHandler(r) {
   console.dir(r);
-  notifyUserSuccess("THANK YOU! Your files have been submitted. ");
+  if (buggedPKIs.includes(userHash) == true || userHash == ""){
+    notifyUserSuccess("THANK YOU! Your files have been submitted. Click <a class='alert-link' href='/request/" + r.request_id + "'>here</a> to see your requests. ");
+  }
+  else{
+    notifyUserSuccess("THANK YOU! Your files have been submitted. Click <a <a class='alert-link' href='/my-requests'>here</a> to see your requests. ");
+  }
   // CLEAN UP!!
 
   email = $("#userEmail").val();

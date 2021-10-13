@@ -48,7 +48,7 @@
                             {% for lp in network.last_pull %}
                             <span class="last-pull-info">Last pull created: 
                                 <span class="date-pulled">
-                                    {{ lp.date_pulled|date:'db'|upper }} @ {{ lp.date_pulled|time:'Hi' }}
+                                    {{ lp.date_pulled|date:'d b'|upper }} @ {{ lp.date_pulled|time:'Hi' }}
                                 </span> 
                                 by <span class="user-pulled">
                                     {{ lp.user_pulled__username }}
