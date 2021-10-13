@@ -160,10 +160,18 @@ def transferRequest( request, id ):
 
 @login_required
 def requestNotes( request, requestid ):
-  postData = dict(request.POST.lists())
-  notes = postData['notes'][0]
-  Request.objects.filter(request_id=requestid).update(notes=notes)
-  return JsonResponse({'response': "Notes saved"})
+    postData = dict(request.POST.lists())
+    notes = postData['notes'][0]
+    Request.objects.filter(request_id=requestid).update(notes=notes)
+    rqst = Request.objects.get(request_id=requestid)
+
+    try:
+      pull_number = rqst.pull.pull_id
+      createZip(request, rqst.network.name, rqst.is_centcom, pull_number)
+    except AttributeError:
+                print("Request not found in any pull.")
+
+    return JsonResponse({'response': "Notes saved"})
 
 @login_required
 def removeCentcom( request, id ):
@@ -264,6 +272,7 @@ def createZip(request, network_name, isCentcom, rejectPull):
 
             notes_file_name = zip_folder + "/_notes.txt"
             
+            
             email_file_path = zip_folder + "/" + email_file_name
 
             if email_file_path in zip.namelist():
@@ -292,7 +301,7 @@ def createZip(request, network_name, isCentcom, rejectPull):
                 
                 fp.write(emailString.encode('utf-8'))
                 fp.close()
-                
+
             if rqst.notes != None:
                 with zip.open(notes_file_name, 'w') as nfp:
                     notes = rqst.notes
