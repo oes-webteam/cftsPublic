@@ -112,7 +112,7 @@ def createEml( request, request_id, files_list, reject_id ):
 
 @login_required
 def getEml(request, emlName):
-    return FileResponse(open(os.path.join("tempFiles", emlName), "rb"))
+    return FileResponse(open(os.path.join(Settings.TEMP_FILES_DIR, emlName), "rb"), as_attachment=True)
 
 @login_required
 def unReject(request):

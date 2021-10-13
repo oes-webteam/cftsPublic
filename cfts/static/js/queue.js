@@ -370,10 +370,11 @@ const sendUnrejectRequest = (data) => {
            notifyUserSuccess("File rejection Successful")
            console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
 
-      // download eml file
+      // download eml file      
       let $anchor = $( "<a class='emailLink' target='_blank' href='/api-geteml/"+ resp.emlName +"'></a>" );
       $( document.body ).append( $anchor );
-      window.open($('.emailLink').attr('href'))
+      $( '.emailLink' ).each( function() { $(this)[0].click(); } );  
+	
 
       // close the dialog
       $( theDialog ).dialog( 'close' );
