@@ -18,7 +18,7 @@ def archive( request ):
   networks = Network.objects.all()
   requests = Request.objects.filter( pull__isnull = False )
   
-  requestPage = paginator.Paginator(requests, 25)
+  requestPage = paginator.Paginator(requests, 100)
   pageNum = request.GET.get('page')
   pageObj = requestPage.get_page(pageNum)
 
