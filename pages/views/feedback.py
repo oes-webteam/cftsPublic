@@ -43,7 +43,7 @@ def feedback( request ):
     except KeyError:
         rc = {'resources': resources, }
 
-        return render(request, 'pages/feedback.html', {'rc': rc})
+    return render(request, 'pages/feedback.html', {'rc': rc})
 
 def submitFeedback( request ):
     if request.method == 'POST':

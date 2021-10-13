@@ -174,7 +174,8 @@ class Request(models.Model):
   notes = models.TextField(null=True, blank=True)
   has_rejected = models.BooleanField(default=False)
   all_rejected = models.BooleanField(default=False)
-
+  destFlag = models.BooleanField(default=False)
+  #is_rejected = models.BooleanField(default=False)
 
   class Meta:
     ordering = ['-date_created']
