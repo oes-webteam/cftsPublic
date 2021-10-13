@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% load static %}
 {% load util %}
 
@@ -10,16 +10,17 @@
     <div class="card">
         <div class="card-header">
 
-		<div class="alert alert-danger fadein server-error" style="display: none;" role="alert"></div>
+        <div class="alert alert-danger fadein server-error" style="display: none;" role="alert"></div>
 
-    		<div class="alert alert-danger fadein danger-error" style="display: none;" role="alert"></div>
-   
-    		<div class="alert alert-success fadein" style="display: none;" role="alert"></div>
+        <div class="alert alert-danger fadein danger-error" style="display: none;" role="alert"></div>
 
-            <ul class="nav nav-tabs mt-5">
+        <div class="alert alert-success fadein" style="display: none;" role="alert"></div>
+
+            <ul class="nav nav-tabs networks sticky-top mt-5">
+
             {% for network in rc.queues %}
                 <li class="nav-item" {% if network.count == 0 %} hidden{% endif %}>
-                    <a class="nav-link{% if forloop.counter0 == 0 %} active{% endif %}"
+                    <a class="nav-link{% if network.activeNet %} active{% endif %}"
                     {% if network.count != 0 %} 
                         data-toggle="tab" 
                         href="#tab{{ network.name }}"
@@ -32,11 +33,14 @@
 
             <div class="tab-content">
             {% for network in rc.queues %}
-                <div id="tab{{ network.name }}" class="tab-pane container{% if forloop.counter0 == 0 %} active{% else %} fade{% endif %}">
+                <div id="tab{{ network.name }}" class="tab-pane container {% if network.activeNet %} active{% else %} {% if forloop.counter0 == 0 %}{% if not rc.easterEgg %}active {% else %} fade{% endif %}{% endif %}{% endif %}">
                 {% if network.count == 0 %}
+                    <h6>Wow, you cleared the queue! Have a cookie and some words of wisdom.</h6>
+                    <img src="{% static 'img/cookie.png' %}" class="cookie" alt="Cookie" />    
                     {{ rc.empty }}
+
                 {% else %}
-                    <div class="network-header">
+                    <div id="network-header" class="nav sticky-top network-header">
                         
                         <div class="pending-info">
                             Pending Requests: {{ network.pending.count }} ({{network.file_count.files_in_dataset}} Files)
@@ -52,26 +56,24 @@
                             </span>
                             {% endfor %}
                         </div>
-                        <div class="create-pull">
+
+                        <div class="pull-button-group">
+                            <a href="#" class="btn btn-warning request-encrypt">Encrypt Files</a>
+                            <a href="#" class="btn btn-danger request-reject">Reject Files</a>
                             <button class="btn btn-primary pull-button{% if network.pending.count == 0 %} disabled{% endif %}" id="pull{{network.name}}">Create {{ network.name }} Pull</button> 
                             <button class="btn btn-warning pull-button centcom{% if network.centcom.count == 0 %} disabled{% endif %}" id="pull{{network.name}}">Pull only Centcom</button> 
-                      
+
                             
-                        </div>
 
                         {% if network.last_pull.count > 0 %}
                             {% for lp in network.last_pull %}
-                            <div class="download-block">
                                 <a class="btn btn-primary download-button" id="dl{{network.name}}"
                                     href="getPull/{{ network.name }}_{{ lp.pull_number }} {{lp.date_pulled|date:"dM"}} {{lp.date_pulled|time:"Hi"}}.zip">Download Current {{ network.name }} Zip</a>
-                                </div>
                                 {% endfor %}
                         {% else %}
-                        <div class="download-block">
                             <a class="btn btn-primary download-button" id="dl{{network.name}}" href="#" hidden></a>
-                        </div>
                         {% endif %}
-                        
+                        </div>
                     </div>
 
                     <form class="queue-form">
@@ -81,43 +83,91 @@
                             <col />
                             <col width="20%" />
                         </colgroup>
-                        {% for request in network.q %}
-			<tr class="request-header {% if request.pull != None %} pending{% endif %} {% if request.centcom_pull %}centcom{% endif %}" request_hash="{{request.request_hash}}">
-                            <td><a href="{% url 'transfer-request' request.request_id %}">{%if request.is_centcom%}<strong>{%endif%}{{ request.user }}{%if request.is_centcom%} &#x1f42a;</strong>{%endif%}</a></td> <!-- link to request view -->
-                            <td class="request-comments"> 
-				{% if request.is_dupe %}<a href="#" class="btn btn-info show-dupe" request_hash="{{request.request_hash}}">Show Duplicates</a> {% else %}{% endif %}
-				{% if request.comments != "" %}<a href="#" class="btn btn-primary comments">Show/Hide Comments</a> {% else %}{% endif %}
-				<a href="#" class="btn btn-warning request-encrypt" request_id="{{ request.request_id }}">Encrypt Files</a>
-				<a href="#" class="btn btn-danger request-reject" request_id="{{ request.request_id }}">Reject Files</a></td>
-                            <td class="request-submitted">Submitted: {{ request.date_created|date:'db'|upper }} @ {{ request.date_created|time:'Hi' }}</td>
-                        </tr>
-                        {% if request.comments != None %}
-                        <tr class="request-header{% if request.pull != None %} pending{% endif %}">
-                            <td colspan="3" class="comments-text"><div>{{ request.comments|linebreaksbr }}</div></td>
-                        </tr>
-                        {% endif %}
-                        {% for file in request.files.all %}
-                        <tr class="{% if request.pull != None %}pending {% endif %}{% if file.rejection_reason != None %}rejected {% endif %}">
-                            <td>
-                                <input type="checkbox" name="fileSelection" id="chk_{{ file.file_id }}" request_id="{{ request.request_id }}" request_email="{{ request.user.email }}" file_name="{{ file }}" {% if file.rejection_reason != None %} rejected {% else %} not-rejected {% endif %} hidden/>
-                                <!-- Show encrypt flag? -->
-                                {% if file.is_pii or file.is_centcom_info %}
-                                <span title="PII: {{ file.is_pii }}&#10;CENTCOM Info: {{ file.is_centcom_info }}">🔒</span>
+                        
+                        {% if "HQ" in network.orgs %}<td class="org-header" colspan="3">HQ Requests:</td>
+                            {% for request in network.q %}
+                                {% if request.org == "HQ" %}
+                                    {% if request.pull == None %} 
+                                        {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                    {% endif %}
                                 {% endif %}
-                            </td>
-                            <td colspan="2"><a title="{{ file }}" href="getFile/{{file.file_object}}">{{ file }}</a></td>
-                        </tr>
-                        {% endfor %}
-                        <!-- end files -->
-                        {% if not forloop.last %}<tr class="spacing"><td colspan="3">&nbsp;</td></tr>{% endif %}
-                        {% endfor %}
-                        <!-- end requests -->
+                            {% endfor %}
+                        {% endif %}
+                        
+                        {% if "AFCENT" in network.orgs %}<td class="org-header" colspan="3">AFCENT Requests:</td>
+                            {% for request in network.q %}
+                                {% if request.org == "AFCENT" %}
+                                    {% if request.pull == None %} 
+                                        {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                        
+                        {% if "ARCENT" in network.orgs %}<td class="org-header" colspan="3">ARCENT Requests:</td>
+                            {% for request in network.q %}
+                                {% if request.org == "ARCENT" %}
+                                    {% if request.pull == None %} 
+                                        {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+
+                        {% if "MARCENT" in network.orgs %}<td class="org-header" colspan="3">MARCENT Requests:</td>
+                            {% for request in network.q %}
+                                {% if request.org == "MARCENT" %}
+                                    {% if request.pull == None %} 
+                                        {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+
+                        {% if "NAVCENT" in network.orgs %}<td class="org-header" colspan="3">NAVCENT Requests:</td>
+                            {% for request in network.q %}
+                                {% if request.org == "NAVCENT" %}
+                                    {% if request.pull == None %} 
+                                        {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+
+                        {% if "SOCCENT" in network.orgs %}<td class="org-header" colspan="3">SOCCENT Requests:</td>
+                            {% for request in network.q %}
+                                {% if request.org == "SOCCENT" %}
+                                    {% if request.pull == None %} 
+                                        {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+
+                        {% if "OTHER" in network.orgs %}<td class="org-header" colspan="3">OTHER Requests:</td>
+                            {% for request in network.q %}
+                                {% if request.org == "OTHER" %}
+                                    {% if request.pull == None %} 
+                                        {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+
+                        {% if network.pulled.count > 0 %}<td class="org-header" colspan="3">Pulled Requests ({{network.pulled.count}}):</td>
+                            {% for request in network.q %}
+                                {% if request.pull != None %} 
+                                    {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+
                     </table>
                     </form>
 
                 {% endif %}
                 </div>
-            {% endfor %}
+            {% endfor %} 
             </div>
 
         </div> <!-- END card-header -->

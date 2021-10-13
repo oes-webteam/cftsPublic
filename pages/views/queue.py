@@ -3,6 +3,8 @@
 from email import generator
 import random
 import datetime
+from django.db.models.expressions import When
+from django.db.models.fields import IntegerField
 import pytz
 # from io import BytesIO, StringIO
 from zipfile import ZipFile
@@ -26,6 +28,7 @@ from django.http import JsonResponse, FileResponse, response  # , HttpResponse,
 # model/database stuff
 from pages.models import *
 from django.db.models import Max, Count, Q, Sum
+from django.db.models import Case, When
 
 import logging
 
@@ -39,13 +42,18 @@ logger = logging.getLogger('django')
 def queue(request):
     xfer_queues = []
     ds_networks = Network.objects.all()
+    activeSelected = False
     empty = random.choice([
         'These pipes are clean.',
         'LZ is clear.',
         'Nothing here. Why not work on metadata?',
         'Queue is empty -- just like my wallet.',
         "There's nothing here? Huh. That's gotta be an error ... ",
-        "Xander was here."
+        "Xander was here.",
+        "Is PKI working yet?",
+        "It's probably the weekend right?",
+        "Shoot a dart at Ron, tell him Xander told you to.",
+        "I'll code tetris into this page one day."
     ])
 
     ########################
@@ -66,7 +74,14 @@ def queue(request):
             is_submitted=True,
             pull__date_complete__isnull=True,
             #files__in=File.objects.filter( rejection_reason__isnull=True )
-        ).order_by('-date_created')
+        ).annotate(org_order = Case(
+            When(org='HQ', then=1), 
+            When(org='AFCENT', then=2), 
+            When(org='ARCENT', then=3), 
+            When(org='MARCENT', then=4), 
+            When(org='NAVCENT', then=5), 
+            When(org='SOCCENT', then=6), 
+            When(org='OTHER', then=7), output_field=IntegerField())).order_by('org_order', 'user__str__','-date_created')
 
         # count how many total files are in all the pending requests (excluding ones that have already been pulled)
         file_count = ds_requests.annotate(
@@ -82,11 +97,18 @@ def queue(request):
             'order_by': net.sort_order,
             'file_count': file_count,
             'count': ds_requests.count(),
+            'activeNet': False,
             'pending': ds_requests.aggregate(count=Count('request_id', filter=Q(pull__date_pulled__isnull=True))),
+            'pulled': ds_requests.aggregate(count=Count('request_id', filter=Q(pull__date_pulled__isnull=False))),
             'q': ds_requests,
             'centcom': ds_requests.aggregate(count=Count('request_id', filter=Q(pull__date_pulled__isnull=True, is_centcom=True))),
-            'last_pull': last_pull
+            'last_pull': last_pull,
+            'orgs': ds_requests.filter(pull__date_pulled__isnull=True).values_list('org', flat=True)
         }
+
+        if activeSelected == False and queue['count'] > 0:
+            queue['activeNet'] = True
+            activeSelected = True
         
         # ... and add it to the list
         xfer_queues.append(queue)
@@ -107,7 +129,7 @@ def queue(request):
         })
 
     # create the request context
-    rc = {'queues': xfer_queues, 'empty': empty, 'rejections': rejections}
+    rc = {'queues': xfer_queues, 'empty': empty, 'rejections': rejections, 'easterEgg': activeSelected}
 
     # roll that beautiful bean footage
     return render(request, 'pages/queue.html', {'rc': rc})
