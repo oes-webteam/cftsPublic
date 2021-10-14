@@ -156,7 +156,6 @@ jQuery( document ).ready( function() {
 
 
     }); // end .each()
-    console.log(data)
     return  data;
   } // end applyFilters
 
@@ -165,21 +164,29 @@ jQuery( document ).ready( function() {
     e.preventDefault();
     data = applyFilters()
 
-    //Add the CSRF token to ajax requests
-    $.ajaxSetup({
-      beforeSend: function (xhr, settings) {
-        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
-      },
-    });
+    console.log(data)
+    console.log([...new Set(Object.values(data))].length)
 
-    $.ajax({
-      type: "POST",
-      url: "/filterArchive",
-      data: data,
-      success: function (response) {
-        $("#templateTable").html(response)
-      }
-    });
+    if([...new Set(Object.values(data))].length == 1){
+      window.location.href = "/archive"
+    }
+    else{
+    //Add the CSRF token to ajax requests
+      $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+          xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+        },
+      });
+
+      $.ajax({
+        type: "POST",
+        url: "/filterArchive",
+        data: data,
+        success: function (response) {
+          $("#templateTable").html(response)
+        }
+      });
+    }
   });
 
 });
