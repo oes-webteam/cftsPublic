@@ -43,6 +43,7 @@ urlpatterns = [
 
     # archive
     path('archive', views.archive, name='archive'),
+    path('filterArchive', views.filterArchive, name='filterArchive'),
 
     # reporting
     path('reports', views.reports, name='reports'),
