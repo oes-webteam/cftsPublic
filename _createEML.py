@@ -17,17 +17,26 @@ import mimetypes
 
 currentDir = os.path.dirname(os.path.realpath(__file__))
 
-for root, subdirs, files in os.walk(currentDir):
-    for file in files:
-        if file.split('.')[-1] == "zip":
-            zipPath = os.path.join(currentDir,file)
-            zipExtractPath = os.path.join(currentDir,file.split('.')[0])
+fromZip = True
+emldirs = []
 
-print("zip folder: ", zipPath)
-print("extract folder:", zipExtractPath)
-    
-zip = ZipFile(zipPath, 'r')
-zip.extractall(zipExtractPath)
+for dir in os.scandir(currentDir):
+    emldirs.append(dir.path)
+    if dir.name.split('.')[-1] == "zip":
+            zipPath = dir.path
+            zipExtractPath = zipPath.split('.')[0]
+
+try:
+    print("zip folder: ", zipPath)
+    print("extract folder:", zipExtractPath)
+        
+    zip = ZipFile(zipPath, 'r')
+    zip.extractall(zipExtractPath)
+except NameError:
+    fromZip = False
+    print("no zip, assuming unzipped folder exists")
+    zipExtractPath = emldirs[0]
+    print("extract folder:", zipExtractPath)
 
 requestRE = re.compile('request_\d+')
 email = re.compile('_email(\d+)?.txt')
@@ -35,14 +44,16 @@ encrypt = re.compile('_encrypt(\d+)?.txt')
 notes = re.compile('_notes(\d+)?.txt')
 
 requestPaths = []
-for root, subdirs, files in os.walk(zipExtractPath):
-    for subdir in subdirs:
-        subdirpath = os.path.join(root,subdir)
-        if requestRE.match(subdirpath.split("\\")[-1]) != None:
-            requestPaths.append(subdirpath)
+
+def treeScan(path):
+    for dir in os.scandir(path):
+        if dir.is_file():
+            requestPaths.append(os.path.dirname(dir.path))
+        else:
+            treeScan(dir)
 
 
-
+treeScan(zipExtractPath)
 
 for path in requestPaths:
     print("\nscanning from request: ", path)
@@ -101,4 +112,5 @@ for path in requestPaths:
         print("File created: " + emlFile)
 
 print("all email files created")
-shutil.rmtree(zipExtractPath)
+if fromZip == True:
+    shutil.rmtree(zipExtractPath)
