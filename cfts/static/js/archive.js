@@ -70,81 +70,41 @@ jQuery( document ).ready( function() {
 
         switch( $thisFilter.attr( 'name' ) ) {
           case "filterUserFirst":
-            // $( ".xfer-user" ).each( function() {
-            //   $thisCell = $( this );
-            //   if( !$thisCell.text().toUpperCase().includes( $thisFilter.val().toUpperCase() ) ) 
-            //      $thisCell.parent( ".data-row" ).hide();
-            // });
             let userFirst = $thisFilter.val()
             data.userFirst = userFirst;
             break;
 
           case "filterUserLast":
-            // $( ".xfer-user" ).each( function() {
-            //   $thisCell = $( this );
-            //   if( !$thisCell.text().toUpperCase().includes( $thisFilter.val().toUpperCase() ) ) 
-            //      $thisCell.parent( ".data-row" ).hide();
-            // });
             let userLast = $thisFilter.val()
             data.userLast = userLast;
             break;
           
           case "filterDate":
-            // $( ".xfer-date" ).each( function() {
-            //   $thisCell = $( this );
-            //   if( !$thisCell.text().includes( $thisFilter.val() ) ) 
-            //      $thisCell.parent( ".data-row" ).hide();
-            // });
             let date = $thisFilter.val()
             data.date = date
             break;
 
           case "filterNet":
-            // $( ".xfer-net" ).each( function() {
-            //   $thisCell = $( this );
-            //   if( $thisCell.text().toUpperCase() != $thisFilter.val().toUpperCase() )
-            //     $thisCell.parent( ".data-row" ).hide();
-            // });
             let network = $thisFilter.val()
             data.network = network
             break;
 
           case "filterFiles":
-            // $( ".xfer-files" ).each( function() {
-            //   $thisCell = $( this );
-            //   if( !$thisCell.html().toUpperCase().includes( $thisFilter.val().toUpperCase() ) ) 
-            //      $thisCell.parent( ".data-row" ).hide();
-            // });
             let files = $thisFilter.val()
             data.files = files
             break;
 
           case "filterEmail":
-            // $( ".xfer-email" ).each( function() {
-            //   $thisCell = $( this );
-            //   if( !$thisCell.html().toUpperCase().includes( $thisFilter.val().toUpperCase() ) ) 
-            //      $thisCell.parent( ".data-row" ).hide();
-            // });
             let email = $thisFilter.val()
             data.email = email
             break;
 
           case "filterPull":
-            // $( ".xfer-pull" ).each( function() {
-            //   $thisCell = $( this );
-            //   if( !$thisCell.html().toUpperCase().includes( $thisFilter.val().toUpperCase() ) ) 
-            //      $thisCell.parent( ".data-row" ).hide();
-            // });
             let pull = $thisFilter.val()
             data.pull = pull
             break;
 
           case "filterOrg":
-            // $( ".xfer-org" ).each( function() {
-            //   $thisCell = $( this );
-            //   if( !$thisCell.html().toUpperCase().includes( $thisFilter.val().toUpperCase() ) ) 
-            //      $thisCell.parent( ".data-row" ).hide();
-            // });
             let org = $thisFilter.val()
             data.org = org
             break;
@@ -165,7 +125,6 @@ jQuery( document ).ready( function() {
     data = applyFilters()
 
     console.log(data)
-    console.log([...new Set(Object.values(data))].length)
 
     if([...new Set(Object.values(data))].length == 1){
       window.location.href = "/archive"

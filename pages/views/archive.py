@@ -31,16 +31,24 @@ def filterArchive( request ):
   networks = Network.objects.all()
 
   filters = dict(request.POST.lists())
-  print(filters)
+  #print(filters)
+
+  pullInfo = filters['pull'][0].split("_")
 
   try:
-    pullInfo = filters['pull'][0].split("_")
-    networkName = pullInfo[0]
-    pullNum = pullInfo[1]
+    if isinstance(int(pullInfo[0]),int):
+      pullNum = pullInfo[0]
+      networkName = ""
+  except ValueError:
+    try:
+      networkName = pullInfo[0]
+    except IndexError:
+      networkName = ""
 
-  except IndexError:
-    networkName = ""
-    pullNum = ""
+    try:
+      pullNum = pullInfo[1]
+    except IndexError:
+      pullNum = ""
 
   requests = Request.objects.filter( 
     pull__isnull = False,
