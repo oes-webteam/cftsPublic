@@ -75,9 +75,9 @@
                     <span class="input-group-text" id="categoryRequired">*</span>
                   </div>
                   <select class="form-control category" name="category" id="category" >
-                  <option value="Feedback">Feedback</option>
                   <option value="Bug Report">Bug Report</option>
                   {% if user.is_authenticated %}
+                  <option value="Feedback">Feedback</option>
                   <option value="Feature Request">Feature Request</option>
                   {% endif %}
                   </select>
@@ -90,7 +90,7 @@
 
                 <h3 id="feedback_title">Feedback</h3>
                 <div class="form-group input-group">
-                  <textarea class="form-control feedback" name="feedback" id="feedback" placeholder="We'd love to hear your thoughts."></textarea>
+                  <textarea class="form-control feedback" name="feedback" id="feedback" placeholder="Please be as detailed as possible and provide steps to reproduce the bug if possible."></textarea>
                 </div>
               </div>
             </div>

@@ -64,7 +64,7 @@ for path in requestPaths:
 
             elif encrypt.match(f)!= None:
                 msg['Subject'] = 'CFTS File Transfer'
-                msg.attach(MIMEText('<b>!!!! Found _encrypt.txt file in request. This email must be sent encrypted. !!!!</b><br><br>Attatched files transfered across domains from CFTS.', 'html'))
+                msg.attach(MIMEText('''<p style="color: red;"><b>!!!! Found _encrypt.txt file in request. This email must be sent encrypted. !!!!</b></p><br>Attatched files transfered across domains from CFTS.''', 'html'))
                 encrpytEmail = True
                 
                 with open(filePath,'r') as _email:

@@ -183,6 +183,7 @@ TEMP_FILES_DIR = os.path.join(BASE_DIR,'tempFiles')
 print("----------------------------------------------------")
 print("uploads path: ",os.path.abspath(UPLOADS_DIR))
 print("pulls path: ",os.path.abspath(PULLS_DIR))
+print("tempFiles path: ",os.path.abspath(TEMP_FILES_DIR))
 print("----------------------------------------------------")
 
 
