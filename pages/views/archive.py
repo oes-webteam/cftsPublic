@@ -57,17 +57,15 @@ def filterArchive( request ):
     network__name__icontains=filters['network'][0],
     pull__network__name__icontains=networkName,
     pull__pull_number__icontains=pullNum,
-    files__file_name__icontains=filters['files'][0],
     target_email__address__icontains=filters['email'][0],
     org__icontains=filters['org'][0]
     )
 
+  if filters['files'][0] != "":
+    requests = requests.filter(files__file_name__icontains=filters['files'][0])
+
   if filters['date'][0] != "":
     requests = requests.filter(date_created__date=filters['date'][0])
-  
-  # requestPage = paginator.Paginator(requests, 5)
-  # pageNum = request.GET.get('page')
-  # pageObj = requestPage.get_page(pageNum)
 
   rc = { 'requests': requests, 'networks': networks }
   return render( request, 'partials/Archive_partials/archiveResults.html', { 'rc': rc })
