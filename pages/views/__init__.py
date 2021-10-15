@@ -8,3 +8,4 @@ from .dev_tools import *
 from .reports import *
 from .resources import *
 from .feedback import *
+from .file_info import *

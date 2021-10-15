@@ -456,9 +456,29 @@ def process ( request ):
                 file_name = f,
                 classification = Classification.objects.get( abbrev = file_info[ i ][ 'classification' ] ),
                 is_pii = file_info[ i ][ 'encrypt' ] == 'true',
-                 org = form_data.get( 'organization' ),
-                is_centcom = form_data.get( 'isCentcom' )
+                org = form_data.get( 'organization' ),
+                is_centcom = form_data.get( 'isCentcom' ),
             )
+
+            # if the uploaded file is a zip get the info of the contente
+            if str(f).split('.')[-1] == "zip":
+                with ZipFile(f, 'r') as zip:
+                    # get info for all files
+                    info = zip.infolist()
+                    # count of all files in zip + 1 for the zip file itself, gotta pump those numbers
+                    this_file.file_count = len(info)+1
+
+                    # count the total uncompressed file size for all files in the zip
+                    fileSize = 0
+                    for file in info:
+                        fileSize+=file.file_size
+                    
+                    this_file.file_size = fileSize
+                    
+            else:
+                # if its not a zip just get the file size from the file object, file count defaults to 1
+                this_file.file_size = this_file.file_object.size
+
             this_file.save()
             request.files.add( this_file )
             fileList.append(str(f))
