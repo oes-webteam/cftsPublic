@@ -16,8 +16,8 @@ def updateFiles(request):
                     with ZipFile(f.file_object, 'r') as zip:
                         # get info for all files
                         info = zip.infolist()
-                        # count of all files in zip + 1 for the zip file itself, gotta pump those numbers
-                        f.file_count = len(info)+1
+                        # count of all files in zip
+                        f.file_count = len(info)
 
                         # count the total uncompressed file size for all files in the zip
                         fileSize = 0
