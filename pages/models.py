@@ -172,6 +172,9 @@ class Request(models.Model):
   is_dupe = models.BooleanField(default=False)
   org = models.CharField(max_length=50, default="")
   notes = models.TextField(null=True, blank=True)
+  has_rejected = models.BooleanField(default=False)
+  all_rejected = models.BooleanField(default=False)
+  destFlag = models.BooleanField(default=False)
   #is_rejected = models.BooleanField(default=False)
 
   class Meta:

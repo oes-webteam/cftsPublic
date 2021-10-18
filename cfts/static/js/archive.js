@@ -108,6 +108,14 @@ jQuery( document ).ready( function() {
             });
             break;
 
+          case "filterOrg":
+            $( ".xfer-org" ).each( function() {
+              $thisCell = $( this );
+              if( !$thisCell.html().toUpperCase().includes( $thisFilter.val().toUpperCase() ) ) 
+                 $thisCell.parent( ".data-row" ).hide();
+            });
+            break;
+
           default:
             $.noop();
         } // end switch
@@ -147,35 +155,35 @@ jQuery( document ).ready( function() {
 
 
 
-  // create the dialog (modal) object
-  userDialog = $( '#user-modal' ).dialog({
-    autoOpen: false,
-    height: 400,
-    width: 350,
-    modal: true,
-    buttons: {
-      "View Requests": function() { 
-        filterArchive( $(this).data( 'user_id' ) );
-      },
-      "Email User": function() {
+  // // create the dialog (modal) object
+  // userDialog = $( '#user-modal' ).dialog({
+  //   autoOpen: false,
+  //   height: 400,
+  //   width: 350,
+  //   modal: true,
+  //   buttons: {
+  //     "View Requests": function() { 
+  //       filterArchive( $(this).data( 'user_id' ) );
+  //     },
+  //     "Email User": function() {
 
-      },
-      Close: () => userDialog.dialog( 'close' )
-    },
-    close: () => {}
-  });
+  //     },
+  //     Close: () => userDialog.dialog( 'close' )
+  //   },
+  //   close: () => {}
+  // });
 
-  // You clicked a user link.  Huzzah!  Now here's what were gonna do ...
-  $( 'a.user' ).click( e => {
-    e.preventDefault();
-    const data = {};
-    const url = '/api-getuser/' + e.target.id;
-    $.get( url, ( resp ) => {
-      $( '#name' ).text( resp.first_name + ' ' + resp.last_name );
-      $( '#email' ).text( resp.email );
-    });
-    userDialog.dialog( 'open' );
+  // // You clicked a user link.  Huzzah!  Now here's what were gonna do ...
+  // $( 'a.user' ).click( e => {
+  //   e.preventDefault();
+  //   const data = {};
+  //   const url = '/api-getuser/' + e.target.id;
+  //   $.get( url, ( resp ) => {
+  //     $( '#name' ).text( resp.first_name + ' ' + resp.last_name );
+  //     $( '#email' ).text( resp.email );
+  //   });
+  //   userDialog.dialog( 'open' );
 
-  });
+  // });
 
 });

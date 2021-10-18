@@ -109,9 +109,12 @@ Pipfile.lock
 
 # uploaded files from the user
 uploads/
+static/
+resources/
 # uploaded files from the admin section
 templates/partials/files/
 # files created by the system
-cfts/static/files/*.zip
+!cfts/static
 # Visual Studio Code
 .vscode/
+.idea/
