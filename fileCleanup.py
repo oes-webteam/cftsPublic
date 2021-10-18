@@ -24,7 +24,7 @@ def deleteFiles(directory, maxAge):
                     if directory == uploadsPath:
                         shutil.rmtree(file.path)
                     # delete single files
-                    if directory == pullsPath or directory == tempFilesPath or directory == scanPath:
+                    else:
                         os.remove(file.path)
                         
                 else:

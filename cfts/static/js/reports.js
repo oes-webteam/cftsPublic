@@ -54,6 +54,8 @@ $( document ).ready( function( ) {
           $( '#txt' ).text("Text files: " + resp.file_types.text);
           $( '#pdf' ).text("PDF files: " + resp.file_types.pdf);
           $( '#img' ).text("Image files: " + resp.file_types.img);
+          $( '#zip' ).text("Zip files: " + resp.file_types.zip);
+          $( '#zipContents' ).text("Total files in zips: " + resp.file_types.zipContents);
           $( '#other' ).text("Other files: " + resp.file_types.other);
 
           $( '#CENTCOM-HQ' ).text("CENTCOM: " + resp.org_counts.HQ);
