@@ -21,7 +21,7 @@ function enableGroupSelection( selector ) {
     }
 
     // match reject buttons to checkboxes on each click
-    checkboxes.forEach( checkbox => checkbox.nextElementSibling.style.display = ( checkbox.checked ) ? 'inline-block' : 'none' );
+    //checkboxes.forEach( checkbox => checkbox.nextElementSibling.style.display = ( checkbox.checked ) ? 'inline-block' : 'none' );
 
     lastChecked = checkbox;
   }));
@@ -103,12 +103,13 @@ jQuery( document ).ready( function() {
 
   $('.request-reject').click(e => {
     e.preventDefault();
+    let requests = []
 
     if($(e.target).hasClass('selected-reject')){
       console.log("selcted reject clicked")
 
-      const $checkedItems = $( "[name='fileSelection']:checked[request_id='"+$( e.target ).attr('request_id')+"'][not-rejected]");
-      const $checkedItemsRejected = $( "[name='fileSelection']:checked[request_id='"+$( e.target ).attr('request_id')+"'][rejected]");
+      const $checkedItems = $( "[name='fileSelection']:checked[not-rejected]");
+      const $checkedItemsRejected = $( "[name='fileSelection']:checked[rejected]");
 
       // no files selected to reject or un-reject
       if ($checkedItems.length == 0 && $checkedItemsRejected.length == 0){
@@ -122,22 +123,35 @@ jQuery( document ).ready( function() {
 
       // files to reject
       else if ($checkedItems.length > 0){
-        console.log("not rejected yet")
-        let data = [];
-        $checkedItems.each( i => {
-          data.push({ 
-            'fileID': $checkedItems[i].id.slice(4), 
-            'fileName': $( $checkedItems[i] ).attr( 'file_name' ),
-            'requestID': $( $checkedItems[i] ).attr( 'request_id' ),
-            'requestEmail': $( $checkedItems[i] ).attr( 'request_email' )
-          }) 
+        $checkedItems.each(i => {
+          if (!requests.includes($($checkedItems[i]).attr('request_id'))){
+          requests.push($($checkedItems[i]).attr('request_id'))
+          }
+          
         });
-      rejectDialog.data( 'data', data ).dialog( 'open' );
+
+        console.log(requests)
+
+        if (requests.length>1){
+          alert( 'You can only reject files from the same request.' )
+          requests = []
+        }
+        else{
+          let data = [];
+          $checkedItems.each( i => {
+            data.push({ 
+              'fileID': $checkedItems[i].id.slice(4), 
+              'fileName': $( $checkedItems[i] ).attr( 'file_name' ),
+              'requestID': $( $checkedItems[i] ).attr( 'request_id' ),
+              'requestEmail': $( $checkedItems[i] ).attr( 'request_email' )
+            }) 
+          });
+          rejectDialog.data( 'data', data ).dialog( 'open' );
+        }
       }
 
       //files to un-reject
       else if ($checkedItemsRejected.length > 0){
-        console.log("already rejected")
           let data = [];
           $checkedItemsRejected.each( i => {
             data.push({ 
@@ -155,7 +169,7 @@ jQuery( document ).ready( function() {
 
     else{
       console.log("request reject clicked")
-      const checkboxes = Array.from( document.querySelectorAll( 'input[type="checkbox"][request_id="'+$( e.target ).attr('request_id')+'"]' ) );
+      const checkboxes = Array.from( document.querySelectorAll( 'input[type="checkbox"]' ) );
       checkboxes.forEach( checkbox =>{
         checkbox.removeAttribute("hidden");
       });
@@ -215,7 +229,7 @@ const sendUnrejectRequest = (data) => {
     if($(e.target).hasClass('selected-encrypt')){
       console.log("selcted encrypt clicked")
 
-      const $checkedItems = $( "[name='fileSelection']:checked[request_id='"+$( e.target ).attr('request_id')+"']");
+      const $checkedItems = $( "[name='fileSelection']:checked");
 
       if ($checkedItems.length == 0){
         alert( ' Select 1 or more files to encrypt.' );
@@ -238,7 +252,7 @@ const sendUnrejectRequest = (data) => {
 
     else{
       console.log("request encrypt clicked")
-      const checkboxes = Array.from( document.querySelectorAll( 'input[type="checkbox"][request_id="'+$( e.target ).attr('request_id')+'"]' ) );
+      const checkboxes = Array.from( document.querySelectorAll( 'input[type="checkbox"]' ) );
       checkboxes.forEach( checkbox =>{
         checkbox.removeAttribute("hidden");
       });
@@ -370,10 +384,11 @@ const sendUnrejectRequest = (data) => {
            notifyUserSuccess("File rejection Successful")
            console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
 
-      // download eml file
+      // download eml file      
       let $anchor = $( "<a class='emailLink' target='_blank' href='/api-geteml/"+ resp.emlName +"'></a>" );
       $( document.body ).append( $anchor );
-      window.open($('.emailLink').attr('href'))
+      $( '.emailLink' ).each( function() { $(this)[0].click(); } );  
+	
 
       // close the dialog
       $( theDialog ).dialog( 'close' );
@@ -432,8 +447,22 @@ const sendUnrejectRequest = (data) => {
   const showComments = ( e ) => {
     e.preventDefault();
     $this = $( e.target );
-    $this.parents( "tr" ).next().find( ".comments-text div" ).slideToggle( "fast" );
+    $this.parents( "tr" ).next().find( ".req-info div" ).slideToggle( "fast" );
+    $this.parents( "tr" ).next().next().find( ".req-info div" ).slideToggle( "fast" );
+
+    if ($this.hasClass("info-hide")){
+      $(e.target).text("Hide Request Info")
+      $(e.target).addClass('info-show')
+      $(e.target).removeClass('info-hide')
+    }
+    else{
+      $(e.target).text("Show Request Info")
+      $(e.target).addClass('info-hide')
+      $(e.target).removeClass('info-show')
+    }
+
   };
+
   $( ".btn.comments" ).click( showComments );
 
 

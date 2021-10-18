@@ -219,9 +219,24 @@ function prepareFileInfo(formData) {
 /* ****************************** */
 /* AJAX REQUEST SENT SUCCESSFULLY */
 /* ****************************** */
+function openRequestLink(id){
+  window.open( window.location.origin+"/request/" + id).focus();
+}
+
 function successHandler(r) {
   console.dir(r);
-  notifyUserSuccess("THANK YOU! Your files have been submitted. ");
+  if (buggedPKIs.includes(userHash) == true || userHash == ""){
+    notifyUserSuccess("THANK YOU! Your files have been submitted. Click <a class='alert-link' href='/request/" + r.request_id + "'>here</a> to see your requests. ");
+  }
+  else{
+    notifyUserSuccess("THANK YOU! Your files have been submitted. Click <a <a class='alert-link' href='/my-requests'>here</a> to see your requests. ");
+  }
+
+  let requestlink = $( "<div class='requestLink' style='display: none;'></div>" );
+  $( document.body ).append( requestlink );
+  requestlink.attr('onClick',"openRequestLink('"+r.request_id+"')")
+  $( '.requestLink' ).each( function() { $(this)[0].click(); } );  
+
   // CLEAN UP!!
 
   email = $("#userEmail").val();
@@ -232,7 +247,6 @@ function successHandler(r) {
   resetAdditionalEmails();
   autoFileUserInfo(email,phone);
 
-  console.log("Request Process Successful");
 
   // re-enable the submit button
   $('#submitButton').prop('disabled',false);
@@ -290,8 +304,6 @@ function failHandler(r, s) {
       '.  Please notify the CFTS administrators of this error. Contact info can be found by clicking "Contact Us" at the bottom of the page.'
   );
 
-  console.log("Request Process Failed");
-
   // re-enable the submit button
   $('#submitButton').prop('disabled',false);
 }
@@ -302,7 +314,6 @@ function failHandler(r, s) {
 /* THE ROOT FORM PROCESSING FUNCTION (EVERYTHING ELSE SUPPORTS THIS) */
 /* ***************************************************************** */
 function process(e) {
-  console.log("Request Process Initiated");
   preventDefaults(e);
   
   // disable the submit button once clicked, prevent duplicate submissions from multi clicks
@@ -339,7 +350,6 @@ function process(e) {
     };
     $.ajax(ajaxSettings).done(successHandler).fail(failHandler);
   } else {
-    console.log("Request Process Canceled");
 
     // notify the user there were validation errors
     notifyUserWarning("There are errors on the request form.  Please review and address the indicated fields.");

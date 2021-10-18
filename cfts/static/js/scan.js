@@ -34,7 +34,7 @@ const callScan = function ( e ) {
           processResults( data );
       },
       error: function( data ){
-          oadingIcon.hidden = true
+          loadingIcon.hidden = true
 	  responseText = data.responseText
 	  errorInfo = responseText.substring(data.responseText.indexOf("Exception Value"), data.responseText.indexOf("Python Executable"))
           notifyUserError( "Error in scan, " + data.status + ": " + data.statusText+ " --  Show this to the web team: " + errorInfo);

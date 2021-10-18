@@ -75,6 +75,8 @@ class File(models.Model):
   rejection_text = models.TextField(default=None, blank=True, null=True)
   org = models.CharField(max_length=50, default="")
   NDCI = models.BooleanField(default=False)
+  file_count = models.PositiveIntegerField(default=1)
+  file_size = models.PositiveBigIntegerField(default=0)
 
   class Meta:
     ordering = [F('file_name').asc(nulls_last=True)]
@@ -172,6 +174,9 @@ class Request(models.Model):
   is_dupe = models.BooleanField(default=False)
   org = models.CharField(max_length=50, default="")
   notes = models.TextField(null=True, blank=True)
+  has_rejected = models.BooleanField(default=False)
+  all_rejected = models.BooleanField(default=False)
+  destFlag = models.BooleanField(default=False)
   #is_rejected = models.BooleanField(default=False)
 
   class Meta:

@@ -19,16 +19,21 @@ def deleteFiles(directory, maxAge):
                 fileAge = datetime.fromtimestamp(datetime.now().timestamp())-modTime
                 if fileAge.days > maxAge:
                     print("File %s is %s days old. Deleting..." %
-                          (file.path, fileAge.days))
+                        (file.path, fileAge.days))
                     # delete upload if older than maxAge variable
-                    shutil.rmtree(file.path)
+                    if directory == uploadsPath:
+                        shutil.rmtree(file.path)
+                    # delete single files
+                    else:
+                        os.remove(file.path)
+                        
                 else:
                     daysRemaining = maxAge-fileAge.days
                     if daysRemaining == 0:
                         print("File %s will be deleted in 1 day." % file.path)
 
                     print("File %s will be deleted in %s days." %
-                          (file.path, daysRemaining))
+                        (file.path, daysRemaining))
 
 
 deleteFiles(uploadsPath, 30)
