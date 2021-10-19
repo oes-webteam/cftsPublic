@@ -20,7 +20,7 @@ from django.template.loader import render_to_string
 from django.template import Template, Context
 
 # , HttpResponse, FileResponse
-from django.http import JsonResponse, HttpResponseRedirect
+from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 
 # cfts settings
 from cfts import settings as Settings
@@ -41,6 +41,8 @@ from email.encoders import encode_base64
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 import mimetypes
+from io import StringIO
+from urllib.parse import quote
 
 import logging
 
@@ -86,37 +88,16 @@ def setReject(request):
     except AttributeError:
         print("Request not found in any pull.")
     
-    emlName = createEml(request,request_id,id_list,reject_id)    
-    return JsonResponse({'emlName': emlName})
+    eml = createEml(request,request_id,id_list,reject_id)
+    return HttpResponse(str(eml))
     
 @login_required
 def createEml( request, request_id, files_list, reject_id ):
     
     rqst = Request.objects.get(request_id=request_id[0])
     rejection = Rejection.objects.get(rejection_id=reject_id[0])
-    
 
-    emlName = rqst.user.__str__() + "reject_1.eml"
-    msgPath = os.path.join(Settings.TEMP_FILES_DIR, emlName)
-    
-    if emlName in os.listdir(Settings.TEMP_FILES_DIR):
-                i = 1
-                print("eml file exists")
-                while True:
-                    emlName = rqst.user.__str__() + "reject_" + str(i) + ".eml"
-                    msgPath = os.path.join(Settings.TEMP_FILES_DIR, emlName)
-                    print("Trying " + emlName)
-                    if emlName in os.listdir(Settings.TEMP_FILES_DIR):
-                        i = i + 1
-                    else:
-                        break
-
-    msg = MIMEMultipart()
-    
-    msg['To'] = str(rqst.user.email)
-    msg['Subject'] = "CFTS File Rejection"
-    
-    msgBody = "The following files have been rejected from your transfer request:\n"
+    msgBody = "mailto:" + str(rqst.user.email) + "&subject=CFTS File Rejection&body=The following files have been rejected from your transfer request:%0D%0A"
 
     files = File.objects.filter(file_id__in=files_list)       
     for file in files:
@@ -125,22 +106,11 @@ def createEml( request, request_id, files_list, reject_id ):
         else:
             msgBody += str(file.file_object).split("/")[-1] + ", "
 
-        
-    msgBody += render_to_string('partials/Queue_partials/rejectionEmailTemplate.html', {'rqst': rqst, 'rejection': rejection, 'firstName': rqst.user.name_first.split('_buggedPKI')[0]}, request)
 
-    msg.attach(MIMEText(msgBody, 'html'))
+    url = "https://"+str(request.get_host())+"/request/"+str(rqst.request_id)
+    msgBody += render_to_string('partials/Queue_partials/rejectionEmailTemplate.html', {'rqst': rqst, 'rejection': rejection, 'firstName': rqst.user.name_first.split('_buggedPKI')[0], 'url':url}, request)
 
-    msg.add_header('X-Unsent', '1')
-
-    with open(msgPath, 'w+') as eml:
-        gen = Generator(eml)
-        gen.flatten(msg)
-
-    return emlName
-
-@login_required
-def getEml(request, emlName):
-    return FileResponse(open(os.path.join(Settings.TEMP_FILES_DIR, emlName), "rb"), as_attachment=True)
+    return msgBody
 
 @login_required
 def unReject(request):
