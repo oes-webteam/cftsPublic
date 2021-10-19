@@ -43,6 +43,7 @@ urlpatterns = [
 
     # archive
     path('archive', views.archive, name='archive'),
+    path('filterArchive', views.filterArchive, name='filterArchive'),
 
     # reporting
     path('reports', views.reports, name='reports'),
@@ -60,7 +61,6 @@ urlpatterns = [
     path('api-processrequest', views.process, name='api-processrequest'),
     path('api-setconsentcookie', views.setConsentCookie, name='api-setconsentcookie'),
     path('api-getclassifications', views.getClassifications, name='api-getclassifications'),
-    path('api-geteml/<str:emlName>', views.getEml, name='api-geteml'),
     path('api-removeCentcom/<uuid:id>', views.removeCentcom, name='api-removeCentcom'),
     path('api-requestnotes/<uuid:requestid>', views.requestNotes, name='api-requestnotes'),
 
