@@ -119,6 +119,7 @@ jQuery( document ).ready( function() {
     return  data;
   } // end applyFilters
 
+
   function getRequests(){
     data = applyFilters()
 
@@ -154,6 +155,7 @@ jQuery( document ).ready( function() {
   $(".filter").keypress(function (e) { 
     if(e.which==13){
       getRequests();
+
     }
   });
 

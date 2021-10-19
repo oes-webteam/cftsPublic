@@ -73,6 +73,7 @@ def filterArchive( request ):
   if filters['org'][0] != "":
       requests = requests.filter(org__iexact=filters['org'][0])
       
+
   if filters['files'][0] != "":
     requests = requests.filter(files__file_name__icontains=filters['files'][0])
 
@@ -80,4 +81,5 @@ def filterArchive( request ):
     requests = requests.filter(date_created__date=filters['date'][0])
 
   rc = { 'requests': requests.distinct(), 'networks': networks }
+
   return render( request, 'partials/Archive_partials/archiveResults.html', { 'rc': rc })
