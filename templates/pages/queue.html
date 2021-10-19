@@ -87,14 +87,14 @@
                         {% for request in network.q %}
                             {% if request.pull == None %} 
                             {% ifchanged request.org %}<td class="org-header" colspan="3">{{request.org}} Requests:</td>{% endifchanged %}
-                                {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                {% include 'partials/Queue_partials/requestTemplate.html' with request=request %}
                             {% endif %}
                         {% endfor %}
 
                         {% if network.pulled.count > 0 %}<td class="org-header" colspan="3">Pulled Requests ({{network.pulled.count}}):</td>
                             {% for request in network.q %}
                                 {% if request.pull != None %} 
-                                    {% include 'partials/Queue_partials/HQ_request.html' with request=request %}
+                                    {% include 'partials/Queue_partials/requestTemplate.html' with request=request %}
                                 {% endif %}
                             {% endfor %}
                         {% endif %} 
