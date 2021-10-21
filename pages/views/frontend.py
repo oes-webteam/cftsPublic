@@ -71,7 +71,7 @@ def frontend(request):
 
         # django dev server doesn't grab certs
         except KeyError:
-            rc = {'networks': nets, 'resources': resources,'browser': browser}
+            rc = {'networks': nets, 'resources': resources,'browser': browser,}
 
         return render(request, 'pages/frontend.html', {'rc': rc})
     
