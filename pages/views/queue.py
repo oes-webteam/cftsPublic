@@ -16,7 +16,7 @@ from django.core.serializers import serialize
 
 
 # decorators
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.cache import never_cache
 
@@ -35,6 +35,7 @@ import logging
 logger = logging.getLogger('django')
 # ====================================================================
 
+buggedPKIs = ['f7d359ebb99a6a8aac39b297745b741b'] #[ acutally bugged hash, my hash for testing]
 
 @login_required
 @ensure_csrf_cookie
@@ -139,25 +140,29 @@ def queue(request):
 def transferRequest( request, id ):
     rqst = Request.objects.get( request_id = id )
     user = User.objects.get( user_id = rqst.user.user_id )
-
+    buggedUser = False
+    #if user.user_identifier in buggedPKIs:
+        
     rc = { 
         'User Name': user,
+        'User_ID': user.user_identifier,
         'User Email': user.email,
         'Phone': user.phone,
         'network': Network.objects.get( network_id = rqst.network.network_id ),
-        'Marked as Centcom': rqst.is_centcom,
+        #'Marked as Centcom': rqst.is_centcom,
         'Part of pull': rqst.pull,
         'request_id': rqst.request_id,
         'date_created': rqst.date_created,
         'files': rqst.files.all(),
         'target_email': rqst.target_email.all(),
-        'is_submitted': rqst.is_submitted,
-        'is_centcom': rqst.is_centcom,
+        #'is_submitted': rqst.is_submitted,
+        #'is_centcom': rqst.is_centcom,
         'org': rqst.org,
         'has rejected files': rqst.has_rejected,
         'all files rejected': rqst.all_rejected,
+        'user_banned': user.banned
     }
-    return render(request, 'pages/transfer-request.html', {'rc': rc, 'centcom': rqst.is_centcom, 'notes': rqst.notes})
+    return render(request, 'pages/transfer-request.html', {'rc': rc, 'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": user.user_id, 'pki_id': user.user_identifier, 'buggedUser': user.user_identifier in buggedPKIs})
 
 @login_required
 def requestNotes( request, requestid ):
@@ -178,6 +183,15 @@ def requestNotes( request, requestid ):
 def removeCentcom( request, id ):
     Request.objects.filter(request_id = id).update(is_centcom=False)
     return redirect('queue')
+
+def superUserCheck(user):
+    return user.is_superuser
+
+@login_required
+@user_passes_test(superUserCheck)
+def banUser(request, userid,requestid):
+    userToBan = User.objects.filter(user_id=userid).update(banned=True)
+    return redirect('transfer-request', requestid)
 
 @login_required
 def createZip(request, network_name, isCentcom, rejectPull):
@@ -326,8 +340,6 @@ def createZip(request, network_name, isCentcom, rejectPull):
         return JsonResponse({'pullNumber': new_pull.pull_number, 'datePulled': new_pull.date_pulled.strftime("%d%b %H%M").upper(), 'userPulled': str(new_pull.user_pulled)})
     else:
         return JsonResponse({'pullNumber': pull.pull_number, 'datePulled': pull.date_pulled.strftime("%d%b %H%M").upper(), 'userPulled': str(pull.user_pulled)})
-
-
 
 @login_required
 def getFile(request, fileID, fileName):

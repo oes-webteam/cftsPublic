@@ -9,15 +9,20 @@
 <section id="boxes" class="py-5">
 
   <div class="container">
-    {% if rc.browser == "IE"%}<div class="alert alert-danger browser-notif" role="alert">This service <a class="alert-link">does not</a> support Internet Explorer. Please use Microsoft Edge, Google Chrome, or Firefox to utilize CFTS.</div>{% endif %}
-  
-    <div class="alert alert-warning encrypt-notif" role="alert">Please review the <a class="alert-link" href="{% url 'resources' "Combined_File_Transfer_Service_Policies.pdf" %}">CFTS Policies</a> before submitting your request. If your files contain CUI, PII, or PHI please mark them for encryption.</div>
+    {% if rc.userBanned %}
+      <div class="alert alert-danger banned-notif" role="alert">Repeated policy violations have resulted in you losing access to the Combined File Transfer Service.</div>
+    {% else %}
+      {% if rc.browser == "IE"%}<div class="alert alert-danger browser-notif" role="alert">This service <a class="alert-link">does not</a> support Internet Explorer. Please use Microsoft Edge, Google Chrome, or Firefox to utilize CFTS.</div>{% endif %}
     
-    <div class="alert alert-danger fadein server-error" style="display: none;" role="alert"></div>
+      <div class="alert alert-warning encrypt-notif" role="alert">Please review the <a class="alert-link" href="{% url 'resources' "Combined_File_Transfer_Service_Policies.pdf" %}">CFTS Policies</a> before submitting your request. If your files contain CUI, PII, or PHI please mark them for encryption.</div>
+      
+      <div class="alert alert-danger fadein server-error" style="display: none;" role="alert"></div>
 
-    <div class="alert alert-danger fadein danger-error" style="display: none;" role="alert"></div>
-   
-    <div class="alert alert-success fadein" style="display: none;" role="alert"></div>
+      <div class="alert alert-danger fadein danger-error" style="display: none;" role="alert"></div>
+    
+      <div class="alert alert-success fadein" style="display: none;" role="alert"></div>
+    {% endif %}
+    
 
     <form action="#" id="transfer-request-form" method="post" enctype="multipart/form-data" novalidate="true">
       {% csrf_token %}
@@ -170,7 +175,7 @@
               TODO: Make this an actual <button> with a "click"
               eventHandler to avoid event bubble-up issues 
           -->
-          <button class="btn btn-secondary btn-block" id="submitButton" role="button">Submit</button>
+          <button class="btn btn-secondary btn-block" id="submitButton" role="button" {% if rc.userBanned %}disabled{% endif %}>Submit</button>
         </div>
         <div class="col-md-4"></div>
       </div>
@@ -183,6 +188,7 @@
 <script> 
   var cert = "{{rc.cert}}"; 
   var userHash = "{{rc.userHash}}";
+  var userBanned = "{{rc.userBanned}}";
 </script>
 <script src="{% static 'js/notification.js' %}"></script>
 <script src="{% static 'js/frontend.js' %}"></script>

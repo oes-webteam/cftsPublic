@@ -13,6 +13,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.cache import never_cache
 from django.core import serializers
 from django.utils import cache
+from pages.models import User
 
 # db/model stuff
 from pages.models import *
@@ -27,14 +28,20 @@ def frontend(request):
     nets = Network.objects.filter(visible=True)
     resources = ResourceLink.objects.all()
 
+    # get the consent header, redirect to consent page if not found
     try:
         request.session.__getitem__('consent')
         request.session.set_expiry(0)
         
+        # grab client cert form the request create user hash, ignore if no cert info is found in request
         try:
             cert = request.META['CERT_SUBJECT']
+
+            # empty cert, IIS is set to ignore certs
             if cert =="":
                 rc = {'networks': nets, 'resources': resources, 'browser': browser}
+            
+            # got a cert!
             else:
                 userHash = hashlib.md5()
                 userHash.update(cert.encode())
@@ -43,13 +50,28 @@ def frontend(request):
                 if userHash in buggedPKIs:
                     rc = {'networks': nets, 'resources': resources,
                         'cert': cert, 'userHash': userHash, 'browser': browser, 'buggedPKI': "true"}
+
+                # and their cert info isn't bugged!
                 else:
-                    rc = {'networks': nets, 'resources': resources,
-                        'cert': cert, 'userHash': userHash, 'browser': browser}
+                    
+                    # are they a new user or an existing user?
+                    try:
+                        user = User.objects.get(user_identifier=userHash)
+                        if user.banned == True:
+                            rc = {'networks': nets, 'resources': resources,
+                                'cert': cert, 'userHash': userHash, 'userBanned': True,'browser': browser}
+                        else:
+                            rc = {'networks': nets, 'resources': resources,
+                                'cert': cert, 'userHash': userHash, 'browser': browser}
+                    
+                    # they were a new user
+                    except User.DoesNotExist:
+                            rc = {'networks': nets, 'resources': resources,
+                                'cert': cert, 'userHash': userHash, 'browser': browser}
+
+        # django dev server doesn't grab certs
         except KeyError:
-            rc = {'networks': nets, 'resources': resources,'browser': browser }
-        #  for rl in resources:
-    #    print( rl.file_name )
+            rc = {'networks': nets, 'resources': resources,'browser': browser}
 
         return render(request, 'pages/frontend.html', {'rc': rc})
     
@@ -96,7 +118,7 @@ def userRequests(request):
         # pageObj = requestPage.get_page(pageNum)
 
         # rc = {'requests': pageObj,'resources': resources}
-         rc = {'resources': resources, 'buggedPKI': "true"}
+        rc = {'resources': resources, 'buggedPKI': "true"}
     return render(request, 'pages/userRequests.html', {'rc': rc})
 
 

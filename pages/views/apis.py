@@ -5,7 +5,7 @@ import os
 from datetime import datetime
 from zipfile import ZipFile
 from django.conf import settings
-from django.http.response import FileResponse
+from django.http.response import FileResponse, HttpResponse
 
 # utilities
 from django.utils.dateparse import parse_date

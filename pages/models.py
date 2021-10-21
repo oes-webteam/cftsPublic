@@ -120,6 +120,7 @@ class User(models.Model):
   email = models.ForeignKey(Email, on_delete=models.DO_NOTHING)
   notes = models.TextField(null=True, blank=True)
   phone = models.CharField(max_length=50, default="000-000-0000")
+  banned = models.BooleanField(default=False)
 
   class Meta:
     ordering = ['name_last']
