@@ -11,7 +11,7 @@
   <ul class="grid-column" style="grid-column: {{ forloop.counter|add:1 }}">
   {% for pull in net %}
     {% if forloop.counter0 == 0 %}<h3 class="grid-column-header">{{ pull.pull_network }}</h3>{% endif %}
-    <li class="{% if pull.date_complete != None %}is-done{% elif pull.date_twoeye != None %}to-complete{% elif pull.date_oneeye != None %}to-twoeye{% endif %} {% if pull.centcom_pull %}centcom{% endif %}">
+    <li class="pull-card {% if pull.date_complete != None %}is-done{% elif pull.date_twoeye != None %}to-complete{% elif pull.date_oneeye != None %}to-twoeye{% endif %} {% if pull.centcom_pull %}centcom{% endif %}" pull_id="{{pull.pull_id}}">
 
       <ul>
         <li class="title-line"><strong>{{ pull.pull_network }}_{{ pull.pull_number }} {% if pull.centcom_pull %}</br>Centcom Only{% endif %}</strong></li>
@@ -36,9 +36,9 @@
         {% endif %}
       </ul>
 
-      <button class="pull-menu-btn">&hellip;</button>
+      <button class="pull-menu-btn" >&hellip;</button>
       <!-- TODO: remove this from the flow of the document -->
-      <ul class="pull-menu">
+      <ul class="pull-menu" pull_id="{{pull.pull_id}}">
         <li class="pull-menu-option highlight"><a href="getPull/{{pull.pull_network}}_{{pull.pull_number}} {{pull.pull_date|date:"dM"}} {{pull.pull_date|time:"Hi"}}.zip">Download Again</a></li>
         <li class="pull-menu-option highlight"><a href="scan/{{pull.pull_network}}_{{pull.pull_number}} {{pull.pull_date|date:"dM"}} {{pull.pull_date|time:"Hi"}}.zip">Scan Pull</a></li>
         {% if pull.date_complete == None %}<li class="pull-menu-option highlight"><a href="cancelPull/{{pull.pull_id}}">Cancel Pull</a></li>{% endif %}

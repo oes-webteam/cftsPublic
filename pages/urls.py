@@ -43,6 +43,7 @@ urlpatterns = [
 
     # archive
     path('archive', views.archive, name='archive'),
+    path('filterArchive', views.filterArchive, name='filterArchive'),
 
     # reporting
     path('reports', views.reports, name='reports'),
@@ -70,4 +71,5 @@ urlpatterns = [
     path('tools-stubget', views.stubGet, name='stub-get'),
     path('tools-stubpost', views.stubPost, name='stub-post'),
     path('tools-setupdb', views.setupDB, name="setupdb"),
+    path('tools-updateFileInfo', views.updateFiles, name='api-updateFileInfo'),
 ]
