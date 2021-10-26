@@ -119,6 +119,7 @@ def runScan(extractPath):
                                                 fileList.append(embedOffFilePath)
                                     else:
                                         imgCount+=1
+                                        result['image']=True
 
                                 except KeyError:
                                     pass

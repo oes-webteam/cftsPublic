@@ -9,13 +9,16 @@
                 {% endif %}
 
                 {% for subFiles in result.found %}
-                    <li class="scanned-item">{{subFiles.file}}
-                        <ul class="inner-files">
-                            {% for hit in subFiles.findings %}
-                            <li class="scanned-file">{{hit}}</li>
-                            {% endfor %}
-                        </ul>
-                    </li>
+                    {% if subFiles.image %}
+                    {% else %}
+                        <li class="scanned-item">{{subFiles.file}}
+                            <ul class="inner-files">
+                                {% for hit in subFiles.findings %}
+                                <li class="scanned-file">{{hit}}</li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                    {% endif %}
                 {% endfor %}
             </ul>
         </li>
