@@ -1,5 +1,6 @@
 # ====================================================================
 # core
+from datetime import date
 from django.core import paginator
 
 # crypto
@@ -56,10 +57,16 @@ def frontend(request):
                     
                     # are they a new user or an existing user?
                     try:
-                        user = User.objects.get(user_identifier=userHash)
+                        user = User.objects.filter(user_identifier=userHash)[0]
                         if user.banned == True:
-                            rc = {'networks': nets, 'resources': resources,
-                                'cert': cert, 'userHash': userHash, 'userBanned': True,'browser': browser}
+                            if date.today() >= user.banned_until:
+                                user.update(banned=False)
+
+                                rc = {'networks': nets, 'resources': resources,
+                                'cert': cert, 'userHash': userHash,'browser': browser}
+                            else:
+                                rc = {'networks': nets, 'resources': resources,
+                                    'cert': cert, 'userHash': userHash, 'user': user,'browser': browser}
                         else:
                             rc = {'networks': nets, 'resources': resources,
                                 'cert': cert, 'userHash': userHash, 'browser': browser}

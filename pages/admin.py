@@ -1,3 +1,4 @@
+from django.db.models import fields
 from pages.views.feedback import feedback
 from django.contrib import admin
 from pages.models import *
@@ -5,6 +6,7 @@ from pages.models import *
 class UserAdmin(admin.ModelAdmin):
     list_filter = ('banned',)
     list_display = (User.__str__,'email','user_identifier','banned')
+    fields = ('name_first','name_last','user_identifier','email','phone',('banned','strikes','banned_until'),'notes')
 
 class RequestAdmin(admin.ModelAdmin):
     list_display = ('user','network','org','has_rejected','all_rejected')

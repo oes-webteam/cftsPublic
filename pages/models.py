@@ -123,6 +123,8 @@ class User(models.Model):
   notes = models.TextField(null=True, blank=True)
   phone = models.CharField(max_length=50, default="000-000-0000")
   banned = models.BooleanField(default=False)
+  strikes = models.IntegerField(default=0)
+  banned_until = models.DateField(null=True, blank=True)
 
   class Meta:
     ordering = ['name_last']

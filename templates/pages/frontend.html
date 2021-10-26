@@ -9,8 +9,13 @@
 <section id="boxes" class="py-5">
 
   <div class="container">
-    {% if rc.userBanned %}
-      <div class="alert alert-danger banned-notif" role="alert">Repeated policy violations have resulted in you losing access to the Combined File Transfer Service.</div>
+    {% if rc.user.banned %}
+      {% if rc.user.strikes != 3%}
+        <div class="alert alert-danger banned-notif" role="alert">Repeated policy violations have resulted in you losing access to the Combined File Transfer Service. You will regain access to this service on {{rc.user.banned_until}}</div>
+      {% else %}
+        <div class="alert alert-danger banned-notif" role="alert">Repeated policy violations have resulted in you losing access to the Combined File Transfer Service permanently.</div>
+      {% endif %}
+
     {% else %}
       {% if rc.browser == "IE"%}<div class="alert alert-danger browser-notif" role="alert">This service <a class="alert-link">does not</a> support Internet Explorer. Please use Microsoft Edge, Google Chrome, or Firefox to utilize CFTS.</div>{% endif %}
     
@@ -21,9 +26,7 @@
       <div class="alert alert-danger fadein danger-error" style="display: none;" role="alert"></div>
     
       <div class="alert alert-success fadein" style="display: none;" role="alert"></div>
-    {% endif %}
     
-    {% if not rc.userBanned %}
       <form action="#" id="transfer-request-form" method="post" enctype="multipart/form-data" novalidate="true">
         {% csrf_token %}
         <div class="row" id="form-row">

@@ -54,7 +54,8 @@ def queue(request):
         "Is PKI working yet?",
         "It's probably the weekend right?",
         "Shoot a dart at Ron, tell him Xander told you to.",
-        "I'll code tetris into this page one day."
+        "I'll code tetris into this page one day.",
+        "Don't let Jason ban everyone, 'cause he'll do it.",
     ])
 
     ########################
@@ -172,8 +173,8 @@ def requestNotes( request, requestid ):
     rqst = Request.objects.get(request_id=requestid)
 
     try:
-      pull_number = rqst.pull.pull_id
-      createZip(request, rqst.network.name, rqst.is_centcom, pull_number)
+        pull_number = rqst.pull.pull_id
+        createZip(request, rqst.network.name, rqst.is_centcom, pull_number)
     except AttributeError:
                 print("Request not found in any pull.")
 
@@ -190,7 +191,22 @@ def superUserCheck(user):
 @login_required
 @user_passes_test(superUserCheck)
 def banUser(request, userid,requestid):
-    userToBan = User.objects.filter(user_id=userid).update(banned=True)
+    userToBan = User.objects.filter(user_id=userid)[0]
+    strikes = userToBan.strikes
+    
+    # users first ban, 7 days
+    if strikes == 0:
+        User.objects.filter(user_id=userid).update(banned=True, strikes=1, banned_until=datetime.date.today() + datetime.timedelta(days=7))
+    # second ban, 30 days
+    elif strikes == 1:
+        User.objects.filter(user_id=userid).update(banned=True, strikes=2, banned_until=datetime.date.today() + datetime.timedelta(days=30))
+    # third ban, lifetime
+    elif strikes == 2:
+        User.objects.filter(user_id=userid).update(banned=True, strikes=3, banned_until=datetime.date.today().replace(year=datetime.date.today().year+1000))
+    # just incase any other stike number comes in
+    else:
+        pass
+    
     return redirect('transfer-request', requestid)
 
 @login_required
