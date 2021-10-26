@@ -49,7 +49,9 @@ urlpatterns = [
     path('reports', views.reports, name='reports'),
 
     # feedback
+    path('ban-request/<uuid:requestid>', views.feedback, name='ban-request'),
     path('feedback', views.feedback, name='feedback'),
+    path('ban-request/submitfeedback', views.submitFeedback, name='submitfeedback'),
     path('submitfeedback', views.submitFeedback, name='submitfeedback'),
     
     # APIs

@@ -12,7 +12,15 @@
         <a class="btn btn-info" id="noteBtn" href="#">Save Notes</a>
 
         {% if centcom == True %}<a class="btn btn-warning" href="{% url 'api-removeCentcom' rc.request_id %}">Remove Centcom Status</a>{% endif %}
-        {% if not buggedUser and pki_id != '00000.0000.0.0000000' and not rc.user_banned%}<a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rc.request_id %}">Ban User</a>{% endif %}
+        {% if not buggedUser and pki_id != '00000.0000.0.0000000' and not rc.user_banned%}
+            {% if user.is_superuser %}
+                <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rc.request_id %}">Ban User,
+                    {% if rc.strikes == 0 %} 7 days{% elif rc.strikes == 1 %} 30 days{% elif rc.strikes == 2 %} Permanently{% endif %}
+                </a>
+            {% else %}
+                <a class="btn btn-danger" id="banBtn" href="{% url 'ban-request' rc.request_id %}">Request User Ban</a>
+            {% endif %}
+        {% endif %}
         <div class="card">
         {% csrf_token %}
             <div class="card-header">

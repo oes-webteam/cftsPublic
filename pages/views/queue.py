@@ -161,7 +161,9 @@ def transferRequest( request, id ):
         'org': rqst.org,
         'has rejected files': rqst.has_rejected,
         'all files rejected': rqst.all_rejected,
-        'user_banned': user.banned
+        'user_banned': user.banned,
+        'strikes': user.strikes,
+        'banned_until': user.banned_until
     }
     return render(request, 'pages/transfer-request.html', {'rc': rc, 'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": user.user_id, 'pki_id': user.user_identifier, 'buggedUser': user.user_identifier in buggedPKIs})
 
