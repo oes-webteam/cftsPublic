@@ -438,7 +438,6 @@ def process ( request ):
         for i, f in enumerate( form_files.getlist( "files" )):
             this_file = File(
                 file_object = f,
-                file_name = f,
                 classification = Classification.objects.get( abbrev = file_info[ i ][ 'classification' ] ),
                 is_pii = file_info[ i ][ 'encrypt' ] == 'true',
                 org = form_data.get( 'organization' ),
@@ -465,6 +464,9 @@ def process ( request ):
                 this_file.file_size = this_file.file_object.size
 
             this_file.save()
+            this_file.file_name = str(this_file.file_object.name).split("/")[-1]
+            this_file.save()
+
             request.files.add( this_file )
             fileList.append(str(f))
 
