@@ -57,10 +57,10 @@ def frontend(request):
                     
                     # are they a new user or an existing user?
                     try:
-                        user = User.objects.filter(user_identifier=userHash)[0]
+                        user = User.objects.get(user_identifier=userHash)
                         if user.banned == True:
                             if date.today() >= user.banned_until:
-                                user.update(banned=False)
+                                User.objects.filter(user_identifier=userHash).update(banned=False)
 
                                 rc = {'networks': nets, 'resources': resources,
                                 'cert': cert, 'userHash': userHash,'browser': browser}
