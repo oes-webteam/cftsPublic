@@ -12,7 +12,7 @@
         </tr>
 {% for r in rc.requests %}
         <tr class="data-row">
-            <td class="xfer-user"><a href="{% url 'admin:pages_request_change' r.request_id %}" class="user" id="{{ r.user.user_id }}">{{ r.user }}</a></td>
+            <td class="xfer-user"><a href="{% url 'userRequests' r.request_id %}" class="user" id="{{ r.user.user_id }}">{{ r.user }}</a></td>
             <td class="xfer-date">{{ r.date_created|date:"m/d/Y Hi" }}</td>
             <td class="xfer-net">{{ r.network }}</td>
             <td class="xfer-files">
