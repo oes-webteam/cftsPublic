@@ -316,45 +316,49 @@ function failHandler(r, s) {
 function process(e) {
   preventDefaults(e);
   
-  // disable the submit button once clicked, prevent duplicate submissions from multi clicks
-  $('#submitButton').prop('disabled',true);
+  if (userBanned !="True"){
+    // disable the submit button once clicked, prevent duplicate submissions from multi clicks
+    $('#submitButton').prop('disabled',true);
 
-  let isValid = validateForm(xferForm);
+    let isValid = validateForm(xferForm);
 
-  if (isValid) {
-    // Give user feedback that the submit action occurred and things are happening
-    notifyUserSuccess(
-      "Submitting the request now. This could take up to a few minutes depending upon the size of the files being transferred. Please stand by ... "
-    );
+    if (isValid) {
+      // Give user feedback that the submit action occurred and things are happening
+      notifyUserSuccess(
+        "Submitting the request now. This could take up to a few minutes depending upon the size of the files being transferred. Please stand by ... "
+      );
 
-    // give it a quick refresh
-    updateFileInfo();
+      // give it a quick refresh
+      updateFileInfo();
 
-    let prepData = prepareFormData(xferForm);
+      let prepData = prepareFormData(xferForm);
 
+      
+        //Add the CSRF token to ajax requests
+      $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+          xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+        },
+      });
+
+
+      ajaxSettings = {
+        url: "api-processrequest",
+        method: "POST",
+        data: prepData,
+        contentType: false,
+        processData: false,
+      };
+      $.ajax(ajaxSettings).done(successHandler).fail(failHandler);
+    } else {
+      console.log("Request Process Canceled");
+
+      // notify the user there were validation errors
+      notifyUserWarning("There are errors on the request form.  Please review and address the indicated fields.");
+
+      // re-enable the submit button
+      $('#submitButton').prop('disabled',false);
+    }
     
-      //Add the CSRF token to ajax requests
-     $.ajaxSetup({
-       beforeSend: function (xhr, settings) {
-         xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
-       },
-     });
-
-
-    ajaxSettings = {
-      url: "api-processrequest",
-      method: "POST",
-      data: prepData,
-      contentType: false,
-      processData: false,
-    };
-    $.ajax(ajaxSettings).done(successHandler).fail(failHandler);
-  } else {
-
-    // notify the user there were validation errors
-    notifyUserWarning("There are errors on the request form.  Please review and address the indicated fields.");
-
-    // re-enable the submit button
-    $('#submitButton').prop('disabled',false);
   }
 }

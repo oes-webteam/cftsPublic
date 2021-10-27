@@ -5,7 +5,7 @@ import os
 from datetime import datetime
 from zipfile import ZipFile
 from django.conf import settings
-from django.http.response import FileResponse
+from django.http.response import FileResponse, HttpResponse
 
 # utilities
 from django.utils.dateparse import parse_date
@@ -191,6 +191,7 @@ def getUser(request, id):
 @login_required
 def runNumbers(request):
     unique_users = []
+    banned_users = []
     skipUsers = ['f7d359ebb99a6a8aac39b297745b741b', '00000.0000.0.0000000']
     files_reviewed = 0
     files_transfered = 0
@@ -231,8 +232,10 @@ def runNumbers(request):
 
     for rqst in requests_in_range:
 
-        if rqst.user.user_identifier not in skipUsers and rqst.user.user_identifier not in unique_users:
-            unique_users.append(rqst.user.user_identifier)
+        if rqst.user.user_identifier not in skipUsers and rqst.user not in unique_users:
+            unique_users.append(rqst.user)
+            if rqst.user.banned == True and rqst.user not in banned_users:
+                banned_users.append(rqst.user)
 
         files_in_request = rqst.files.all()
 
@@ -294,7 +297,9 @@ def runNumbers(request):
         i += 1
 
     unique_users_count = len(unique_users)
-    return JsonResponse({'org_counts': org_counts,'files_reviewed': files_reviewed, 'files_transfered': files_transfered, 'files_rejected': files_rejected, 'centcom_files': centcom_files, 'file_types': file_type_counts, 'file_sizes': str(round(file_size,2))+" "+sizeSuffix[i], 'user_count': unique_users_count })
+    banned_users_count = len(banned_users)
+    return JsonResponse({'org_counts': org_counts,'files_reviewed': files_reviewed, 'files_transfered': files_transfered, 'files_rejected': files_rejected, 'centcom_files': centcom_files, 
+    'file_types': file_type_counts, 'file_sizes': str(round(file_size,2))+" "+sizeSuffix[i], 'user_count': unique_users_count, 'banned_count':banned_users_count})
 
 def process ( request ):
     resp = {}

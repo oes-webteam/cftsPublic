@@ -49,7 +49,9 @@ urlpatterns = [
     path('reports', views.reports, name='reports'),
 
     # feedback
+    path('ban-request/<uuid:requestid>', views.feedback, name='ban-request'),
     path('feedback', views.feedback, name='feedback'),
+    path('ban-request/submitfeedback', views.submitFeedback, name='submitfeedback'),
     path('submitfeedback', views.submitFeedback, name='submitfeedback'),
     
     # APIs
@@ -63,6 +65,7 @@ urlpatterns = [
     path('api-getclassifications', views.getClassifications, name='api-getclassifications'),
     path('api-removeCentcom/<uuid:id>', views.removeCentcom, name='api-removeCentcom'),
     path('api-requestnotes/<uuid:requestid>', views.requestNotes, name='api-requestnotes'),
+    path('api-banuser/<uuid:userid>/<uuid:requestid>', views.banUser, name='api-banuser'),
 
     # dev tools
     path('tools-makefiles', views.makeFiles, name='make-files'),
