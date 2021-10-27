@@ -40,7 +40,7 @@
                                 <span title="PII: {{ file.is_pii }}&#10;CENTCOM Info: {{ file.is_centcom_info }}">🔒</span>
                                 {% endif %}
                             </td>
-                            <td colspan="2"><a title="{{ file }}" href="getFile/{{file.file_object}}">{{ file }}</a></td>
+                            <td colspan="2"><a title="{{ file }}" href="getFile/{{file.file_object}}">{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</a></td>
                         </tr>
                         {% endfor %}
                         <!-- end files -->
