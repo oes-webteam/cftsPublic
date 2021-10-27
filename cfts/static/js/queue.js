@@ -36,7 +36,7 @@ jQuery( document ).ready( function() {
     beforeSend: function( xhr, settings ) {
       xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
     } 
-   });
+  });
 
   // PULL BUTTON CLICK HANDLER
   $( '.pull-button' ).click( e => {
@@ -64,7 +64,7 @@ jQuery( document ).ready( function() {
       $('.pull-button').prop('disabled', true);
 
       $.get( url, {}, 'json').then(
-	function(resp, status){
+        function(resp, status){
           // TODO: AJAX success != pull success
           // display success to the user
           alert( 'Pull complete. New ZIP file created for ' + netName + '.  Click the download button to retrieve it.' );
@@ -83,19 +83,19 @@ jQuery( document ).ready( function() {
           // update last pulled info
           $( '.last-pull-info .date-pulled' ).text( resp.datePulled );
           $( '.last-pull-info .user-pulled' ).text( resp.userPulled );
-	  notifyUserSuccess("Pull Created Successfully")
+          notifyUserSuccess("Pull Created Successfully")
 
           $( "#forceReload" ).submit();
 
         }, 
 
-	function(resp, status){
-            console.error( 'Shit broke, yo.' );
-	    alert("Failed to create pull, send error message to web team.")
-            responseText = resp.responseText
-	    errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"))
+        function(resp, status){
+          console.error( 'Shit broke, yo.' );
+          alert("Failed to create pull, send error message to web team.")
+          responseText = resp.responseText
+          errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"))
 
-	    notifyUserError("Error Creating Pull, send error message to web team:  " + errorInfo)
+          notifyUserError("Error Creating Pull, send error message to web team:  " + errorInfo)
         }
       );
     }
@@ -188,7 +188,7 @@ const sendUnrejectRequest = (data) => {
     let id_list = [];
       data.forEach( ( f ) => {
         id_list.push( f.fileID ) 
-       });
+      });
 
       const postData = {
         'request_id': data[0]['requestID'],  // doesn't matter which request we grab
@@ -198,19 +198,19 @@ const sendUnrejectRequest = (data) => {
       const setUnrejectOnFiles = $.post( '/api-unreject', postData, 'json' ).then( 
         // success
         function( resp, status ) {
-           console.log( 'SUCCESS' );        
-           notifyUserSuccess("File Unreject Successful")
-	   $( "#forceReload" ).submit();
+          console.log( 'SUCCESS' );        
+          notifyUserSuccess("File Unreject Successful")
+          $( "#forceReload" ).submit();
         },
         // fail 
         function( resp, status ) {
-           console.log( 'FAIL' );
+          console.log( 'FAIL' );
 
-	   alert("Failed to unreject files, send error message to web team.")
-	   responseText = resp.responseText
-	   errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"))
+          alert("Failed to unreject files, send error message to web team.")
+          responseText = resp.responseText
+          errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"))
 
-           notifyUserError("Error unrejecting file, send error message to web team: " + errorInfo)
+          notifyUserError("Error unrejecting file, send error message to web team: " + errorInfo)
            //console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
           // console.log( 'Response status: ' + status );
         }
@@ -271,7 +271,7 @@ const sendUnrejectRequest = (data) => {
     let id_list = [];
       data.forEach( ( f ) => {
         id_list.push( f.fileID ) 
-       });
+      });
 
       const postData = {
         'request_id': data[0]['requestID'],  // doesn't matter which request we grab
@@ -281,19 +281,19 @@ const sendUnrejectRequest = (data) => {
       const setEncryptOnFiles = $.post( '/api-setencrypt', postData, 'json' ).then( 
         // success
         function( resp, status ) {
-           console.log( 'SUCCESS' );        
-           notifyUserSuccess("File Encryption Successful")
-	   $( "#forceReload" ).submit();
+          console.log( 'SUCCESS' );        
+          notifyUserSuccess("File Encryption Successful")
+          $( "#forceReload" ).submit();
         },
         // fail 
         function( resp, status ) {
-           console.log( 'FAIL' );
+          console.log( 'FAIL' );
 
-	   alert("Failed to encrypt files, send error message to web team.")
-	   responseText = resp.responseText
-	   errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"))
+          alert("Failed to encrypt files, send error message to web team.")
+          responseText = resp.responseText
+          errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"))
 
-           notifyUserError("Error encrypting file, send error message to web team: " + errorInfo)
+          notifyUserError("Error encrypting file, send error message to web team: " + errorInfo)
            //console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
           // console.log( 'Response status: ' + status );
         }
@@ -321,7 +321,6 @@ const sendUnrejectRequest = (data) => {
 
       $(e.target).text("Show Duplicates")
       $(e.target).removeClass('dupes-visable')
-     
       
     }
 
@@ -337,7 +336,6 @@ const sendUnrejectRequest = (data) => {
     }
 
   });
- 
 
   // REJECTION MODAL DEFINITIONS (POPUP)
   const checkSelection = ( selector ) => {
@@ -369,7 +367,7 @@ const sendUnrejectRequest = (data) => {
       let id_list = [];
       data.forEach( ( f ) => {
         id_list.push( f.fileID ) 
-       });
+      });
 
       const postData = {
         'reject_id': $this.val(),
@@ -380,13 +378,14 @@ const sendUnrejectRequest = (data) => {
       const setRejectOnFiles = $.post( '/api-setreject', postData, 'json' ).then( 
         // success
         function( resp ) {
-           console.log( 'SUCCESS' );
-           notifyUserSuccess("File rejection Successful")
-           console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
+          console.log( 'SUCCESS' );
+          notifyUserSuccess("File rejection Successful")
+          //console.log( 'Server response: ' + resp);
 
-      // download eml file      
-      let $anchor = $( "<a class='emailLink' target='_blank' href='/api-geteml/"+ resp.emlName +"'></a>" );
+      // create mailto anchor
+      let $anchor = $( "<a class='emailLink' target='_blank' href='" + resp + "''></a>" );
       $( document.body ).append( $anchor );
+      
       $( '.emailLink' ).each( function() { $(this)[0].click(); } );  
 	
 
@@ -400,14 +399,14 @@ const sendUnrejectRequest = (data) => {
         // fail 
         function( resp, status ) {
 	   // close the dialog
-           $( theDialog ).dialog( 'close' );
-	   alert("Failed to reject files, send error message to web team.")
+          $( theDialog ).dialog( 'close' );
+          alert("Failed to reject files, send error message to web team.")
 
-           console.log( 'FAIL' );
-	   responseText = resp.responseText
-	   errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"))
+          console.log( 'FAIL' );
+          responseText = resp.responseText
+          errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"))
 
-           notifyUserError("Error rejecting file, send error message to web team: " + errorInfo)
+          notifyUserError("Error rejecting file, send error message to web team: " + errorInfo)
            //console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
           // console.log( 'Response status: ' + status );
         }

@@ -1,0 +1,26 @@
+{% load util %}
+
+{% block scanResult %}
+    {% for result in results %}
+        <li class="root-item list-group-item m-2 p-3">{{result.file}}
+            <ul class="scanned-list">
+                {% if result.imgCount %}
+                    <li class="img-count m-2">{{result.imgCount}} image{{result.imgCount|pluralize}} cannot be scanned</li>
+                {% endif %}
+
+                {% for subFiles in result.found %}
+                    {% if subFiles.image %}
+                    {% else %}
+                        <li class="scanned-item">{{subFiles.file}}
+                            <ul class="inner-files">
+                                {% for hit in subFiles.findings %}
+                                <li class="scanned-file">{{hit}}</li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </li>
+    {% endfor %}
+{% endblock  %}

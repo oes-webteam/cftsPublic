@@ -43,12 +43,15 @@ urlpatterns = [
 
     # archive
     path('archive', views.archive, name='archive'),
+    path('filterArchive', views.filterArchive, name='filterArchive'),
 
     # reporting
     path('reports', views.reports, name='reports'),
 
     # feedback
+    path('ban-request/<uuid:requestid>', views.feedback, name='ban-request'),
     path('feedback', views.feedback, name='feedback'),
+    path('ban-request/submitfeedback', views.submitFeedback, name='submitfeedback'),
     path('submitfeedback', views.submitFeedback, name='submitfeedback'),
     
     # APIs
@@ -60,13 +63,14 @@ urlpatterns = [
     path('api-processrequest', views.process, name='api-processrequest'),
     path('api-setconsentcookie', views.setConsentCookie, name='api-setconsentcookie'),
     path('api-getclassifications', views.getClassifications, name='api-getclassifications'),
-    path('api-geteml/<str:emlName>', views.getEml, name='api-geteml'),
     path('api-removeCentcom/<uuid:id>', views.removeCentcom, name='api-removeCentcom'),
     path('api-requestnotes/<uuid:requestid>', views.requestNotes, name='api-requestnotes'),
+    path('api-banuser/<uuid:userid>/<uuid:requestid>', views.banUser, name='api-banuser'),
 
     # dev tools
     path('tools-makefiles', views.makeFiles, name='make-files'),
     path('tools-stubget', views.stubGet, name='stub-get'),
     path('tools-stubpost', views.stubPost, name='stub-post'),
     path('tools-setupdb', views.setupDB, name="setupdb"),
+    path('tools-updateFileInfo', views.updateFiles, name='api-updateFileInfo'),
 ]

@@ -65,7 +65,7 @@
                 <div class="input-group-prepend">
                     <span class="input-group-text" id="categoryRequired">*</span>
                   </div>
-                  <input class="form-control" name="title" id="title"></input>
+                  <input class="form-control" name="title" id="title" {% if rc.rqst %}value="Ban Request: {{rc.rqst.user}}"{% endif %}></input>
                 </div>
 
                 <h3>Category</h3>
@@ -75,6 +75,9 @@
                     <span class="input-group-text" id="categoryRequired">*</span>
                   </div>
                   <select class="form-control category" name="category" id="category" >
+                  {% if rc.rqst %}
+                    <option value="Bug Report">Ban Request</option>
+                  {% endif %}
                   <option value="Bug Report">Bug Report</option>
                   {% if user.is_authenticated %}
                   <option value="Feedback">Feedback</option>
@@ -90,7 +93,7 @@
 
                 <h3 id="feedback_title">Feedback</h3>
                 <div class="form-group input-group">
-                  <textarea class="form-control feedback" name="feedback" id="feedback" placeholder="Please be as detailed as possible and provide steps to reproduce the bug if possible."></textarea>
+                  <textarea class="form-control feedback" name="feedback" id="feedback" placeholder="Please be as detailed as possible and provide steps to reproduce the bug if possible.">{% if rc.rqst %}Request details:&#010;https://{{request.get_host}}/transfer-request/{{rc.rqst.request_id}}&#013; &#010;Please provide details about ban request:&#010;{% endif %}</textarea>
                 </div>
               </div>
             </div>

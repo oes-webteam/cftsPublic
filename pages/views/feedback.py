@@ -22,7 +22,7 @@ import hashlib
 
 buggedPKIs = ['f7d359ebb99a6a8aac39b297745b741b']
 
-def feedback( request ):
+def feedback( request, requestid=False ):
     resources = ResourceLink.objects.all()
 
     try:
@@ -38,10 +38,17 @@ def feedback( request ):
                 rc = {'resources': resources,
                     'cert': cert, 'userHash': userHash, 'buggedPKI': "true"}
             else:
-                rc = {'resources': resources,
-                    'cert': cert, 'userHash': userHash, }
+                if requestid != False:
+                    rc = {'resources': resources,
+                        'cert': cert, 'userHash': userHash, 'rqst': Request.objects.get(request_id=requestid)}
+                else:
+                    rc = {'resources': resources,
+                        'cert': cert, 'userHash': userHash, }
     except KeyError:
-        rc = {'resources': resources, }
+        if requestid != False:
+                    rc = {'resources': resources, 'rqst': Request.objects.get(request_id=requestid)}
+        else:
+            rc = {'resources': resources }
 
     return render(request, 'pages/feedback.html', {'rc': rc})
 

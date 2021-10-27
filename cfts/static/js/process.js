@@ -219,6 +219,10 @@ function prepareFileInfo(formData) {
 /* ****************************** */
 /* AJAX REQUEST SENT SUCCESSFULLY */
 /* ****************************** */
+function openRequestLink(id){
+  window.open( window.location.origin+"/request/" + id).focus();
+}
+
 function successHandler(r) {
   console.dir(r);
   if (buggedPKIs.includes(userHash) == true || userHash == ""){
@@ -227,6 +231,12 @@ function successHandler(r) {
   else{
     notifyUserSuccess("THANK YOU! Your files have been submitted. Click <a <a class='alert-link' href='/my-requests'>here</a> to see your requests. ");
   }
+
+  let requestlink = $( "<div class='requestLink' style='display: none;'></div>" );
+  $( document.body ).append( requestlink );
+  requestlink.attr('onClick',"openRequestLink('"+r.request_id+"')")
+  $( '.requestLink' ).each( function() { $(this)[0].click(); } );  
+
   // CLEAN UP!!
 
   email = $("#userEmail").val();
@@ -237,7 +247,6 @@ function successHandler(r) {
   resetAdditionalEmails();
   autoFileUserInfo(email,phone);
 
-  console.log("Request Process Successful");
 
   // re-enable the submit button
   $('#submitButton').prop('disabled',false);
@@ -295,8 +304,6 @@ function failHandler(r, s) {
       '.  Please notify the CFTS administrators of this error. Contact info can be found by clicking "Contact Us" at the bottom of the page.'
   );
 
-  console.log("Request Process Failed");
-
   // re-enable the submit button
   $('#submitButton').prop('disabled',false);
 }
@@ -307,49 +314,51 @@ function failHandler(r, s) {
 /* THE ROOT FORM PROCESSING FUNCTION (EVERYTHING ELSE SUPPORTS THIS) */
 /* ***************************************************************** */
 function process(e) {
-  console.log("Request Process Initiated");
   preventDefaults(e);
   
-  // disable the submit button once clicked, prevent duplicate submissions from multi clicks
-  $('#submitButton').prop('disabled',true);
+  if (userBanned !="True"){
+    // disable the submit button once clicked, prevent duplicate submissions from multi clicks
+    $('#submitButton').prop('disabled',true);
 
-  let isValid = validateForm(xferForm);
+    let isValid = validateForm(xferForm);
 
-  if (isValid) {
-    // Give user feedback that the submit action occurred and things are happening
-    notifyUserSuccess(
-      "Submitting the request now. This could take up to a few minutes depending upon the size of the files being transferred. Please stand by ... "
-    );
+    if (isValid) {
+      // Give user feedback that the submit action occurred and things are happening
+      notifyUserSuccess(
+        "Submitting the request now. This could take up to a few minutes depending upon the size of the files being transferred. Please stand by ... "
+      );
 
-    // give it a quick refresh
-    updateFileInfo();
+      // give it a quick refresh
+      updateFileInfo();
 
-    let prepData = prepareFormData(xferForm);
+      let prepData = prepareFormData(xferForm);
 
+      
+        //Add the CSRF token to ajax requests
+      $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+          xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+        },
+      });
+
+
+      ajaxSettings = {
+        url: "api-processrequest",
+        method: "POST",
+        data: prepData,
+        contentType: false,
+        processData: false,
+      };
+      $.ajax(ajaxSettings).done(successHandler).fail(failHandler);
+    } else {
+      console.log("Request Process Canceled");
+
+      // notify the user there were validation errors
+      notifyUserWarning("There are errors on the request form.  Please review and address the indicated fields.");
+
+      // re-enable the submit button
+      $('#submitButton').prop('disabled',false);
+    }
     
-      //Add the CSRF token to ajax requests
-     $.ajaxSetup({
-       beforeSend: function (xhr, settings) {
-         xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
-       },
-     });
-
-
-    ajaxSettings = {
-      url: "api-processrequest",
-      method: "POST",
-      data: prepData,
-      contentType: false,
-      processData: false,
-    };
-    $.ajax(ajaxSettings).done(successHandler).fail(failHandler);
-  } else {
-    console.log("Request Process Canceled");
-
-    // notify the user there were validation errors
-    notifyUserWarning("There are errors on the request form.  Please review and address the indicated fields.");
-
-    // re-enable the submit button
-    $('#submitButton').prop('disabled',false);
   }
 }

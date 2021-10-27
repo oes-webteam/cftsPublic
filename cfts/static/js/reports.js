@@ -47,6 +47,7 @@ $( document ).ready( function( ) {
           $( '#centcom' ).text( resp.centcom_files );
           $( '#rejected' ).text( resp.files_rejected );
           $( '#users' ).text( resp.user_count );
+          $( '#users-banned' ).text( resp.banned_count );
           
           $( '#excel' ).text("Excel files: " + resp.file_types.excel);
           $( '#word' ).text("Word files: " + resp.file_types.word);
@@ -54,6 +55,8 @@ $( document ).ready( function( ) {
           $( '#txt' ).text("Text files: " + resp.file_types.text);
           $( '#pdf' ).text("PDF files: " + resp.file_types.pdf);
           $( '#img' ).text("Image files: " + resp.file_types.img);
+          $( '#zip' ).text("Zip files: " + resp.file_types.zip);
+          $( '#zipContents' ).text("Total files in zips: " + resp.file_types.zipContents);
           $( '#other' ).text("Other files: " + resp.file_types.other);
 
           $( '#CENTCOM-HQ' ).text("CENTCOM: " + resp.org_counts.HQ);
