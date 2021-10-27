@@ -120,8 +120,7 @@ jQuery( document ).ready( function() {
   } // end applyFilters
 
 
-  $("#submit-button").click(function (e) { 
-    e.preventDefault();
+  function getRequests(){
     data = applyFilters()
 
     console.log(data)
@@ -145,6 +144,18 @@ jQuery( document ).ready( function() {
           $("#templateTable").html(response)
         }
       });
+    }
+  }
+
+  $("#submit-button").click(function (e) { 
+    e.preventDefault();
+    getRequests();
+  });
+
+  $(".filter").keypress(function (e) { 
+    if(e.which==13){
+      getRequests();
+
     }
   });
 

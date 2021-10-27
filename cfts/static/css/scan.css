@@ -1,5 +1,3 @@
-#scan-results { display: none; }
-
 #scan-results h3, #loading-icon h3 {
   color: red;
 }
@@ -27,3 +25,8 @@
 .inner-files {}
 
 .scanned-file {}
+
+.img-count{
+  list-style-type: none;
+  font-size: 1rem;
+}

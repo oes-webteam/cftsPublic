@@ -32,7 +32,6 @@ logger = logging.getLogger('django')
 
 # ====================================================================
 
-
 @login_required
 @never_cache
 def scan(request,pullZip):
@@ -69,8 +68,8 @@ def scan(request,pullZip):
 
         # clean up after yourself
         shutil.rmtree(extractPath)
-        
-        return JsonResponse(results, safe=False)
+
+        return render(request, 'partials/Scan_partials/scanResults.html', {'results': results})
 
     # GET
     if pullZip !="none":
@@ -89,6 +88,7 @@ def runScan(extractPath):
 
     # \cfts\scan should contain all the user folders from the zip file
     printBin = re.compile('printerSettings(\d+).bin')
+    imgFiles = re.compile('(jpe?g|png|gif|bmp)', re.IGNORECASE)
     scanSkip = ["_email.txt", "_encrypt.txt", "_notes.txt"]
 
 
@@ -97,6 +97,7 @@ def runScan(extractPath):
         for filename in files:            
             fileList.append(root+"\\"+filename)
     for filename in fileList:
+        imgCount = 0
         if filename.split("\\")[-1] not in scanSkip:
             if printBin.match(filename.split("\\")[-1]) == None:
                 try:
@@ -108,12 +109,20 @@ def runScan(extractPath):
 
                         if file_results is not None:
                             for result in file_results:
-                                if result['findings'] != ['File is corrupt. Cannot scan.']:
-                                    temp, ext = os.path.splitext(result['file'])    
-                                    if ext in office_filetype_list:
-                                        embedOffFilePath = os.path.dirname(filename)+"\\"+result['file'].split('\\')[-1]
-                                        shutil.move(result['file'], embedOffFilePath)
-                                        fileList.append(embedOffFilePath)
+                                try:
+                                    if imgFiles.match(result['file'].split(".")[-1]) == None:
+                                        if result['findings'] != ['File is corrupt. Cannot scan.']:
+                                            temp, ext = os.path.splitext(result['file'])    
+                                            if ext in office_filetype_list:
+                                                embedOffFilePath = os.path.dirname(filename)+"\\"+result['file'].split('\\')[-1]
+                                                shutil.move(result['file'], embedOffFilePath)
+                                                fileList.append(embedOffFilePath)
+                                    else:
+                                        imgCount+=1
+                                        result['image']=True
+
+                                except KeyError:
+                                    pass
                                 
                         # clean up after yourself
                         if os.path.isdir(os.path.dirname(filename)+"\\office"):
@@ -133,9 +142,11 @@ def runScan(extractPath):
 
                         textFile.close()
                         text_path = os.path.join(temp+".txt")
-                        file_results = scanFile(text_path)
-                        if file_results is not None:
-                            file_results['file'] = filename
+                        file_results = [scanFile(text_path)]
+                        if file_results[0] is not None:
+                            file_results[0]['file'] = filename
+                        else:
+                            file_results = None
 
                     elif(ext == '.zip'):
                         fileZip = ZipFile(os.path.join(root,filename))
@@ -146,7 +157,9 @@ def runScan(extractPath):
                                 fileList.append(zipRoot+"\\"+file)
 
                     else:
-                        file_results = scanFile(filename)
+                        file_results = [scanFile(filename)]
+                        if imgFiles.match(file_results[0]['file'].split(".")[-1]) != None:
+                            imgCount+=1
 
                 except Exception as e:
                     file_results = []
@@ -160,7 +173,9 @@ def runScan(extractPath):
                     result = {}
                     result['file'] = filename
                     result['found'] = file_results
-                    scan_results.append(result)
+                    if imgCount > 0:
+                        result['imgCount'] = imgCount
+                    scan_results.append(result)                    
 
     return scan_results
 
@@ -179,18 +194,18 @@ def scanOfficeFile(office_file):
                 if printBin.match(filename.split("\\")[-1]) == None:
                     file_path = os.path.join(root, filename)
                     findings = scanFile(file_path)
+
                     if(findings is not None):
                         if(results is None):
                             results = []
                         results.append(findings)
-
     except BadZipFile:
         if results is None:
             results = []
             
         result = {
             'file': office_file,
-            'findings': ['File is corrupt. Cannot scan.']
+            'findings': ['File is corrupt. Cannot scan.'],
             }
         results.append(result)
     # done
@@ -216,8 +231,8 @@ def scanFile(text_file):
         with open(text_file, "r", encoding="utf-8") as f:
             f_content = f.read()
             result = {
-               'file': text_file,
-               'findings': []
+                'file': text_file,
+                'findings': []
             }
             for compiled_reg in reg_lst:
                 found = re.finditer(compiled_reg, f_content)
@@ -225,6 +240,7 @@ def scanFile(text_file):
                     #result['findings'].append( '%s <br/> %s (%s)' % ( match.string, match.group(), match.start() ) )
                     result['findings'].append(
                         'This file contains the term: %s' % (match.group()))
+
             if not len(result['findings']):
                 result = None
 
