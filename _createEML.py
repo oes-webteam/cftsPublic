@@ -72,13 +72,13 @@ for path in requestPaths:
     print("creating email file...")
     encrpytEmail = False
     msg = MIMEMultipart()
-
+    body = ""
     for f in os.scandir(path):
         filePath = f.path
         
         if email.match(f.name)!= None:
             msg['Subject'] = 'CFTS File Transfer'
-            msg.attach(MIMEText('Attatched files transfered across domains from CFTS.'))
+            body += 'Attatched files transfered across domains from CFTS.'
 
             with open(filePath,'r') as _email:
                 msg['To'] = "".join(_email.read().splitlines())
@@ -86,14 +86,17 @@ for path in requestPaths:
 
         elif encrypt.match(f.name)!= None:
             msg['Subject'] = 'CFTS File Transfer'
-            msg.attach(MIMEText('''<p style="color: red;"><b>!!!! Found _encrypt.txt file in request. This email must be sent encrypted. !!!!</b></p><br>Attatched files transfered across domains from CFTS.''', 'html'))
+            body += '''Attatched files transfered across domains from CFTS.<br><p style="color: red;"><b>!!!! Found _encrypt.txt file in request. This email must be sent encrypted. !!!!</b></p>'''
             encrpytEmail = True
             
             with open(filePath,'r') as _email:
                 msg['To'] = "".join(_email.read().splitlines())
                 _email.close()
                 
-        elif notes.match(f.name) == None:
+        elif notes.match(f.name) != None:
+            body += '''<p style="color: blue;"><b>!!!! Found _notes.txt file in request. Check notes before sending. !!!!</b></p>'''
+            
+        else:
             fileMime = mimetypes.guess_type(filePath)
             file = open(filePath.encode('utf-8'),'rb')
             attachment = MIMEBase(fileMime[0],fileMime[1])
@@ -102,7 +105,9 @@ for path in requestPaths:
             encode_base64(attachment)
             attachment.add_header('Content-Disposition','attachment',filename=filePath.split("\\")[-1])
             msg.attach(attachment)
-
+            
+            
+    msg.attach(MIMEText(body,'html'))
     pathParts = path.split("\\")
     emlBase = "   " + pathParts[-2] + "   " + pathParts[-1] + ".eml"
     
