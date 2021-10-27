@@ -261,8 +261,8 @@ def runNumbers(request):
 
     for rqst in requests_in_range:
 
-        if rqst.user.user_identifier not in skipUsers and rqst.user not in unique_users:
-            unique_users.append(rqst.user)
+        if rqst.user.user_identifier not in skipUsers and rqst.user.user_identifier not in unique_users:
+            unique_users.append(rqst.user.user_identifier)
 
         files_in_request = rqst.files.all()
 
