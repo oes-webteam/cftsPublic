@@ -50,16 +50,29 @@ def filterArchive( request ):
     except IndexError:
       pullNum = ""
 
-  requests = Request.objects.filter( 
-    pull__isnull = False,
-    user__name_first__icontains=filters['userFirst'][0],
-    user__name_last__icontains=filters['userLast'][0],
-    network__name__icontains=filters['network'][0],
-    pull__network__name__icontains=networkName,
-    pull__pull_number__icontains=pullNum,
-    target_email__address__icontains=filters['email'][0],
-    org__icontains=filters['org'][0]
-    )
+  requests = Request.objects.filter( pull__isnull = False)
+
+  if filters['userFirst'][0] != "":
+      requests = requests.filter(user__name_first__icontains=filters['userFirst'][0])
+
+  if filters['userLast'][0] != "":
+      requests = requests.filter(user__name_last__icontains=filters['userLast'][0])
+
+  if filters['network'][0] != "":
+      requests = requests.filter(network__name__icontains=filters['network'][0])
+
+  if networkName != "":
+      requests = requests.filter(pull__network__name__icontains=networkName)
+
+  if pullNum != "":
+      requests = requests.filter(pull__pull_number__icontains=pullNum)
+
+  if filters['email'][0] != "":
+      requests = requests.filter(target_email__address__icontains=filters['email'][0])
+
+  if filters['org'][0] != "":
+      requests = requests.filter(org__iexact=filters['org'][0])
+      
 
   if filters['files'][0] != "":
     requests = requests.filter(files__file_name__icontains=filters['files'][0])
@@ -67,5 +80,6 @@ def filterArchive( request ):
   if filters['date'][0] != "":
     requests = requests.filter(date_created__date=filters['date'][0])
 
-  rc = { 'requests': requests, 'networks': networks }
+  rc = { 'requests': requests.distinct(), 'networks': networks }
+
   return render( request, 'partials/Archive_partials/archiveResults.html', { 'rc': rc })
