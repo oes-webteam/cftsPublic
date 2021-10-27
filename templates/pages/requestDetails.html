@@ -137,7 +137,7 @@
                                 <p>{{f.rejection_reason}}</p>
                             </td>
                             <td>
-                                <p>{{f.rejection_reason.text}}</p>
+                                {{f.rejection_reason.text|linebreaks}}
                             </td>
                         </tr>
                     {% endif %}

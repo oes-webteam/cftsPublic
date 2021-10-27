@@ -75,6 +75,8 @@ class File(models.Model):
   rejection_text = models.TextField(default=None, blank=True, null=True)
   org = models.CharField(max_length=50, default="")
   NDCI = models.BooleanField(default=False)
+  file_count = models.PositiveIntegerField(default=1)
+  file_size = models.PositiveBigIntegerField(default=0)
 
   class Meta:
     ordering = [F('file_name').asc(nulls_last=True)]
@@ -120,6 +122,9 @@ class User(models.Model):
   email = models.ForeignKey(Email, on_delete=models.DO_NOTHING)
   notes = models.TextField(null=True, blank=True)
   phone = models.CharField(max_length=50, default="000-000-0000")
+  banned = models.BooleanField(default=False)
+  strikes = models.IntegerField(default=0)
+  banned_until = models.DateField(null=True, blank=True)
 
   class Meta:
     ordering = ['name_last']

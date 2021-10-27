@@ -27,6 +27,7 @@ jQuery( document ).ready( function() {
         window.location.replace(window.location)
       },
     ); 
+
   });
 
 });

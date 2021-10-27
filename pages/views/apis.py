@@ -5,7 +5,7 @@ import os
 from datetime import datetime
 from zipfile import ZipFile
 from django.conf import settings
-from django.http.response import FileResponse
+from django.http.response import FileResponse, HttpResponse
 
 # utilities
 from django.utils.dateparse import parse_date
@@ -20,7 +20,7 @@ from django.template.loader import render_to_string
 from django.template import Template, Context
 
 # , HttpResponse, FileResponse
-from django.http import JsonResponse, HttpResponseRedirect
+from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 
 # cfts settings
 from cfts import settings as Settings
@@ -41,6 +41,8 @@ from email.encoders import encode_base64
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 import mimetypes
+from io import StringIO
+from urllib.parse import quote
 
 import logging
 
@@ -86,37 +88,16 @@ def setReject(request):
     except AttributeError:
         print("Request not found in any pull.")
     
-    emlName = createEml(request,request_id,id_list,reject_id)    
-    return JsonResponse({'emlName': emlName})
+    eml = createEml(request,request_id,id_list,reject_id)
+    return HttpResponse(str(eml))
     
 @login_required
 def createEml( request, request_id, files_list, reject_id ):
     
     rqst = Request.objects.get(request_id=request_id[0])
     rejection = Rejection.objects.get(rejection_id=reject_id[0])
-    
 
-    emlName = rqst.user.__str__() + "reject_1.eml"
-    msgPath = os.path.join(Settings.TEMP_FILES_DIR, emlName)
-    
-    if emlName in os.listdir(Settings.TEMP_FILES_DIR):
-                i = 1
-                print("eml file exists")
-                while True:
-                    emlName = rqst.user.__str__() + "reject_" + str(i) + ".eml"
-                    msgPath = os.path.join(Settings.TEMP_FILES_DIR, emlName)
-                    print("Trying " + emlName)
-                    if emlName in os.listdir(Settings.TEMP_FILES_DIR):
-                        i = i + 1
-                    else:
-                        break
-
-    msg = MIMEMultipart()
-    
-    msg['To'] = str(rqst.user.email)
-    msg['Subject'] = "CFTS File Rejection"
-    
-    msgBody = "The following files have been rejected from your transfer request:\n"
+    msgBody = "mailto:" + str(rqst.user.email) + "&subject=CFTS File Rejection&body=The following files have been rejected from your transfer request:%0D%0A"
 
     files = File.objects.filter(file_id__in=files_list)       
     for file in files:
@@ -125,22 +106,11 @@ def createEml( request, request_id, files_list, reject_id ):
         else:
             msgBody += str(file.file_object).split("/")[-1] + ", "
 
-        
-    msgBody += render_to_string('partials/Queue_partials/rejectionEmailTemplate.html', {'rqst': rqst, 'rejection': rejection, 'firstName': rqst.user.name_first.split('_buggedPKI')[0]}, request)
 
-    msg.attach(MIMEText(msgBody, 'html'))
+    url = "https://"+str(request.get_host())+"/request/"+str(rqst.request_id)
+    msgBody += render_to_string('partials/Queue_partials/rejectionEmailTemplate.html', {'rqst': rqst, 'rejection': rejection, 'firstName': rqst.user.name_first.split('_buggedPKI')[0], 'url':url}, request)
 
-    msg.add_header('X-Unsent', '1')
-
-    with open(msgPath, 'w+') as eml:
-        gen = Generator(eml)
-        gen.flatten(msg)
-
-    return emlName
-
-@login_required
-def getEml(request, emlName):
-    return FileResponse(open(os.path.join(Settings.TEMP_FILES_DIR, emlName), "rb"), as_attachment=True)
+    return msgBody
 
 @login_required
 def unReject(request):
@@ -218,8 +188,10 @@ def getUser(request, id):
     }
     return JsonResponse(data)
 
+@login_required
 def runNumbers(request):
     unique_users = []
+    banned_users = []
     skipUsers = ['f7d359ebb99a6a8aac39b297745b741b', '00000.0000.0.0000000']
     files_reviewed = 0
     files_transfered = 0
@@ -233,6 +205,8 @@ def runNumbers(request):
         "ppt": 0,
         "text": 0,
         "img": 0,
+        "zip": 0,
+        "zipContents": 0,
         "other": 0
     }
     org_counts= {
@@ -260,51 +234,34 @@ def runNumbers(request):
 
         if rqst.user.user_identifier not in skipUsers and rqst.user not in unique_users:
             unique_users.append(rqst.user)
+            if rqst.user.banned == True and rqst.user not in banned_users:
+                banned_users.append(rqst.user)
 
         files_in_request = rqst.files.all()
 
         for f in files_in_request:
-            file_count = 1
             file_name = f.__str__()
             ext = str(file_name.split('.')[-1]).lower()
             file_types.append(ext)
+
             
 
-            # if it's a zip ...
-            if ext == 'zip':
-                # ... count all the files in the zip ...
-                path = f.file_object.path
-                with ZipFile(path, 'r') as zip:
-                    contents = zip.namelist()
-                    # ... minus the folders
-                    for c in contents:
-                        if c[-1] == "/" or c[-1] == "\\":
-                            contents.remove(c)
+            files_reviewed+= f.file_count
+            file_size+= f.file_size
 
-                        ext = str(c.split('.')[-1]).lower()
-                        file_types.append(ext)
-                        file_size = file_size + zip.getinfo(c).file_size
-                        org = str(f.org)
-                        if org != "":
-                            org_counts[org]+=1
-
-                    file_count = len(contents)
-            else:
-                file_size = file_size + os.stat(f.file_object.path).st_size            
-
-            # sum it all up
-            files_reviewed = files_reviewed + file_count
             # exclude the rejects from the transfers numbers
             if f.rejection_reason == None:
-                files_transfered = files_transfered + file_count
+                files_transfered+= f.file_count
+                if ext == "zip":
+                    file_type_counts['zipContents']+= f.file_count
                 if f.is_centcom == True:
-                    centcom_files = centcom_files + file_count
+                    centcom_files+= f.file_count
             else:
-                files_rejected = files_rejected + file_count
+                files_rejected+= f.file_count
             
             org = str(f.org)
             if org != "":
-                org_counts[org]+=1
+                org_counts[org]+=f.file_count
 
     # add up all file type counts
     pdfCount = file_types.count("pdf")
@@ -326,6 +283,7 @@ def runNumbers(request):
     file_type_counts["img"] = imgCount
 
     zipCount = file_types.count("zip")
+    file_type_counts["zip"] = zipCount
 
     otherCount = len(file_types) - (pdfCount + excelCount + wordCount + imgCount + pptCount + textCount + zipCount)
     file_type_counts["other"] = otherCount
@@ -339,7 +297,9 @@ def runNumbers(request):
         i += 1
 
     unique_users_count = len(unique_users)
-    return JsonResponse({'org_counts': org_counts,'files_reviewed': files_reviewed, 'files_transfered': files_transfered, 'files_rejected': files_rejected, 'centcom_files': centcom_files, 'file_types': file_type_counts, 'file_sizes': str(round(file_size,2))+" "+sizeSuffix[i], 'user_count': unique_users_count })
+    banned_users_count = len(banned_users)
+    return JsonResponse({'org_counts': org_counts,'files_reviewed': files_reviewed, 'files_transfered': files_transfered, 'files_rejected': files_rejected, 'centcom_files': centcom_files, 
+    'file_types': file_type_counts, 'file_sizes': str(round(file_size,2))+" "+sizeSuffix[i], 'user_count': unique_users_count, 'banned_count':banned_users_count})
 
 def process ( request ):
     resp = {}
@@ -453,13 +413,35 @@ def process ( request ):
         for i, f in enumerate( form_files.getlist( "files" )):
             this_file = File(
                 file_object = f,
-                file_name = f,
                 classification = Classification.objects.get( abbrev = file_info[ i ][ 'classification' ] ),
                 is_pii = file_info[ i ][ 'encrypt' ] == 'true',
-                 org = form_data.get( 'organization' ),
-                is_centcom = form_data.get( 'isCentcom' )
+                org = form_data.get( 'organization' ),
+                is_centcom = form_data.get( 'isCentcom' ),
             )
+
+            # if the uploaded file is a zip get the info of the contente
+            if str(f).split('.')[-1] == "zip":
+                with ZipFile(f, 'r') as zip:
+                    # get info for all files
+                    info = zip.infolist()
+                    # count of all files in zip
+                    this_file.file_count = len(info)
+
+                    # count the total uncompressed file size for all files in the zip
+                    fileSize = 0
+                    for file in info:
+                        fileSize+=file.file_size
+                    
+                    this_file.file_size = fileSize
+                    
+            else:
+                # if its not a zip just get the file size from the file object, file count defaults to 1
+                this_file.file_size = this_file.file_object.size
+
             this_file.save()
+            this_file.file_name = str(this_file.file_object.name).split("/")[-1]
+            this_file.save()
+
             request.files.add( this_file )
             fileList.append(str(f))
 
