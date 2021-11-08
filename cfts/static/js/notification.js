@@ -19,7 +19,8 @@ notifyUserWarning = ( msg ) => {
   $(".alert-success").hide()
   $(".server-error").hide()
   let alertDiv = $( ".danger-error" );
-  alertDiv.text( msg );  
+  if( alertDiv.is(':visible') ) msg = "<hr />" + msg;
+  alertDiv.append( msg );
   alertDiv.fadeIn();
 };
 
