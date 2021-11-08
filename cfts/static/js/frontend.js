@@ -87,36 +87,34 @@ const addFiles = ( e ) => {
 /* VALIDATE UPLOADED FILES (AS BEST WE CAN FOR NOW) */
 /* ************************************************ */
 const validateFile = ( thisFile ) => {
+  let charWhitelist = new RegExp( /[^a-z0-9\.\s_-]/ );
   let isvalid = true;
-  let msg = "File error " + thisFile.name;
+  let msg = "";
   
-  // kick out the JOPES
   let filename = thisFile.name.toLowerCase();
+
+  // kick out the JOPES
   if( filename.includes( "prf" ) || filename.includes( "lvy" ) || filename.includes( "levy" ) ) {
     // hard NO!!
-    msg += ": PRF and LVY files cannot be transferred per CFTS use policy. See Resources >> 'CFTS Policies' for details.";
-    notifyUserError( msg );
-    return false;
+    msg += "RF and LVY files cannot be transferred per CFTS use policy. See Resources >> 'CFTS Policies' for details.";
+    isvalid = false;
   }
-  else if( filename.includes(".eml") || filename.includes(".msg")){
-    msg+=": .eml and .msg files must be converted to an accepted file format before submission. Use outlook to export these files to a PDF, docx, ect."
-    notifyUserError( msg );
-    return false;
+  
+  // we don't transer emails
+  if( filename.includes(".eml") || filename.includes(".msg")){
+    msg += ".eml and .msg files must be converted to an accepted file format before submission. Use Outlook to export these files to a PDF, Word Document, or plain text file.";
+    isvalid = false;
   }
-      //did this ever work???
-  // for( let o of fileQueue ) {
-  //   let qFile = o.object;
 
-  //   // make sure this file doesn't already exist in the queue
-  //   // (crappy version -- would like to do this with MD5 or SHA-1 hash in the future)
-  //   // does this even do anything???
-  //   if( thisFile.name == qFile.name && thisFile.size == qFile.size ) {
-  //     msg += "\nA file of this name and size is already in the queue.";
-  //     notifyUser( msg );
-  //     isvalid = false;
-  //     break;
-  //   }
-  // }
+  // you seem to have a little ... something ... in your filename there.  You might want to clean that up.
+  if( charWhitelist.test( filename ) ) {
+    msg += "Special characters in filenames can cause the system to reject the files. Please review the filename and ensure it only contains letters, numbers, periods, dashes, or underscores.";
+  }
+  
+  if( msg.length > 0 ) {
+    msg = "File error -- " + thisFile.name + ": " + msg;
+    notifyUserWarning( msg );
+  }
 
   return isvalid;
 };
