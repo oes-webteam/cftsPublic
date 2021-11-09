@@ -147,7 +147,7 @@ def transferRequest( request, id ):
     rc = { 
         'User Name': user,
         'User_ID': user.user_identifier,
-        'User Email': user.email,
+        'User Emails': user.emails.all(),
         'Phone': user.phone,
         'network': Network.objects.get( network_id = rqst.network.network_id ),
         #'Marked as Centcom': rqst.is_centcom,

@@ -6,25 +6,29 @@ let fileQueue = [];
 let fileInfo = {};
 let addEmail = document.getElementById( "addEmail" );
 let classifications = [''];
-let buggedPKIs = ['f7d359ebb99a6a8aac39b297745b741b']
+//let buggedPKIs = ['f7d359ebb99a6a8aac39b297745b741b']
 
-console.log("Cache test")
+console.log(phone)
+console.log(email)
 /* *************************************************** */
 /* GET USER CERT INFORMATION FROM VAR IN FRONTEND.HTML */
 /* *************************************************** */
   // console.log(cert)
-  subject = cert.split("=")
-  subject = subject[subject.length-1]
-  // console.log(subject)
-  user = subject.split(".")
-  // console.log(user)
+  // subject = cert.split("=")
+  // subject = subject[subject.length-1]
+  // // console.log(subject)
+  // user = subject.split(".")
+  // // console.log(user)
 
-  if (buggedPKIs.includes(userHash) == false){
-	$("#firstName").val(user[1])
-  	$("#lastName").val(user[0]) 
-    }
+  // if (buggedPKIs.includes(userHash) == false){
+	$("#firstName").val(firstName)
+  $("#lastName").val(lastName) 
+  $("#userPhone").val(phone) 
+  $("#userEmail").val(email) 
+  //   }
   
-  $("#userID").val(userHash)
+  // $("#userID").val(userHash)
+
 
 /* ************************************* */
 /* Get classifications from Django admin */

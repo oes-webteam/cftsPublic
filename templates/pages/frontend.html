@@ -39,13 +39,15 @@
                   <div class="input-group-prepend">
                     <span class="input-group-text" id="firstNameRequired">*</span>
                   </div>
-                  <input type="text" class="form-control" name="firstName" id="firstName" placeholder= "First Name" {% if rc.cert %}{% if rc.buggedPKI == "true" %}{% else %}readonly{% endif %}{% endif %} />
+                  {% comment %} <input type="text" class="form-control" name="firstName" id="firstName" placeholder= "First Name" {% if rc.cert %}{% if rc.buggedPKI == "true" %}{% else %}readonly{% endif %}{% endif %} /> {% endcomment %}
+                  <input type="text" class="form-control" name="firstName" id="firstName" placeholder= "First Name" readonly/>
                 </div>
                 <div class="form-group input-group">
                   <div class="input-group-prepend">
                     <span class="input-group-text" id="lastNameRequired">*</span>
                   </div>
-                  <input type="text" class="form-control" name="lastName" id="lastName" placeholder="Last Name" {% if rc.cert %}{% if rc.buggedPKI == "true" %}{% else %}readonly{% endif %}{% endif %} />
+                  {% comment %} <input type="text" class="form-control" name="lastName" id="lastName" placeholder="Last Name" {% if rc.cert %}{% if rc.buggedPKI == "true" %}{% else %}readonly{% endif %}{% endif %} /> {% endcomment %}
+                  <input type="text" class="form-control" name="lastName" id="lastName" placeholder="Last Name" readonly/>
                 </div>
                 <div class="form-group input-group">
                   <div class="input-group-prepend">
@@ -59,12 +61,13 @@
                     aria-describedby="userEmailHelp userEmailRequired"
                     placeholder="Email Address"
                     required
+                    readonly
                   />
                   <span class="w-100"></span>
                   <small id="userEmailHelp" class="form-text text-muted">on this network</small>
                 </div>
                 <input type="text" class="form-control" name="userPhone" id="userPhone"
-                    aria-describedby="userPhoneHelp userPhoneRequired" placeholder="Phone Number">
+                    aria-describedby="userPhoneHelp userPhoneRequired" placeholder="Phone Number" readonly>
                   <br>
                 <div class="form-group input-group ">
                 <div class="input-group-prepend">
@@ -190,8 +193,11 @@
 </section>
 
 <script> 
-  var cert = "{{rc.cert}}"; 
-  var userHash = "{{rc.userHash}}";
+  var firstName = "{{rc.user.name_first}}";
+  var lastName = "{{rc.user.name_last}}";
+  var email = "{{rc.user.source_email}}";
+  var phone = "{{rc.user.phone}}";
+  
   var userBanned = "{{rc.userBanned}}";
 </script>
 <script src="{% static 'js/notification.js' %}"></script>

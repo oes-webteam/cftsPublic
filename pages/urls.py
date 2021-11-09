@@ -11,6 +11,11 @@ urlpatterns = [
     path('howTo', static_views.howTo, name='howTo'),
     path('resources', static_views.resources, name='resources'),
 
+    # auth
+     path('register', views.register, name='register'),
+     #path('login', views.login, name='login'),
+
+
     # resources
     path('resources/<str:file>', views.resources, name='resources'),
 
