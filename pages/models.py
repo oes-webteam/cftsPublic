@@ -2,6 +2,7 @@ import uuid
 import os
 from django.conf import settings
 from django.db import models
+from django.contrib.auth.models import User
 from django.db.models import F
 
 def randomize_path(instance, filename):
@@ -104,6 +105,7 @@ class Email(models.Model):
   email_id = models.UUIDField(
     primary_key=True, default=uuid.uuid4, editable=False)
   address = models.CharField(max_length=255)
+  network = models.ForeignKey(Network, default=None, null=True, blank=True, on_delete=models.DO_NOTHING)
 
   class Meta:
     ordering = ['address']
@@ -115,11 +117,13 @@ class Email(models.Model):
 class User(models.Model):
   user_id = models.UUIDField(
     primary_key=True, default=uuid.uuid4, editable=False)
+  auth_user = models.OneToOneField(User, default=None, null=True, blank=True, on_delete=models.DO_NOTHING)
   user_identifier = models.CharField(
-   max_length=50, default="00000.0000.0.0000000")
+   max_length=150, default="00000.0000.0.0000000")
   name_first = models.CharField(max_length=50)
   name_last = models.CharField(max_length=50)
-  email = models.ForeignKey(Email, on_delete=models.DO_NOTHING)
+  #email = models.ForeignKey(Email, on_delete=models.DO_NOTHING, related_name="source_email")
+  emails = models.ManyToManyField(Email)
   notes = models.TextField(null=True, blank=True)
   phone = models.CharField(max_length=50, default="000-000-0000")
   banned = models.BooleanField(default=False)

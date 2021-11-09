@@ -5,8 +5,8 @@ from pages.models import *
 
 class UserAdmin(admin.ModelAdmin):
     list_filter = ('banned',)
-    list_display = (User.__str__,'email','user_identifier','banned','strikes','banned_until')
-    fields = ('name_first','name_last','user_identifier','email','phone',('banned','strikes','banned_until'),'notes')
+    list_display = (User.__str__, 'auth_user','user_identifier','banned','strikes','banned_until')
+    fields = ('name_first','name_last', 'auth_user','user_identifier','emails','phone',('banned','strikes','banned_until'),'notes')
     sortable_by = (User.__str__,'banned','strikes','banned_until')
 
 class RequestAdmin(admin.ModelAdmin):
