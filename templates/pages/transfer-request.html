@@ -5,41 +5,107 @@
 
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+<!-- <link rel="stylesheet" href="{% static 'css/styleAdmin.css' %}"> -->
+<link rel="stylesheet" href="{% static 'css/transfer-request.css' %}">
 
-    <div class="container" style="margin-top: 200px;">
-        <button type="button" class="btn btn-primary btn-back" href="{% url 'queue' %}">Back</button>
-        <a class="btn btn-info" id="noteBtn" href="#">Save Notes</a>
+    <div class="container details">
+        <div class="row">
+            <div class="col-8">
+                <div class="btn-group mb-3">
+                    <button type="button" class="btn btn-primary btn-back" href="/queue?{{rc.network}}?{{rc.request_id}}">Back</button>
+                    <a class="btn btn-info" id="noteBtn" href="#">Save Notes</a>
+                </div>
 
-        {% if centcom == True %}<a class="btn btn-warning" href="{% url 'api-removeCentcom' rc.request_id %}">Remove Centcom Status</a>{% endif %}
-        {% if not rc.user_banned%}
-            {% if user.is_superuser %}
-                <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rc.request_id "True" %}">Ban User, 1 day
-                </a>
-                <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rc.request_id %}">Ban User,
-                    {% if rc.strikes == 0 %} 3 days{% elif rc.strikes == 1 %} 7 days{% elif rc.strikes == 2 %} 30 days{% elif rc.strikes == 3 %} Permanently{% endif %}
-                </a>
-            {% else %}
-                <a class="btn btn-danger" id="banBtn" href="{% url 'ban-request' rc.request_id %}">Request User Ban</a>
-            {% endif %}
-        {% endif %}
-        <div class="card">
-        {% csrf_token %}
-            <div class="card-header">
+                <div class="btn-group mb-3 ml-3">
+                    {% if centcom == True %}<a class="btn btn-warning" href="{% url 'api-removeCentcom' rc.request_id %}">Remove Centcom Status</a>{% endif %}
+                    {% if not rc.user_banned%}
+                        {% if user.is_superuser %}
+                            <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rc.request_id "True" %}">Ban User, 1 day
+                            </a>
+                            <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rc.request_id %}">Ban User,
+                                {% if rc.strikes == 0 %} 3 days{% elif rc.strikes == 1 %} 7 days{% elif rc.strikes == 2 %} 30 days{% elif rc.strikes == 3 %} Permanently{% endif %}
+                            </a>
+                        {% else %}
+                            <a class="btn btn-danger" id="banBtn" href="{% url 'ban-request' rc.request_id %}">Request User Ban</a>
+                        {% endif %}
+                {% endif %}
+                </div>
 
-            <ul>
-              {% for col, val in rc.items %}
-              <li>{{ col }}: {{ val }}</li>
-              {% endfor %}
-              <li>Notes:</li>
-              <textarea name="notesField" id="notesField" style="width: 30rem; height: 10rem;">{% if notes != None  %}{{ notes }}{% endif %}</textarea>
-            </ul>
+            </div>
+            <div class="col-4">
+                <div class="btn-group mb-3">
+                    <a href="#" class="btn btn-warning request-encrypt">Encrypt Files</a>
+                    <a href="#" class="btn btn-danger request-reject">Reject Files</a>
+                    <a href="#" class="btn btn-info request-encrypt">One eye files</a>
+                    <a href="#" class="btn btn-success request-reject">Two eye files</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-8">
+                <div class="card">
+                    {% csrf_token %}
+                        <div class="card-header">
+            
+                        <ul>
+                            {% for col, val in rc.items %}
+                                <li>{{ col }}: {{ val }}</li>
+                            {% endfor %}
+                            <li>Notes:</li>
+                            <textarea name="notesField" id="notesField" style="width: 30rem; height: 10rem;">{% if notes != None  %}{{ notes }}{% endif %}</textarea>
+                        </ul>
+            
+                        </div> <!-- END card-header -->
+                    </div><!-- END card -->
+            </div>
 
-            </div> <!-- END card-header -->
-        </div><!-- END card -->
+            <div class="col-4">
+                <div class="card">
+                    <table>
+                        {% for file in rqst.files.all %}
+                        <tr>
+                            <td>
+                                <input type="checkbox" name="fileSelection" id="chk_{{ file.file_id }}" request_id="{{ rqst.request_id }}" request_email="{{ rqst.user.email }}" file_name="{{ file }}" {% if file.rejection_reason != None %} rejected {% else %} not-rejected {% endif %} hidden/>
+                                <!-- Show encrypt flag? -->
+                                {% if file.is_pii or file.is_centcom_info %}
+                                <span title="PII: {{ file.is_pii }}&#10;CENTCOM Info: {{ file.is_centcom_info }}">🔒</span>
+                                {% endif %}
+                            </td>
+                            <td colspan="2"><a class="{% if file.rejection_reason != None %}rejected {% endif %}"title="{{ file }}" href="getFile/{{file.file_object}}">{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</a></td>
+                            <td>
+                                <img src="{% if rqst.pull.date_oneeye != None %}{% static 'img/asset 13.svg' %}{% else %}{% static 'img/transparent.png' %}{% endif %}" class="status-img" alt="One Eye" />    
+                                <img src="{% if rqst.pull.date_twoeye != None %}{% static 'img/asset 13.svg' %}{% else %}{% static 'img/transparent.png' %}{% endif %}" class="status-img" alt="Two Eye" />
+                                <img src="{% if rqst.pull.date_complete != None %}{% static 'img/asset 14.svg' %}{% else %}{% static 'img/transparent.png' %}{% endif %}" class="status-img" alt="Burned to Disk #{{pull.disk_number}}" />
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="reject-form" title="Reject File(s)">
+            <form>
+                <div class="form-group">
+                    <label for="reason">Rejection Reason: </label>
+                    <select name="reason" class="form-control">
+                        <option value=""></option>
+                        {% for r in rejections %}
+                        <option value="{{ r.rejection_id }}" data-subject="{{ r.subject }}" data-text="{{ r.text }}">{{ r.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </div>
+        
     </div> <!-- END container -->
 
 
     <script>let rqst_id = "{{ rc.request_id }}"</script>
     <script>let user_id = "{{user_id }}"</script>
     <script src="{% static 'js/transfer-request.js' %}"></script>
+    {% include 'partials/_forceReloadForm.html' %}
+    <script src="{% static 'js/notification.js' %}"></script>
 {% endblock  %}

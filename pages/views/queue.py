@@ -78,7 +78,7 @@ def queue(request):
         ds_requests = Request.objects.filter(
             network__name=net.name,
             is_submitted=True,
-            pull__date_complete__isnull=True,
+            pull__isnull=True,
             #files__in=File.objects.filter( rejection_reason__isnull=True )
         ).annotate(org_order = Case(
             When(org='HQ', then=1), 
@@ -88,6 +88,13 @@ def queue(request):
             When(org='NAVCENT', then=5), 
             When(org='SOCCENT', then=6), 
             When(org='OTHER', then=7), output_field=IntegerField())).order_by('org_order', 'user__str__','-date_created')
+        
+        pulled_requests = Request.objects.filter(
+            network__name=net.name,
+            is_submitted=True,
+            pull__isnull=False,
+            pull__date_complete__isnull=True,
+        ).order_by('user__str__', 'pull')
 
         # count how many total files are in all the pending requests (excluding ones that have already been pulled)
         file_count = ds_requests.annotate(
@@ -102,11 +109,12 @@ def queue(request):
             'name': net.name,
             'order_by': net.sort_order,
             'file_count': file_count,
-            'count': ds_requests.count(),
+            'count': ds_requests.count() + pulled_requests.count(),
             'activeNet': False,
             'pending': ds_requests.aggregate(count=Count('request_id', filter=Q(pull__date_pulled__isnull=True))),
-            'pulled': ds_requests.aggregate(count=Count('request_id', filter=Q(pull__date_pulled__isnull=False))),
+            'pulled': pulled_requests.count(),
             'q': ds_requests,
+            'p': pulled_requests,
             'centcom': ds_requests.aggregate(count=Count('request_id', filter=Q(pull__date_pulled__isnull=True, is_centcom=True))),
             'last_pull': last_pull,
             'orgs': ds_requests.filter(pull__date_pulled__isnull=True).values_list('org', flat=True)
@@ -123,19 +131,8 @@ def queue(request):
     xfer_queues = sorted(
         xfer_queues, key=lambda k: k['order_by'], reverse=False)
 
-    # get list of Rejections for the "Reject Files" button
-    ds_rejections = Rejection.objects.filter(visible=True)
-    rejections = []
-    for row in ds_rejections:
-        rejections.append({
-            'rejection_id': row.rejection_id,
-            'name': row.name,
-            'subject': row.subject,
-            'text': row.text
-        })
-
     # create the request context
-    rc = {'queues': xfer_queues, 'empty': empty, 'rejections': rejections, 'easterEgg': activeSelected}
+    rc = {'queues': xfer_queues, 'empty': empty, 'easterEgg': activeSelected}
 
     # roll that beautiful bean footage
     return render(request, 'pages/queue.html', {'rc': rc})
@@ -146,7 +143,18 @@ def queue(request):
 def transferRequest( request, id ):
     rqst = Request.objects.get( request_id = id )
     user = User.objects.get( user_id = rqst.user.user_id )
-            
+
+    # get list of Rejections for the "Reject Files" button
+    ds_rejections = Rejection.objects.filter(visible=True)
+    rejections = []
+    for row in ds_rejections:
+        rejections.append({
+            'rejection_id': row.rejection_id,
+            'name': row.name,
+            'subject': row.subject,
+            'text': row.text
+        })
+        
     rc = { 
         'User Name': user,
         #'User_ID': user.user_identifier,
@@ -168,7 +176,7 @@ def transferRequest( request, id ):
         'strikes': user.strikes,
         'banned_until': user.banned_until
     }
-    return render(request, 'pages/transfer-request.html', {'rc': rc, 'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": user.user_id,})
+    return render(request, 'pages/transfer-request.html', {'rc': rc, 'rqst': rqst, 'rejections': rejections ,'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": user.user_id})
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
