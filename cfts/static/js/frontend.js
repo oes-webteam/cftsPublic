@@ -66,9 +66,12 @@ const addFiles = ( e ) => {
 
   for( let f = 0; f < fileList.length; f++ ) {
     let thisFile = fileList[f];
-    let errorMsg = validateFile( thisFile );
+    let validation = validateFile( thisFile );
     
-    if( !errorMsg.length ) {
+    if ( validation.msg.length ) { 
+      notifyUserWarning( validation.msg ); 
+    }
+    if( !validation.error ) {
       // add file to the queue
       fileObject = { 
         'object': thisFile,
@@ -76,7 +79,6 @@ const addFiles = ( e ) => {
       };
       fileQueue.push( fileObject );
     }
-    else { notifyUserWarning( errorMsg ); }
   }
 
   updateFileInfo();
@@ -90,6 +92,7 @@ const addFiles = ( e ) => {
 const validateFile = ( thisFile ) => {
   let charWhitelist = new RegExp( /[^a-z0-9\.\s_-]/ );
   let msg = "";
+  let errorFlag = false;
   
   let filename = thisFile.name.toLowerCase();
 
@@ -97,11 +100,13 @@ const validateFile = ( thisFile ) => {
   if( filename.includes( "prf" ) || filename.includes( "lvy" ) || filename.includes( "levy" ) ) {
     // hard NO!!
     msg += "<li>RF and LVY files cannot be transferred per CFTS use policy. See Resources &gt;&gt; 'CFTS Policies' for details.</li>";
+    errorFlag = true;
   }
   
   // we don't transer emails
   if( filename.includes(".eml") || filename.includes(".msg")){
     msg += "<li>.eml and .msg files must be converted to an accepted file format before submission. Use Outlook to export these files to a PDF, Word Document, or plain text file.</li>";
+    errorFlag = true;
   }
 
   // you seem to have a little ... something ... in your filename there.  You might want to clean that up.
@@ -113,7 +118,8 @@ const validateFile = ( thisFile ) => {
     msg = "<strong>File error -- " + thisFile.name + "</strong>" + msg;
   }
 
-  return msg;
+    
+  return { 'error': errorFlag, 'msg': msg };
 };
 
 
