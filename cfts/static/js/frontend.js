@@ -5,7 +5,7 @@ let filesInput = document.getElementById( "standard-upload-files" );
 let fileQueue = [];
 let fileInfo = {};
 let addEmail = document.getElementById( "addEmail" );
-let classifications = [''];
+// let classifications = [''];
 let buggedPKIs = ['f7d359ebb99a6a8aac39b297745b741b']
 
 console.log("Cache test")
@@ -34,22 +34,21 @@ console.log("Cache test")
     beforeSend: function (xhr, settings) {
       xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
         },
-    });
-      
-      
-    ajaxSettings = {
-    url: "api-getclassifications",
-    method: "GET",
-    contentType: false,
-    processData: false,
-    };
-    $.ajax(ajaxSettings).done(successHandler);
+  });
+
+  // ajaxSettings = {
+  //   url: "api-getclassifications",
+  //   method: "GET",
+  //   contentType: false,
+  //   processData: false,
+  // };
+  // $.ajax(ajaxSettings).done(successHandler);
     
-  function successHandler(data){
-    for(obj in data){
-      classifications.push(data[obj].fields.abbrev)
-        }
-    }
+  // function successHandler(data){
+  //   for(obj in data){
+  //     classifications.push(data[obj].fields.abbrev)
+  //   }
+  // }
 
 
 /* ********************************************************* */
@@ -129,10 +128,10 @@ const updateFileInfo = () => {
   // loop the file list
   let fileList  = document.querySelectorAll( ".file-list ul li" );
   for ( let i = 0; i < fileList.length; i++ ) {
-    let cls = fileList[i].querySelector( "select" );
+    // let cls = fileList[i].querySelector( "select" );
     let encrypt = fileList[i].querySelector( "input" );
     
-    fileQueue[i].cls = cls.value;
+    // fileQueue[i].cls = cls.value;
     fileQueue[i].encrypt = encrypt.checked;
   }
 };
@@ -166,25 +165,22 @@ const displayFileQueue = () => {
       let fileInfoDiv = document.createElement( "div" );
       fileInfoDiv.classList.add( "form-row" );
       
-      let selectClass = document.createElement( "select" );
-      selectClass.classList.add( "file-classification", "form-control", "col" );
-      selectClass.setAttribute( "name", "classification" + i );
-      selectClass.setAttribute( "id", "classification" + i );
-      selectClass.required = true;
+      // removing classification from files (JIRA ticket CFTS-371)
+      // let selectClass = document.createElement( "select" );
+      // selectClass.classList.add( "file-classification", "form-control", "col" );
+      // selectClass.setAttribute( "name", "classification" + i );
+      // selectClass.setAttribute( "id", "classification" + i );
+      // selectClass.required = true;
 
-    classifications.forEach(  c => {
-      let option = document.createElement( "option" );
-      option.setAttribute( "value", c );
-      if( fileQueue[i] && fileQueue[i].cls == c ) option.selected = true;
-      option.appendChild( document.createTextNode( c ) );
-      selectClass.appendChild( option );
-    });
-      
-      
+      // classifications.forEach(  c => {
+      //   let option = document.createElement( "option" );
+      //   option.setAttribute( "value", c );
+      //   if( fileQueue[i] && fileQueue[i].cls == c ) option.selected = true;
+      //   option.appendChild( document.createTextNode( c ) );
+      //   selectClass.appendChild( option );
+      // });
 
-      
-
-      fileInfoDiv.appendChild( selectClass );
+      // fileInfoDiv.appendChild( selectClass );
 
       let toEncrypt = document.createElement( "input" );
       toEncrypt.setAttribute( "type", "checkbox" );

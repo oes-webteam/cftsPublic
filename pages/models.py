@@ -66,8 +66,6 @@ class File(models.Model):
   file_object = models.FileField(upload_to=randomize_path, max_length=500)
   file_name = models.CharField(max_length=255, null=True, blank=True, default=None)
   file_hash = models.CharField(max_length=40, blank=True, null=True)
-  classification = models.ForeignKey(
-    Classification, on_delete=models.DO_NOTHING)
   is_pii = models.BooleanField(default=False)
   is_centcom = models.BooleanField(default=False)
   rejection_reason = models.ForeignKey(
