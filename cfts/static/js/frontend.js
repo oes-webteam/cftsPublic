@@ -96,21 +96,21 @@ const validateFile = ( thisFile ) => {
   // kick out the JOPES
   if( filename.includes( "prf" ) || filename.includes( "lvy" ) || filename.includes( "levy" ) ) {
     // hard NO!!
-    msg += "RF and LVY files cannot be transferred per CFTS use policy. See Resources >> 'CFTS Policies' for details.";
+    msg += "<li>RF and LVY files cannot be transferred per CFTS use policy. See Resources &gt;&gt; 'CFTS Policies' for details.</li>";
   }
   
   // we don't transer emails
   if( filename.includes(".eml") || filename.includes(".msg")){
-    msg += ".eml and .msg files must be converted to an accepted file format before submission. Use Outlook to export these files to a PDF, Word Document, or plain text file.";
+    msg += "<li>.eml and .msg files must be converted to an accepted file format before submission. Use Outlook to export these files to a PDF, Word Document, or plain text file.</li>";
   }
 
   // you seem to have a little ... something ... in your filename there.  You might want to clean that up.
   if( charWhitelist.test( filename ) ) {
-    msg += "Special characters in filenames can cause the system to reject the files. Please review the filename and ensure it only contains letters, numbers, periods, dashes, or underscores.";
+    msg += "<li>Special characters in filenames can cause the system to reject the files. Please review the filename and ensure it only contains letters, numbers, periods, dashes, or underscores.</li>";
   }
   
   if( msg.length > 0 ) {
-    msg = "File error -- " + thisFile.name + ": " + msg;
+    msg = "<strong>File error -- " + thisFile.name + "</strong>" + msg;
   }
 
   return msg;

@@ -20,7 +20,7 @@ notifyUserWarning = ( msg ) => {
   $(".server-error").hide()
   let alertDiv = $( ".danger-error" );
   if( alertDiv.is(':visible') ) msg = "<hr />" + msg;
-  alertDiv.append( msg );
+  alertDiv.append( "<ul style='text-align: left;'>" + msg + "</ul>" );
   alertDiv.fadeIn();
 };
 
