@@ -118,3 +118,5 @@ templates/partials/files/
 # Visual Studio Code
 .vscode/
 .idea/
+# network specific settings file
+cfts/network.py

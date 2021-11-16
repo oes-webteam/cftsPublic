@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+from cfts import network
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,14 +21,14 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'xi3mwe7uxf!0vg26@c^0p86wxvpf8su!w)nunj5#6b_nueg)h#'
+SECRET_KEY = network.SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = network.DEBUG
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = network.ALLOWED_HOSTS
 
-NETWORK = "NIPR"
+NETWORK = network.NETWORK
 
 # Application definition
 

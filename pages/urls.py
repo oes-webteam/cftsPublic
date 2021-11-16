@@ -14,6 +14,7 @@ urlpatterns = [
     # auth
      path('register', views.register, name='register'),
      #path('login', views.login, name='login'),
+     path('user-info', views.editUserInfo, name='user-info'),
 
 
     # resources

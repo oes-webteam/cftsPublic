@@ -25,69 +25,6 @@ from pages.views.auth import getCert, getOrCreateUser
 
 buggedPKIs = ['f7d359ebb99a6a8aac39b297745b741b'] #[ acutally bugged hash, my hash for testing]
 
-# @ensure_csrf_cookie
-# @never_cache
-# def frontend(request):
-#     browser = request.user_agent.browser.family
-#     nets = Network.objects.filter(visible=True)
-#     resources = ResourceLink.objects.all()
-
-#     # get the consent header, redirect to consent page if not found
-#     try:
-#         request.session.__getitem__('consent')
-#         request.session.set_expiry(0)
-        
-#         # grab client cert form the request create user hash, ignore if no cert info is found in request
-#         try:
-#             cert = request.META['CERT_SUBJECT']
-
-#             # empty cert, IIS is set to ignore certs
-#             if cert =="":
-#                 rc = {'networks': nets, 'resources': resources, 'browser': browser}
-            
-#             # got a cert!
-#             else:
-#                 userHash = hashlib.md5()
-#                 userHash.update(cert.encode())
-#                 userHash = userHash.hexdigest()
-                
-#                 if userHash in buggedPKIs:
-#                     rc = {'networks': nets, 'resources': resources,
-#                         'cert': cert, 'userHash': userHash, 'browser': browser, 'buggedPKI': "true"}
-
-#                 # and their cert info isn't bugged!
-#                 else:
-                    
-#                     # are they a new user or an existing user?
-#                     try:
-#                         user = User.objects.get(user_identifier=userHash)
-#                         if user.banned == True:
-#                             if date.today() >= user.banned_until:
-#                                 User.objects.filter(user_identifier=userHash).update(banned=False)
-
-#                                 rc = {'networks': nets, 'resources': resources,
-#                                 'cert': cert, 'userHash': userHash,'browser': browser}
-#                             else:
-#                                 rc = {'networks': nets, 'resources': resources,
-#                                     'cert': cert, 'userHash': userHash, 'user': user,'browser': browser}
-#                         else:
-#                             rc = {'networks': nets, 'resources': resources,
-#                                 'cert': cert, 'userHash': userHash, 'browser': browser}
-                    
-#                     # they were a new user
-#                     except User.DoesNotExist:
-#                             rc = {'networks': nets, 'resources': resources,
-#                                 'cert': cert, 'userHash': userHash, 'browser': browser}
-
-#         # django dev server doesn't grab certs
-#         except KeyError:
-#             rc = {'networks': nets, 'resources': resources,'browser': browser,}
-
-#         return render(request, 'pages/frontend.html', {'rc': rc})
-    
-#     except KeyError:
-#         return render(request, 'pages/consent.html')
-
 @ensure_csrf_cookie
 @never_cache
 def frontend(request):
