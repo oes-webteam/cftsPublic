@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('pages', '0075_auto_20211109_0646'),
+        ('pages', '0074_auto_20211109_0644'),
     ]
 
     operations = [
@@ -15,5 +15,10 @@ class Migration(migrations.Migration):
             model_name='user',
             old_name='emails',
             new_name='destination_emails',
+        ),
+        migrations.RenameField(
+            model_name='user',
+            old_name='email',
+            new_name='source_email',
         ),
     ]
