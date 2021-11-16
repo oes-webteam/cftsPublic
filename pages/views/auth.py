@@ -116,7 +116,6 @@ def editUserInfo(request):
     nets = Network.objects.filter(visible=True)
     certInfo = getCert(request)
     cftsUser = getOrCreateUser(request, certInfo)
-    #user = User.objects.get(user_identifier=userHash)
 
     if request.method == "POST":
         form = userInfoForm(request.POST, instance=cftsUser, networks=nets)
@@ -133,7 +132,7 @@ def editUserInfo(request):
             userAcc.email = request.POST.get('source_email')
             userAcc.save()
 
-            # update cfts user object ifo
+            # update cfts user object info
             cftsUser.name_first = request.POST.get('name_first')
             cftsUser.name_last = request.POST.get('name_last')
             cftsUser.source_email = userEmail

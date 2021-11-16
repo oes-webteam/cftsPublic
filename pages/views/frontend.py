@@ -25,11 +25,14 @@ from pages.views.auth import getCert, getOrCreateUser
 
 buggedPKIs = ['f7d359ebb99a6a8aac39b297745b741b'] #[ acutally bugged hash, my hash for testing]
 
+def getDestinationNetworks(request, cftsUser):
+    nets = Network.objects.filter(visible=True, network_id__in=cftsUser.destination_emails.values('network_id'))
+    return nets
+
 @ensure_csrf_cookie
 @never_cache
 def frontend(request):
     browser = request.user_agent.browser.family
-    nets = Network.objects.filter(visible=True)
     resources = ResourceLink.objects.all()
 
     # get the consent header, redirect to consent page if not found
@@ -47,6 +50,7 @@ def frontend(request):
             if certInfo['status'] == "empty":
                 if request.user.is_authenticated:
                     cftsUser = getOrCreateUser(request, certInfo)
+                    nets = getDestinationNetworks(request, cftsUser)
                     rc = {'networks': nets, 'resources': resources, 'user': cftsUser, 'browser': browser}
                 else:
                     return render(request, 'login')
@@ -56,6 +60,7 @@ def frontend(request):
                 if certInfo['status'] == "buggedPKI":
                     if request.user.is_authenticated:
                         cftsUser = getOrCreateUser(request, certInfo)
+                        nets = getDestinationNetworks(request, cftsUser)
                         rc = {'networks': nets, 'resources': resources,
                             'cert': certInfo['cert'], 'userHash': certInfo['userHash'], 'user': cftsUser, 'browser': browser, 'buggedPKI': "true"}
                     else:
@@ -64,6 +69,7 @@ def frontend(request):
                 # and their cert info isn't bugged!
                 else:
                     cftsUser = getOrCreateUser(request, certInfo)
+                    nets = getDestinationNetworks(request, cftsUser)
                     if cftsUser.banned == True:
                         if date.today() >= cftsUser.banned_until:
                             User.objects.filter(user_identifier=certInfo['userHash']).update(banned=False)
