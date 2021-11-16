@@ -1,11 +1,12 @@
 import hashlib
 from os import name
+from django.contrib import auth
 
 from django.shortcuts import render, redirect
 import cfts
 from cfts import network
-from pages.forms import NewUserForm, userInfoForm
-from django.contrib.auth import login
+from pages.forms import NewUserForm, userInfoForm, userLogInForm
+from django.contrib.auth import login, authenticate
 from django.contrib import messages
 
 from django.contrib.auth.models import User as authUser
@@ -91,6 +92,26 @@ def getOrCreateUser(request, certInfo):
 
             return user
 
+def userLogin(request):
+    if request.method == "POST":
+        form = userLogInForm(data=request.POST)
+        if form.is_valid():
+            username = request.POST['username']
+            password = request.POST['password']
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                #messages.success(request, "Login successful!")
+                login(request, user)
+                return redirect("/frontend")
+            else:
+                return render(request, template_name="authForms/userLogin.html", context={"login_form":form,})
+            
+        else:
+            return render(request, template_name="authForms/userLogin.html", context={"login_form":form,})
+
+    form = userLogInForm()
+    return render(request, template_name="authForms/userLogin.html", context={"login_form":form})
+
 def register(request):
     if request.method == "POST":
         form = NewUserForm(request.POST)
@@ -108,7 +129,6 @@ def register(request):
         else:
             return render(request, template_name="authForms/register.html", context={"register_form":form,})
 
-        #messages.error(request, "Error registering account, please check form for errors.")
     form = NewUserForm()
     return render(request, template_name="authForms/register.html", context={"register_form":form})
 
@@ -157,7 +177,7 @@ def editUserInfo(request):
             cftsUser.save()
             return redirect("/frontend")
         else:
-            return render(request, 'partials/authForms/editUserInfo.html', context={"userInfoForm": form})
+            return render(request, 'authForms/editUserInfo.html', context={"userInfoForm": form})
 
     form = userInfoForm(instance=cftsUser, networks=nets)
-    return render(request, 'partials/authForms/editUserInfo.html', context={"userInfoForm": form})
+    return render(request, 'authForms/editUserInfo.html', context={"userInfoForm": form})

@@ -53,7 +53,7 @@ def frontend(request):
                     nets = getDestinationNetworks(request, cftsUser)
                     rc = {'networks': nets, 'resources': resources, 'user': cftsUser, 'browser': browser}
                 else:
-                    return render(request, 'login')
+                    return redirect('login')
             
             # got a cert!
             else:
@@ -64,7 +64,7 @@ def frontend(request):
                         rc = {'networks': nets, 'resources': resources,
                             'cert': certInfo['cert'], 'userHash': certInfo['userHash'], 'user': cftsUser, 'browser': browser, 'buggedPKI': "true"}
                     else:
-                        return render(request, 'login')
+                        return redirect('login')
 
                 # and their cert info isn't bugged!
                 else:
@@ -82,7 +82,7 @@ def frontend(request):
             if request.user.is_authenticated:
                 rc = {'networks': nets, 'resources': resources,'browser': browser,}
             else:
-                return render(request, 'login')
+                return redirect('login')
 
         return render(request, 'pages/frontend.html', {'rc': rc})
     

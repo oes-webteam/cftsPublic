@@ -7,6 +7,12 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Div, Submit
 from cfts.settings import NETWORK
 
+class userLogInForm(AuthenticationForm):
+    def __init__(self, *args, **kwargs):
+        super(userLogInForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.layout.append(Submit('login','Login'))
+
 class NewUserForm(UserCreationForm):
     email = forms.EmailField(required=True)
     first_name = forms.CharField(max_length=50, required=True)
