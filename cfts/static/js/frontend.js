@@ -69,7 +69,7 @@ const addFiles = ( e ) => {
     let validation = validateFile( thisFile );
     
     if ( validation.msg.length ) { 
-      notifyUserWarning( validation.msg ); 
+      notifyFileWarning( validation.msg ); 
     }
     if( !validation.error ) {
       // add file to the queue
