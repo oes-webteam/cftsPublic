@@ -14,16 +14,24 @@ notifyUserSuccess = ( msg ) => {
   // }, 5000 );
 };
 
-notifyUserWarning = ( msg ) => {
+notifyFileWarning = ( msg ) => {
   console.log("Warning message")
   $(".alert-success").hide()
   $(".server-error").hide()
-  let alertDiv = $( ".danger-error" );
+  let alertDiv = $( ".file-error" );
   if( alertDiv.is(':visible') ) msg = "<hr />" + msg;
   alertDiv.append( "<ul style='text-align: left;'>" + msg + "</ul>" );
   alertDiv.fadeIn();
 };
 
+notifyUserWarning = ( msg ) => {
+  console.log("Warning message")
+  $(".alert-success").hide()
+  $(".server-error").hide()
+  let alertDiv = $( ".danger-error" );
+  alertDiv.text( msg );  
+  alertDiv.fadeIn();
+};
 
 notifyUserError = ( msg ) => {
   console.log("Error message")
