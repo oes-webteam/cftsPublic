@@ -5,13 +5,12 @@
 {% load crispy_forms_tags %}
 
 <div class="container py-5">
-    <h1>CFTS User Login</h1>
+    <h1>Change CFTS Account Password</h1>
     <form class="needs-validation" method="post" novalidate>
-        {% crispy login_form %}
+        {% crispy pass_change_form %}
     </form>
-    <p class="text-center">Don't have an account? <a href="/register">Create account</a></p>
 </div>
 
-<script>window.document.title = "CFTS User Login"</script>
+<script>window.document.title = "CFTS Password Change"</script>
 <script src="{% static 'js/form-validate.js' %}"></script>
 {% endblock %}

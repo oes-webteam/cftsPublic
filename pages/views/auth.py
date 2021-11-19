@@ -5,13 +5,13 @@ from django.contrib import auth
 from django.shortcuts import render, redirect
 import cfts
 from cfts import network
-from pages.forms import NewUserForm, userInfoForm, userLogInForm
+from pages.forms import NewUserForm, userInfoForm, userLogInForm, userPasswordChangeForm
 from django.contrib.auth import login, authenticate
 from django.contrib import messages
 
 from django.contrib.auth.models import User as authUser
 from pages.models import Network, User, Email
-
+from pages.views.apis import setConsentCookie
 from cfts.settings import NETWORK
 
 def getCert(request):
@@ -102,6 +102,8 @@ def userLogin(request):
             if user is not None:
                 #messages.success(request, "Login successful!")
                 login(request, user)
+                setConsentCookie(request)
+
                 return redirect("/frontend")
             else:
                 return render(request, template_name="authForms/userLogin.html", context={"login_form":form,})
@@ -111,6 +113,22 @@ def userLogin(request):
 
     form = userLogInForm()
     return render(request, template_name="authForms/userLogin.html", context={"login_form":form})
+
+def changeUserPassword(request):
+    if request.method == "POST":
+        form = userPasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            form.save()
+            login(request, request.user)
+            setConsentCookie(request)
+
+            return redirect("/frontend")
+            
+        else:
+            return render(request, template_name="authForms/userPassChange.html", context={"pass_change_form":form,})
+
+    form = userPasswordChangeForm(request.user)
+    return render(request, template_name="authForms/userPassChange.html", context={"pass_change_form":form})
 
 def register(request):
     if request.method == "POST":
@@ -125,6 +143,8 @@ def register(request):
             cftsUser.phone = request.POST.get('phone')
             cftsUser.save()
             #messages.success(request, "Account creation successful!")
+            setConsentCookie(request)
+
             return redirect("/user-info")
         else:
             return render(request, template_name="authForms/register.html", context={"register_form":form,})

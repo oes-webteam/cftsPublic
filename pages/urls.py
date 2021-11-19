@@ -15,6 +15,7 @@ urlpatterns = [
      path('register', views.register, name='register'),
      path('login', views.userLogin, name='login'),
      path('user-info', views.editUserInfo, name='user-info'),
+     path('password-change', views.changeUserPassword, name='password-change'),
 
 
     # resources

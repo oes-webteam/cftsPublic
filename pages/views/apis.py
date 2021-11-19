@@ -27,7 +27,7 @@ from cfts import settings as Settings
 # model/database stuff
 from pages.models import *
 
-from pages.views import createZip
+from pages.views.queue import createZip
 
 import hashlib
 

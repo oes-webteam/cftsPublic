@@ -4,7 +4,7 @@ from django.contrib.auth.models import User as authUser
 from pages.models import User, Network, Email
 from django.forms import ModelForm
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Div, Submit
+from crispy_forms.layout import Div, Submit, HTML
 from cfts.settings import NETWORK
 
 class userLogInForm(AuthenticationForm):
@@ -12,6 +12,12 @@ class userLogInForm(AuthenticationForm):
         super(userLogInForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper(self)
         self.helper.layout.append(Submit('login','Login'))
+class userPasswordChangeForm(PasswordChangeForm):
+    def __init__(self, *args, **kwargs):
+        super(userPasswordChangeForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.layout.append(Submit('save','Save'))
+        self.helper.layout.append(HTML('<a class="btn btn-danger" href="/frontend">Cancel</a>'))
 
 class NewUserForm(UserCreationForm):
     email = forms.EmailField(required=True)
