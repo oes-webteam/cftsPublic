@@ -35,8 +35,6 @@ import logging
 logger = logging.getLogger('django')
 # ====================================================================
 
-buggedPKIs = ['f7d359ebb99a6a8aac39b297745b741b'] #[ acutally bugged hash, my hash for testing]
-
 @login_required
 @ensure_csrf_cookie
 @never_cache
@@ -141,13 +139,11 @@ def queue(request):
 def transferRequest( request, id ):
     rqst = Request.objects.get( request_id = id )
     user = User.objects.get( user_id = rqst.user.user_id )
-    buggedUser = False
-    #if user.user_identifier in buggedPKIs:
-        
+            
     rc = { 
         'User Name': user,
         'User_ID': user.user_identifier,
-        'User Emails': user.emails.all(),
+        'User Email': user.source_email,
         'Phone': user.phone,
         'network': Network.objects.get( network_id = rqst.network.network_id ),
         #'Marked as Centcom': rqst.is_centcom,
@@ -165,7 +161,7 @@ def transferRequest( request, id ):
         'strikes': user.strikes,
         'banned_until': user.banned_until
     }
-    return render(request, 'pages/transfer-request.html', {'rc': rc, 'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": user.user_id, 'pki_id': user.user_identifier, 'buggedUser': user.user_identifier in buggedPKIs})
+    return render(request, 'pages/transfer-request.html', {'rc': rc, 'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": user.user_id, 'pki_id': user.user_identifier,})
 
 @login_required
 def requestNotes( request, requestid ):

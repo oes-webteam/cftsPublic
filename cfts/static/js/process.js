@@ -225,12 +225,7 @@ function openRequestLink(id){
 
 function successHandler(r) {
   console.dir(r);
-  if (buggedPKIs.includes(userHash) == true || userHash == ""){
-    notifyUserSuccess("THANK YOU! Your files have been submitted. Click <a class='alert-link' href='/request/" + r.request_id + "'>here</a> to see your requests. ");
-  }
-  else{
-    notifyUserSuccess("THANK YOU! Your files have been submitted. Click <a <a class='alert-link' href='/my-requests'>here</a> to see your requests. ");
-  }
+  notifyUserSuccess("THANK YOU! Your files have been submitted. Click <a <a class='alert-link' href='/my-requests'>here</a> to see your requests. ");
 
   let requestlink = $( "<div class='requestLink' style='display: none;'></div>" );
   $( document.body ).append( requestlink );
@@ -238,9 +233,6 @@ function successHandler(r) {
   $( '.requestLink' ).each( function() { $(this)[0].click(); } );  
 
   // CLEAN UP!!
-
-  email = $("#userEmail").val();
-  phone = $("#userPhone").val();
 
   document.getElementById("transfer-request-form").reset();
   resetFileQueue();
@@ -253,18 +245,10 @@ function successHandler(r) {
 }
 
 function autoFileUserInfo(email,phone){
-  subject = cert.split("=")
-  subject = subject[subject.length-1]
-  user = subject.split(".")
-  if (buggedPKIs.includes(userHash) == false){
-	$("#firstName").val(user[1])
-  	$("#lastName").val(user[0])
-	
-    } 
-  $("#PKIinfo").val(cert) 
-  $("#userID").val(userHash)
-  $("#userEmail").val(email)
-  $("#userPhone").val(phone)
+  $("#firstName").val(firstName)
+  $("#lastName").val(lastName) 
+  $("#userPhone").val(phone) 
+  $("#userEmail").val(email) 
 }
 
 function resetFileQueue() {

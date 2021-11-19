@@ -1,5 +1,3 @@
-from django.db.models import fields
-from pages.views.feedback import feedback
 from django.contrib import admin
 from pages.models import *
 

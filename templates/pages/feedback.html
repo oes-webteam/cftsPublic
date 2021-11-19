@@ -28,13 +28,13 @@
                 <div class="input-group-prepend">
                   <span class="input-group-text" id="firstNameRequired">*</span>
                 </div>
-                <input type="text" class="form-control" name="firstName" id="firstName" placeholder= "First Name" {% if rc.cert %}{% if rc.buggedPKI == "true" %}{% else %}readonly{% endif %}{% endif %} />
+                <input type="text" class="form-control" name="firstName" id="firstName" placeholder="First Name" readonly />
               </div>
               <div class="form-group input-group">
                 <div class="input-group-prepend">
                   <span class="input-group-text" id="lastNameRequired">*</span>
                 </div>
-                <input type="text" class="form-control" name="lastName" id="lastName" placeholder="Last Name" {% if rc.cert %}{% if rc.buggedPKI == "true" %}{% else %}readonly{% endif %}{% endif %} />
+                <input type="text" class="form-control" name="lastName" id="lastName" placeholder="Last Name" readonly />
               </div>
               <div class="form-group input-group">
                 <div class="input-group-prepend">
@@ -48,6 +48,7 @@
                   aria-describedby="userEmailHelp userEmailRequired"
                   placeholder="Email Address"
                   required
+                  readonly
                 />
                 <span class="w-100"></span>
               </div>
@@ -120,8 +121,9 @@
 </section>
 
 <script> 
-  var cert = "{{rc.cert}}"; 
-  var userHash = "{{rc.userHash}}";
+  var firstName = "{{rc.user.name_first}}";
+  var lastName = "{{rc.user.name_last}}";
+  var email = "{{rc.user.source_email}}";
 </script>
 <script src="{% static 'js/notification.js' %}"></script>
 <script src="{% static 'js/feedback.js' %}"></script>

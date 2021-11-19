@@ -2,25 +2,9 @@ window.document.title = "CFTS -- Feedback Submit"
 xferForm = document.querySelector("#transfer-request-form");
 xferForm.addEventListener("submit", process, false);
 
-let buggedPKIs = ['f7d359ebb99a6a8aac39b297745b741b']
-
-
-/* *************************************************** */
-/* GET USER CERT INFORMATION FROM VAR IN FRONTEND.HTML */
-/* *************************************************** */
-  // console.log(cert)
-  subject = cert.split("=")
-  subject = subject[subject.length-1]
-  // console.log(subject)
-  user = subject.split(".")
-  // console.log(user)
-
-  if (buggedPKIs.includes(userHash) == false){
-	$("#firstName").val(user[1])
-  	$("#lastName").val(user[0]) 
-    }
-  
-  $("#userID").val(userHash)
+  $("#firstName").val(firstName)
+  $("#lastName").val(lastName) 
+  $("#userEmail").val(email) 
 
   
   // change place holder text when category has changed
@@ -150,15 +134,9 @@ function successHandler(r) {
 }
 
 function autoFileUserInfo(email){
-  if (buggedPKIs.includes(userHash) == false){
-	$("#firstName").val(user[1])
-  	$("#lastName").val(user[0])
-    } 
-
-  $("#PKIinfo").val(cert) 
-  $("#userID").val(userHash)
-  $("#userEmail").val(email)
-  //$("#userPhone").val(phone)
+  $("#firstName").val(firstName)
+  $("#lastName").val(lastName) 
+  $("#userEmail").val(email) 
 }
 
 /* ******************* */

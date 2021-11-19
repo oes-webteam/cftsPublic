@@ -25,8 +25,6 @@ from pages.views.apis import setConsentCookie
 
 # ====================================================================
 
-buggedPKIs = ['f7d359ebb99a6a8aac39b297745b741b'] #[ acutally bugged hash, my hash for testing]
-
 def getDestinationNetworks(request, cftsUser):
     nets = Network.objects.filter(visible=True, network_id__in=cftsUser.destination_emails.values('network_id'))
     return nets
@@ -87,7 +85,7 @@ def frontend(request):
                 # and their cert info isn't bugged!
                 else:
                     cftsUser = getOrCreateUser(request, certInfo)
-                    
+
                     if cftsUser == None:
                         return redirect("/login")
                     elif cftsUser.update_info == True:
@@ -120,40 +118,18 @@ def getClassifications(request):
 def userRequests(request):
     resources = ResourceLink.objects.all()
 
-    try:
-            cert = request.META['CERT_SUBJECT']
-            if cert =="":
-                # requests = Request.objects.all()
-                # requestPage = paginator.Paginator(requests, 8)
-                # pageNum = request.GET.get('page')
-                # pageObj = requestPage.get_page(pageNum)
+    certInfo = getCert(request)
+    cftsUser = getOrCreateUser(request, certInfo)
+    if cftsUser == None:
+        return redirect("/login")
+    else:
+        requests = Request.objects.filter( user=cftsUser )
+        requestPage = paginator.Paginator(requests, 8)
+        pageNum = request.GET.get('page')
+        pageObj = requestPage.get_page(pageNum)
 
-                # rc = {'requests': pageObj,'resources': resources}
-                rc = {'resources': resources, 'buggedPKI': "true"}
-
-            else:
-                userHash = hashlib.md5()
-                userHash.update(cert.encode())
-                userHash = userHash.hexdigest()
-                
-                if userHash in buggedPKIs:
-                    rc = {'resources': resources, 'cert': cert, 'userHash': userHash, 'buggedPKI': "true"}
-                else:
-                    requests = Request.objects.filter( user__user_identifier=userHash )
-                    user = User.objects.get(user_identifier=userHash)
-                    requestPage = paginator.Paginator(requests, 8)
-                    pageNum = request.GET.get('page')
-                    pageObj = requestPage.get_page(pageNum)
-
-                    rc = {'requests': pageObj,'resources': resources, 'cert': cert, 'userHash': userHash, 'firstName': user.name_first, 'lastName': user.name_last}
-    except KeyError:
-        # requests = Request.objects.all()
-        # requestPage = paginator.Paginator(requests, 8)
-        # pageNum = request.GET.get('page')
-        # pageObj = requestPage.get_page(pageNum)
-
-        # rc = {'requests': pageObj,'resources': resources}
-        rc = {'resources': resources, 'buggedPKI': "true"}
+    rc = {'requests': pageObj,'resources': resources, 'firstName': cftsUser.name_first, 'lastName': cftsUser.name_last}
+    
     return render(request, 'pages/userRequests.html', {'rc': rc})
 
 
@@ -161,22 +137,6 @@ def requestDetails(request, id):
     resources = ResourceLink.objects.all()
     userRequest = Request.objects.get(request_id=id)
 
-    try:
-            cert = request.META['CERT_SUBJECT']
-            if cert =="":
-                rc = {'resources': resources}
-
-            else:
-                userHash = hashlib.md5()
-                userHash.update(cert.encode())
-                userHash = userHash.hexdigest()
-
-                if userHash in buggedPKIs:
-                    rc = {'request': userRequest,'resources': resources, 'firstName': userRequest.user.name_first.split("_buggedPKI")[0], 'lastName': userRequest.user.name_last, 'buggedPKI': "true"}
-                else:
-                    rc = {'request': userRequest,'resources': resources, 'firstName': userRequest.user.name_first.split("_buggedPKI")[0], 'lastName': userRequest.user.name_last}
-    except:
-        rc = {'request': userRequest,'resources': resources, 'firstName': userRequest.user.name_first.split("_buggedPKI")[0], 'lastName': userRequest.user.name_last, 'buggedPKI': "true"}
-
+    rc = {'request': userRequest,'resources': resources, 'firstName': userRequest.user.name_first.split("_buggedPKI")[0], 'lastName': userRequest.user.name_last}
 
     return render(request, 'pages/requestDetails.html', {'rc': rc})

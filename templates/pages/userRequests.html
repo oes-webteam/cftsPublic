@@ -6,7 +6,6 @@
 <link rel="stylesheet" href="{% static 'css/requests.css' %}">
 
 <div class="container" style="margin-top: 155px;">
-    {% if rc.userHash and rc.buggedPKI != "true" %}
         <h3>{{rc.firstName}} {{rc.lastName}}'s Requests</h3>
         <div class="row">
         {% for r in rc.requests %}
@@ -22,7 +21,7 @@
                                 Rejected
                             {% elif r.pull.date_pulled == None %} 
                                 Submitted
-                            {% elif r.pull.date_oneeye == None %} 
+                            {% elif r.pull.date_oneeye == None %} f
                                 Initial review
                             {% elif r.pull.date_twoeye == None %}
                                 Secondary review
@@ -75,10 +74,6 @@
                 {% endif %}
             </span>
         </div>
-    {% else %}
-    <h3>Unable to read your user information.</h3>
-    {% endif %}
-    
 </div>
 
 

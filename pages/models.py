@@ -118,8 +118,7 @@ class User(models.Model):
   user_id = models.UUIDField(
     primary_key=True, default=uuid.uuid4, editable=False)
   auth_user = models.OneToOneField(User, default=None, null=True, blank=True, on_delete=models.DO_NOTHING)
-  user_identifier = models.CharField(
-   max_length=150, default="00000.0000.0.0000000")
+  user_identifier = models.CharField(max_length=150, default=None, null=True, blank=True)
   name_first = models.CharField(max_length=50)
   name_last = models.CharField(max_length=50)
   source_email = models.ForeignKey(Email, null=True, blank=True, on_delete=models.DO_NOTHING, related_name="source_email")

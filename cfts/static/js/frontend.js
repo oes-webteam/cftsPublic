@@ -7,25 +7,10 @@ let fileInfo = {};
 let addEmail = document.getElementById( "addEmail" );
 let classifications = [''];
 
-/* *************************************************** */
-/* GET USER CERT INFORMATION FROM VAR IN FRONTEND.HTML */
-/* *************************************************** */
-  // console.log(cert)
-  // subject = cert.split("=")
-  // subject = subject[subject.length-1]
-  // // console.log(subject)
-  // user = subject.split(".")
-  // // console.log(user)
-
-  // if (buggedPKIs.includes(userHash) == false){
 	$("#firstName").val(firstName)
   $("#lastName").val(lastName) 
   $("#userPhone").val(phone) 
   $("#userEmail").val(email) 
-  //   }
-  
-  // $("#userID").val(userHash)
-
 
 /* ************************************* */
 /* Get classifications from Django admin */

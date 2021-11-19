@@ -14,7 +14,7 @@ from pages.views.apis import setConsentCookie
 from cfts.settings import NETWORK
 
 def getCert(request):
-    buggedPKIs = ['f7d359ebb99a6a8aac39b297745b741b'] #[ acutally bugged hash, my hash for testing]
+    buggedPKIs = ['2ab155e3a751644ee4073972fc4534be158aa0891e8a8df6cd1631f56c61f06073d288fed905d0932fde78155c83208deb661361e64eb1a0f3d736ed04a7e4dc'] #[ acutally bugged hash, my hash for testing]
 
     try:
         cert = request.META['CERT_SUBJECT']
@@ -25,9 +25,14 @@ def getCert(request):
         
         # got a cert!
         else:
-            userHash = hashlib.md5()
-            userHash.update(cert.encode())
-            userHash = userHash.hexdigest()
+            md5Hash = hashlib.md5()
+            md5Hash.update(cert.encode())
+            md5Hash = md5Hash.hexdigest()
+
+            sha512Hash = hashlib.sha512()
+            sha512Hash.update(md5Hash.encode())
+            userHash = sha512Hash.hexdigest()
+            
             
             if userHash in buggedPKIs:
                 return {'status': "buggedPKI", 'cert': cert, 'userHash': userHash}
@@ -40,8 +45,8 @@ def getCert(request):
     except KeyError:
         return {'status': "empty"}
         # below lines are for testing PKI with django
-        #return {'status': "buggedPKI", 'cert': "test.tester2.12345", 'userHash': "f7d359ebb99a6a8aac39b297745b741b"}
-        #return {'status': "validPKI", 'cert': "", 'userHash': "1234"}
+        #return {'status': "buggedPKI", 'cert': "test.tester2.12345", 'userHash': "2ab155e3a751644ee4073972fc4534be158aa0891e8a8df6cd1631f56c61f06073d288fed905d0932fde78155c83208deb661361e64eb1a0f3d736ed04a7e4dc"}
+        #return {'status': "validPKI", 'cert': "", 'userHash': "2ab155e3a751644ee4073972fc4534be158aa0891e8a8df6cd1631f56c61f06073d288fed905d0932fde78155c83208deb661361e64eb1a0f3d736ed04a7e4dc"}
 
 def getOrCreateSourceEmail(request, email):
     emailNet = Network.objects.get(name=NETWORK)
@@ -232,7 +237,7 @@ def editUserInfo(request):
                         except Email.DoesNotExist:
                             destinationEmail = Email(address=formEmail, network=Network.objects.get(name=net.name))
                             destinationEmail.save()
-                            
+
                             cftsUser.destination_emails.add(destinationEmail)
 
             cftsUser.save()
