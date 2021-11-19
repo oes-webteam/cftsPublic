@@ -52,9 +52,13 @@ class userInfoForm(ModelForm):
         
         super(userInfoForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper(self)
+
+        self.fields['name_first'].label = 'First Name'
+        self.fields['name_last'].label = 'Last Name'
         self.fields['source_email'].initial = email.address
         self.fields['source_email'].label = NETWORK + ' Email'
         self.fields['phone'].initial = user.phone
+        self.helper.layout.append(HTML('<div style="width: 100%"><hr class="mt-2 mb-3" style="border-top-width: 3px; border-top-color: rgba(0, 0, 0, 0.2);"/><h3 class="mt-3">Destination Emails</h3><p class="mb-4">You can only submit transfer requests to networks you have a valid email for.</p></div>'))
 
         for network in networks:
             net = Network.objects.get(name=network)

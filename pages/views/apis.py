@@ -475,4 +475,4 @@ def process ( request ):
 def setConsentCookie(request):
     request.session.__setitem__('consent','consent given')
     request.session.set_expiry(0)
-    return redirect('frontend')
+    return HttpResponse("Consent Header Set")

@@ -6,10 +6,7 @@ let fileQueue = [];
 let fileInfo = {};
 let addEmail = document.getElementById( "addEmail" );
 let classifications = [''];
-//let buggedPKIs = ['f7d359ebb99a6a8aac39b297745b741b']
 
-console.log(phone)
-console.log(email)
 /* *************************************************** */
 /* GET USER CERT INFORMATION FROM VAR IN FRONTEND.HTML */
 /* *************************************************** */

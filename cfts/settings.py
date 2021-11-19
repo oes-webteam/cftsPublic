@@ -60,7 +60,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'cfts.urls'
 
-LOGIN_URL = '/admin/login/'
+LOGIN_URL = '/login'
 
 TEMPLATES = [
     {

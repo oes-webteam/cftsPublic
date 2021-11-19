@@ -21,6 +21,8 @@ from pages.models import User
 from pages.models import *
 
 from pages.views.auth import getCert, getOrCreateUser
+from pages.views.apis import setConsentCookie
+
 # ====================================================================
 
 buggedPKIs = ['f7d359ebb99a6a8aac39b297745b741b'] #[ acutally bugged hash, my hash for testing]
@@ -28,6 +30,10 @@ buggedPKIs = ['f7d359ebb99a6a8aac39b297745b741b'] #[ acutally bugged hash, my ha
 def getDestinationNetworks(request, cftsUser):
     nets = Network.objects.filter(visible=True, network_id__in=cftsUser.destination_emails.values('network_id'))
     return nets
+
+def consent(request):
+    setConsentCookie(request)
+    return render(request, 'pages/consent.html')
 
 @ensure_csrf_cookie
 @never_cache
@@ -50,6 +56,12 @@ def frontend(request):
             if certInfo['status'] == "empty":
                 if request.user.is_authenticated:
                     cftsUser = getOrCreateUser(request, certInfo)
+
+                    if cftsUser == None:
+                        return redirect("/login")
+                    elif cftsUser.update_info == True:
+                        return redirect("/user-info")
+
                     nets = getDestinationNetworks(request, cftsUser)
                     rc = {'networks': nets, 'resources': resources, 'user': cftsUser, 'browser': browser}
                 else:
@@ -60,6 +72,12 @@ def frontend(request):
                 if certInfo['status'] == "buggedPKI":
                     if request.user.is_authenticated:
                         cftsUser = getOrCreateUser(request, certInfo)
+
+                        if cftsUser == None:
+                            return redirect("/login")
+                        elif cftsUser.update_info == True:
+                            return redirect("/user-info")
+
                         nets = getDestinationNetworks(request, cftsUser)
                         rc = {'networks': nets, 'resources': resources,
                             'cert': certInfo['cert'], 'userHash': certInfo['userHash'], 'user': cftsUser, 'browser': browser, 'buggedPKI': "true"}
@@ -69,6 +87,12 @@ def frontend(request):
                 # and their cert info isn't bugged!
                 else:
                     cftsUser = getOrCreateUser(request, certInfo)
+                    
+                    if cftsUser == None:
+                        return redirect("/login")
+                    elif cftsUser.update_info == True:
+                        return redirect("/user-info")
+
                     nets = getDestinationNetworks(request, cftsUser)
                     if cftsUser.banned == True:
                         if date.today() >= cftsUser.banned_until:
@@ -87,7 +111,7 @@ def frontend(request):
         return render(request, 'pages/frontend.html', {'rc': rc})
     
     except KeyError:
-        return render(request, 'pages/consent.html')
+        return redirect('consent')
 
 def getClassifications(request):
     classifications = serializers.serialize('json',Classification.objects.only('abbrev'))

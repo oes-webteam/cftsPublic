@@ -1,10 +1,8 @@
 import hashlib
-from os import name
-from django.contrib import auth
+from django.contrib.auth.decorators import login_required
 
 from django.shortcuts import render, redirect
-import cfts
-from cfts import network
+
 from pages.forms import NewUserForm, userInfoForm, userLogInForm, userPasswordChangeForm
 from django.contrib.auth import login, authenticate
 from django.contrib import messages
@@ -40,57 +38,84 @@ def getCert(request):
     # django dev server doesn't grab certs
     except KeyError:
         return {'status': "empty"}
+        # below lines are for testing PKI with django
+        #return {'status': "buggedPKI", 'cert': "test.tester2.12345", 'userHash': "f7d359ebb99a6a8aac39b297745b741b"}
+        #return {'status': "validPKI", 'cert': "", 'userHash': "1234"}
 
-def getOrCreateUser(request, certInfo):
-    userAcc = authUser.objects.get(id=request.user.id)
+def getOrCreateSourceEmail(request, email):
     emailNet = Network.objects.get(name=NETWORK)
 
     try:
-        userEmail = Email.objects.get(address=userAcc.email)
-        userEmail.network = emailNet
+        userEmail = Email.objects.get(address=email)
+        if userEmail.network == None:
+            userEmail.network = emailNet
+            userEmail.save()
 
     except Email.DoesNotExist:
-        userEmail = Email(address=userAcc.email, network=emailNet)
+        userEmail = Email(address=email, network=emailNet)
         userEmail.save()
-        
+    
+    return userEmail
 
+
+def getOrCreateUser(request, certInfo):
     try:
-        userHash = certInfo['userHash']
+        if certInfo['status'] == "validPKI":
+            userHash = certInfo['userHash']
 
-        user = User.objects.get(user_identifier=userHash)
-        return user
+            user = User.objects.get(user_identifier=userHash)
+
+            if user.auth_user == None:
+                if request.user.is_authenticated:
+                    user.auth_user = request.user
+                    user.save()
+                else:
+                    return None
+        else:
+            if request.user.is_authenticated:
+                user = User.objects.get(auth_user=request.user)
+            else:
+                return None
         
     except User.DoesNotExist:
         print("No user found with ID")
-        user = User(
-            auth_user = userAcc,
-            name_first=userAcc.first_name,
-            name_last=userAcc.last_name,
-            user_identifier=certInfo['userHash'],
-            source_email = userEmail
-        )
-        user.save()
+        if request.user.is_authenticated:
+            userEmail = getOrCreateSourceEmail(request, request.user.email)
+            user = User(
+                auth_user = request.user,
+                name_first=request.user.first_name,
+                name_last=request.user.last_name,
+                source_email = userEmail
+            )
 
-        return user
+            if certInfo['status'] == "validPKI":
+                user.user_identifier=certInfo['userHash']
+
+            user.save()
+        else:
+            return None
 
     except KeyError:
         try:
             #print("I hope you are runing through Django server, or else I screwd up big.")
-            user = User.objects.get(auth_user=userAcc)
-
-            return user
+            user = User.objects.get(auth_user=request.user)
 
         except User.DoesNotExist:
             print("No user found with ID")
-            user = User(
-                auth_user = userAcc,
-                name_first=userAcc.first_name,
-                name_last=userAcc.last_name,
-                source_email = userEmail
-            )
-            user.save()
+            if request.user.is_authenticated:
+                userEmail = getOrCreateSourceEmail(request, request.user.email)
+                user = User(
+                    auth_user = request.user,
+                    name_first=request.user.first_name,
+                    name_last=request.user.last_name,
+                    source_email = userEmail
+                )
+                user.save()
 
-            return user
+            else:
+                return None
+
+    return user
 
 def userLogin(request):
     if request.method == "POST":
@@ -102,9 +127,12 @@ def userLogin(request):
             if user is not None:
                 #messages.success(request, "Login successful!")
                 login(request, user)
-                setConsentCookie(request)
 
-                return redirect("/frontend")
+                nextUrl = request.GET.get('next', None)
+                if nextUrl == None:
+                    return redirect("/frontend")
+                else:
+                    return redirect(nextUrl)
             else:
                 return render(request, template_name="authForms/userLogin.html", context={"login_form":form,})
             
@@ -114,6 +142,7 @@ def userLogin(request):
     form = userLogInForm()
     return render(request, template_name="authForms/userLogin.html", context={"login_form":form})
 
+@login_required
 def changeUserPassword(request):
     if request.method == "POST":
         form = userPasswordChangeForm(request.user, request.POST)
@@ -152,6 +181,7 @@ def register(request):
     form = NewUserForm()
     return render(request, template_name="authForms/register.html", context={"register_form":form})
 
+@login_required
 def editUserInfo(request):
     nets = Network.objects.filter(visible=True)
     certInfo = getCert(request)
@@ -166,17 +196,17 @@ def editUserInfo(request):
             userEmail.save()
 
             # update auth user account info
-            userAcc = authUser.objects.get(id=request.user.id)
-            userAcc.first_name = request.POST.get('name_first')
-            userAcc.last_name = request.POST.get('name_last')
-            userAcc.email = request.POST.get('source_email')
-            userAcc.save()
+            request.user.first_name = request.POST.get('name_first')
+            request.user.last_name = request.POST.get('name_last')
+            request.user.email = request.POST.get('source_email')
+            request.user.save()
 
             # update cfts user object info
             cftsUser.name_first = request.POST.get('name_first')
             cftsUser.name_last = request.POST.get('name_last')
             cftsUser.source_email = userEmail
             cftsUser.phone = request.POST.get('phone')
+            cftsUser.update_info = False
             
             # create or update destination emails
             for net in nets:
@@ -195,6 +225,7 @@ def editUserInfo(request):
                         cftsUser.destination_emails.add(destinationEmail)
 
             cftsUser.save()
+            
             return redirect("/frontend")
         else:
             return render(request, 'authForms/editUserInfo.html', context={"userInfoForm": form})

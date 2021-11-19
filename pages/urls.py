@@ -7,7 +7,7 @@ urlpatterns = [
     path('CFTS.cfm', views.frontend, name='index'),
     path('cfts.cfm', views.frontend, name='index'),
     path('', views.frontend, name='index'),
-    path('consent', static_views.consent, name='consent'),
+    path('consent', views.consent, name='consent'),
     path('howTo', static_views.howTo, name='howTo'),
     path('resources', static_views.resources, name='resources'),
 

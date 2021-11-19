@@ -125,10 +125,11 @@ class User(models.Model):
   source_email = models.ForeignKey(Email, null=True, blank=True, on_delete=models.DO_NOTHING, related_name="source_email")
   destination_emails = models.ManyToManyField(Email)
   notes = models.TextField(null=True, blank=True)
-  phone = models.CharField(max_length=50, default="000-000-0000")
+  phone = models.CharField(max_length=50, default=None, null=True, blank=True)
   banned = models.BooleanField(default=False)
   strikes = models.IntegerField(default=0)
   banned_until = models.DateField(null=True, blank=True)
+  update_info = models.BooleanField(default=True)
 
   class Meta:
     ordering = ['name_last']
