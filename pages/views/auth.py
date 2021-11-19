@@ -1,4 +1,5 @@
 import hashlib
+from os import name
 from django.contrib.auth.decorators import login_required
 
 from django.shortcuts import render, redirect
@@ -218,11 +219,21 @@ def editUserInfo(request):
                         if formEmail != destinationEmail:
                             destinationEmail.address = formEmail
                             destinationEmail.save()
-
+                    # user does not have a destination Email with this address, search all Email objects 
                     except Email.DoesNotExist:
-                        destinationEmail = Email(address=formEmail, network=Network.objects.get(name=net.name))
-                        destinationEmail.save()
-                        cftsUser.destination_emails.add(destinationEmail)
+                        try:
+                            destinationEmail = Email.objects.get(address=formEmail)
+                            if destinationEmail.network == None:
+                                destinationEmail.network = Network.objects.get(name=net.name)
+                                destinationEmail.save()
+
+                            cftsUser.destination_emails.add(destinationEmail)
+
+                        except Email.DoesNotExist:
+                            destinationEmail = Email(address=formEmail, network=Network.objects.get(name=net.name))
+                            destinationEmail.save()
+                            
+                            cftsUser.destination_emails.add(destinationEmail)
 
             cftsUser.save()
             
