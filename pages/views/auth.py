@@ -14,7 +14,7 @@ from pages.views.apis import setConsentCookie
 from cfts.settings import NETWORK
 
 def getCert(request):
-    buggedPKIs = ['2ab155e3a751644ee4073972fc4534be158aa0891e8a8df6cd1631f56c61f06073d288fed905d0932fde78155c83208deb661361e64eb1a0f3d736ed04a7e4dc'] #[ acutally bugged hash, my hash for testing]
+    buggedPKIs = ['2ab155e3a751644ee4073972fc4534be158aa0891e8a8df6cd1631f56c61f06073d288fed905d0932fde78155c83208deb661361e64eb1a0f3d736ed04a7e4dc']#,'85582ff68bd0225a7bf8a7b150b547e3eac6c987c0c616d6411c6ac8c31bba0c09b330c220c51080fca2cd54c893a4a3fb256b81e8845490c6a0f9caf93984eb'] #[ acutally bugged hash, my hash for testing]
 
     try:
         cert = request.META['CERT_SUBJECT']

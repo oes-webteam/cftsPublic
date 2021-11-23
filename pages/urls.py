@@ -2,6 +2,7 @@ from os import name
 from django.urls import path
 from . import static_views
 import pages.views as views
+from django.contrib.auth.views import LogoutView
 
 urlpatterns = [
     path('CFTS.cfm', views.frontend, name='index'),
@@ -14,9 +15,9 @@ urlpatterns = [
     # auth
      path('register', views.register, name='register'),
      path('login', views.userLogin, name='login'),
+     path('logout', LogoutView.as_view(), name='logout'),
      path('user-info', views.editUserInfo, name='user-info'),
      path('password-change', views.changeUserPassword, name='password-change'),
-
 
     # resources
     path('resources/<str:file>', views.resources, name='resources'),

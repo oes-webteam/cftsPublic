@@ -24,17 +24,34 @@
           <div class="card text-center border-secondary mb-resp bg-light">
             <div class="card-body">
               <h3 class="text-gray-dark">User Information</h3>
+              {% if rc.user == None %}
+              <div class="form-group input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="userNameRequired">*</span>
+                </div>
+                <input
+                  type="phone"
+                  class="form-control"
+                  name="userName"
+                  id="userName"
+                  aria-describedby="userNameHelp userNameRequired"
+                  placeholder="CFTS Username"
+                  required
+                />
+                <span class="w-100"></span>
+              </div>
+              {% endif %}
               <div class="form-group input-group">
                 <div class="input-group-prepend">
                   <span class="input-group-text" id="firstNameRequired">*</span>
                 </div>
-                <input type="text" class="form-control" name="firstName" id="firstName" placeholder="First Name" readonly />
+                <input type="text" class="form-control" name="firstName" id="firstName" placeholder="First Name" {% if rc.user != None %}readonly{% endif %} />
               </div>
               <div class="form-group input-group">
                 <div class="input-group-prepend">
                   <span class="input-group-text" id="lastNameRequired">*</span>
                 </div>
-                <input type="text" class="form-control" name="lastName" id="lastName" placeholder="Last Name" readonly />
+                <input type="text" class="form-control" name="lastName" id="lastName" placeholder="Last Name" {% if rc.user != None %}readonly{% endif %} />
               </div>
               <div class="form-group input-group">
                 <div class="input-group-prepend">
@@ -48,10 +65,28 @@
                   aria-describedby="userEmailHelp userEmailRequired"
                   placeholder="Email Address"
                   required
-                  readonly
+                  {% if rc.user != None %}readonly{% endif %}
                 />
                 <span class="w-100"></span>
               </div>
+
+              {% if rc.user == None %}
+              <div class="form-group input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="userPhoneRequired">*</span>
+                </div>
+                <input
+                  type="phone"
+                  class="form-control"
+                  name="userPhone"
+                  id="userPhone"
+                  aria-describedby="userPhoneHelp userPhoneRequired"
+                  placeholder="Phone Number"
+                  required
+                />
+                <span class="w-100"></span>
+              </div>
+              {% endif %}
             </div>
               
             </div>
@@ -76,11 +111,16 @@
                     <span class="input-group-text" id="categoryRequired">*</span>
                   </div>
                   <select class="form-control category" name="category" id="category" >
-                  {% if rc.rqst %}
-                    <option value="Bug Report">Ban Request</option>
+                  {% if user.is_staff %}
+                    {% if rc.rqst %}
+                      <option value="Ban Request">Ban Request</option>
+                    {% endif %}
+                  {% endif %}
+                  {% if not user.is_authenticated %}
+                    <option value="Password Reset">Password Reset</option>
                   {% endif %}
                   <option value="Bug Report">Bug Report</option>
-                  {% if user.is_authenticated %}
+                  {% if user.is_staff %}
                   <option value="Feedback">Feedback</option>
                   <option value="Feature Request">Feature Request</option>
                   {% endif %}
@@ -89,12 +129,12 @@
                 
                 <div class="form-group">
                   <input type="text" class="form-control" name="userID" id="userID"  hidden/>
-                  <input type="checkbox" class="form-control" name="adminUser" id="adminUser" {% if user.is_authenticated %} value="True" {% else %} value="False"{% endif %} checked hidden/>
+                  <input type="checkbox" class="form-control" name="adminUser" id="adminUser" {% if user.is_staff %} value="True" {% else %} value="False"{% endif %} checked hidden/>
                 </div>
 
                 <h3 id="feedback_title">Feedback</h3>
                 <div class="form-group input-group">
-                  <textarea class="form-control feedback" name="feedback" id="feedback" placeholder="Please be as detailed as possible and provide steps to reproduce the bug if possible.">{% if rc.rqst %}Request details:&#010;https://{{request.get_host}}/transfer-request/{{rc.rqst.request_id}}&#013; &#010;Please provide details about ban request:&#010;{% endif %}</textarea>
+                  <textarea class="form-control feedback" name="feedback" id="feedback" placeholder="{% if not user.is_authenticated %} Please make sure the information you have entered to the left is correct.{% else %}Please be as detailed as possible and provide steps to reproduce the bug if possible.{% endif %}">{% if rc.rqst %}Request details:&#010;https://{{request.get_host}}/transfer-request/{{rc.rqst.request_id}}&#013; &#010;Please provide details about ban request:&#010;{% endif %}</textarea>
                 </div>
               </div>
             </div>

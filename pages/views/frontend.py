@@ -123,7 +123,7 @@ def userRequests(request):
     if cftsUser == None:
         return redirect("/login")
     else:
-        requests = Request.objects.filter( user=cftsUser )
+        requests = Request.objects.filter( user=cftsUser, is_submitted=True )
         requestPage = paginator.Paginator(requests, 8)
         pageNum = request.GET.get('page')
         pageObj = requestPage.get_page(pageNum)

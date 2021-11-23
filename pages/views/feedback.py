@@ -18,6 +18,7 @@ from cfts import settings as Settings
 # model/database stuff
 from pages.models import *
 from pages.views.auth import getCert, getOrCreateUser
+from django.contrib.auth.models import User as authUser
 
 
 import hashlib
@@ -45,12 +46,42 @@ def submitFeedback( request ):
         feedback = Feedback(
             title = form_data.get('title'),
             body = form_data.get('feedback'),
-            user = cftsUser,
+            #user = cftsUser,
             category = form_data.get('category'),
             admin_feedback = form_data.get('adminUser'),
             date_submitted = timezone.now()
         )
+
+        if cftsUser != None:
+            feedback.user = cftsUser
+
+        else:
+            buggedUserInfo = '''
+            User Name: {uname}
+            First Name: {fname}
+            Last Name: {lname}
+            Email: {email}
+            Phone: {phone}
+
+            '''.format(uname=form_data.get('userName'), fname=form_data.get('firstName'), lname=form_data.get('lastName'), email=form_data.get('userEmail'), phone=form_data.get('userPhone'))
+            feedback.body = buggedUserInfo + form_data.get('feedback')
+            
+            # bugged PKI user, try and return a CFTS userser account based on username
+            try:
+                userFromUserName = User.objects.get(auth_user=authUser.objects.get(username=form_data.get('userName')))
+                feedback.user = userFromUserName
+            # no luck with username
+            except (User.DoesNotExist, authUser.DoesNotExist):
+                # try thier emmail
+                try:
+                    userFromEmail = User.objects.get(source_email=Email.objects.get(address=form_data.get('userEmail')))
+                    feedback.user = userFromEmail
+                # still nothing, pass a Null user
+                except (User.DoesNotExist, User.MultipleObjectsReturned, Email.DoesNotExist):
+                    pass
+
         feedback.save()
+
 
         return JsonResponse({'status': "Success"})
     else:

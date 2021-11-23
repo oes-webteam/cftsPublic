@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
-from cfts import network
+import cfts.network as ENV
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -21,14 +21,15 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = network.SECRET_KEY
+SECRET_KEY = ENV.SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = network.DEBUG
+DEBUG = ENV.DEBUG
 
-ALLOWED_HOSTS = network.ALLOWED_HOSTS
+ALLOWED_HOSTS = ENV.ALLOWED_HOSTS
 
-NETWORK = network.NETWORK
+NETWORK = ENV.NETWORK
+
 
 # Application definition
 
@@ -61,6 +62,8 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'cfts.urls'
 
 LOGIN_URL = '/login'
+
+LOGOUT_REDIRECT_URL = '/frontend'
 
 TEMPLATES = [
     {

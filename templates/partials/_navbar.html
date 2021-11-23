@@ -51,29 +51,50 @@
         </li>
 
         {% if user.is_authenticated %}
-        <li class="nav-item dropdown">
-          <a
-            class="nav-link dropdown-toggle"
-            href="#"
-            role="button"
-            id="dropdownMenuLink"
-            data-toggle="dropdown"
-            aria-haspopup="true"
-            aria-expanded="false"
-            >Analysts</a
-          >
-          <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-            <a class="dropdown-item" href="{% url 'queue' %}">Transfer Queue</a>
-            <a class="dropdown-item" href="{% url 'scan' 'none' %}">Scan Tool</a>
-            <a class="dropdown-item" href="{% url 'pulls' %}">Pulls History</a>
-            <a class="dropdown-item" href="{% url 'archive' %}">Transfers Archive</a>
-            <a class="dropdown-item" href="{% url 'reports' %}">Reporting</a>
-	    <a class="dropdown-item" href="{% url 'admin:index' %}">Admin Page</a>
-          </div>
-        </li>
+          {% if user.is_staff %}
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                role="button"
+                id="dropdownMenuLink"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false"
+                >Analysts</a
+              >
+              <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                <a class="dropdown-item" href="{% url 'queue' %}">Transfer Queue</a>
+                <a class="dropdown-item" href="{% url 'scan' 'none' %}">Scan Tool</a>
+                <a class="dropdown-item" href="{% url 'pulls' %}">Pulls History</a>
+                <a class="dropdown-item" href="{% url 'archive' %}">Transfers Archive</a>
+                <a class="dropdown-item" href="{% url 'reports' %}">Reporting</a>
+                <a class="dropdown-item" href="{% url 'admin:index' %}">Admin Page</a>
+              </div>
+            </li>
+          {% else %}
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                role="button"
+                id="dropdownMenuLink"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false"
+                >{{ user }}</a
+              >
+              <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                <a class="dropdown-item" href="{% url 'userRequests' %}">My Requests</a>
+                <a class="dropdown-item" href="{% url 'user-info' %}">Edit Account Info</a>
+                <a class="dropdown-item" href="{% url 'password-change' %}">Change Password</a>
+                <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
+              </div>
+            </li>
+        {% endif %}
         {% else %}
         <li class="nav-item">
-          <a href="{% url 'queue' %}" class="nav-link">Analyst Login</a>
+          <a href="{% url 'login' %}" class="nav-link">Login</a>
         </li>
         {% endif %}
       </ul>

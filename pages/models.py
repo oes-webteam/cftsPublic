@@ -208,7 +208,7 @@ class Feedback(models.Model):
   feedback_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
   title = models.CharField(max_length=150, default="")
   body = models.TextField(default="")
-  user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+  user = models.ForeignKey(User, default=None, null=True, blank=True, on_delete=models.DO_NOTHING)
   category = models.CharField(max_length=50, default="")
   admin_feedback = models.BooleanField(default=False)
   date_submitted = models.DateTimeField(auto_now_add=True)

@@ -19,6 +19,9 @@ xferForm.addEventListener("submit", process, false);
       case "Feature Request":
         $("#feedback").attr("placeholder","Give us the details for your feature request. Go as in depth as possible, also please include your justification for the feature if possible.")
         break
+      case "Password Reset":
+        $("#feedback").attr("placeholder","Please make sure the information you have entered to the left is correct.")
+        break
     }
 
   })
@@ -63,6 +66,13 @@ function validateForm(form) {
     elem.classList.remove("is-valid");
     elem.classList.remove("is-invalid");
   });
+  // userName
+  if(form.elements.userName){
+    if (!(form.elements.userName.value.length)) {
+      errors.push(form.elements.userName);
+      isValid = false;
+    }
+  }
 
   // name
   if (!(form.elements.firstName.value.length && form.elements.lastName.value.length)) {
@@ -77,7 +87,15 @@ function validateForm(form) {
     isValid = false;
   }
 
-  // category
+  // user phone in buggedPKI
+  if(form.elements.userPhone){
+    if (!(form.elements.userPhone.value.length)) {
+      errors.push(form.elements.userPhone);
+      isValid = false;
+    }
+  }
+
+  // title
   if (!(form.elements.title.value.length )) {
     errors.push(form.elements.title);
     isValid = false;
@@ -90,9 +108,11 @@ function validateForm(form) {
   }
 
   // feedback body
-  if (!(form.elements.feedback.value.length )) {
-    errors.push(form.elements.feedback);
-    isValid = false;
+  if($("select option:selected").val() != "Password Reset"){
+    if (!(form.elements.feedback.value.length )) {
+      errors.push(form.elements.feedback);
+      isValid = false;
+    }
   }
 
   // process errors
@@ -120,9 +140,16 @@ function successHandler(r) {
   console.dir(r);
   notifyUserSuccess("THANK YOU! Your feedback have been submitted. ");
   // CLEAN UP!!
-
-  email = $("#userEmail").val();
-  //phone = $("#userPhone").val();
+  
+  if(xferForm.elements.userName){
+    userName = $("#userName").val()
+  }
+  firstName = $("#firstName").val()
+  lastName = $("#lastName").val() 
+  email = $("#userEmail").val(); 
+  if(xferForm.elements.userPhone){
+    phone = $("#userPhone").val()
+  }
 
   document.getElementById("transfer-request-form").reset();
   //resetFileQueue();
@@ -134,9 +161,15 @@ function successHandler(r) {
 }
 
 function autoFileUserInfo(email){
+  if(xferForm.elements.userName){
+    $("#userName").val(userName)
+  }
   $("#firstName").val(firstName)
   $("#lastName").val(lastName) 
   $("#userEmail").val(email) 
+  if(xferForm.elements.userPhone){
+    $("#userPhone").val(phone)
+  }
 }
 
 /* ******************* */
@@ -206,4 +239,5 @@ function process(e) {
     $('#submitButton').prop('disabled',false);
   }
 }
+
 
