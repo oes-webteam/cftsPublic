@@ -36,7 +36,12 @@ let classifications = [''];
       classifications.push(data[obj].fields.abbrev)
         }
     }
-
+  
+  $('.network-switch').click(function(){
+    let destEmail = $(this).attr('email')
+    console.log(destEmail)
+    $('#targetEmail').val(destEmail)
+  })
 
 /* ********************************************************* */
 /* ADD FILES TO THE QUEUE WHEN ADDED FROM FIELD OR DROP ZONE */

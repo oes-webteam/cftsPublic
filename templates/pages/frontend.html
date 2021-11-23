@@ -136,10 +136,10 @@
               <div class="card-body">
                 <h3 class="text-gray-dark">Transfer To</h3>
                 <div style="display: grid; grid-template-columns: 50% 50%;">
-                  {% for net in rc.networks %}
+                  {% for net, email in rc.networks.items %}
                   <div class="custom-control custom-switch text-left" style="margin: 0.5em 0;">
-                    <input type="radio" name="network" class="custom-control-input" id="switch{{ net.name }}" value="{{ net.name }}" />
-                    <label class="custom-control-label" for="switch{{ net.name }}">{{ net.name }}</label>
+                    <input type="radio" name="network" class="custom-control-input network-switch" id="switch{{ net }}" value="{{ net }}" email="{{ email }}"/>
+                    <label class="custom-control-label" for="switch{{ net }}">{{ net }}</label>
                   </div>
                   {% endfor %}
                 </div>
@@ -156,11 +156,12 @@
                     aria-describedby="targetEmailHelp targetEmailRequired"
                     placeholder="Email Address"
                     required
+                    readonly
                   />
                   <span class="w-100"></span>
                   <small id="targetEmailHelp" class="form-text text-muted">on the target network</small>              
                 </div>
-                <div class="form-group">
+                <div class="form-group" hidden>
                   <a href="#" id="addEmail" class="btn btn-success">Add Email</a>
                 </div>
                 <h3 class="text-gray-dark">Comments</h3>

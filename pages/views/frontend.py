@@ -26,8 +26,12 @@ from pages.views.apis import setConsentCookie
 # ====================================================================
 
 def getDestinationNetworks(request, cftsUser):
+    networkEmails = {}
     nets = Network.objects.filter(visible=True, network_id__in=cftsUser.destination_emails.values('network_id'))
-    return nets
+    for net in nets:
+        networkEmails[net.name] = cftsUser.destination_emails.get(network__name=net.name).address
+    
+    return networkEmails
 
 def consent(request):
     setConsentCookie(request)

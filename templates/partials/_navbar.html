@@ -84,6 +84,7 @@
                   {% if user.is_superuser%}
                     <a class="dropdown-item" href="{% url 'password-reset-admin' %}">Password Reset Admin</a>
                   {% endif %}
+                  <hr class="mt-2 mb-2" style="border-top-width: 3px; border-top-color: rgba(0, 0, 0, 0.2);"/>
                 {% endif %}
                 <a class="dropdown-item" href="{% url 'userRequests' %}">My Requests</a>
                 <a class="dropdown-item" href="{% url 'user-info' %}">Edit Account Info</a>
