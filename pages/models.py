@@ -212,9 +212,10 @@ class Feedback(models.Model):
   category = models.CharField(max_length=50, default="")
   admin_feedback = models.BooleanField(default=False)
   date_submitted = models.DateTimeField(auto_now_add=True)
+  completed = models.BooleanField(default=False)
 
   class Meta:
-    ordering = ['-date_submitted']
+    ordering = ['completed', '-date_submitted']
 
   def __str__(self):
     return str(self.date_submitted.strftime("%b %d %H:%M")) + ": " + self.title

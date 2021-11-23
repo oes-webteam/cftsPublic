@@ -34,6 +34,7 @@ def feedback( request, requestid=False ):
     return render(request, 'pages/feedback.html', {'rc': rc})
 
 def submitFeedback( request ):
+    
     if request.method == 'POST':
         form_data = request.POST
 

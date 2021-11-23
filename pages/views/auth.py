@@ -1,15 +1,24 @@
+import email
 import hashlib
 from os import name
-from django.contrib.auth.decorators import login_required
+from re import T
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 from django.shortcuts import render, redirect
+from django.http.response import HttpResponse
 
 from pages.forms import NewUserForm, userInfoForm, userLogInForm, userPasswordChangeForm
+from django.contrib.auth.forms import PasswordResetForm
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_bytes
+
 from django.contrib.auth import login, authenticate
 from django.contrib import messages
 
 from django.contrib.auth.models import User as authUser
-from pages.models import Network, User, Email
+from pages.models import Feedback, Network, User, Email, Feedback, ResourceLink
 from cfts.settings import NETWORK
 
 def superUserCheck(user):
@@ -129,6 +138,8 @@ def getOrCreateUser(request, certInfo):
     return user
 
 def userLogin(request):
+    resources = ResourceLink.objects.all()
+
     if request.method == "POST":
         form = userLogInForm(data=request.POST)
         if form.is_valid():
@@ -145,16 +156,18 @@ def userLogin(request):
                 else:
                     return redirect(nextUrl)
             else:
-                return render(request, template_name="authForms/userLogin.html", context={"login_form":form,})
+                return render(request, template_name="authForms/userLogin.html", context={'resources': resources, "login_form":form,})
             
         else:
-            return render(request, template_name="authForms/userLogin.html", context={"login_form":form,})
+            return render(request, template_name="authForms/userLogin.html", context={'resources': resources, "login_form":form,})
 
     form = userLogInForm()
-    return render(request, template_name="authForms/userLogin.html", context={"login_form":form})
+    return render(request, template_name="authForms/userLogin.html", context={'resources': resources, "login_form":form})
 
 @login_required
 def changeUserPassword(request):
+    resources = ResourceLink.objects.all()
+
     if request.method == "POST":
         form = userPasswordChangeForm(request.user, request.POST)
         if form.is_valid():
@@ -166,12 +179,14 @@ def changeUserPassword(request):
             return redirect("/frontend")
             
         else:
-            return render(request, template_name="authForms/userPassChange.html", context={"pass_change_form":form,})
+            return render(request, template_name="authForms/userPassChange.html", context={'resources': resources, "pass_change_form":form,})
 
     form = userPasswordChangeForm(request.user)
-    return render(request, template_name="authForms/userPassChange.html", context={"pass_change_form":form})
+    return render(request, template_name="authForms/userPassChange.html", context={'resources': resources, "pass_change_form":form})
 
 def register(request):
+    resources = ResourceLink.objects.all()
+
     if request.method == "POST":
         form = NewUserForm(request.POST)
         
@@ -189,13 +204,15 @@ def register(request):
 
             return redirect("/user-info")
         else:
-            return render(request, template_name="authForms/register.html", context={"register_form":form,})
+            return render(request, template_name="authForms/register.html", context={'resources': resources, "register_form":form,})
 
     form = NewUserForm()
-    return render(request, template_name="authForms/register.html", context={"register_form":form})
+    return render(request, template_name="authForms/register.html", context={'resources': resources, "register_form":form})
 
 @login_required
 def editUserInfo(request):
+    resources = ResourceLink.objects.all()
+
     nets = Network.objects.filter(visible=True)
     certInfo = getCert(request)
     cftsUser = getOrCreateUser(request, certInfo)
@@ -251,7 +268,58 @@ def editUserInfo(request):
             
             return redirect("/frontend")
         else:
-            return render(request, 'authForms/editUserInfo.html', context={"userInfoForm": form})
+            return render(request, 'authForms/editUserInfo.html', context={'resources': resources, "userInfoForm": form})
 
     form = userInfoForm(instance=cftsUser, networks=nets)
-    return render(request, 'authForms/editUserInfo.html', context={"userInfoForm": form})
+    return render(request, 'authForms/editUserInfo.html', context={'resources': resources, "userInfoForm": form})
+
+@login_required
+@user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)
+def passwordResetAdmin(request):
+    resetRequests = Feedback.objects.filter(category="Password Reset").order_by('completed','-date_submitted')
+    return render(request, "pages/passwordResetAdmin.html", context={'resetRequests': resetRequests})
+
+def passwordResetRequest(request):
+    resources = ResourceLink.objects.all()
+
+    if request.method == "POST":
+        form = PasswordResetForm(request.POST)
+        if form.is_valid():
+            formEmail = form.cleaned_data['email']
+            userMatchingEmail = authUser.objects.filter(email=formEmail)
+            if userMatchingEmail.exists():
+                for user in userMatchingEmail:
+                    cftsUser = User.objects.get(auth_user=user)
+                    passwordResetFeedback = Feedback(title="Password reset: " + str(user.last_name) + ", " + str(user.first_name) + "(" + str(user.username) + ")", user=cftsUser, category="Password Reset")
+                    passwordResetFeedback.save()
+            
+            return redirect('/password-reset/done')
+        else:
+            return render(request, template_name="authForms/passwordResetForms/passwordReset.html", context={'resources': resources, "password_reset_form":form, "envNet":NETWORK})
+
+    form = PasswordResetForm()
+    return render(request, template_name="authForms/passwordResetForms/passwordReset.html", context={'resources': resources, "password_reset_form":form, "envNet":NETWORK})
+
+@login_required
+@user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)
+def passwordResetEmail(request, id, feedback):
+    auth_user = authUser.objects.get(id=id)
+    passwordResetFeedback = Feedback.objects.get(feedback_id=feedback)
+    rc ={
+        'user': auth_user,
+        'email': auth_user.email,
+        'uid': urlsafe_base64_encode(force_bytes(auth_user.pk)),
+        'token': default_token_generator.make_token(auth_user),
+        'urlPrefix': "https://"+str(request.get_host())
+    }
+
+    msgBody = "mailto:" + str(auth_user.email) + "&subject=CFTS Password Reset&body="
+    
+    msgBody += render_to_string('authForms/passwordResetForms/passwordResetEmail.html', rc, request)
+
+    print(msgBody)
+
+    passwordResetFeedback.completed = True
+    passwordResetFeedback.save()
+
+    return HttpResponse(str(msgBody))

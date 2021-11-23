@@ -11,8 +11,8 @@ class RequestAdmin(admin.ModelAdmin):
     list_display = ('user','network','org','has_rejected','all_rejected')
     fields = ('user','request_hash','network','org','pull','date_pulled',('files','target_email'),('comments','notes'),('is_centcom','is_dupe','has_rejected','all_rejected','destFlag'),)
 class FeedbackAdmin(admin.ModelAdmin):
-    list_filter = ('category','admin_feedback')
-    list_display = ('title', 'category', 'admin_feedback')
+    list_filter = ('category','admin_feedback', 'completed')
+    list_display = ('title', 'category', 'completed', 'admin_feedback')
     sortable_by = ('title', 'category', 'admin_feedback')
     pass
 
