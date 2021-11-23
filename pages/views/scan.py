@@ -8,8 +8,10 @@ from django.conf import settings
 import shutil
 
 # decorators
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.cache import never_cache
+
+from pages.views.auth import superUserCheck, staffCheck
 
 # responses
 from django.shortcuts import render
@@ -33,6 +35,7 @@ logger = logging.getLogger('django')
 # ====================================================================
 
 @login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 @never_cache
 def scan(request,pullZip):
     # request context
@@ -211,7 +214,6 @@ def scanOfficeFile(office_file):
     # done
     return results
 
-
 def scanFile(text_file):
     # result = {
     #     'file': text_file,
@@ -249,7 +251,6 @@ def scanFile(text_file):
         result = {'file': text_file, 'findings': ['Unable to scan file.']}
 
     return result
-
 
 def cleanup(folder):
     for oldfile in os.listdir(folder):

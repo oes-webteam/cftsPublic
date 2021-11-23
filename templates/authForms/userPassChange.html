@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+{% load crispy_forms_tags %}
+
+<div class="container py-5">
+    <h1>Change CFTS Account Password</h1>
+    <form class="needs-validation" method="post" novalidate>
+        {% crispy pass_change_form %}
+    </form>
+</div>
+
+<script>window.document.title = "CFTS Password Change"</script>
+<script src="{% static 'js/form-validate.js' %}"></script>
+{% endblock %}

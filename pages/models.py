@@ -2,6 +2,7 @@ import uuid
 import os
 from django.conf import settings
 from django.db import models
+from django.contrib.auth.models import User
 from django.db.models import F
 
 def randomize_path(instance, filename):
@@ -102,6 +103,7 @@ class Email(models.Model):
   email_id = models.UUIDField(
     primary_key=True, default=uuid.uuid4, editable=False)
   address = models.CharField(max_length=255)
+  network = models.ForeignKey(Network, default=None, null=True, blank=True, on_delete=models.DO_NOTHING)
 
   class Meta:
     ordering = ['address']
@@ -113,16 +115,18 @@ class Email(models.Model):
 class User(models.Model):
   user_id = models.UUIDField(
     primary_key=True, default=uuid.uuid4, editable=False)
-  user_identifier = models.CharField(
-   max_length=50, default="00000.0000.0.0000000")
+  auth_user = models.OneToOneField(User, default=None, null=True, blank=True, on_delete=models.DO_NOTHING)
+  user_identifier = models.CharField(max_length=150, default=None, null=True, blank=True)
   name_first = models.CharField(max_length=50)
   name_last = models.CharField(max_length=50)
-  email = models.ForeignKey(Email, on_delete=models.DO_NOTHING)
+  source_email = models.ForeignKey(Email, null=True, blank=True, on_delete=models.DO_NOTHING, related_name="source_email")
+  destination_emails = models.ManyToManyField(Email)
   notes = models.TextField(null=True, blank=True)
-  phone = models.CharField(max_length=50, default="000-000-0000")
+  phone = models.CharField(max_length=50, default=None, null=True, blank=True)
   banned = models.BooleanField(default=False)
   strikes = models.IntegerField(default=0)
   banned_until = models.DateField(null=True, blank=True)
+  update_info = models.BooleanField(default=True)
 
   class Meta:
     ordering = ['name_last']
@@ -202,13 +206,14 @@ class Feedback(models.Model):
   feedback_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
   title = models.CharField(max_length=150, default="")
   body = models.TextField(default="")
-  user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+  user = models.ForeignKey(User, default=None, null=True, blank=True, on_delete=models.DO_NOTHING)
   category = models.CharField(max_length=50, default="")
   admin_feedback = models.BooleanField(default=False)
   date_submitted = models.DateTimeField(auto_now_add=True)
+  completed = models.BooleanField(default=False)
 
   class Meta:
-    ordering = ['-date_submitted']
+    ordering = ['completed', '-date_submitted']
 
   def __str__(self):
     return str(self.date_submitted.strftime("%b %d %H:%M")) + ": " + self.title
