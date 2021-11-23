@@ -313,7 +313,7 @@ def passwordResetEmail(request, id, feedback):
         'urlPrefix': "https://"+str(request.get_host())
     }
 
-    msgBody = "mailto:" + str(auth_user.email) + "&subject=CFTS Password Reset&body="
+    msgBody = "mailto:" + str(auth_user.email) + "?subject=CFTS Password Reset&body="
     
     msgBody += render_to_string('authForms/passwordResetForms/passwordResetEmail.html', rc, request)
 
