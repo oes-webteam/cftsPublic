@@ -234,21 +234,24 @@ function successHandler(r) {
 
   // CLEAN UP!!
 
+  let destEmail = $("#targetEmail").val()
+  
   document.getElementById("transfer-request-form").reset();
   resetFileQueue();
   resetAdditionalEmails();
-  autoFileUserInfo(email,phone);
+  autoFileUserInfo(email,phone, destEmail);
 
 
   // re-enable the submit button
   $('#submitButton').prop('disabled',false);
 }
 
-function autoFileUserInfo(email,phone){
+function autoFileUserInfo(email, phone, destEmail){
   $("#firstName").val(firstName)
   $("#lastName").val(lastName) 
   $("#userPhone").val(phone) 
   $("#userEmail").val(email) 
+  $("#targetEmail").val(destEmail)
 }
 
 function resetFileQueue() {

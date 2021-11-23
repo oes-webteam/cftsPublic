@@ -39,7 +39,6 @@ let classifications = [''];
   
   $('.network-switch').click(function(){
     let destEmail = $(this).attr('email')
-    console.log(destEmail)
     $('#targetEmail').val(destEmail)
   })
 
