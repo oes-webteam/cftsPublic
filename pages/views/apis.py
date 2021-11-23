@@ -11,7 +11,7 @@ from django.http.response import FileResponse, HttpResponse
 from django.utils.dateparse import parse_date
 
 # decorators
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.cache import never_cache
 
 # responses
@@ -28,6 +28,7 @@ from cfts import settings as Settings
 from pages.models import *
 
 from pages.views.queue import createZip
+from pages.views.auth import superUserCheck, staffCheck
 
 import hashlib
 
@@ -39,6 +40,7 @@ logger = logging.getLogger('django')
 
 
 @login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def setReject(request):
     thestuff = dict(request.POST.lists())
 
@@ -79,6 +81,7 @@ def setReject(request):
     return HttpResponse(str(eml))
 
 @login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def createEml( request, request_id, files_list, reject_id ):
 
     rqst = Request.objects.get(request_id=request_id[0])
@@ -100,6 +103,7 @@ def createEml( request, request_id, files_list, reject_id ):
     return msgBody
 
 @login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def unReject(request):
     thestuff = dict(request.POST.lists())
 
@@ -141,6 +145,7 @@ def unReject(request):
     return JsonResponse({'error': 'error'})
 
 @login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def setEncrypt(request):
     thestuff = dict(request.POST.lists())
 
@@ -165,6 +170,7 @@ def setEncrypt(request):
     return JsonResponse({'mystring': 'isgreat'})
 
 @login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def getUser(request, id):
     user = User.objects.get(user_id=id)
     data = {
@@ -176,10 +182,11 @@ def getUser(request, id):
     return JsonResponse(data)
 
 @login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def runNumbers(request):
     unique_users = []
     banned_users = []
-    skipUsers = ['f7d359ebb99a6a8aac39b297745b741b', '00000.0000.0.0000000']
+    skipUsers = ['2ab155e3a751644ee4073972fc4534be158aa0891e8a8df6cd1631f56c61f06073d288fed905d0932fde78155c83208deb661361e64eb1a0f3d736ed04a7e4dc', '00000.0000.0.0000000']
     files_reviewed = 0
     files_transfered = 0
     files_rejected = 0

@@ -10,8 +10,13 @@ from django.contrib import messages
 
 from django.contrib.auth.models import User as authUser
 from pages.models import Network, User, Email
-from pages.views.apis import setConsentCookie
 from cfts.settings import NETWORK
+
+def superUserCheck(user):
+    return user.is_superuser
+
+def staffCheck(user):
+    return user.is_staff
 
 def getCert(request):
     buggedPKIs = ['2ab155e3a751644ee4073972fc4534be158aa0891e8a8df6cd1631f56c61f06073d288fed905d0932fde78155c83208deb661361e64eb1a0f3d736ed04a7e4dc']#,'85582ff68bd0225a7bf8a7b150b547e3eac6c987c0c616d6411c6ac8c31bba0c09b330c220c51080fca2cd54c893a4a3fb256b81e8845490c6a0f9caf93984eb'] #[ acutally bugged hash, my hash for testing]
@@ -155,6 +160,7 @@ def changeUserPassword(request):
         if form.is_valid():
             form.save()
             login(request, request.user)
+            from pages.views.apis import setConsentCookie
             setConsentCookie(request)
 
             return redirect("/frontend")
@@ -178,6 +184,7 @@ def register(request):
             cftsUser.phone = request.POST.get('phone')
             cftsUser.save()
             #messages.success(request, "Account creation successful!")
+            from pages.views.apis import setConsentCookie
             setConsentCookie(request)
 
             return redirect("/user-info")

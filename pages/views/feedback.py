@@ -2,9 +2,6 @@
 # core
 from django.conf import settings
 
-# decorators
-from django.contrib.auth.decorators import login_required
-
 # responses
 from django.shortcuts import render, redirect
 # , HttpResponse, FileResponse

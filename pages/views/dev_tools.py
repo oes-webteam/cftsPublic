@@ -2,8 +2,11 @@
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from pages.models import *
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from zipfile import BadZipFile, ZipFile
+
+from pages.views.auth import superUserCheck, staffCheck
+
 
 # from django.core.files.base import ContentFile
 #====================================================================
@@ -19,6 +22,7 @@ def stubPost( request ):
   return JsonResponse( data )
 
 @login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def makeFiles( request ):
   unclass = Classification.objects.get( abbrev='U' )
   return HttpResponse( 'Made the files' )
@@ -33,6 +37,9 @@ def makeFiles( request ):
     # save the Django File into the CFTS File
     new_file.file_object.save( new_f, ContentFile( new_f ) )
   '''
+
+@login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def setupDB( request ):
   if Network.objects.count() == 0:
     # Classifications
@@ -263,6 +270,7 @@ def setupDB( request ):
   # get all file records and update their file_name, file_size, and file_count fields
 
 @login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def updateFiles(request):
     # if the uploaded file is a zip get the info of the contente
     files = File.objects.all()

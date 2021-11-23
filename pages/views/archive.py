@@ -2,7 +2,7 @@
 # core
 from django.core import paginator
 # decorators
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http.response import JsonResponse
 from django.template.loader import render_to_string
 
@@ -11,10 +11,13 @@ from django.shortcuts import render
 
 # model/database stuff
 from pages.models import *
+from pages.views.auth import superUserCheck, staffCheck
+
 #====================================================================
 
 
 @login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def archive( request ):
   networks = Network.objects.all()
   requests = Request.objects.filter( pull__isnull = False )
@@ -27,6 +30,7 @@ def archive( request ):
   return render( request, 'pages/archive.html', { 'rc': rc } )
 
 @login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def filterArchive( request ):
   networks = Network.objects.all()
 
