@@ -46,7 +46,7 @@ function checkEmail(email, net, direction) {
     case "SIPR":
       return domainArray.slice(-2).join(".") == "smil.mil" ? true : false;
     default:
-	    check = domainArray.pop();
+      check = domainArray.pop();
       return (check == "mil" || check == "gov" || check == "edu" || check == "org") ? true : false;
   }
   // fail by default
@@ -214,12 +214,12 @@ function process(e) {
 
 
     
-      //Add the CSRF token to ajax requests
-     $.ajaxSetup({
-       beforeSend: function (xhr, settings) {
-         xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
-       },
-     });
+    //Add the CSRF token to ajax requests
+    $.ajaxSetup({
+      beforeSend: function (xhr, settings) {
+        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+      },
+    });
 
 
     ajaxSettings = {
