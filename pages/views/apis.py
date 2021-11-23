@@ -23,7 +23,8 @@ from django.template import Template, Context
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 
 # cfts settings
-from cfts import settings as Settings
+from cfts import network, settings as Settings
+from cfts.settings import NETWORK
 # model/database stuff
 from pages.models import *
 
@@ -87,7 +88,7 @@ def createEml( request, request_id, files_list, reject_id ):
     rqst = Request.objects.get(request_id=request_id[0])
     rejection = Rejection.objects.get(rejection_id=reject_id[0])
 
-    msgBody = "mailto:" + str(rqst.user.email) + "&subject=CFTS File Rejection&body=The following files have been rejected from your transfer request:%0D%0A"
+    msgBody = "mailto:" + str(rqst.user.source_email) + "&subject=CFTS File Rejection&body=The following files have been rejected from your transfer request:%0D%0A"
 
     files = File.objects.filter(file_id__in=files_list)
     for file in files:
@@ -177,7 +178,7 @@ def getUser(request, id):
         'user_id': user.user_id,
         'first_name': user.name_first,
         'last_name': user.name_last,
-        'email': user.email.address
+        'email': user.source_email.address
     }
     return JsonResponse(data)
 
@@ -304,14 +305,23 @@ def process ( request ):
         requestData = ""
 
         # use the form data to create the necessary records for the request
+        sourceNet = Network.objects.get(name=NETWORK)
         try:
-            source_email = Email.objects.get(
-                address=form_data.get('userEmail'))
+            source_email = Email.objects.get(address=form_data.get('userEmail'), network=sourceNet)
+
         except Email.DoesNotExist:
-            source_email = Email(address=form_data.get('userEmail'))
+            source_email = Email(address=form_data.get('userEmail'), network=sourceNet)
+            source_email.save()
+        except Email.MultipleObjectsReturned:
+            source_email = Email.objects.filter(address=form_data.get('userEmail'))[0]
+            
+        if source_email.network == None:
+            source_email.network = sourceNet
             source_email.save()
 
         requestData += form_data.get('userEmail')
+
+        destinationNet = Network.objects.get( name = form_data.get( 'network' ) )
 
         destination_list = form_data.get( 'targetEmail' ).split( "," )
         destSplit_list = []
@@ -320,10 +330,12 @@ def process ( request ):
         for destination in destination_list:
             destSplit_list.append(destination.split("@")[0])
             try:
-                target_email = Email.objects.get(address=destination)
+                target_email = Email.objects.get(address=destination, network=destinationNet)
             except Email.DoesNotExist:
-                target_email = Email(address=destination)
+                target_email = Email(address=destination, network=destinationNet)
                 target_email.save()
+            except Email.MultipleObjectsReturned:
+                target_email = Email.objects.filter(address=destination, network=destinationNet)[0]
 
             requestData += destination
             target_list.append( target_email )
@@ -340,7 +352,7 @@ def process ( request ):
 
         request = Request(
             user = cftsUser,
-            network = Network.objects.get( name = form_data.get( 'network' ) ),
+            network = destinationNet,
             comments = form_data.get( 'comments' ),
             org = form_data.get( 'organization' ),
             is_centcom = form_data.get( 'isCentcom' )

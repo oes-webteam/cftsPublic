@@ -145,7 +145,7 @@ def transferRequest( request, id ):
             
     rc = { 
         'User Name': user,
-        'User_ID': user.user_identifier,
+        #'User_ID': user.user_identifier,
         'User Email': user.source_email,
         'Phone': user.phone,
         'network': Network.objects.get( network_id = rqst.network.network_id ),
@@ -158,8 +158,8 @@ def transferRequest( request, id ):
         #'is_submitted': rqst.is_submitted,
         #'is_centcom': rqst.is_centcom,
         'org': rqst.org,
-        'has rejected files': rqst.has_rejected,
-        'all files rejected': rqst.all_rejected,
+        #'has rejected files': rqst.has_rejected,
+        #'all files rejected': rqst.all_rejected,
         'user_banned': user.banned,
         'strikes': user.strikes,
         'banned_until': user.banned_until
@@ -194,7 +194,6 @@ def banUser(request, userid, requestid, temp=False):
     userToBan = User.objects.filter(user_id=userid)[0]
     strikes = userToBan.strikes
     
-    print(temp)
     if temp == "True":
         User.objects.filter(user_id=userid).update(banned=True, banned_until=datetime.date.today() + datetime.timedelta(days=1))
     else:

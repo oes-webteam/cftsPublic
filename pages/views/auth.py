@@ -74,6 +74,12 @@ def getOrCreateSourceEmail(request, email):
     except Email.DoesNotExist:
         userEmail = Email(address=email, network=emailNet)
         userEmail.save()
+
+    except Email.MultipleObjectsReturned:
+        userEmail = Email.objects.filter(address=email)[0]
+        if userEmail.network == None:
+            userEmail.network = emailNet
+            userEmail.save()
     
     return userEmail
 
@@ -261,6 +267,14 @@ def editUserInfo(request):
                         except Email.DoesNotExist:
                             destinationEmail = Email(address=formEmail, network=Network.objects.get(name=net.name))
                             destinationEmail.save()
+
+                            cftsUser.destination_emails.add(destinationEmail)
+
+                        except Email.MultipleObjectsReturned:
+                            destinationEmail = Email.objects.filter(address=formEmail)[0]
+                            if destinationEmail.network == None:
+                                destinationEmail.network = Network.objects.get(name=net.name)
+                                destinationEmail.save()
 
                             cftsUser.destination_emails.add(destinationEmail)
 

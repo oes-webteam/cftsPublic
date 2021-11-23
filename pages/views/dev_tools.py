@@ -21,8 +21,6 @@ def stubPost( request ):
 
   return JsonResponse( data )
 
-@login_required
-@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def makeFiles( request ):
   unclass = Classification.objects.get( abbrev='U' )
   return HttpResponse( 'Made the files' )
@@ -269,8 +267,6 @@ def setupDB( request ):
 
   # get all file records and update their file_name, file_size, and file_count fields
 
-@login_required
-@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def updateFiles(request):
     # if the uploaded file is a zip get the info of the contente
     files = File.objects.all()

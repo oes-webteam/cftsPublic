@@ -52,7 +52,6 @@ def frontend(request):
         
         try:
             certInfo = getCert(request)
-            print(certInfo)
 
             # empty cert, IIS is set to ignore certs
             if certInfo['status'] == "empty":
