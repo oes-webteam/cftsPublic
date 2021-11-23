@@ -5,12 +5,13 @@ let filesInput = document.getElementById( "standard-upload-files" );
 let fileQueue = [];
 let fileInfo = {};
 let addEmail = document.getElementById( "addEmail" );
-let classifications = [''];
+//let classifications = [''];
 
 	$("#firstName").val(firstName)
   $("#lastName").val(lastName) 
   $("#userPhone").val(phone) 
   $("#userEmail").val(email) 
+
 
 /* ************************************* */
 /* Get classifications from Django admin */
@@ -20,27 +21,28 @@ let classifications = [''];
     beforeSend: function (xhr, settings) {
       xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
         },
-    });
-      
-      
-    ajaxSettings = {
-    url: "api-getclassifications",
-    method: "GET",
-    contentType: false,
-    processData: false,
-    };
-    $.ajax(ajaxSettings).done(successHandler);
+  });
+
+  // ajaxSettings = {
+  //   url: "api-getclassifications",
+  //   method: "GET",
+  //   contentType: false,
+  //   processData: false,
+  // };
+  // $.ajax(ajaxSettings).done(successHandler);
     
-  function successHandler(data){
-    for(obj in data){
-      classifications.push(data[obj].fields.abbrev)
-        }
-    }
-  
+
   $('.network-switch').click(function(){
     let destEmail = $(this).attr('email')
     $('#targetEmail').val(destEmail)
   })
+
+  // function successHandler(data){
+  //   for(obj in data){
+  //     classifications.push(data[obj].fields.abbrev)
+  //   }
+  // }
+
 
 /* ********************************************************* */
 /* ADD FILES TO THE QUEUE WHEN ADDED FROM FIELD OR DROP ZONE */
@@ -56,9 +58,12 @@ const addFiles = ( e ) => {
 
   for( let f = 0; f < fileList.length; f++ ) {
     let thisFile = fileList[f];
-    let isValid = validateFile( thisFile );
+    let validation = validateFile( thisFile );
     
-    if( isValid ) {
+    if ( validation.msg.length ) { 
+      notifyFileWarning( validation.msg ); 
+    }
+    if( !validation.error ) {
       // add file to the queue
       fileObject = { 
         'object': thisFile,
@@ -66,7 +71,7 @@ const addFiles = ( e ) => {
       };
       fileQueue.push( fileObject );
     }
-  } // endfor
+  }
 
   updateFileInfo();
   displayFileQueue();
@@ -77,38 +82,36 @@ const addFiles = ( e ) => {
 /* VALIDATE UPLOADED FILES (AS BEST WE CAN FOR NOW) */
 /* ************************************************ */
 const validateFile = ( thisFile ) => {
-  let isvalid = true;
-  let msg = "File error " + thisFile.name;
+  let charWhitelist = new RegExp( /[^a-z0-9\.\s_-]/ );
+  let msg = "";
+  let errorFlag = false;
   
-  // kick out the JOPES
   let filename = thisFile.name.toLowerCase();
+
+  // kick out the JOPES
   if( filename.includes( "prf" ) || filename.includes( "lvy" ) || filename.includes( "levy" ) ) {
     // hard NO!!
-    msg += ": PRF and LVY files cannot be transferred per CFTS use policy. See Resources >> 'CFTS Policies' for details.";
-    notifyUserError( msg );
-    return false;
+    msg += "<li>RF and LVY files cannot be transferred per CFTS use policy. See Resources &gt;&gt; 'CFTS Policies' for details.</li>";
+    errorFlag = true;
   }
-  else if( filename.includes(".eml") || filename.includes(".msg")){
-    msg+=": .eml and .msg files must be converted to an accepted file format before submission. Use outlook to export these files to a PDF, docx, ect."
-    notifyUserError( msg );
-    return false;
+  
+  // we don't transer emails
+  if( filename.includes(".eml") || filename.includes(".msg")){
+    msg += "<li>.eml and .msg files must be converted to an accepted file format before submission. Use Outlook to export these files to a PDF, Word Document, or plain text file.</li>";
+    errorFlag = true;
   }
-      //did this ever work???
-  // for( let o of fileQueue ) {
-  //   let qFile = o.object;
 
-  //   // make sure this file doesn't already exist in the queue
-  //   // (crappy version -- would like to do this with MD5 or SHA-1 hash in the future)
-  //   // does this even do anything???
-  //   if( thisFile.name == qFile.name && thisFile.size == qFile.size ) {
-  //     msg += "\nA file of this name and size is already in the queue.";
-  //     notifyUser( msg );
-  //     isvalid = false;
-  //     break;
-  //   }
-  // }
+  // you seem to have a little ... something ... in your filename there.  You might want to clean that up.
+  if( charWhitelist.test( filename ) ) {
+    msg += "<li>Special characters in filenames can cause the system to reject the files. Please review the filename and ensure it only contains letters, numbers, periods, dashes, or underscores.</li>";
+  }
+  
+  if( msg.length > 0 ) {
+    msg = "<strong>File error -- " + thisFile.name + "</strong>" + msg;
+  }
 
-  return isvalid;
+    
+  return { 'error': errorFlag, 'msg': msg };
 };
 
 
@@ -119,10 +122,10 @@ const updateFileInfo = () => {
   // loop the file list
   let fileList  = document.querySelectorAll( ".file-list ul li" );
   for ( let i = 0; i < fileList.length; i++ ) {
-    let cls = fileList[i].querySelector( "select" );
+    // let cls = fileList[i].querySelector( "select" );
     let encrypt = fileList[i].querySelector( "input" );
     
-    fileQueue[i].cls = cls.value;
+    // fileQueue[i].cls = cls.value;
     fileQueue[i].encrypt = encrypt.checked;
   }
 };
@@ -156,25 +159,22 @@ const displayFileQueue = () => {
       let fileInfoDiv = document.createElement( "div" );
       fileInfoDiv.classList.add( "form-row" );
       
-      let selectClass = document.createElement( "select" );
-      selectClass.classList.add( "file-classification", "form-control", "col" );
-      selectClass.setAttribute( "name", "classification" + i );
-      selectClass.setAttribute( "id", "classification" + i );
-      selectClass.required = true;
+      // removing classification from files (JIRA ticket CFTS-371)
+      // let selectClass = document.createElement( "select" );
+      // selectClass.classList.add( "file-classification", "form-control", "col" );
+      // selectClass.setAttribute( "name", "classification" + i );
+      // selectClass.setAttribute( "id", "classification" + i );
+      // selectClass.required = true;
 
-    classifications.forEach(  c => {
-      let option = document.createElement( "option" );
-      option.setAttribute( "value", c );
-      if( fileQueue[i] && fileQueue[i].cls == c ) option.selected = true;
-      option.appendChild( document.createTextNode( c ) );
-      selectClass.appendChild( option );
-    });
-      
-      
+      // classifications.forEach(  c => {
+      //   let option = document.createElement( "option" );
+      //   option.setAttribute( "value", c );
+      //   if( fileQueue[i] && fileQueue[i].cls == c ) option.selected = true;
+      //   option.appendChild( document.createTextNode( c ) );
+      //   selectClass.appendChild( option );
+      // });
 
-      
-
-      fileInfoDiv.appendChild( selectClass );
+      // fileInfoDiv.appendChild( selectClass );
 
       let toEncrypt = document.createElement( "input" );
       toEncrypt.setAttribute( "type", "checkbox" );

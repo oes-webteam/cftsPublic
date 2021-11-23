@@ -77,7 +77,7 @@ urlpatterns = [
      path('api-numbers', views.runNumbers, name='api-numbers'),
      path('api-processrequest', views.process, name='api-processrequest'),
      path('api-setconsentcookie', views.setConsentCookie, name='api-setconsentcookie'),
-     path('api-getclassifications', views.getClassifications, name='api-getclassifications'),
+     #path('api-getclassifications', views.getClassifications, name='api-getclassifications'),
      path('api-removeCentcom/<uuid:id>', views.removeCentcom, name='api-removeCentcom'),
      path('api-requestnotes/<uuid:requestid>', views.requestNotes, name='api-requestnotes'),
      path('api-banuser/<uuid:userid>/<uuid:requestid>/', views.banUser, name='api-banuser'),
@@ -90,3 +90,4 @@ urlpatterns = [
      path('tools-setupdb', views.setupDB, name="setupdb"),
      path('tools-updateFileInfo', views.updateFiles, name='api-updateFileInfo'),
 ]
+
