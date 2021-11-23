@@ -164,7 +164,7 @@ def transferRequest( request, id ):
         'strikes': user.strikes,
         'banned_until': user.banned_until
     }
-    return render(request, 'pages/transfer-request.html', {'rc': rc, 'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": user.user_id, 'pki_id': user.user_identifier,})
+    return render(request, 'pages/transfer-request.html', {'rc': rc, 'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": user.user_id,})
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
@@ -190,22 +190,26 @@ def removeCentcom( request, id ):
 
 @login_required
 @user_passes_test(superUserCheck, login_url='queue', redirect_field_name=None)
-def banUser(request, userid,requestid):
+def banUser(request, userid, requestid, temp=False):
     userToBan = User.objects.filter(user_id=userid)[0]
     strikes = userToBan.strikes
     
-    # users first ban, 7 days
-    if strikes == 0:
-        User.objects.filter(user_id=userid).update(banned=True, strikes=1, banned_until=datetime.date.today() + datetime.timedelta(days=7))
-    # second ban, 30 days
-    elif strikes == 1:
-        User.objects.filter(user_id=userid).update(banned=True, strikes=2, banned_until=datetime.date.today() + datetime.timedelta(days=30))
-    # third ban, lifetime
-    elif strikes == 2:
-        User.objects.filter(user_id=userid).update(banned=True, strikes=3, banned_until=datetime.date.today().replace(year=datetime.date.today().year+1000))
-    # just incase any other stike number comes in
+    print(temp)
+    if temp == "True":
+        User.objects.filter(user_id=userid).update(banned=True, banned_until=datetime.date.today() + datetime.timedelta(days=1))
     else:
-        pass
+        # users first ban, 7 days
+        if strikes == 0:
+            User.objects.filter(user_id=userid).update(banned=True, strikes=1, banned_until=datetime.date.today() + datetime.timedelta(days=7))
+        # second ban, 30 days
+        elif strikes == 1:
+            User.objects.filter(user_id=userid).update(banned=True, strikes=2, banned_until=datetime.date.today() + datetime.timedelta(days=30))
+        # third ban, lifetime
+        elif strikes == 2:
+            User.objects.filter(user_id=userid).update(banned=True, strikes=3, banned_until=datetime.date.today().replace(year=datetime.date.today().year+1000))
+        # just incase any other stike number comes in
+        else:
+            pass
     
     return redirect('transfer-request', requestid)
 

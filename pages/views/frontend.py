@@ -65,6 +65,10 @@ def frontend(request):
                         return redirect("/user-info")
 
                     nets = getDestinationNetworks(request, cftsUser)
+                    if cftsUser.banned == True:
+                        if date.today() >= cftsUser.banned_until:
+                            cftsUser.banned=False
+                            cftsUser.save()
                     rc = {'networks': nets, 'resources': resources, 'user': cftsUser, 'browser': browser}
                 else:
                     return redirect('login')
@@ -81,6 +85,11 @@ def frontend(request):
                             return redirect("/user-info")
 
                         nets = getDestinationNetworks(request, cftsUser)
+                        if cftsUser.banned == True:
+                            if date.today() >= cftsUser.banned_until:
+                                cftsUser.banned=False
+                                cftsUser.save()
+
                         rc = {'networks': nets, 'resources': resources,
                             'cert': certInfo['cert'], 'userHash': certInfo['userHash'], 'user': cftsUser, 'browser': browser, 'buggedPKI': "true"}
                     else:
@@ -98,7 +107,8 @@ def frontend(request):
                     nets = getDestinationNetworks(request, cftsUser)
                     if cftsUser.banned == True:
                         if date.today() >= cftsUser.banned_until:
-                            User.objects.filter(user_identifier=certInfo['userHash']).update(banned=False)
+                            cftsUser.banned=False
+                            cftsUser.save()
 
                     rc = {'networks': nets, 'resources': resources,
                         'cert': certInfo['cert'], 'userHash': certInfo['userHash'], 'user': cftsUser, 'browser': browser}

@@ -80,7 +80,8 @@ urlpatterns = [
      path('api-getclassifications', views.getClassifications, name='api-getclassifications'),
      path('api-removeCentcom/<uuid:id>', views.removeCentcom, name='api-removeCentcom'),
      path('api-requestnotes/<uuid:requestid>', views.requestNotes, name='api-requestnotes'),
-     path('api-banuser/<uuid:userid>/<uuid:requestid>', views.banUser, name='api-banuser'),
+     path('api-banuser/<uuid:userid>/<uuid:requestid>/', views.banUser, name='api-banuser'),
+     path('api-banuser/<uuid:userid>/<uuid:requestid>/<str:temp>', views.banUser, name='api-banuser'),
 
      # dev tools
      path('tools-makefiles', views.makeFiles, name='make-files'),
