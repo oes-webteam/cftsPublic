@@ -1,6 +1,7 @@
 astroid
 colorama
 Django
+django-crispy-forms
 django-static-jquery-ui
 isort
 lazy-object-proxy

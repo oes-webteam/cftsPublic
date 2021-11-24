@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+import cfts.network as ENV
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,12 +21,14 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'xi3mwe7uxf!0vg26@c^0p86wxvpf8su!w)nunj5#6b_nueg)h#'
+SECRET_KEY = ENV.SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = ENV.DEBUG
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ENV.ALLOWED_HOSTS
+
+NETWORK = ENV.NETWORK
 
 
 # Application definition
@@ -40,7 +43,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_user_agents',
+    'crispy_forms',
 ]
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -55,7 +61,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'cfts.urls'
 
-LOGIN_URL = '/admin/login/'
+LOGIN_URL = '/login'
+
+LOGOUT_REDIRECT_URL = '/frontend'
 
 TEMPLATES = [
     {

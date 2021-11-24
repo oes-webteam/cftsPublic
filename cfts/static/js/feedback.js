@@ -2,25 +2,9 @@ window.document.title = "CFTS -- Feedback Submit"
 xferForm = document.querySelector("#transfer-request-form");
 xferForm.addEventListener("submit", process, false);
 
-let buggedPKIs = ['f7d359ebb99a6a8aac39b297745b741b']
-
-
-/* *************************************************** */
-/* GET USER CERT INFORMATION FROM VAR IN FRONTEND.HTML */
-/* *************************************************** */
-  // console.log(cert)
-  subject = cert.split("=")
-  subject = subject[subject.length-1]
-  // console.log(subject)
-  user = subject.split(".")
-  // console.log(user)
-
-  if (buggedPKIs.includes(userHash) == false){
-	$("#firstName").val(user[1])
-  	$("#lastName").val(user[0]) 
-    }
-  
-  $("#userID").val(userHash)
+  $("#firstName").val(firstName)
+  $("#lastName").val(lastName) 
+  $("#userEmail").val(email) 
 
   
   // change place holder text when category has changed
@@ -34,6 +18,9 @@ let buggedPKIs = ['f7d359ebb99a6a8aac39b297745b741b']
         break
       case "Feature Request":
         $("#feedback").attr("placeholder","Give us the details for your feature request. Go as in depth as possible, also please include your justification for the feature if possible.")
+        break
+      case "Password Reset":
+        $("#feedback").attr("placeholder","Please make sure the information you have entered to the left is correct.")
         break
     }
 
@@ -59,7 +46,7 @@ function checkEmail(email, net, direction) {
     case "SIPR":
       return domainArray.slice(-2).join(".") == "smil.mil" ? true : false;
     default:
-	    check = domainArray.pop();
+      check = domainArray.pop();
       return (check == "mil" || check == "gov" || check == "edu" || check == "org") ? true : false;
   }
   // fail by default
@@ -79,6 +66,13 @@ function validateForm(form) {
     elem.classList.remove("is-valid");
     elem.classList.remove("is-invalid");
   });
+  // userName
+  if(form.elements.userName){
+    if (!(form.elements.userName.value.length)) {
+      errors.push(form.elements.userName);
+      isValid = false;
+    }
+  }
 
   // name
   if (!(form.elements.firstName.value.length && form.elements.lastName.value.length)) {
@@ -93,7 +87,15 @@ function validateForm(form) {
     isValid = false;
   }
 
-  // category
+  // user phone in buggedPKI
+  if(form.elements.userPhone){
+    if (!(form.elements.userPhone.value.length)) {
+      errors.push(form.elements.userPhone);
+      isValid = false;
+    }
+  }
+
+  // title
   if (!(form.elements.title.value.length )) {
     errors.push(form.elements.title);
     isValid = false;
@@ -106,9 +108,11 @@ function validateForm(form) {
   }
 
   // feedback body
-  if (!(form.elements.feedback.value.length )) {
-    errors.push(form.elements.feedback);
-    isValid = false;
+  if($("select option:selected").val() != "Password Reset"){
+    if (!(form.elements.feedback.value.length )) {
+      errors.push(form.elements.feedback);
+      isValid = false;
+    }
   }
 
   // process errors
@@ -136,9 +140,16 @@ function successHandler(r) {
   console.dir(r);
   notifyUserSuccess("THANK YOU! Your feedback have been submitted. ");
   // CLEAN UP!!
-
-  email = $("#userEmail").val();
-  //phone = $("#userPhone").val();
+  
+  if(xferForm.elements.userName){
+    userName = $("#userName").val()
+  }
+  firstName = $("#firstName").val()
+  lastName = $("#lastName").val() 
+  email = $("#userEmail").val(); 
+  if(xferForm.elements.userPhone){
+    phone = $("#userPhone").val()
+  }
 
   document.getElementById("transfer-request-form").reset();
   //resetFileQueue();
@@ -150,15 +161,15 @@ function successHandler(r) {
 }
 
 function autoFileUserInfo(email){
-  if (buggedPKIs.includes(userHash) == false){
-	$("#firstName").val(user[1])
-  	$("#lastName").val(user[0])
-    } 
-
-  $("#PKIinfo").val(cert) 
-  $("#userID").val(userHash)
-  $("#userEmail").val(email)
-  //$("#userPhone").val(phone)
+  if(xferForm.elements.userName){
+    $("#userName").val(userName)
+  }
+  $("#firstName").val(firstName)
+  $("#lastName").val(lastName) 
+  $("#userEmail").val(email) 
+  if(xferForm.elements.userPhone){
+    $("#userPhone").val(phone)
+  }
 }
 
 /* ******************* */
@@ -203,12 +214,12 @@ function process(e) {
 
 
     
-      //Add the CSRF token to ajax requests
-     $.ajaxSetup({
-       beforeSend: function (xhr, settings) {
-         xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
-       },
-     });
+    //Add the CSRF token to ajax requests
+    $.ajaxSetup({
+      beforeSend: function (xhr, settings) {
+        xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+      },
+    });
 
 
     ajaxSettings = {
@@ -228,4 +239,5 @@ function process(e) {
     $('#submitButton').prop('disabled',false);
   }
 }
+
 

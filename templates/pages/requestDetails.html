@@ -9,9 +9,7 @@
     <div class="container" style="margin-top: 155px;">
         <table class="data-table">
             <tr class="xfer-status">
-            {% if rc.buggedPKI != "true" %}
                 <a type="button" class="btn btn-primary btn-back" href="{% url 'userRequests' %}">Back</a>
-            {% endif %}
             <h3 class="status-text">Request Status: 
                     {% if rc.request.all_rejected == True %}
                         Rejected

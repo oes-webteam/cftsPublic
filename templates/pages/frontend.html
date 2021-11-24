@@ -25,6 +25,8 @@
 
       <div class="alert alert-danger fadein danger-error" style="display: none;" role="alert"></div>
     
+      <div class="alert alert-danger fadein file-error" style="display: none;" role="alert"></div>
+    
       <div class="alert alert-success fadein" style="display: none;" role="alert"></div>
     
       <form action="#" id="transfer-request-form" method="post" enctype="multipart/form-data" novalidate="true">
@@ -39,13 +41,15 @@
                   <div class="input-group-prepend">
                     <span class="input-group-text" id="firstNameRequired">*</span>
                   </div>
-                  <input type="text" class="form-control" name="firstName" id="firstName" placeholder= "First Name" {% if rc.cert %}{% if rc.buggedPKI == "true" %}{% else %}readonly{% endif %}{% endif %} />
+                  {% comment %} <input type="text" class="form-control" name="firstName" id="firstName" placeholder= "First Name" readonly/> {% endcomment %}
+                  <input type="text" class="form-control" name="firstName" id="firstName" placeholder= "First Name" readonly/>
                 </div>
                 <div class="form-group input-group">
                   <div class="input-group-prepend">
                     <span class="input-group-text" id="lastNameRequired">*</span>
                   </div>
-                  <input type="text" class="form-control" name="lastName" id="lastName" placeholder="Last Name" {% if rc.cert %}{% if rc.buggedPKI == "true" %}{% else %}readonly{% endif %}{% endif %} />
+                  {% comment %} <input type="text" class="form-control" name="lastName" id="lastName" placeholder="Last Name" readonly/> {% endcomment %}
+                  <input type="text" class="form-control" name="lastName" id="lastName" placeholder="Last Name" readonly/>
                 </div>
                 <div class="form-group input-group">
                   <div class="input-group-prepend">
@@ -59,12 +63,13 @@
                     aria-describedby="userEmailHelp userEmailRequired"
                     placeholder="Email Address"
                     required
+                    readonly
                   />
                   <span class="w-100"></span>
                   <small id="userEmailHelp" class="form-text text-muted">on this network</small>
                 </div>
                 <input type="text" class="form-control" name="userPhone" id="userPhone"
-                    aria-describedby="userPhoneHelp userPhoneRequired" placeholder="Phone Number">
+                    aria-describedby="userPhoneHelp userPhoneRequired" placeholder="Phone Number" readonly>
                   <br>
                 <div class="form-group input-group ">
                 <div class="input-group-prepend">
@@ -133,10 +138,10 @@
               <div class="card-body">
                 <h3 class="text-gray-dark">Transfer To</h3>
                 <div style="display: grid; grid-template-columns: 50% 50%;">
-                  {% for net in rc.networks %}
+                  {% for net, email in rc.networks.items %}
                   <div class="custom-control custom-switch text-left" style="margin: 0.5em 0;">
-                    <input type="radio" name="network" class="custom-control-input" id="switch{{ net.name }}" value="{{ net.name }}" />
-                    <label class="custom-control-label" for="switch{{ net.name }}">{{ net.name }}</label>
+                    <input type="radio" name="network" class="custom-control-input network-switch" id="switch{{ net }}" value="{{ net }}" email="{{ email }}"/>
+                    <label class="custom-control-label" for="switch{{ net }}">{{ net }}</label>
                   </div>
                   {% endfor %}
                 </div>
@@ -153,11 +158,12 @@
                     aria-describedby="targetEmailHelp targetEmailRequired"
                     placeholder="Email Address"
                     required
+                    readonly
                   />
                   <span class="w-100"></span>
                   <small id="targetEmailHelp" class="form-text text-muted">on the target network</small>              
                 </div>
-                <div class="form-group">
+                <div class="form-group" hidden>
                   <a href="#" id="addEmail" class="btn btn-success">Add Email</a>
                 </div>
                 <h3 class="text-gray-dark">Comments</h3>
@@ -190,8 +196,11 @@
 </section>
 
 <script> 
-  var cert = "{{rc.cert}}"; 
-  var userHash = "{{rc.userHash}}";
+  var firstName = "{{rc.user.name_first}}";
+  var lastName = "{{rc.user.name_last}}";
+  var email = "{{rc.user.source_email}}";
+  var phone = "{{rc.user.phone}}";
+  
   var userBanned = "{{rc.userBanned}}";
 </script>
 <script src="{% static 'js/notification.js' %}"></script>

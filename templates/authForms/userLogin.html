@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+{% load crispy_forms_tags %}
+
+<div class="container py-5">
+    <h1>CFTS User Login</h1>
+    <form class="needs-validation" method="post">
+        {% crispy login_form %}
+    </form>
+    <p class="text-center">Don't have an account? <a href="/register">Create account</a></p>
+    <p class="text-center">Forgot your password? <a href="/password-reset">Request password reset</a></p>
+</div>
+
+<script>window.document.title = "CFTS User Login"</script>
+<!-- <script src="{% static 'js/form-validate.js' %}"></script> -->
+{% endblock %}
