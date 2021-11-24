@@ -20,6 +20,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.cache import never_cache
 
+from pages.views.auth import superUserCheck, staffCheck
 
 # responses
 from django.shortcuts import redirect, render
@@ -35,9 +36,8 @@ import logging
 logger = logging.getLogger('django')
 # ====================================================================
 
-buggedPKIs = ['f7d359ebb99a6a8aac39b297745b741b'] #[ acutally bugged hash, my hash for testing]
-
 @login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 @ensure_csrf_cookie
 @never_cache
 def queue(request):
@@ -138,16 +138,15 @@ def queue(request):
 
 
 @login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def transferRequest( request, id ):
     rqst = Request.objects.get( request_id = id )
     user = User.objects.get( user_id = rqst.user.user_id )
-    buggedUser = False
-    #if user.user_identifier in buggedPKIs:
-        
+            
     rc = { 
         'User Name': user,
-        'User_ID': user.user_identifier,
-        'User Email': user.email,
+        #'User_ID': user.user_identifier,
+        'User Email': user.source_email,
         'Phone': user.phone,
         'network': Network.objects.get( network_id = rqst.network.network_id ),
         #'Marked as Centcom': rqst.is_centcom,
@@ -159,15 +158,16 @@ def transferRequest( request, id ):
         #'is_submitted': rqst.is_submitted,
         #'is_centcom': rqst.is_centcom,
         'org': rqst.org,
-        'has rejected files': rqst.has_rejected,
-        'all files rejected': rqst.all_rejected,
+        #'has rejected files': rqst.has_rejected,
+        #'all files rejected': rqst.all_rejected,
         'user_banned': user.banned,
         'strikes': user.strikes,
         'banned_until': user.banned_until
     }
-    return render(request, 'pages/transfer-request.html', {'rc': rc, 'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": user.user_id, 'pki_id': user.user_identifier, 'buggedUser': user.user_identifier in buggedPKIs})
+    return render(request, 'pages/transfer-request.html', {'rc': rc, 'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": user.user_id,})
 
 @login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def requestNotes( request, requestid ):
     postData = dict(request.POST.lists())
     notes = postData['notes'][0]
@@ -183,35 +183,37 @@ def requestNotes( request, requestid ):
     return JsonResponse({'response': "Notes saved"})
 
 @login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def removeCentcom( request, id ):
     Request.objects.filter(request_id = id).update(is_centcom=False)
     return redirect('queue')
 
-def superUserCheck(user):
-    return user.is_superuser
-
 @login_required
-@user_passes_test(superUserCheck)
-def banUser(request, userid,requestid):
+@user_passes_test(superUserCheck, login_url='queue', redirect_field_name=None)
+def banUser(request, userid, requestid, temp=False):
     userToBan = User.objects.filter(user_id=userid)[0]
     strikes = userToBan.strikes
     
-    # users first ban, 7 days
-    if strikes == 0:
-        User.objects.filter(user_id=userid).update(banned=True, strikes=1, banned_until=datetime.date.today() + datetime.timedelta(days=7))
-    # second ban, 30 days
-    elif strikes == 1:
-        User.objects.filter(user_id=userid).update(banned=True, strikes=2, banned_until=datetime.date.today() + datetime.timedelta(days=30))
-    # third ban, lifetime
-    elif strikes == 2:
-        User.objects.filter(user_id=userid).update(banned=True, strikes=3, banned_until=datetime.date.today().replace(year=datetime.date.today().year+1000))
-    # just incase any other stike number comes in
+    if temp == "True":
+        User.objects.filter(user_id=userid).update(banned=True, banned_until=datetime.date.today() + datetime.timedelta(days=1))
     else:
-        pass
+        # users first ban, 7 days
+        if strikes == 0:
+            User.objects.filter(user_id=userid).update(banned=True, strikes=1, banned_until=datetime.date.today() + datetime.timedelta(days=7))
+        # second ban, 30 days
+        elif strikes == 1:
+            User.objects.filter(user_id=userid).update(banned=True, strikes=2, banned_until=datetime.date.today() + datetime.timedelta(days=30))
+        # third ban, lifetime
+        elif strikes == 2:
+            User.objects.filter(user_id=userid).update(banned=True, strikes=3, banned_until=datetime.date.today().replace(year=datetime.date.today().year+1000))
+        # just incase any other stike number comes in
+        else:
+            pass
     
     return redirect('transfer-request', requestid)
 
 @login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def createZip(request, network_name, isCentcom, rejectPull):
     if rejectPull == 'false':
         
@@ -245,7 +247,7 @@ def createZip(request, network_name, isCentcom, rejectPull):
                 user_pulled=request.user,
             )
 
-         # select Requests based on network and status
+        # select Requests based on network and status
         if(isCentcom == "True"):
             qs = Request.objects.filter(
                 network__name=network_name, pull=None, is_centcom=True, is_submitted=True)
@@ -270,7 +272,6 @@ def createZip(request, network_name, isCentcom, rejectPull):
     
     zip = ZipFile(zipPath, "w")
 
-   
     # for each xfer request ...
 
     requestDirs = []
@@ -360,7 +361,8 @@ def createZip(request, network_name, isCentcom, rejectPull):
         return JsonResponse({'pullNumber': pull.pull_number, 'datePulled': pull.date_pulled.strftime("%d%b %H%M").upper(), 'userPulled': str(pull.user_pulled)})
 
 @login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def getFile(request, fileID, fileName):
-  response = FileResponse(
-      open(os.path.join("uploads", fileID, fileName), 'rb'))
-  return response
+    response = FileResponse(
+        open(os.path.join("uploads", fileID, fileName), 'rb'))
+    return response

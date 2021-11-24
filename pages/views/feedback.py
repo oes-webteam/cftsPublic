@@ -2,9 +2,6 @@
 # core
 from django.conf import settings
 
-# decorators
-from django.contrib.auth.decorators import login_required
-
 # responses
 from django.shortcuts import render, redirect
 # , HttpResponse, FileResponse
@@ -17,109 +14,72 @@ from django.utils import timezone
 from cfts import settings as Settings
 # model/database stuff
 from pages.models import *
+from pages.views.auth import getCert, getOrCreateUser
+from django.contrib.auth.models import User as authUser
+
 
 import hashlib
-
-buggedPKIs = ['f7d359ebb99a6a8aac39b297745b741b']
 
 def feedback( request, requestid=False ):
     resources = ResourceLink.objects.all()
 
-    try:
-        cert = request.META['CERT_SUBJECT']
-        if cert =="":
-            rc = {'resources': resources, }
-        else:
-            userHash = hashlib.md5()
-            userHash.update(cert.encode())
-            userHash = userHash.hexdigest()
-            
-            if userHash in buggedPKIs:
-                rc = {'resources': resources,
-                    'cert': cert, 'userHash': userHash, 'buggedPKI': "true"}
-            else:
-                if requestid != False:
-                    rc = {'resources': resources,
-                        'cert': cert, 'userHash': userHash, 'rqst': Request.objects.get(request_id=requestid)}
-                else:
-                    rc = {'resources': resources,
-                        'cert': cert, 'userHash': userHash, }
-    except KeyError:
-        if requestid != False:
-                    rc = {'resources': resources, 'rqst': Request.objects.get(request_id=requestid)}
-        else:
-            rc = {'resources': resources }
+    certInfo = getCert(request)
+    cftsUser = getOrCreateUser(request, certInfo)
+
+    if requestid != False:
+        rc = {'resources': resources, 'user': cftsUser,'rqst': Request.objects.get(request_id=requestid)}
+    else:
+        rc = {'resources': resources, 'user': cftsUser}
 
     return render(request, 'pages/feedback.html', {'rc': rc})
 
 def submitFeedback( request ):
+    
     if request.method == 'POST':
         form_data = request.POST
 
-        # check if email exists in database
-        try:
-            source_email = Email.objects.get(
-                address=form_data.get('userEmail'))
-        except Email.DoesNotExist:
-            source_email = Email(address=form_data.get('userEmail'))
-            source_email.save()
-
-        # PKI user handleing/fall back
-        # really needs to be moved to its own api
-        # this is a copy paste form the process api
-        if form_data.get('userID') == "":
-            print("Not able to get user ID, may create duplicate user.")
-
-            user = User(
-                name_first=form_data.get('firstName'),
-                name_last=form_data.get('lastName'),
-                email=source_email,
-            )
-            user.save()
-            
-        # Make the check for the bugged PKI hash here
-        elif form_data.get('userID') in buggedPKIs:
-            print("Bugged user ID hash found")
-
-            user = User(
-                name_first=form_data.get('firstName')+ "_buggedPKI",
-                name_last=form_data.get('lastName'),
-                email=source_email,
-            )
-            user.save()
-            
-        else:
-            try:
-                User.objects.filter(
-                    user_identifier=form_data.get('userID')).update(email=source_email)
-                    
-                user = User.objects.get(
-                    user_identifier=form_data.get('userID'))
-
-                print("User already exists")
-                print("Updating user email")
-                
-
-            except User.DoesNotExist:
-                print("No user found with ID")
-                user = User(
-                    name_first=form_data.get('firstName'),
-                    name_last=form_data.get('lastName'),
-                    email=source_email,
-                    user_identifier=form_data.get('userID')
-                )
-                
-                user.save() 
+        certInfo = getCert(request)
+        cftsUser = getOrCreateUser(request, certInfo)
 
         feedback = Feedback(
             title = form_data.get('title'),
             body = form_data.get('feedback'),
-            user = user,
+            #user = cftsUser,
             category = form_data.get('category'),
             admin_feedback = form_data.get('adminUser'),
             date_submitted = timezone.now()
         )
+
+        if cftsUser != None:
+            feedback.user = cftsUser
+
+        else:
+            buggedUserInfo = '''
+            User Name: {uname}
+            First Name: {fname}
+            Last Name: {lname}
+            Email: {email}
+            Phone: {phone}
+
+            '''.format(uname=form_data.get('userName'), fname=form_data.get('firstName'), lname=form_data.get('lastName'), email=form_data.get('userEmail'), phone=form_data.get('userPhone'))
+            feedback.body = buggedUserInfo + form_data.get('feedback')
+            
+            # bugged PKI user, try and return a CFTS userser account based on username
+            try:
+                userFromUserName = User.objects.get(auth_user=authUser.objects.get(username=form_data.get('userName')))
+                feedback.user = userFromUserName
+            # no luck with username
+            except (User.DoesNotExist, authUser.DoesNotExist):
+                # try thier emmail
+                try:
+                    userFromEmail = User.objects.get(source_email=Email.objects.get(address=form_data.get('userEmail')))
+                    feedback.user = userFromEmail
+                # still nothing, pass a Null user
+                except (User.DoesNotExist, User.MultipleObjectsReturned, Email.DoesNotExist):
+                    pass
+
         feedback.save()
+
 
         return JsonResponse({'status': "Success"})
     else:

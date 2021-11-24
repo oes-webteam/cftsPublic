@@ -3,7 +3,7 @@
 import datetime
 
 # decorators
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.serializers import serialize
 from django.views.decorators.cache import never_cache
 
@@ -16,10 +16,13 @@ from pages.models import *
 
 # cfts settings
 from cfts import settings
+
+from pages.views.auth import superUserCheck, staffCheck
 #====================================================================
 
 
 @login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 @never_cache
 def pulls( request ):
   # request context
@@ -79,6 +82,7 @@ def pulls( request ):
   return render( request, 'pages/pulls.html', { 'rc': rc } )
 
 @login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def pullsOneEye( request, id ):
   thisPull = Pull.objects.get( pull_id = id )
   thisPull.date_oneeye = datetime.datetime.now()
@@ -87,6 +91,7 @@ def pullsOneEye( request, id ):
   return JsonResponse( { 'id': id } )
 
 @login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def pullsTwoEye( request, id ):
   thisPull = Pull.objects.get( pull_id = id )
   thisPull.date_twoeye = datetime.datetime.now()
@@ -95,6 +100,7 @@ def pullsTwoEye( request, id ):
   return JsonResponse( { 'id': id } )
 
 @login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def pullsDone( request, id, cd ):
   thisPull = Pull.objects.get( pull_id = id )
   thisPull.date_complete = datetime.datetime.now()
@@ -104,12 +110,14 @@ def pullsDone( request, id, cd ):
   return JsonResponse( { 'id': id } )
 
 @login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def getPull(request, fileName):
   response = FileResponse(
       open(os.path.join(settings.PULLS_DIR, fileName), 'rb'))
   return response
 
 @login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def cancelPull(request, id):
   thisPull = Pull.objects.get( pull_id = id )
   requests = Request.objects.filter(pull = id).update(pull = None)
