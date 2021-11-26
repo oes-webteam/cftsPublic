@@ -78,7 +78,7 @@ for path in requestPaths:
         
         if email.match(f.name)!= None:
             msg['Subject'] = 'CFTS File Transfer'
-            body += 'Attatched files transfered across domains from CFTS.'
+            body += 'Attached files transferred across domains from CFTS.'
 
             with open(filePath,'r') as _email:
                 msg['To'] = "".join(_email.read().splitlines())
@@ -86,7 +86,7 @@ for path in requestPaths:
 
         elif encrypt.match(f.name)!= None:
             msg['Subject'] = 'CFTS File Transfer'
-            body += '''Attatched files transfered across domains from CFTS.<br><p style="color: red;"><b>!!!! Found _encrypt.txt file in request. This email must be sent encrypted. !!!!</b></p>'''
+            body += '''Attached files transferred across domains from CFTS.<br><p style="color: red;"><b>!!!! Found _encrypt.txt file in request. This email must be sent encrypted. !!!!</b></p>'''
             encrpytEmail = True
             
             with open(filePath,'r') as _email:
