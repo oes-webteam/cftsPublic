@@ -184,6 +184,8 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'cfts\static')
 ]
 
+STATICFILES_STORAGE = 'cfts.static.ManifestStaticFilesStorageSubClass'
+
 UPLOADS_DIR = os.path.join(BASE_DIR,'uploads')
 PULLS_DIR = os.path.join(BASE_DIR,'pulls')
 TEMP_FILES_DIR = os.path.join(BASE_DIR,'tempFiles')

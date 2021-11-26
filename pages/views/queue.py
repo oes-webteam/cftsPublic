@@ -56,6 +56,10 @@ def queue(request):
         "Shoot a dart at Ron, tell him Xander told you to.",
         "I'll code tetris into this page one day.",
         "Don't let Jason ban everyone, 'cause he'll do it.",
+        "Now anyone can be banned, so much power!",
+        "A bug? In my code? Impossible.",
+        "Deleting database... Just kidding",
+        "Slow day?"
     ])
 
     ########################
