@@ -9,3 +9,5 @@ class ManifestStaticFilesStorageSubClass(ManifestStaticFilesStorage):
             (r"""(@import\s*["']\s*(.*?)["'])""","""@import url("%s")"""),
         )),
     )
+    max_post_process_passes = 15
+    manifest_strict = False
