@@ -76,7 +76,7 @@
                   aria-describedby="userPhoneHelp userPhoneRequired" placeholder="Phone Number" readonly>
                 </div>
                 
-                <span class="form-text isCentcom mb-3">Organization:</span>
+                <h6 class="form-text isCentcom mb-3">Organization:</h6>
                 <div class="form-group input-group ">
                   <div class="input-group-prepend">
                     <span class="input-group-text">*</span>
@@ -130,14 +130,20 @@
             <div class="card text-center border-secondary mb-resp bg-light">
               <div class="card-body">
                 <h3 class="text-gray-dark">Transfer To</h3>
-                <div style="display: grid; grid-template-columns: 50% 50%;">
-                  {% for net, email in rc.networks.items %}
-                  <div class="custom-control custom-switch text-left" style="margin: 0.5em 0;">
-                    <input type="radio" name="network" class="custom-control-input network-switch" id="switch{{ net }}" value="{{ net }}" email="{{ email }}"/>
-                    <label class="custom-control-label" for="switch{{ net }}">{{ net }}</label>
+                {% if rc.networks.items|length > 0%}
+                  <div style="display: grid; grid-template-columns: 50% 50%;">
+                    {% for net, email in rc.networks.items %}
+                    <div class="custom-control custom-switch text-left" style="margin: 0.5em 0;">
+                      <input type="radio" name="network" class="custom-control-input network-switch" id="switch{{ net }}" value="{{ net }}" email="{{ email }}"/>
+                      <label class="custom-control-label" for="switch{{ net }}">{{ net }}</label>
+                    </div>                    
+                    {% endfor %}
                   </div>
-                  {% endfor %}
-                </div>
+                {% else %}
+                  <h6 class="text-gray-dark">To add destination networks, save valid emails <a href="{% url 'user-info' %}">here</a></h6>
+                {% endif %}
+
+                
                 <h3 class="text-gray-dark">Destination Email</h3>
                 <div class="form-group input-group" id="targetEmailGroup">
                   <div class="input-group-prepend">
