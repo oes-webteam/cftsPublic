@@ -11,6 +11,17 @@ from pages.views.auth import superUserCheck, staffCheck
 # from django.core.files.base import ContentFile
 #====================================================================
 
+def resetUpdateInfo(apps, schema_editor):
+    User = apps.get_model("pages", "User")
+    db_alias = schema_editor.connection.alias
+
+    for user in User.objects.using(db_alias).all():
+        user.update_info = True
+        user.save()
+
+def reverseFunction():
+    pass
+
 def stubGet( request ):
   return JsonResponse( {} )
 

@@ -11,6 +11,7 @@ let addEmail = document.getElementById( "addEmail" );
   $("#lastName").val(lastName) 
   $("#userPhone").val(phone) 
   $("#userEmail").val(email) 
+  $("#organization").val(org) 
 
 
 /* ************************************* */

@@ -350,11 +350,15 @@ def process ( request ):
         certInfo = getCert(request)
         cftsUser = getOrCreateUser(request, certInfo)
 
+        org = form_data.get( 'organization' )
+        if form_data.get( 'organization' ) =="CENTCOM HQ":
+            org = "HQ"
+            
         request = Request(
             user = cftsUser,
             network = destinationNet,
             comments = form_data.get( 'comments' ),
-            org = form_data.get( 'organization' ),
+            org = org,
             is_centcom = form_data.get( 'isCentcom' )
         )
         request.save()
