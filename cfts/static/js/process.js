@@ -252,6 +252,7 @@ function autoFileUserInfo(email, phone, destEmail){
   $("#lastName").val(lastName) 
   $("#userPhone").val(phone) 
   $("#userEmail").val(email) 
+  $("#organization").val(org) 
   $("#targetEmail").val(destEmail)
 }
 

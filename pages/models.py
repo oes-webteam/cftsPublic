@@ -127,6 +127,8 @@ class User(models.Model):
   strikes = models.IntegerField(default=0)
   banned_until = models.DateField(null=True, blank=True)
   update_info = models.BooleanField(default=True)
+  org = models.CharField(default=None, null=True, blank=True, max_length=20)
+  other_org = models.CharField(default=None, null=True, blank=True, max_length=20)
 
   class Meta:
     ordering = ['name_last']
