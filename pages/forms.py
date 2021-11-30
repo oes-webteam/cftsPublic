@@ -91,7 +91,7 @@ class userInfoForm(ModelForm):
     
     def validate_org(self, form):
         if form.get('org') == "None":
-            self.add_error('org', "Select an Organization")
+            self.add_error('org', "Select an organization")
 
         if form.get('org') == "OTHER" and form.get('other_org')=="":
             self.add_error('other_org', "List your organization")

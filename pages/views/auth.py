@@ -288,6 +288,7 @@ def editUserInfo(request):
             
             return redirect("/frontend")
         else:
+            messages.error(request, "Required fields missing")
             return render(request, 'authForms/editUserInfo.html', context={'resources': resources, "userInfoForm": form})
 
     form = userInfoForm(instance=cftsUser, networks=nets)
