@@ -81,7 +81,7 @@ for path in requestPaths:
             body += 'Attached files transferred across domains from CFTS.'
 
             with open(filePath,'r') as _email:
-                msg['To'] = "".join(_email.read().splitlines())
+                msg['To'] = ";".join(_email.read().splitlines())
                 _email.close()
 
         elif encrypt.match(f.name)!= None:
@@ -90,7 +90,7 @@ for path in requestPaths:
             encrpytEmail = True
             
             with open(filePath,'r') as _email:
-                msg['To'] = "".join(_email.read().splitlines())
+                msg['To'] = ";".join(_email.read().splitlines())
                 _email.close()
                 
         elif notes.match(f.name) != None:

@@ -335,7 +335,7 @@ def createZip(request, network_name, isCentcom, rejectPull):
                 emailString = ""
 
                 for this_email in rqst.target_email.all():
-                    emailString = emailString + this_email.address + ';\n'
+                    emailString = emailString + this_email.address + '\n'
                 
                 fp.write(emailString.encode('utf-8'))
                 fp.close()
