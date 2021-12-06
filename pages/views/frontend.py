@@ -2,6 +2,7 @@
 # core
 from datetime import date
 from django.core import paginator
+from django.contrib import messages
 
 # crypto
 import hashlib
@@ -61,6 +62,7 @@ def frontend(request):
                     if cftsUser == None:
                         return redirect("/login")
                     elif cftsUser.update_info == True:
+                        messages.info(request, "Update all required fields")
                         return redirect("/user-info")
 
                     nets = getDestinationNetworks(request, cftsUser)
@@ -81,6 +83,7 @@ def frontend(request):
                         if cftsUser == None:
                             return redirect("/login")
                         elif cftsUser.update_info == True:
+                            messages.info(request, "Fill out all required fields.")
                             return redirect("/user-info")
 
                         nets = getDestinationNetworks(request, cftsUser)
@@ -101,6 +104,7 @@ def frontend(request):
                     if cftsUser == None:
                         return redirect("/login")
                     elif cftsUser.update_info == True:
+                        messages.info(request, "Fill out all required fields.")
                         return redirect("/user-info")
 
                     nets = getDestinationNetworks(request, cftsUser)

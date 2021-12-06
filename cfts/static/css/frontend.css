@@ -109,9 +109,8 @@ input[type="checkbox"] {
   text-align: center;
 }
 
-span.isCentcom {
+h6.isCentcom {
   text-align: left;
-  font-size: 0.90rem;
 }
 
 .required {

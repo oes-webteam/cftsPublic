@@ -91,7 +91,7 @@ def runScan(extractPath):
 
     # \cfts\scan should contain all the user folders from the zip file
     printBin = re.compile('printerSettings(\d+).bin')
-    imgFiles = re.compile('(jpe?g|png|gif|bmp)', re.IGNORECASE)
+    imgFiles = re.compile('(jpe?g|png|gif|bmp|emf)', re.IGNORECASE)
     scanSkip = ["_email.txt", "_encrypt.txt", "_notes.txt"]
 
 

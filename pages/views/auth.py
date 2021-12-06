@@ -225,6 +225,7 @@ def editUserInfo(request):
 
     if request.method == "POST":
         form = userInfoForm(request.POST, instance=cftsUser, networks=nets)
+        form.validate_org(request.POST)
         if form.is_valid():
             # update source email address object
             userEmail = Email.objects.get(email_id=cftsUser.source_email.email_id)
@@ -242,6 +243,11 @@ def editUserInfo(request):
             cftsUser.name_last = request.POST.get('name_last')
             cftsUser.source_email = userEmail
             cftsUser.phone = request.POST.get('phone')
+            cftsUser.org = request.POST.get('org')
+            if request.POST.get('org') == "OTHER":
+                cftsUser.other_org = request.POST.get('other_org')
+            else:
+                cftsUser.other_org = None
             cftsUser.update_info = False
             
             # create or update destination emails
@@ -282,6 +288,7 @@ def editUserInfo(request):
             
             return redirect("/frontend")
         else:
+            messages.error(request, "Required fields missing")
             return render(request, 'authForms/editUserInfo.html', context={'resources': resources, "userInfoForm": form})
 
     form = userInfoForm(instance=cftsUser, networks=nets)
