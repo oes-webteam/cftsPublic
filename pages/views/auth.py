@@ -211,11 +211,11 @@ def register(request):
 
     if request.method == "POST":
         form = NewUserForm(request.POST)
-        
+        certInfo = getCert(request)
+        form.check_duplicate(request.POST, certInfo)
         if form.is_valid():
             user = form.save()
             login(request, user)
-            certInfo = getCert(request)
             cftsUser = getOrCreateUser(request, certInfo)
             cftsUser.auth_user = authUser.objects.get(id=request.user.id)
             cftsUser.phone = request.POST.get('phone')
