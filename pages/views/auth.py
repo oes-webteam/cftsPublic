@@ -241,7 +241,7 @@ def editUserInfo(request):
 
     if request.method == "POST":
         form = userInfoForm(request.POST, instance=cftsUser, networks=nets)
-        form.validate_org(request.POST)
+        form.validate_form(request.POST)
         if form.is_valid():
             # update source email address object
             userEmail = getOrCreateEmail(request, request.POST.get('source_email'), NETWORK)

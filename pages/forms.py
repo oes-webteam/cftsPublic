@@ -95,7 +95,11 @@ class userInfoForm(ModelForm):
         self.helper.all().wrap_together(Div, css_class="inline-fields")
         self.helper.layout.append(Submit('save','Save'))
     
-    def validate_org(self, form):
+    def validate_form(self, form):
+        for network in Network.objects.filter(visible=True):
+            if form.get(network.name+' Email') == form.get('source_email'):
+                self.add_error(network.name+' Email', "Destination email cannot be the same as " + NETWORK + " email")
+
         if form.get('org') == "None":
             self.add_error('org', "Select an organization")
 
