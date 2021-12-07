@@ -39,7 +39,7 @@ class NewUserForm(UserCreationForm):
         return user
 
 class userInfoForm(ModelForm):
-    source_email = forms.EmailField(max_length=50, required=True)
+    source_email = forms.EmailField(max_length=75, required=True)
     phone = forms.CharField(max_length=50, required=True)
     org = forms.ChoiceField(choices=[
         ('None','---------------------'),
@@ -51,6 +51,7 @@ class userInfoForm(ModelForm):
         ('SOCCENT','SOCCENT'),
         ('OTHER','OTHER - Describe')], required=True)
     other_org = forms.CharField(max_length=50, required=False)
+    
     class Meta:
         model = User
         fields = ('name_first', 'name_last')
@@ -77,11 +78,16 @@ class userInfoForm(ModelForm):
         for network in networks:
             net = Network.objects.get(name=network)
             fieldName = net.name+' Email'
-            self.fields[fieldName] = forms.EmailField(max_length=50 ,required=False)
+            self.fields[fieldName] = forms.EmailField(max_length=75 ,required=False)
             self.fields[fieldName].label = fieldName
             try:
                 networkEmail = user.destination_emails.get(network__name=network)
                 self.fields[fieldName].initial = networkEmail.address
+            
+            except Email.MultipleObjectsReturned: 
+                networkEmail = user.destination_emails.filter(network__name=network)
+                self.fields[fieldName].initial = networkEmail[0].address
+                
             except Email.DoesNotExist:
                 pass
             self.helper.layout.append(fieldName)
@@ -89,7 +95,11 @@ class userInfoForm(ModelForm):
         self.helper.all().wrap_together(Div, css_class="inline-fields")
         self.helper.layout.append(Submit('save','Save'))
     
-    def validate_org(self, form):
+    def validate_form(self, form):
+        for network in Network.objects.filter(visible=True):
+            if form.get(network.name+' Email') == form.get('source_email'):
+                self.add_error(network.name+' Email', "Destination email cannot be the same as " + NETWORK + " email")
+
         if form.get('org') == "None":
             self.add_error('org', "Select an organization")
 

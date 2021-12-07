@@ -3,6 +3,7 @@ import hashlib
 from os import name
 from re import T
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.forms.widgets import MultipleHiddenInput
 
 from django.shortcuts import render, redirect
 from django.http.response import HttpResponse
@@ -62,24 +63,39 @@ def getCert(request):
         #return {'status': "buggedPKI", 'cert': "test.tester2.12345", 'userHash': "2ab155e3a751644ee4073972fc4534be158aa0891e8a8df6cd1631f56c61f06073d288fed905d0932fde78155c83208deb661361e64eb1a0f3d736ed04a7e4dc"}
         #return {'status': "validPKI", 'cert': "", 'userHash': "2ab155e3a751644ee4073972fc4534be158aa0891e8a8df6cd1631f56c61f06073d288fed905d0932fde78155c83208deb661361e64eb1a0f3d736ed04a7e4dc"}
 
-def getOrCreateSourceEmail(request, email):
-    emailNet = Network.objects.get(name=NETWORK)
+def getOrCreateEmail(request, address, network):
+    emailNet = Network.objects.get(name=network)
 
+    # try to get email bassed on both address and network first
     try:
-        userEmail = Email.objects.get(address=email)
-        if userEmail.network == None:
+        userEmail = Email.objects.get(address=address, network=emailNet)
+        if userEmail.network != emailNet:
             userEmail.network = emailNet
             userEmail.save()
 
+    # no match, try just address and update the network if found
     except Email.DoesNotExist:
-        userEmail = Email(address=email, network=emailNet)
-        userEmail.save()
+        try:
+            userEmail = Email.objects.get(address=address)
+            if userEmail.network != emailNet:
+                userEmail.network = emailNet
+                userEmail.save()
 
-    except Email.MultipleObjectsReturned:
-        userEmail = Email.objects.filter(address=email)[0]
-        if userEmail.network == None:
-            userEmail.network = emailNet
+        # still nothing, create the email
+        except Email.DoesNotExist:
+            userEmail = Email(address=address, network=emailNet)
             userEmail.save()
+        
+        # oops, got multiple results, grab the first
+        except Email.MultipleObjectsReturned:
+            userEmail = Email.objects.filter(address=address)[0]
+            if userEmail.network != emailNet:
+                userEmail.network = emailNet
+                userEmail.save()
+
+    # oops, got multiple results, grab the first
+    except Email.MultipleObjectsReturned:
+        userEmail = Email.objects.filter(address=address, network=emailNet)[0]
     
     return userEmail
 
@@ -106,7 +122,7 @@ def getOrCreateUser(request, certInfo):
     except User.DoesNotExist:
         print("No user found with ID")
         if request.user.is_authenticated:
-            userEmail = getOrCreateSourceEmail(request, request.user.email)
+            userEmail = getOrCreateEmail(request, request.user.email, NETWORK)
             user = User(
                 auth_user = request.user,
                 name_first=request.user.first_name,
@@ -129,7 +145,7 @@ def getOrCreateUser(request, certInfo):
         except User.DoesNotExist:
             print("No user found with ID")
             if request.user.is_authenticated:
-                userEmail = getOrCreateSourceEmail(request, request.user.email)
+                userEmail = getOrCreateEmail(request, request.user.email, NETWORK)
                 user = User(
                     auth_user = request.user,
                     name_first=request.user.first_name,
@@ -225,17 +241,15 @@ def editUserInfo(request):
 
     if request.method == "POST":
         form = userInfoForm(request.POST, instance=cftsUser, networks=nets)
-        form.validate_org(request.POST)
+        form.validate_form(request.POST)
         if form.is_valid():
             # update source email address object
-            userEmail = Email.objects.get(email_id=cftsUser.source_email.email_id)
-            userEmail.address=request.POST.get('source_email')
-            userEmail.save()
+            userEmail = getOrCreateEmail(request, request.POST.get('source_email'), NETWORK)
 
             # update auth user account info
             request.user.first_name = request.POST.get('name_first')
             request.user.last_name = request.POST.get('name_last')
-            request.user.email = request.POST.get('source_email')
+            request.user.email = userEmail.address
             request.user.save()
 
             # update cfts user object info
@@ -255,34 +269,27 @@ def editUserInfo(request):
                 formEmail = request.POST.get(str(net.name)+' Email')
 
                 if formEmail != "":
+                    # try and get destination email by network
                     try:
                         destinationEmail = cftsUser.destination_emails.get(network__name=net.name)
+
+                        # if the destination email has changed remove old email object from user and add the new email object
                         if formEmail != destinationEmail:
-                            destinationEmail.address = formEmail
-                            destinationEmail.save()
-                    # user does not have a destination Email with this address, search all Email objects 
+                            cftsUser.destination_emails.remove(destinationEmail)
+                            cftsUser.destination_emails.add(getOrCreateEmail(request, formEmail, net.name))
+
+                    # user had multiple destination emails for the same network, shouldn't happen but just in case remove them all
+                    except Email.MultipleObjectsReturned:
+                        print("multiple records")
+                        destinationEmails = cftsUser.destination_emails.filter(network__name=net.name)
+                        for email in destinationEmails:
+                            cftsUser.destination_emails.remove(email)
+
+                        cftsUser.destination_emails.add(getOrCreateEmail(request, formEmail, net.name))
+
+                    # user has no email for this destination, cerate it, add it
                     except Email.DoesNotExist:
-                        try:
-                            destinationEmail = Email.objects.get(address=formEmail)
-                            if destinationEmail.network == None:
-                                destinationEmail.network = Network.objects.get(name=net.name)
-                                destinationEmail.save()
-
-                            cftsUser.destination_emails.add(destinationEmail)
-
-                        except Email.DoesNotExist:
-                            destinationEmail = Email(address=formEmail, network=Network.objects.get(name=net.name))
-                            destinationEmail.save()
-
-                            cftsUser.destination_emails.add(destinationEmail)
-
-                        except Email.MultipleObjectsReturned:
-                            destinationEmail = Email.objects.filter(address=formEmail)[0]
-                            if destinationEmail.network == None:
-                                destinationEmail.network = Network.objects.get(name=net.name)
-                                destinationEmail.save()
-
-                            cftsUser.destination_emails.add(destinationEmail)
+                        cftsUser.destination_emails.add(getOrCreateEmail(request, formEmail, net.name))
 
             cftsUser.save()
             
