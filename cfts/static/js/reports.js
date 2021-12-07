@@ -43,9 +43,9 @@ $( document ).ready( function( ) {
         ( resp ) => {
 
           $( '#reviewed' ).text( resp.files_reviewed );
-          $( '#transfered' ).text( resp.files_transfered );
-          $( '#centcom' ).text( resp.centcom_files );
-          $( '#rejected' ).text( resp.files_rejected );
+          $( '#transfered' ).text( resp.files_transfered + " (" + (Math.round(resp.files_transfered/resp.files_reviewed*100)) + "%)");
+          $( '#centcom' ).text( resp.centcom_files + " (" + (Math.round(resp.centcom_files/resp.files_reviewed*100))+ "%)");
+          $( '#rejected' ).text( resp.files_rejected + " (" + (Math.round(resp.files_rejected/resp.files_reviewed*100))+ "%)");
           $( '#users' ).text( resp.user_count );
           $( '#users-banned' ).text( resp.banned_count );
           

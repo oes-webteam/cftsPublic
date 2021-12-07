@@ -247,12 +247,14 @@ def runNumbers(request):
             # exclude the rejects from the transfers numbers
             if f.rejection_reason == None:
                 files_transfered+= f.file_count
-                if ext == "zip":
-                    file_type_counts['zipContents']+= f.file_count
+                
                 if f.is_centcom == True:
                     centcom_files+= f.file_count
             else:
                 files_rejected+= f.file_count
+
+            if ext == "zip":
+                    file_type_counts['zipContents']+= f.file_count
 
             org = str(f.org)
             if org != "":
@@ -350,11 +352,15 @@ def process ( request ):
         certInfo = getCert(request)
         cftsUser = getOrCreateUser(request, certInfo)
 
+        org = form_data.get( 'organization' )
+        if form_data.get( 'organization' ) =="CENTCOM HQ":
+            org = "HQ"
+            
         request = Request(
             user = cftsUser,
             network = destinationNet,
             comments = form_data.get( 'comments' ),
-            org = form_data.get( 'organization' ),
+            org = org,
             is_centcom = form_data.get( 'isCentcom' )
         )
         request.save()
@@ -385,8 +391,14 @@ def process ( request ):
                 with ZipFile(f, 'r') as zip:
                     # get info for all files
                     info = zip.infolist()
+                    fileCount = 0
+
+                    for entry in info:
+                        if entry.is_dir() == False:
+                            fileCount += 1
+
                     # count of all files in zip
-                    this_file.file_count = len(info)
+                    this_file.file_count = fileCount
 
                     # count the total uncompressed file size for all files in the zip
                     fileSize = 0

@@ -40,7 +40,18 @@ class NewUserForm(UserCreationForm):
 
 class userInfoForm(ModelForm):
     source_email = forms.EmailField(max_length=75, required=True)
-    phone = forms.CharField(max_length=50 ,required=True)
+    phone = forms.CharField(max_length=50, required=True)
+    org = forms.ChoiceField(choices=[
+        ('None','---------------------'),
+        ('CENTCOM HQ','CENTCOM HQ'),
+        ('AFCENT','AFCENT'),
+        ('ARCENT','ARCENT'),
+        ('MARCENT','MARCENT'),
+        ('NAVCENT','NAVCENT'),
+        ('SOCCENT','SOCCENT'),
+        ('OTHER','OTHER - Describe')], required=True)
+    other_org = forms.CharField(max_length=50, required=False)
+    
     class Meta:
         model = User
         fields = ('name_first', 'name_last')
@@ -58,6 +69,10 @@ class userInfoForm(ModelForm):
         self.fields['source_email'].initial = email.address
         self.fields['source_email'].label = NETWORK + ' Email'
         self.fields['phone'].initial = user.phone
+        self.fields['org'].initial = user.org
+        self.fields['org'].label = "Organization"
+        self.fields['other_org'].initial = user.other_org
+        self.fields['other_org'].label = "Other Organization"
         self.helper.layout.append(HTML('<div style="width: 100%"><hr class="mt-2 mb-3" style="border-top-width: 3px; border-top-color: rgba(0, 0, 0, 0.2);"/><h3 class="mt-3">Destination Emails</h3><p class="mb-4">You can only submit transfer requests to networks you have a valid email for.</p></div>'))
 
         for network in networks:
@@ -79,3 +94,10 @@ class userInfoForm(ModelForm):
 
         self.helper.all().wrap_together(Div, css_class="inline-fields")
         self.helper.layout.append(Submit('save','Save'))
+    
+    def validate_org(self, form):
+        if form.get('org') == "None":
+            self.add_error('org', "Select an organization")
+
+        if form.get('org') == "OTHER" and form.get('other_org')=="":
+            self.add_error('other_org', "List your organization")

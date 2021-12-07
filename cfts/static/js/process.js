@@ -22,6 +22,7 @@ function checkEmail(email, net, direction) {
   switch (net) {
     case "NIPR":
       check = domainArray.pop();
+      check = check.toLocaleLowerCase()
       return domain.indexOf("smil") == -1 && domain.indexOf("cmil") == -1 && (check == "mil" || check == "gov") ? true : false;
     case "SIPR":
       return domainArray.slice(-2).join(".") == "smil.mil" ? true : false;
@@ -251,6 +252,7 @@ function autoFileUserInfo(email, phone, destEmail){
   $("#lastName").val(lastName) 
   $("#userPhone").val(phone) 
   $("#userEmail").val(email) 
+  $("#organization").val(org) 
   $("#targetEmail").val(destEmail)
 }
 

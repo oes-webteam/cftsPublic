@@ -1,9 +1,13 @@
 import uuid
 import os
+import re
 from django.conf import settings
+from django.core.files.storage import FileSystemStorage
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import F
+from django.utils.encoding import force_text
+from django.utils.functional import keep_lazy_text
 
 def randomize_path(instance, filename):
   path = str(uuid.uuid4())
@@ -60,11 +64,29 @@ class Rejection(models.Model):
   def __str__(self):
     return self.name
 
+@keep_lazy_text
+def get_valid_filename(name):
+    """
+    Return the given string converted to a string that can be used for a clean
+    filename. Remove leading and trailing spaces; convert other spaces to
+    underscores; and remove anything that is not an alphanumeric, dash,
+    underscore, or dot, keeps parentheses.
+    """
+    s = str(name).strip().replace(' ', '_')
+    s = re.sub(r'(?u)[^-\w.()]', '', s)
+    if s in {'', '.', '..'}:
+        raise SuspiciousFileOperation("Could not derive file name from '%s'" % name)
+    return s
+
+class CustomFileSystemStorage(FileSystemStorage):
+
+  def get_valid_name(self, name):
+    return get_valid_filename(name)
 
 class File(models.Model):
   file_id = models.UUIDField(
     primary_key=True, default=uuid.uuid4, editable=False)
-  file_object = models.FileField(upload_to=randomize_path, max_length=500)
+  file_object = models.FileField(upload_to=randomize_path, storage=CustomFileSystemStorage(), max_length=500)
   file_name = models.CharField(max_length=255, null=True, blank=True, default=None)
   file_hash = models.CharField(max_length=40, blank=True, null=True)
   is_pii = models.BooleanField(default=False)
@@ -127,6 +149,8 @@ class User(models.Model):
   strikes = models.IntegerField(default=0)
   banned_until = models.DateField(null=True, blank=True)
   update_info = models.BooleanField(default=True)
+  org = models.CharField(default=None, null=True, blank=True, max_length=20)
+  other_org = models.CharField(default=None, null=True, blank=True, max_length=20)
 
   class Meta:
     ordering = ['name_last']
