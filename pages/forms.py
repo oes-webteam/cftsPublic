@@ -37,7 +37,17 @@ class NewUserForm(UserCreationForm):
         if commit:
             user.save()
         return user
+    
+    def check_duplicate(self, form, certInfo):
+        if certInfo['status'] == "validPKI":
+            matchingUsers = User.objects.filter(user_identifier=certInfo['userHash'])
+            if matchingUsers.count() != 0:
+                self.add_error(None, "Your " + NETWORK + " token is already tied to an account. If you forgot your password you can request a reset from the login page. If you believe this to be an error please contact us at the link below.")
 
+        else:
+            matchingUsers = User.objects.filter(source_email__address=form.get('email'))
+            if matchingUsers.count() != 0:
+                self.add_error(None, "You email is already tied to an account. If you forgot your password you can request a reset from the login page. If you believe this to be an error please contact us at the link below.")
 class userInfoForm(ModelForm):
     source_email = forms.EmailField(max_length=50, required=True)
     phone = forms.CharField(max_length=50 ,required=True)
