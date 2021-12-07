@@ -161,8 +161,11 @@ def runScan(extractPath):
 
                     else:
                         file_results = [scanFile(filename)]
-                        if imgFiles.match(file_results[0]['file'].split(".")[-1]) != None:
-                            imgCount+=1
+                        if file_results[0] is not None:
+                            if imgFiles.match(file_results[0]['file'].split(".")[-1]) != None:
+                                imgCount+=1
+                        else:
+                            file_results = None
 
                 except Exception as e:
                     file_results = []
