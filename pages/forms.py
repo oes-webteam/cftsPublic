@@ -39,7 +39,7 @@ class NewUserForm(UserCreationForm):
         return user
 
 class userInfoForm(ModelForm):
-    source_email = forms.EmailField(max_length=50, required=True)
+    source_email = forms.EmailField(max_length=75, required=True)
     phone = forms.CharField(max_length=50 ,required=True)
     class Meta:
         model = User
@@ -63,11 +63,16 @@ class userInfoForm(ModelForm):
         for network in networks:
             net = Network.objects.get(name=network)
             fieldName = net.name+' Email'
-            self.fields[fieldName] = forms.EmailField(max_length=50 ,required=False)
+            self.fields[fieldName] = forms.EmailField(max_length=75 ,required=False)
             self.fields[fieldName].label = fieldName
             try:
                 networkEmail = user.destination_emails.get(network__name=network)
                 self.fields[fieldName].initial = networkEmail.address
+            
+            except Email.MultipleObjectsReturned: 
+                networkEmail = user.destination_emails.filter(network__name=network)
+                self.fields[fieldName].initial = networkEmail[0].address
+                
             except Email.DoesNotExist:
                 pass
             self.helper.layout.append(fieldName)
