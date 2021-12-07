@@ -38,6 +38,12 @@ def consent(request):
     setConsentCookie(request)
     return render(request, 'pages/consent.html')
 
+def checkBan(request, cftsUser):
+    if cftsUser.banned == True:
+        if date.today() >= cftsUser.banned_until:
+            cftsUser.banned=False
+            cftsUser.save()
+
 @ensure_csrf_cookie
 @never_cache
 def frontend(request):
@@ -66,10 +72,8 @@ def frontend(request):
                         return redirect("/user-info")
 
                     nets = getDestinationNetworks(request, cftsUser)
-                    if cftsUser.banned == True:
-                        if date.today() >= cftsUser.banned_until:
-                            cftsUser.banned=False
-                            cftsUser.save()
+                    checkBan(request, cftsUser)
+                    
                     rc = {'networks': nets, 'resources': resources, 'user': cftsUser, 'browser': browser}
                 else:
                     return redirect('login')
@@ -87,10 +91,7 @@ def frontend(request):
                             return redirect("/user-info")
 
                         nets = getDestinationNetworks(request, cftsUser)
-                        if cftsUser.banned == True:
-                            if date.today() >= cftsUser.banned_until:
-                                cftsUser.banned=False
-                                cftsUser.save()
+                        checkBan(request, cftsUser)
 
                         rc = {'networks': nets, 'resources': resources,
                             'cert': certInfo['cert'], 'userHash': certInfo['userHash'], 'user': cftsUser, 'browser': browser, 'buggedPKI': "true"}
@@ -108,10 +109,7 @@ def frontend(request):
                         return redirect("/user-info")
 
                     nets = getDestinationNetworks(request, cftsUser)
-                    if cftsUser.banned == True:
-                        if date.today() >= cftsUser.banned_until:
-                            cftsUser.banned=False
-                            cftsUser.save()
+                    checkBan(request, cftsUser)
 
                     rc = {'networks': nets, 'resources': resources,
                         'cert': certInfo['cert'], 'userHash': certInfo['userHash'], 'user': cftsUser, 'browser': browser}
