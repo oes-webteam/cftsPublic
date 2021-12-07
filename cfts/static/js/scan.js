@@ -32,10 +32,9 @@ const callScan = function ( e ) {
       success: function( data ){
           loadingIcon.hidden = true
           notifyUserSuccess("Files Scanned Successfully")
-          console.log(data)
+          //console.log(data)
           $('#rootList').html(data)
           scanResults.hidden = false
-          //processResults( data );
       },
       error: function( data ){
           loadingIcon.hidden = true
@@ -60,8 +59,10 @@ const callScan = function ( e ) {
       type: 'POST', // For jQuery < 1.9
       success: function( data ){
         loadingIcon.hidden = true
-        notifyUserSuccess("Files Scanned Successfully")
-        processResults( data );
+          notifyUserSuccess("Files Scanned Successfully")
+          //console.log(data)
+          $('#rootList').html(data)
+          scanResults.hidden = false
       },
       error: function( data ){
           loadingIcon.hidden = true

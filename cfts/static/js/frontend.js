@@ -11,6 +11,7 @@ let addEmail = document.getElementById( "addEmail" );
   $("#lastName").val(lastName) 
   $("#userPhone").val(phone) 
   $("#userEmail").val(email) 
+  $("#organization").val(org) 
 
 
 /* ************************************* */
@@ -103,7 +104,7 @@ const validateFile = ( thisFile ) => {
 
   // you seem to have a little ... something ... in your filename there.  You might want to clean that up.
   if( charWhitelist.test( filename ) ) {
-    msg += "<li>Special characters in filenames can cause the system to reject the files. Please review the filename and ensure it only contains letters, numbers, periods, dashes, or underscores.</li>";
+    msg += "<li>Special characters in filenames can cause the system to reject the files. Please review the filename and ensure it only contains letters, numbers, periods, dashes, parentheses or underscores.</li>";
   }
   
   if( msg.length > 0 ) {
