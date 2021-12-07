@@ -10,7 +10,7 @@
 
   <div class="container">
     {% if rc.user.banned %}
-      {% if rc.user.strikes != 3%}
+      {% if rc.user.strikes != 4%}
         <div class="alert alert-danger banned-notif" role="alert">Repeated policy violations have resulted in you losing access to the Combined File Transfer Service. You will regain access to this service on {{rc.user.banned_until}}</div>
       {% else %}
         <div class="alert alert-danger banned-notif" role="alert">Repeated policy violations have resulted in you losing access to the Combined File Transfer Service permanently.</div>

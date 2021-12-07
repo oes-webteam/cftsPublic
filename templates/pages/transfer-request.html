@@ -16,7 +16,7 @@
                 <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rc.request_id "True" %}">Ban User, 1 day
                 </a>
                 <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rc.request_id %}">Ban User,
-                    {% if rc.strikes == 0 %} 7 days{% elif rc.strikes == 1 %} 30 days{% elif rc.strikes == 2 %} Permanently{% endif %}
+                    {% if rc.strikes == 0 %} 3 days{% elif rc.strikes == 1 %} 7 days{% elif rc.strikes == 2 %} 30 days{% elif rc.strikes == 3 %} Permanently{% endif %}
                 </a>
             {% else %}
                 <a class="btn btn-danger" id="banBtn" href="{% url 'ban-request' rc.request_id %}">Request User Ban</a>
