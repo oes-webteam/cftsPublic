@@ -3,26 +3,42 @@ from pages.models import *
 
 class UserAdmin(admin.ModelAdmin):
     list_filter = ('banned',)
-    list_display = (User.__str__, 'auth_user', 'source_email','user_identifier','banned','strikes','banned_until')
+    list_display = ('name_last', 'name_first', 'auth_user', 'source_email', 'phone','banned','strikes','banned_until')
     fields = ('name_first','name_last', 'auth_user','user_identifier', 'source_email','destination_emails','phone',('banned','strikes','banned_until'),'update_info','notes')
-    sortable_by = (User.__str__,'banned','strikes','banned_until')
+    search_fields = ('name_last', 'name_first', 'auth_user__username', 'source_email__address','banned','strikes','banned_until', 'phone')
+    sortable_by = ('name_last', 'name_first', 'auth_user', 'source_email','banned','strikes','banned_until')
 
 class RequestAdmin(admin.ModelAdmin):
-    list_display = ('user','network','org','has_rejected','all_rejected')
+    list_filter = ('network', 'org')
+    list_display = ('user','network','pull','has_rejected','all_rejected')
     fields = ('user','request_hash','network','org','pull','date_pulled',('files','target_email'),('comments','notes'),('is_centcom','is_dupe','has_rejected','all_rejected','destFlag'),)
+    search_fields = ('user','network','pull')
+    sortable_by = ('user','network','pull','has_rejected','all_rejected')
+
 class FeedbackAdmin(admin.ModelAdmin):
     list_filter = ('category','admin_feedback', 'completed')
     list_display = ('title', 'category', 'completed', 'admin_feedback')
     sortable_by = ('title', 'category', 'admin_feedback')
-    pass
+
+class EmailAdmin(admin.ModelAdmin):
+    list_filter = ('network',)
+    list_display = ('address', 'network')
+    search_fields = ('address',)
+    sortable_by = ('address','network')
+
+class PullAdmin(admin.ModelAdmin):
+    list_filter = ('network',)
+    list_display = (Pull.__str__, 'network', 'user_pulled', 'user_oneeye', 'user_twoeye')
+    search_fields = (Pull.__str__, 'network', 'user_pulled', 'user_oneeye', 'user_twoeye')
+    sortable_by = (Pull.__str__, 'network', 'user_pulled', 'user_oneeye', 'user_twoeye')
 
 # Register your models here.
 admin.site.register( Classification )
 admin.site.register( File )
 admin.site.register( Network )
-admin.site.register( Email )
+admin.site.register( Email, EmailAdmin )
 admin.site.register( User, UserAdmin )
-admin.site.register( Pull )
+admin.site.register( Pull, PullAdmin )
 admin.site.register( Rejection )
 admin.site.register( Request, RequestAdmin )
 admin.site.register( ResourceLink )

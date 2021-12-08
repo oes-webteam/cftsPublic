@@ -6,6 +6,9 @@
 <link rel="stylesheet" href="{% static 'css/authForms.css' %}" />
 
 <div class="container py-5">
+    
+    {% include 'partials/messages.html' %}
+
     <h1 class="mb-3">Update Account Info</h1>
     <form class="needs-validation" method="post" novalidate>
         {% crispy userInfoForm %}
