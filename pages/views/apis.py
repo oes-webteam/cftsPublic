@@ -258,6 +258,8 @@ def runNumbers(request):
 
             org = str(f.org)
             if org != "":
+                if org == "CENTCOM HQ":
+                    org = "HQ"
                 org_counts[org]+=f.file_count
 
     # add up all file type counts
