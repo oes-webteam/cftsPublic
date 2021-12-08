@@ -56,6 +56,10 @@ def queue(request):
         "Shoot a dart at Ron, tell him Xander told you to.",
         "I'll code tetris into this page one day.",
         "Don't let Jason ban everyone, 'cause he'll do it.",
+        "Now anyone can be banned, so much power!",
+        "A bug? In my code? Impossible.",
+        "Deleting database... Just kidding",
+        "Slow day?"
     ])
 
     ########################
@@ -197,15 +201,18 @@ def banUser(request, userid, requestid, temp=False):
     if temp == "True":
         User.objects.filter(user_id=userid).update(banned=True, banned_until=datetime.date.today() + datetime.timedelta(days=1))
     else:
-        # users first ban, 7 days
+        # users first ban, 3 days
         if strikes == 0:
-            User.objects.filter(user_id=userid).update(banned=True, strikes=1, banned_until=datetime.date.today() + datetime.timedelta(days=7))
-        # second ban, 30 days
+            User.objects.filter(user_id=userid).update(banned=True, strikes=1, banned_until=datetime.date.today() + datetime.timedelta(days=3))
+        # second ban, 7 days
         elif strikes == 1:
-            User.objects.filter(user_id=userid).update(banned=True, strikes=2, banned_until=datetime.date.today() + datetime.timedelta(days=30))
-        # third ban, lifetime
+            User.objects.filter(user_id=userid).update(banned=True, strikes=2, banned_until=datetime.date.today() + datetime.timedelta(days=7))
+        # third ban, 30 days
         elif strikes == 2:
-            User.objects.filter(user_id=userid).update(banned=True, strikes=3, banned_until=datetime.date.today().replace(year=datetime.date.today().year+1000))
+            User.objects.filter(user_id=userid).update(banned=True, strikes=3, banned_until=datetime.date.today() + datetime.timedelta(days=30))
+        # fourth ban, lifetime
+        elif strikes == 3:
+            User.objects.filter(user_id=userid).update(banned=True, strikes=4, banned_until=datetime.date.today().replace(year=datetime.date.today().year+1000))
         # just incase any other stike number comes in
         else:
             pass
@@ -331,7 +338,7 @@ def createZip(request, network_name, isCentcom, rejectPull):
                 emailString = ""
 
                 for this_email in rqst.target_email.all():
-                    emailString = emailString + this_email.address + ';\n'
+                    emailString = emailString + this_email.address + '\n'
                 
                 fp.write(emailString.encode('utf-8'))
                 fp.close()
