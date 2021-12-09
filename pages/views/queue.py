@@ -87,7 +87,7 @@ def queue(request):
             When(org='MARCENT', then=4), 
             When(org='NAVCENT', then=5), 
             When(org='SOCCENT', then=6), 
-            output_field=IntegerField())).order_by('org_order','-date_created', 'user__str__')
+            output_field=IntegerField())).order_by('date_created')
 
         ds_requests_other = Request.objects.filter(
             network__name=net.name,
@@ -95,7 +95,7 @@ def queue(request):
             pull__isnull=True,
             ready_to_pull=False,
             is_centcom=False,
-        ).order_by('-date_created', 'user__str__')
+        ).order_by('date_created')
         
         pullable_requests = Request.objects.filter(
             network__name=net.name,
@@ -103,14 +103,14 @@ def queue(request):
             pull__isnull=True,
             ready_to_pull=True,
             pull__date_complete__isnull=True,
-        ).order_by('user__str__', 'pull')
+        ).order_by('user__str__')
 
         pulled_requests = Request.objects.filter(
             network__name=net.name,
             is_submitted=True,
             pull__isnull=False,
             pull__date_complete__isnull=True,
-        ).order_by('user__str__', 'pull')
+        ).order_by('pull','user__str__')
 
         # count how many total files are in all the requests requests
         file_count_centcom = ds_requests_centcom.annotate(
