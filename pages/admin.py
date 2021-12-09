@@ -31,10 +31,15 @@ class PullAdmin(admin.ModelAdmin):
     list_display = (Pull.__str__, 'network', 'date_pulled', 'user_oneeye', 'user_twoeye')
     search_fields = ('network__name', 'date_pulled', 'user_oneeye__username', 'user_twoeye__username')
     sortable_by = (Pull.__str__, 'network__name', 'date_pulled', 'user_oneeye__username', 'user_twoeye__username')
+    
+class FileAdmin(admin.ModelAdmin):
+    list_display = ('file_name', 'pull')
+    search_fields = ('file_name', 'pull')
+    sortable_by = ('file_name', 'pull')
 
 # Register your models here.
 admin.site.register( Classification )
-admin.site.register( File )
+admin.site.register( File, FileAdmin )
 admin.site.register( Network )
 admin.site.register( Email, EmailAdmin )
 admin.site.register( User, UserAdmin )

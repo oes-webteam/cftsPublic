@@ -11,28 +11,28 @@
   <ul class="grid-column" style="grid-column: {{ forloop.counter|add:1 }}">
   {% for pull in net %}
     {% if forloop.counter0 == 0 %}<h3 class="grid-column-header">{{ pull.pull_network }}</h3>{% endif %}
-    <li class="pull-card {% if pull.date_complete != None %}is-done{% elif pull.date_twoeye != None %}to-complete{% elif pull.date_oneeye != None %}to-twoeye{% endif %} {% if pull.centcom_pull %}centcom{% endif %}" pull_id="{{pull.pull_id}}">
+    <li class="pull-card {% if pull.date_complete != None %}is-done{% elif pull.date_twoeye != None %}to-complete{% elif pull.date_oneeye != None %}to-twoeye{% endif %}" pull_id="{{pull.pull_id}}">
 
       <ul>
-        <li class="title-line"><strong>{{ pull.pull_network }}_{{ pull.pull_number }} {% if pull.centcom_pull %}</br>Centcom Only{% endif %}</strong></li>
+        <li class="title-line"><strong>{{ pull.pull_network }}_{{ pull.pull_number }}</strong></li>
         <li class="title-line status-imgs {% if pull.date_complete != None %}is-done{% elif pull.date_twoeye != None %}to-complete{% elif pull.date_oneeye != None %}to-twoeye{% endif %}">
-          <img src="{% if  pull.date_oneeye != None %}{% static 'img/asset_13.svg' %}{% else %}{% static 'img/transparent.png' %}{% endif %}" class="status-img" alt="One Eye" />    
-          <img src="{% if  pull.date_twoeye != None %}{% static 'img/asset_13.svg' %}{% else %}{% static 'img/transparent.png' %}{% endif %}" class="status-img" alt="Two Eye" />
+          <img src="{% static 'img/asset_13.svg' %}" class="status-img" alt="One Eye" />    
+          <img src="{% static 'img/asset_13.svg' %}" class="status-img" alt="Two Eye" />
           <img src="{% if  pull.date_complete != None %}{% static 'img/asset_14.svg' %}{% else %}{% static 'img/transparent.png' %}{% endif %}" class="status-img" alt="Burned to Disk #{{pull.disk_number}}" />
         </li>
 
         <li>Pulled by {{pull.pull_user}} on {{pull.pull_date}} </li>
-        {% if pull.date_oneeye != None %}
-          <li>One eyed by {{pull.user_oneeye}} on {{pull.date_oneeye}}</li>
-        {% endif %}
-
-        {% if pull.date_twoeye != None %}
-          <li>Two eyed by {{pull.user_twoeye}} on {{pull.date_twoeye}}</li>
-        {% endif %}
+        <li>Reviewed by:
+          <ul>
+            {% for reviewer in pull.reviewers %}
+              <li>{{reviewer}}</li>
+            {% endfor %}
+          </ul>
+        </li>
 
         {% if pull.date_complete != None %}
           <li>Completed by {{pull.user_complete}} on {{pull.date_complete}}</li>
-	        <li>Burned to disk #{{pull.disk_number}}</li>
+          <li>Burned to disk #{{pull.disk_number}}</li>
         {% endif %}
       </ul>
 

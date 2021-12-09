@@ -384,6 +384,10 @@ def createZip(request, network_name, rejectPull):
             rqst.pull_id = new_pull.pull_id
             rqst.date_pulled = new_pull.date_pulled
             rqst.save()
+            files = rqst.files.all()
+            files.update(pull=new_pull)
+
+
 
     zip.close()
 

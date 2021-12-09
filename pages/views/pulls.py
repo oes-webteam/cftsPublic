@@ -20,6 +20,11 @@ from cfts import settings
 from pages.views.auth import superUserCheck, staffCheck
 #====================================================================
 
+def getReviewers(pull):
+  oneEyers = Request.objects.filter(pull=pull).values_list('files__user_oneeye__username', flat=True)
+  twoEyers = Request.objects.filter(pull=pull).values_list('files__user_twoeye__username', flat=True)
+  reviewers = list(oneEyers) + list(twoEyers)
+  return set(reviewers)
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
@@ -41,38 +46,34 @@ def pulls( request ):
     
     these_pulls = []
     for pull in pulls:
+      reviewers = getReviewers(pull)
+      
       this_pull = {
         'pull_id': pull.pull_id,
         'pull_number': pull.pull_number,
         'pull_date': pull.date_pulled,
         'pull_user': pull.user_pulled,
-        # 'date_oneeye': pull.date_oneeye,
-        # 'user_oneeye': pull.user_oneeye,
-        # 'date_twoeye': pull.date_twoeye,
-        # 'user_twoeye': pull.user_twoeye,
         'date_complete': pull.date_complete,
         'user_complete': pull.user_complete,
         'disk_number': pull.disc_number,
         'pull_network': net.name,
-        'centcom_pull': pull.centcom_pull
+        'reviewers': reviewers,
       }
       these_pulls.append( this_pull )
 
     for pull in incompletePulls:
+      reviewers = getReviewers(pull)
+
       this_pull = {
         'pull_id': pull.pull_id,
         'pull_number': pull.pull_number,
         'pull_date': pull.date_pulled,
         'pull_user': pull.user_pulled,
-        # 'date_oneeye': pull.date_oneeye,
-        # 'user_oneeye': pull.user_oneeye,
-        # 'date_twoeye': pull.date_twoeye,
-        # 'user_twoeye': pull.user_twoeye,
         'date_complete': pull.date_complete,
         'user_complete': pull.user_complete,
         'disk_number': pull.disc_number,
         'pull_network': net.name,
-        'centcom_pull': pull.centcom_pull
+        'reviewers': reviewers,
       }
       these_pulls.append( this_pull )
       
@@ -120,7 +121,13 @@ def getPull(request, fileName):
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def cancelPull(request, id):
   thisPull = Pull.objects.get( pull_id = id )
-  requests = Request.objects.filter(pull = id).update(pull = None)
+  requests = Request.objects.filter(pull = id)
+  for rqst in requests:
+    files = rqst.files.all()
+    files.update(pull=None)
+
+  requests.update(pull=None)
+
   thisPull.delete()
   return redirect('pulls')
   

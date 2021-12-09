@@ -21,7 +21,7 @@ jQuery( document ).ready( function() {
     activeQueue.classList.add("active")
     
     var scrollID = document.location.search.split('?')[2]
-    
+    history.pushState(null, "", location.href.split("?")[0])
     let scrollElm = document.getElementById(scrollID)
     scrollElm.scrollIntoView({behavior: "smooth", block: "center"})
     setTimeout(function(){
