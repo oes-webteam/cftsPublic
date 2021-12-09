@@ -20,14 +20,13 @@ jQuery( document ).ready( function() {
     activeQueue = document.getElementById("tab"+network)
     activeQueue.classList.add("active")
     
-    let scrollID = document.location.search.split('?')[2]
+    var scrollID = document.location.search.split('?')[2]
     
     let scrollElm = document.getElementById(scrollID)
     scrollElm.scrollIntoView({behavior: "smooth", block: "center"})
     setTimeout(function(){
       $('#'+scrollID).fadeOut(400).fadeIn(400).fadeOut(400).fadeIn(400)
     },500)
-    
   }
   
   $.ajaxSetup({ 
@@ -105,7 +104,7 @@ jQuery( document ).ready( function() {
 
   $('.show-dupe').click(e => {
     e.preventDefault();
-
+    $('#'+scrollID).removeAttr("style")
     if($(e.target).hasClass('dupes-visable')){
       console.log("hide dupes")
 
