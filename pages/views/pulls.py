@@ -46,10 +46,10 @@ def pulls( request ):
         'pull_number': pull.pull_number,
         'pull_date': pull.date_pulled,
         'pull_user': pull.user_pulled,
-        'date_oneeye': pull.date_oneeye,
-        'user_oneeye': pull.user_oneeye,
-        'date_twoeye': pull.date_twoeye,
-        'user_twoeye': pull.user_twoeye,
+        # 'date_oneeye': pull.date_oneeye,
+        # 'user_oneeye': pull.user_oneeye,
+        # 'date_twoeye': pull.date_twoeye,
+        # 'user_twoeye': pull.user_twoeye,
         'date_complete': pull.date_complete,
         'user_complete': pull.user_complete,
         'disk_number': pull.disc_number,
@@ -64,10 +64,10 @@ def pulls( request ):
         'pull_number': pull.pull_number,
         'pull_date': pull.date_pulled,
         'pull_user': pull.user_pulled,
-        'date_oneeye': pull.date_oneeye,
-        'user_oneeye': pull.user_oneeye,
-        'date_twoeye': pull.date_twoeye,
-        'user_twoeye': pull.user_twoeye,
+        # 'date_oneeye': pull.date_oneeye,
+        # 'user_oneeye': pull.user_oneeye,
+        # 'date_twoeye': pull.date_twoeye,
+        # 'user_twoeye': pull.user_twoeye,
         'date_complete': pull.date_complete,
         'user_complete': pull.user_complete,
         'disk_number': pull.disc_number,
@@ -81,23 +81,23 @@ def pulls( request ):
 
   return render( request, 'pages/pulls.html', { 'rc': rc } )
 
-@login_required
-@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
-def pullsOneEye( request, id ):
-  thisPull = Pull.objects.get( pull_id = id )
-  thisPull.date_oneeye = datetime.datetime.now()
-  thisPull.user_oneeye = request.user
-  thisPull.save()
-  return JsonResponse( { 'id': id } )
+# @login_required
+# @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
+# def pullsOneEye( request, id ):
+#   thisPull = Pull.objects.get( pull_id = id )
+#   thisPull.date_oneeye = datetime.datetime.now()
+#   thisPull.user_oneeye = request.user
+#   thisPull.save()
+#   return JsonResponse( { 'id': id } )
 
-@login_required
-@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
-def pullsTwoEye( request, id ):
-  thisPull = Pull.objects.get( pull_id = id )
-  thisPull.date_twoeye = datetime.datetime.now()
-  thisPull.user_twoeye = request.user
-  thisPull.save()
-  return JsonResponse( { 'id': id } )
+# @login_required
+# @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
+# def pullsTwoEye( request, id ):
+#   thisPull = Pull.objects.get( pull_id = id )
+#   thisPull.date_twoeye = datetime.datetime.now()
+#   thisPull.user_twoeye = request.user
+#   thisPull.save()
+#   return JsonResponse( { 'id': id } )
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)

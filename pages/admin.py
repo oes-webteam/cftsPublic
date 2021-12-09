@@ -11,7 +11,7 @@ class UserAdmin(admin.ModelAdmin):
 class RequestAdmin(admin.ModelAdmin):
     list_filter = ('network', 'org')
     list_display = ('user','network','pull','has_rejected','all_rejected')
-    fields = ('user','request_hash','network','org','pull','date_pulled',('files','target_email'),('comments','notes'),('is_centcom','is_dupe','has_rejected','all_rejected','destFlag'),)
+    fields = ('user','request_hash','network','org','pull','date_pulled',('files','target_email'),('comments','notes'),('is_centcom','is_dupe','has_rejected','all_rejected','destFlag'),('ready_to_pull','is_submitted'))
     search_fields = ('user','network','pull')
     sortable_by = ('user','network','pull','has_rejected','all_rejected')
 

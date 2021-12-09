@@ -73,13 +73,13 @@ def queue(request):
             'user_pulled__username'
         ).filter(network__name=net.name).order_by('-date_pulled')[:1]
 
-
         # get all the xfer requests (pending and pulled) submitted for this network
-        ds_requests = Request.objects.filter(
+        ds_requests_centcom = Request.objects.filter(
             network__name=net.name,
             is_submitted=True,
             pull__isnull=True,
-            #files__in=File.objects.filter( rejection_reason__isnull=True )
+            ready_to_pull=False,
+            is_centcom=True,
         ).annotate(org_order = Case(
             When(org='HQ', then=1), 
             When(org='AFCENT', then=2), 
@@ -87,8 +87,24 @@ def queue(request):
             When(org='MARCENT', then=4), 
             When(org='NAVCENT', then=5), 
             When(org='SOCCENT', then=6), 
-            When(org='OTHER', then=7), output_field=IntegerField())).order_by('org_order', 'user__str__','-date_created')
+            output_field=IntegerField())).order_by('org_order','-date_created', 'user__str__')
+
+        ds_requests_other = Request.objects.filter(
+            network__name=net.name,
+            is_submitted=True,
+            pull__isnull=True,
+            ready_to_pull=False,
+            is_centcom=False,
+        ).order_by('-date_created', 'user__str__')
         
+        pullable_requests = Request.objects.filter(
+            network__name=net.name,
+            is_submitted=True,
+            pull__isnull=True,
+            ready_to_pull=True,
+            pull__date_complete__isnull=True,
+        ).order_by('user__str__', 'pull')
+
         pulled_requests = Request.objects.filter(
             network__name=net.name,
             is_submitted=True,
@@ -96,28 +112,49 @@ def queue(request):
             pull__date_complete__isnull=True,
         ).order_by('user__str__', 'pull')
 
-        # count how many total files are in all the pending requests (excluding ones that have already been pulled)
-        file_count = ds_requests.annotate(
-            files_in_request=Count('files__file_id', filter=Q(
-                pull__date_pulled__isnull=True))
-        ).aggregate(
-            files_in_dataset=Sum('files_in_request')
-        )
+        # count how many total files are in all the requests requests
+        file_count_centcom = ds_requests_centcom.annotate(
+            files_in_request=Count('files__file_id')).aggregate(count=Sum('files_in_request'))['count']
+        
+        if file_count_centcom == None:
+            file_count_centcom = 0
+
+        file_count_other = ds_requests_other.annotate(
+            files_in_request=Count('files__file_id')).aggregate(count=Sum('files_in_request'))['count']
+
+        if file_count_other == None:
+            file_count_other = 0
+
+        file_count_pullable = pullable_requests.annotate(
+            files_in_request=Count('files__file_id')).aggregate(count=Sum('files_in_request'))['count']
+
+        if file_count_pullable == None:
+            file_count_pullable = 0
+
+        file_count_pulled = pulled_requests.annotate(
+            files_in_request=Count('files__file_id')).aggregate(count=Sum('files_in_request'))['count']
+
+        if file_count_pulled == None:
+            file_count_pulled = 0
 
         # smoosh all the info together into one big, beautiful data object ...
         queue = {
             'name': net.name,
             'order_by': net.sort_order,
-            'file_count': file_count,
-            'count': ds_requests.count() + pulled_requests.count(),
+            'count': ds_requests_centcom.count() + ds_requests_other.count() + pullable_requests.count() + pulled_requests.count(),
+            'file_count': file_count_centcom + file_count_other + file_count_pullable,
             'activeNet': False,
-            'pending': ds_requests.aggregate(count=Count('request_id', filter=Q(pull__date_pulled__isnull=True))),
+            'pending': ds_requests_centcom.count() + ds_requests_other.count() + pullable_requests.count(),
+            'centcom': ds_requests_centcom.count(),
+            'other': ds_requests_other.count(),
+            'pullable': pullable_requests.count(),
             'pulled': pulled_requests.count(),
-            'q': ds_requests,
+            'q': ds_requests_centcom,
+            'o': ds_requests_other,
+            'a': pullable_requests,
             'p': pulled_requests,
-            'centcom': ds_requests.aggregate(count=Count('request_id', filter=Q(pull__date_pulled__isnull=True, is_centcom=True))),
             'last_pull': last_pull,
-            'orgs': ds_requests.filter(pull__date_pulled__isnull=True).values_list('org', flat=True)
+            'orgs': ds_requests_centcom.filter(pull__date_pulled__isnull=True).values_list('org', flat=True)
         }
 
         if activeSelected == False and queue['count'] > 0:
@@ -229,7 +266,7 @@ def banUser(request, userid, requestid, temp=False):
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
-def createZip(request, network_name, isCentcom, rejectPull):
+def createZip(request, network_name, rejectPull):
     if rejectPull == 'false':
         
         # create pull
@@ -244,40 +281,21 @@ def createZip(request, network_name, isCentcom, rejectPull):
         except Pull.DoesNotExist:
             pull_number = 1
 
-        if isCentcom == "True":
-            new_pull = Pull(
-                pull_number=pull_number,
-                network=Network.objects.get(name=network_name),
-                #date_pulled=datetime.datetime.now(),
-                date_pulled=timezone.now(),
-                user_pulled=request.user,
-                centcom_pull=True
-            )
-        else:
-            new_pull = Pull(
-                pull_number=pull_number,
-                network=Network.objects.get(name=network_name),
-                #date_pulled=datetime.datetime.now(),
-                date_pulled=timezone.now(),
-                user_pulled=request.user,
-            )
+        new_pull = Pull(
+            pull_number=pull_number,
+            network=Network.objects.get(name=network_name),
+            #date_pulled=datetime.datetime.now(),
+            date_pulled=timezone.now(),
+            user_pulled=request.user,
+        )
 
-        # select Requests based on network and status
-        if(isCentcom == "True"):
-            qs = Request.objects.filter(
-                network__name=network_name, pull=None, is_centcom=True, is_submitted=True)
-            for rqst in qs:
-                rqst.centcom_pull = True
-
-        elif(isCentcom == "False"):
-            qs = Request.objects.filter(
-                network__name=network_name, pull=None, is_submitted=True)
-            
+        qs = Request.objects.filter(
+            network__name=network_name, pull=None, ready_to_pull=True, is_submitted=True)
         new_pull.save()
         
         pull=new_pull
 
-    else:        
+    else:
         qs = Request.objects.filter(pull=rejectPull)
         pull = Pull.objects.filter(pull_id=rejectPull)[0]
         pull_number = pull.pull_number

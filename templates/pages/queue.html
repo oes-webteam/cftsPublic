@@ -43,8 +43,7 @@
                         <div id="network-header" class="nav sticky-top network-header">
                             
                             <div class="pending-info">
-                                Pending Requests: {{ network.pending.count }} (
-                                    {% if network.file_count.files_in_dataset == None%}0{% else %}{{network.file_count.files_in_dataset}}{% endif %} Files)
+                                Pending Requests: {{ network.pending }} ({{network.file_count}} Files)
                                 <br />
                                 {% for lp in network.last_pull %}
                                 <span class="last-pull-info">Last pull created: 
@@ -61,8 +60,8 @@
                             <div class="pull-button-group">
                                 <!-- <a href="#" class="btn btn-warning request-encrypt">Encrypt Files</a>
                                 <a href="#" class="btn btn-danger request-reject">Reject Files</a> -->
-                                <button class="btn btn-primary pull-button{% if network.pending.count == 0 %} disabled{% endif %}" id="pull{{network.name}}">Create {{ network.name }} Pull</button> 
-                                <button class="btn btn-warning pull-button centcom{% if network.centcom.count == 0 %} disabled{% endif %}" id="pull{{network.name}}">Pull only Centcom</button> 
+                                <button class="btn btn-primary pull-button{% if network.pullable == 0 %} disabled{% endif %}" id="pull{{network.name}}">Create {{ network.name }} Pull</button> 
+                                <!-- <button class="btn btn-warning pull-button centcom{% if network.centcom.count == 0 %} disabled{% endif %}" id="pull{{network.name}}">Pull only Centcom</button>  -->
 
                                 
 
@@ -79,40 +78,44 @@
 
                         <form class="queue-form">
                             
-                            <!-- pending requests -->
-                            {% for request in network.q %}
-
-                                {% ifchanged request.org %}
-                                    {% if not forloop.first %}
-                                        </div><!-- org change -->
-                                    {% endif %}
-                                    
-                                    <br>
-                                    <h4 class="org-header">{{request.org}} Requests:</h4>
-                                    <div class="row">
-                                {% endifchanged %}
-
-                                {% include 'partials/Queue_partials/requestTemplate.html' with request=request %}
-
-                                {% if forloop.last %}
-                                    </div> <!-- last in loop -->
-                                {% endif %}
-
-                            {% endfor %}
-                            
-                            <!-- pulled requests -->
-                            {% if network.pulled > 0 %}<br><h4 class="org-header">Pulled Requests ({{network.pulled}}):</h4>
-
-                                {% for request in network.p %}
-
-                                    {% if forloop.first %}<div class="row">{% endif %}
-                                        {% if request.pull != None %} 
-                                            {% include 'partials/Queue_partials/requestTemplate.html' with request=request %}
-                                        {% endif %}
-                                    {% if forloop.last %}</div> <!-- last in loop from pull -->{% endif %}
-
+                            {% if network.centcom > 0 %}
+                                <br>
+                                <h4 class="org-header">CENTCOM Requests ({{network.centcom}}):</h4>
+                                <div class="row">
+                                {% for request in network.q %}
+                                        {% include 'partials/Queue_partials/requestTemplate.html' with request=request %}
+                                    {% if forloop.last %}</div>{% endif %}
                                 {% endfor %}
+                            {% endif %}
+                            
+                            {% if network.other > 0 %}
+                                <br>
+                                <h4 class="org-header">Other Requests ({{network.other}}):</h4>
+                                <div class="row">
+                                {% for request in network.o %}
+                                        {% include 'partials/Queue_partials/requestTemplate.html' with request=request %}
+                                    {% if forloop.last %}</div>{% endif %}
+                                {% endfor %}
+                            {% endif %}
 
+                            {% if network.pullable > 0 %}
+                                <br>
+                                <h4 class="org-header">Pullable Requests ({{network.pullable}}):</h4>
+                                <div class="row">
+                                {% for request in network.a %}
+                                        {% include 'partials/Queue_partials/requestTemplate.html' with request=request %}
+                                    {% if forloop.last %}</div>{% endif %}
+                                {% endfor %}
+                            {% endif %}
+
+                            {% if network.pulled > 0 %}
+                                <br>
+                                <h4 class="org-header">Pulled Requests ({{network.pulled}}):</h4>
+                                <div class="row">
+                                {% for request in network.p %}
+                                        {% include 'partials/Queue_partials/requestTemplate.html' with request=request %}
+                                    {% if forloop.last %}</div>{% endif %}
+                                {% endfor %}
                             {% endif %} 
                             
                         </form>

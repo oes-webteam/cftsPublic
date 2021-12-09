@@ -40,7 +40,7 @@ urlpatterns = [
      path('queue', views.queue, name='queue'),
      path('transfer-request/<uuid:id>',
           views.transferRequest, name='transfer-request'),
-     path('create-zip/<str:network_name>/<str:isCentcom>/<str:rejectPull>',
+     path('create-zip/<str:network_name>/<str:rejectPull>',
           views.createZip, name='create-zip'),
      path('getFile/uploads/<str:fileID>/<str:fileName>',
           views.getFile, name='getFile'),
@@ -51,8 +51,8 @@ urlpatterns = [
      # pulls
      path('pulls', views.pulls, name='pulls'),
      path('getPull/<str:fileName>', views.getPull, name='getPull'),
-     path('pulls-oneeye/<uuid:id>', views.pullsOneEye, name='pulls-oneeye'),
-     path('pulls-twoeye/<uuid:id>', views.pullsTwoEye, name='pulls-twoeye'),
+     # path('pulls-oneeye/<uuid:id>', views.pullsOneEye, name='pulls-oneeye'),
+     # path('pulls-twoeye/<uuid:id>', views.pullsTwoEye, name='pulls-twoeye'),
      path('pulls-done/<uuid:id>/<int:cd>', views.pullsDone, name='pulls-done'),
      path('cancelPull/<uuid:id>/', views.cancelPull, name='cancelPull'),
 

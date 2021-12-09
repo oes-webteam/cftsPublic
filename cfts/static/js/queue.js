@@ -41,22 +41,10 @@ jQuery( document ).ready( function() {
     pullBtn = $( e.target );
     buttonID = pullBtn.attr( 'id' );
     netName = buttonID.substr( 4 );
-    if(pullBtn.hasClass('centcom')){
-      isCentcom = "True"
-    }
-    else{
-      isCentcom = "False"
-    }
-    let url = '/create-zip/' + netName +'/'+ isCentcom+'/false';
+    let url = '/create-zip/' + netName +'/false';
     
     if( $( e.target ).hasClass( 'disabled' ) ) {
-      if( $(e.target).hasClass('centcom') ){
-      alert( 'There are no pending CENTCOM transfer requests to pull for this network.' )
-      }
-      else{
       alert( 'There are no pending transfer requests to pull for this network.' )
-      }
-
     } else {
       $('.pull-button').prop('disabled', true);
 

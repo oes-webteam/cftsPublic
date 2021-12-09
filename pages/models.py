@@ -98,6 +98,12 @@ class File(models.Model):
   NDCI = models.BooleanField(default=False)
   file_count = models.PositiveIntegerField(default=1)
   file_size = models.PositiveBigIntegerField(default=0)
+  date_oneeye = models.DateTimeField(null=True, blank=True)
+  user_oneeye = models.ForeignKey(
+    settings.AUTH_USER_MODEL, related_name='file_user_oneeye', on_delete=models.DO_NOTHING, null=True, blank=True)
+  date_twoeye = models.DateTimeField(null=True, blank=True)
+  user_twoeye = models.ForeignKey(
+    settings.AUTH_USER_MODEL, related_name='file_user_twoeye', on_delete=models.DO_NOTHING, null=True, blank=True)
 
   class Meta:
     ordering = [F('file_name').asc(nulls_last=True)]
@@ -206,6 +212,7 @@ class Request(models.Model):
   has_rejected = models.BooleanField(default=False)
   all_rejected = models.BooleanField(default=False)
   destFlag = models.BooleanField(default=False)
+  ready_to_pull = models.BooleanField(default=False)
   #is_rejected = models.BooleanField(default=False)
 
   class Meta:
