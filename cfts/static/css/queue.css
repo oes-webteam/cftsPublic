@@ -158,6 +158,28 @@
   background-color: #bebebe !important;
 }
 
+.status-img{
+  height: 23px;
+  width: 41px;
+  padding: 2px;
+}
+.status-imgs{
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  justify-content: flex-start;
+}
+  
+.card-bottom{
+  display: flex;
+  justify-content: space-between;
+  position: absolute;
+  bottom: 1rem;
+  align-items: center;
+  margin-left: 1rem;
+  margin-right: 1rem;
+}
+
 @media(min-width: 700px) {
   .col-12{
   max-width: 100%;
@@ -182,7 +204,7 @@
   }
 }
 
-@media(min-width: 1600px) {
+@media(min-width: 1700px) {
   .col-12{
   max-width: 20%;
   }

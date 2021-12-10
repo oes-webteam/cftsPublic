@@ -15,17 +15,19 @@
 
       <ul>
         <li class="title-line"><strong>{{ pull.pull_network }}_{{ pull.pull_number }}</strong></li>
-        <li class="title-line status-imgs {% if pull.date_complete != None %}is-done{% elif pull.date_twoeye != None %}to-complete{% elif pull.date_oneeye != None %}to-twoeye{% endif %}">
+        {% comment %} <li class="title-line status-imgs {% if pull.date_complete != None %}is-done{% elif pull.date_twoeye != None %}to-complete{% elif pull.date_oneeye != None %}to-twoeye{% endif %}">
           <img src="{% static 'img/asset_13.svg' %}" class="status-img" alt="One Eye" />    
           <img src="{% static 'img/asset_13.svg' %}" class="status-img" alt="Two Eye" />
           <img src="{% if  pull.date_complete != None %}{% static 'img/asset_14.svg' %}{% else %}{% static 'img/transparent.png' %}{% endif %}" class="status-img" alt="Burned to Disk #{{pull.disk_number}}" />
-        </li>
+        </li> {% endcomment %}
 
         <li>Pulled by {{pull.pull_user}} on {{pull.pull_date}} </li>
         <li>Reviewed by:
           <ul>
             {% for reviewer in pull.reviewers %}
+              {% if reviewer != None %}
               <li>{{reviewer}}</li>
+              {% endif %}
             {% endfor %}
           </ul>
         </li>
@@ -41,16 +43,9 @@
       <ul class="pull-menu" pull_id="{{pull.pull_id}}">
         <li class="pull-menu-option highlight"><a href="getPull/{{pull.pull_network}}_{{pull.pull_number}} {{pull.pull_date|date:"dM"}} {{pull.pull_date|time:"Hi"}}.zip">Download Again</a></li>
         <li class="pull-menu-option highlight"><a href="scan/{{pull.pull_network}}_{{pull.pull_number}} {{pull.pull_date|date:"dM"}} {{pull.pull_date|time:"Hi"}}.zip">Scan Pull</a></li>
-        {% if pull.date_complete == None %}<li class="pull-menu-option highlight"><a href="cancelPull/{{pull.pull_id}}">Cancel Pull</a></li>{% endif %}
-        {% if pull.date_oneeye == None %}
-        <li class="pull-menu-option"><a href="{{pull.pull_id}}" class="oneeye">One-eye Complete</a></li>
-        {% elif pull.date_twoeye == None %}
-        <li class="pull-menu-option complete"><del>One-eye Complete</del></li>
-        <li class="pull-menu-option"><a href="{{pull.pull_id}}" class="twoeye">Two-eye Complete</a></li>
-        {% elif pull.date_complete == None %}
-        <li class="pull-menu-option complete"><del>One-eye Complete</del></li>
-        <li class="pull-menu-option complete"><del>Two-eye Complete</del></li>
+        {% if pull.date_complete == None %}
         <li class="pull-menu-option"><a href="{{pull.pull_id}}" class="done">Transfer Complete</a></li>
+        <li class="pull-menu-option highlight"><a href="cancelPull/{{pull.pull_id}}">Cancel Pull</a></li>
         {% endif %}
       </ul>
       <!-- END TODO -->

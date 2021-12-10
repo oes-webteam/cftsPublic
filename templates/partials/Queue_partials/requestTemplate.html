@@ -5,52 +5,52 @@
             <div class="col-12">
                 <a class="card bg-light {% if request.pull != None %}pulled {% endif %} {% if request.pull.centcom_pull == True %}centcom{% endif %}" id="{{request.request_id}}" href="{% url 'transfer-request' request.request_id %}" request_hash="{{request.request_hash}}">
                     <div class="card-body request-header {% if request.pull != None %} pending{% endif %} {% if request.centcom_pull %}centcom{% endif %}">
-                        <h5 class="card-title">{%if request.is_centcom%}<strong>{%endif%}{{ request.user }}{%if request.is_centcom%} <!--&#x1f42a;--></strong>{%endif%}</h5> <!-- link to request view -->
-                        <!-- <p class="card-text request-comments"> 
-                            
-                            {% if request.comments != "" or request.destFlag %}<button href="#" class="btn btn-primary comments info-hide">Show Request Info</button> {% else %}{% endif %}
-                        </p> -->
+                        <h5 class="card-title" style="width: 75%;">{%if request.is_centcom%}<strong>{%endif%}{{ request.user }}{%if request.is_centcom%}</strong>{%endif%}</h5>
                         <p class="request-submitted card-subtitle mb-2 text-muted">Submitted: {{ request.date_created|date:'db'|upper }} @ {{ request.date_created|time:'Hi' }}</p>
-
-                         {% if request.comments != "" %}
-                        <!-- <tr class="request-header{% if request.pull != None %} pending{% endif %}">
-                            <td colspan="3" class="req-info comments-text"> -->
+                        
+                        {% if request.comments != "" %}
                             <p class="card-text" style="color: blue;">
                                 Comments: {{ request.comments|linebreaksbr|truncatechars:83 }}
                             </p>
-                        <!-- </td>
-                        </tr> -->
                         {% endif %}
 
-                        <!-- only shows warnings when destFlag is true, later requests will need to have a general warning flag to know when to display and use the specific warning flags to render text -->
                         {% if request.destFlag %}
-                        <!-- <tr class="request-header{% if request.pull != None %} pending{% endif %}">
-                            <td colspan="3" class="req-info warnings"> -->
                             <p class="card-text" style="color: red;">
                                 Warnings: 
                                 {% if request.destFlag %}Submitter is not the primary destination{% endif %}
                             </p>
-                            <!-- </td>
-                        </tr> -->
                         {% endif %}
                         
-                        <ul class="{% if request.pull != None %}pending {% endif %}{% if file.rejection_reason != None %}rejected {% endif %}">
-                            {% for file in request.files.all %}
+                        <ul class="{% if request.pull != None %}pending {% endif %}{% if file.rejection_reason != None %}rejected {% endif %} mb-5">
+                            {% for file in request.files.all|slice:":4" %}
                                 <li class="m-2">
-                                    <!-- <input type="checkbox" name="fileSelection" id="chk_{{ file.file_id }}" request_id="{{ request.request_id }}" request_email="{{ request.user.email }}" file_name="{{ file }}" {% if file.rejection_reason != None %} rejected {% else %} not-rejected {% endif %} hidden/> -->
-                                    <!-- Show encrypt flag? -->
-                                    
                                     <p class="card-text {% if file.rejection_reason != None %} rejected {% else %} not-rejected {% endif %}" title="{{ file }}">
                                         {% if file.is_pii or file.is_centcom_info %}
                                             <span title="PII: {{ file.is_pii }}&#10;CENTCOM Info: {{ file.is_centcom_info }}">🔒</span>
                                         {% endif %}
-                                        {{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</p>
+                                        {{ file|truncatechars:30 }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</p>
                                 </li>
                             {% endfor %}
+                            {% if request.files.count > 4 %}
+                                <li class="m-2">
+                                    <p class="card-text ">
+                                        {{request.files.count|add:"-4"}} more files...
+                                    </p>
+                                </li>
+                            {% endif %}
                         </ul>
-                        {% if request.is_dupe %}<button href="#" class="btn btn-info show-dupe" request_hash="{{request.request_hash}}">Show Duplicates</button> {% else %}{% endif %}
-                        <!-- end files -->
-                        <!-- {% if not forloop.last %}<tr class="spacing"><td colspan="3">&nbsp;</td></tr>{% endif %} -->
+                        <div class="card-bottom">
+                            <div class="status-imgs">
+                                <div>
+                                    {{request.needs_oneeye}}: <img src="{% static 'img/asset_13.svg' %}" class="status-img" alt="One Eye" />
+                                </div>
+                                <div class="ml-4">
+                                    {{request.needs_twoeye}}: <img src="{% static 'img/asset_13.svg' %}" class="status-img" alt="One Eye" />    
+                                    <img src="{% static 'img/asset_13.svg' %}" class="status-img" alt="Two Eye" />
+                                </div>
+                            </div>
+                            {% if request.is_dupe %}<button href="#" class="btn btn-info show-dupe ml-4" request_hash="{{request.request_hash}}">Show Duplicates</button> {% else %}{% endif %}
+                        </div>
                     </div>
                 </a>
             </div>

@@ -123,7 +123,7 @@ jQuery( document ).ready( function() {
         dupe.classList.add("dupe");
         dupe.classList.remove("hidden");
       });
-  
+      
       $(e.target).text("Show All Requests")
       $(e.target).addClass('dupes-visable')
     }

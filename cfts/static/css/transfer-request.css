@@ -22,3 +22,7 @@
     outline-width: 3px;
     padding: 2px;
 }
+
+tr:nth-of-type(odd) {
+    background-color: rgba(0,0,0,0.05);
+}

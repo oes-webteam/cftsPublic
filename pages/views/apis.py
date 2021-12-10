@@ -88,7 +88,7 @@ def createEml( request, request_id, files_list, reject_id ):
     rqst = Request.objects.get(request_id=request_id[0])
     rejection = Rejection.objects.get(rejection_id=reject_id[0])
 
-    msgBody = "mailto:" + str(rqst.user.source_email) + "&subject=CFTS File Rejection&body=The following files have been rejected from your transfer request:%0D%0A"
+    msgBody = "mailto:" + str(rqst.user.source_email) + "?subject=CFTS File Rejection&body=The following files have been rejected from your transfer request:%0D%0A"
 
     files = File.objects.filter(file_id__in=files_list)
     for file in files:

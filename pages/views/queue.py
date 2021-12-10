@@ -3,7 +3,7 @@
 from email import generator
 import random
 import datetime
-from django.db.models.expressions import When
+from django.db.models.expressions import Subquery, When
 from django.db.models.fields import IntegerField
 import pytz
 # from io import BytesIO, StringIO
@@ -87,7 +87,7 @@ def queue(request):
             When(org='MARCENT', then=4), 
             When(org='NAVCENT', then=5), 
             When(org='SOCCENT', then=6), 
-            output_field=IntegerField())).order_by('date_created')
+            output_field=IntegerField()), needs_oneeye=Count('files')-Count('files__date_oneeye'), needs_twoeye=(Count('files__date_oneeye')-Count('files__date_twoeye'))).order_by('date_created')
 
         ds_requests_other = Request.objects.filter(
             network__name=net.name,
@@ -403,3 +403,31 @@ def getFile(request, fileID, fileName):
     response = FileResponse(
         open(os.path.join("uploads", fileID, fileName), 'rb'))
     return response
+
+@login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
+def updateFileReview(request, fileID, rqstID):
+    rqst = Request.objects.get(request_id=rqstID)
+    file = File.objects.get(file_id=fileID)
+
+    if file.user_oneeye == None:
+        file.user_oneeye = request.user
+    elif file.user_oneeye != None and file.date_oneeye == None:
+        file.date_oneeye = timezone.now()
+    elif file.user_twoeye == None:
+        file.user_twoeye = request.user
+    elif file.user_twoeye != None and file.date_twoeye == None:
+        file.date_twoeye = timezone.now()
+    file.save()
+
+    ready_to_pull = True
+    for file in rqst.files.all():
+        if file.date_twoeye == None:
+            if file.rejection_reason == None:
+                ready_to_pull = False
+    
+    if ready_to_pull == True:
+        rqst.ready_to_pull = ready_to_pull
+        rqst.save()
+
+    return redirect('transfer-request', id=rqstID )

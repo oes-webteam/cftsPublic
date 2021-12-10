@@ -21,20 +21,6 @@
   position: relative;
 }
 
-.status-imgs{
-  background-color: rgb(245,245,240);
-  float: right;
-  margin-top: -5px;
-}
-
-.status-img{
-  height: 23px;
-  width: 30px;
-  outline: solid;
-  outline-offset: 1px;
-  outline-width: 3px;
-  padding: 2px;
-}
 .title-line{
   display: inline-block;
 }
