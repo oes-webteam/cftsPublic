@@ -2,6 +2,7 @@
 # core
 from datetime import date
 from django.core import paginator
+from django.contrib import messages
 
 # crypto
 import hashlib
@@ -37,6 +38,12 @@ def consent(request):
     setConsentCookie(request)
     return render(request, 'pages/consent.html')
 
+def checkBan(request, cftsUser):
+    if cftsUser.banned == True:
+        if date.today() >= cftsUser.banned_until:
+            cftsUser.banned=False
+            cftsUser.save()
+
 @ensure_csrf_cookie
 @never_cache
 def frontend(request):
@@ -49,7 +56,6 @@ def frontend(request):
         request.session.set_expiry(0)
         
         # grab client cert form the request create user hash, ignore if no cert info is found in request
-        
         try:
             certInfo = getCert(request)
             cftsUser = getOrCreateUser(request, certInfo)

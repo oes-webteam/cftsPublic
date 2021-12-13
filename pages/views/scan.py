@@ -91,7 +91,7 @@ def runScan(extractPath):
 
     # \cfts\scan should contain all the user folders from the zip file
     printBin = re.compile('printerSettings(\d+).bin')
-    imgFiles = re.compile('(jpe?g|png|gif|bmp)', re.IGNORECASE)
+    imgFiles = re.compile('(jpe?g|png|gif|bmp|emf)', re.IGNORECASE)
     scanSkip = ["_email.txt", "_encrypt.txt", "_notes.txt"]
 
 
@@ -161,8 +161,11 @@ def runScan(extractPath):
 
                     else:
                         file_results = [scanFile(filename)]
-                        if imgFiles.match(file_results[0]['file'].split(".")[-1]) != None:
-                            imgCount+=1
+                        if file_results[0] is not None:
+                            if imgFiles.match(file_results[0]['file'].split(".")[-1]) != None:
+                                imgCount+=1
+                        else:
+                            file_results = None
 
                 except Exception as e:
                     file_results = []
