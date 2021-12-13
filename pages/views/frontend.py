@@ -52,65 +52,30 @@ def frontend(request):
         
         try:
             certInfo = getCert(request)
+            cftsUser = getOrCreateUser(request, certInfo)
+
+            if cftsUser == None or not request.user.is_authenticated:
+                return redirect("/login")
+            elif cftsUser.update_info == True:
+                return redirect("/user-info")
+            elif cftsUser.banned == True:
+                if date.today() >= cftsUser.banned_until:
+                    cftsUser.banned=False
+                    cftsUser.save()
+
+            nets = getDestinationNetworks(request, cftsUser)
+
+            rc = {'networks': nets, 'resources': resources, 'user': cftsUser, 'browser': browser}
 
             # empty cert, IIS is set to ignore certs
-            if certInfo['status'] == "empty":
-                if request.user.is_authenticated:
-                    cftsUser = getOrCreateUser(request, certInfo)
+            if certInfo['status'] != "empty":
+                rc['cert'] = certInfo['cert']
+                rc['userHash'] = certInfo['userHash']
 
-                    if cftsUser == None:
-                        return redirect("/login")
-                    elif cftsUser.update_info == True:
-                        return redirect("/user-info")
+            #have cert, but bugged
+            if certInfo['status'] == "buggedPKI":
+                rc['buggedPKI'] = True
 
-                    nets = getDestinationNetworks(request, cftsUser)
-                    if cftsUser.banned == True:
-                        if date.today() >= cftsUser.banned_until:
-                            cftsUser.banned=False
-                            cftsUser.save()
-                    rc = {'networks': nets, 'resources': resources, 'user': cftsUser, 'browser': browser}
-                else:
-                    return redirect('login')
-            
-            # got a cert!
-            else:
-                if certInfo['status'] == "buggedPKI":
-                    if request.user.is_authenticated:
-                        cftsUser = getOrCreateUser(request, certInfo)
-
-                        if cftsUser == None:
-                            return redirect("/login")
-                        elif cftsUser.update_info == True:
-                            return redirect("/user-info")
-
-                        nets = getDestinationNetworks(request, cftsUser)
-                        if cftsUser.banned == True:
-                            if date.today() >= cftsUser.banned_until:
-                                cftsUser.banned=False
-                                cftsUser.save()
-
-                        rc = {'networks': nets, 'resources': resources,
-                            'cert': certInfo['cert'], 'userHash': certInfo['userHash'], 'user': cftsUser, 'browser': browser, 'buggedPKI': "true"}
-                    else:
-                        return redirect('login')
-
-                # and their cert info isn't bugged!
-                else:
-                    cftsUser = getOrCreateUser(request, certInfo)
-
-                    if cftsUser == None:
-                        return redirect("/login")
-                    elif cftsUser.update_info == True:
-                        return redirect("/user-info")
-
-                    nets = getDestinationNetworks(request, cftsUser)
-                    if cftsUser.banned == True:
-                        if date.today() >= cftsUser.banned_until:
-                            cftsUser.banned=False
-                            cftsUser.save()
-
-                    rc = {'networks': nets, 'resources': resources,
-                        'cert': certInfo['cert'], 'userHash': certInfo['userHash'], 'user': cftsUser, 'browser': browser}
 
         # django dev server doesn't grab certs
         except KeyError:
