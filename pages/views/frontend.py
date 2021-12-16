@@ -69,19 +69,6 @@ def frontend(request):
             nets = getDestinationNetworks(request, cftsUser)
             rc = {'networks': nets, 'resources': resources, 'user': cftsUser, 'browser': browser}
 
-            # empty cert, IIS is set to ignore certs
-            if certInfo['status'] != "empty":
-                rc['cert'] = certInfo['cert']
-                rc['userHash'] = certInfo['userHash']
-
-            #have cert, but bugged
-            if certInfo['status'] == "buggedPKI":
-                rc['buggedPKI'] = True
-
-<<<<<<< HEAD
-=======
-
->>>>>>> 36e2a61e4c89c678271ae8805ca0675fa002299b
         # django dev server doesn't grab certs
         except KeyError:
             if request.user.is_authenticated:
