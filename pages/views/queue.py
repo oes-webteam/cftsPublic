@@ -59,7 +59,9 @@ def queue(request):
         "Now anyone can be banned, so much power!",
         "A bug? In my code? Impossible.",
         "Deleting database... Just kidding",
-        "Slow day?"
+        "Slow day?",
+        "Pretty cards.",
+        "Ban anyone today?",
     ])
 
     ########################
@@ -80,7 +82,7 @@ def queue(request):
             pull__isnull=True,
             ready_to_pull=False,
             is_centcom=True,
-        ).annotate(needs_review=Count('files')-(Count('files__date_twoeye')+Count('files__rejection_reason'))).order_by('date_created')
+        ).annotate(needs_review=Count('files')-(Count('files', filter=~Q(files__date_oneeye=None) & ~Q(files__date_twoeye=None))+Count('files', filter=~Q(files__rejection_reason=None)&~(~Q(files__date_oneeye=None) & ~Q(files__date_twoeye=None))))).order_by('date_created')
 
         ds_requests_other = Request.objects.filter(
             network__name=net.name,
@@ -195,8 +197,7 @@ def transferRequest( request, id ):
         'Part of pull': rqst.pull,
         'request_id': rqst.request_id,
         'date_created': rqst.date_created,
-        'files': rqst.files.all(),
-        'target_email': rqst.target_email.all(),
+        'target_email': rqst.target_email.all()[0],
         #'is_submitted': rqst.is_submitted,
         #'is_centcom': rqst.is_centcom,
         'org': rqst.org,
@@ -206,7 +207,7 @@ def transferRequest( request, id ):
         'strikes': user.strikes,
         'banned_until': user.banned_until
     }
-    return render(request, 'pages/transfer-request.html', {'rc': rc, 'rqst': rqst, 'rejections': rejections ,'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": user.user_id})
+    return render(request, 'pages/transfer-request.html', {'rqst': rqst, 'rejections': rejections ,'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": user.user_id})
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
@@ -416,7 +417,7 @@ def updateFileReview(request, fileID, rqstID):
         file.date_twoeye = timezone.now()
     else:
         return redirect('transfer-request' , id=rqstID)
-        
+
     file.save()
 
     ready_to_pull = True
