@@ -2,6 +2,7 @@
 # core
 from datetime import date
 from django.core import paginator
+from django.contrib import messages
 
 # crypto
 import hashlib
@@ -37,6 +38,11 @@ def consent(request):
     setConsentCookie(request)
     return render(request, 'pages/consent.html')
 
+def checkBan(cftsUser):
+    if cftsUser.banned == True and date.today() >= cftsUser.banned_until:
+        cftsUser.banned=False
+        cftsUser.save()
+
 @ensure_csrf_cookie
 @never_cache
 def frontend(request):
@@ -54,17 +60,14 @@ def frontend(request):
             certInfo = getCert(request)
             cftsUser = getOrCreateUser(request, certInfo)
 
-            if cftsUser == None or not request.user.is_authenticated:
+            if cftsUser == None:
                 return redirect("/login")
             elif cftsUser.update_info == True:
                 return redirect("/user-info")
-            elif cftsUser.banned == True:
-                if date.today() >= cftsUser.banned_until:
-                    cftsUser.banned=False
-                    cftsUser.save()
+            
+            checkBan(cftsUser)
 
             nets = getDestinationNetworks(request, cftsUser)
-
             rc = {'networks': nets, 'resources': resources, 'user': cftsUser, 'browser': browser}
 
             # empty cert, IIS is set to ignore certs
@@ -75,7 +78,6 @@ def frontend(request):
             #have cert, but bugged
             if certInfo['status'] == "buggedPKI":
                 rc['buggedPKI'] = True
-
 
         # django dev server doesn't grab certs
         except KeyError:
