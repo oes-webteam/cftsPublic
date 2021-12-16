@@ -30,6 +30,16 @@ function enableGroupSelection( selector ) {
 
 jQuery( document ).ready( function() {
 
+  if(document.location.search){
+    let file = document.location.search.split('?')[1]
+    console.log(file)
+    let fileLink = document.getElementById(file)
+    console.log(fileLink)
+    history.pushState(null, "", location.href.split("?")[0])
+    
+    fileLink.click()
+  }
+
   $.ajaxSetup({ 
     beforeSend: function( xhr, settings ) {
       xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));

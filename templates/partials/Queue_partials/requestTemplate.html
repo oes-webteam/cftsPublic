@@ -21,6 +21,7 @@
                             </p>
                         {% endif %}
                         
+                        {% if request.pull != None or request.ready_to_pull != False %}{% else %}<h6 class="ml-3">{{request.needs_review}} file{{ request.needs_review|pluralize:" needs,s need" }} to be reviewed</h6>{% endif %}
                         <ul class="{% if request.pull != None %}pending {% endif %}{% if file.rejection_reason != None %}rejected {% endif %} mb-5">
                             {% for file in request.files.all|slice:":4" %}
                                 <li class="m-2">
@@ -40,17 +41,11 @@
                             {% endif %}
                         </ul>
                         <div class="card-bottom">
-                            <div class="status-imgs">
-                                <div>
-                                    {{request.needs_oneeye}}: <img src="{% static 'img/asset_13.svg' %}" class="status-img" alt="One Eye" />
-                                </div>
-                                <div class="ml-4">
-                                    {{request.needs_twoeye}}: <img src="{% static 'img/asset_13.svg' %}" class="status-img" alt="One Eye" />    
-                                    <img src="{% static 'img/asset_13.svg' %}" class="status-img" alt="Two Eye" />
-                                </div>
-                            </div>
-                            {% if request.is_dupe %}<button href="#" class="btn btn-info show-dupe ml-4" request_hash="{{request.request_hash}}">Show Duplicates</button> {% else %}{% endif %}
+                            {% if request.is_dupe %}<button href="#" class="btn btn-info show-dupe" request_hash="{{request.request_hash}}">Show Duplicates</button> {% else %}{% endif %}
                         </div>
+                        <h6 class="review-count">{{request.files.count}}</h6><svg class="file-icon" xmlns="http://www.w3.org/2000/svg" width="25" height="24" fill="currentColor" class="bi bi-file-earmark-text-fill" viewBox="0 0 16 16">
+                            <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0zM9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1zM4.5 9a.5.5 0 0 1 0-1h7a.5.5 0 0 1 0 1h-7zM4 10.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm.5 2.5a.5.5 0 0 1 0-1h4a.5.5 0 0 1 0 1h-4z"/>
+                        </svg>
                     </div>
                 </a>
             </div>

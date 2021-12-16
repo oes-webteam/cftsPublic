@@ -28,7 +28,7 @@ from cfts.settings import NETWORK
 # model/database stuff
 from pages.models import *
 
-from pages.views.queue import createZip
+from pages.views.queue import createZip, updateFileReview
 from pages.views.auth import superUserCheck, staffCheck
 
 import hashlib
@@ -50,14 +50,20 @@ def setReject(request):
     id_list = thestuff['id_list[]']
 
     # update the files to set the rejection
-    File.objects.filter(file_id__in=id_list).update(
-        rejection_reason_id=reject_id[0])
+    files = File.objects.filter(file_id__in=id_list)
+    files.update(rejection_reason_id=reject_id[0])
 
     # update request with the has_rejected flag
-    Request.objects.filter(request_id=request_id[0]).update(has_rejected=True)
+    rqst = Request.objects.filter(request_id=request_id[0])
+    rqst.update(has_rejected=True)
+
+    
+    # update files review status
+    for file in files:
+        updateFileReview(request, file.file_id, request_id[0])
 
     # check if all files in the request are rejected
-    files = Request.objects.get(request_id=request_id[0]).files.all()
+    files = rqst[0].files.all()
     all_rejected = True
 
     for file in files:
@@ -65,15 +71,14 @@ def setReject(request):
             all_rejected = False
 
     if all_rejected == True:
-        Request.objects.filter(request_id=request_id[0]).update(all_rejected=True)
+        rqst.update(all_rejected=True)
 
     # recreate the zip file for the pull
-    someRequest = Request.objects.get(request_id=request_id[0])
-    network_name = someRequest.network.name
+    network_name = rqst[0].network.name
 
     try:
-        pull_number = someRequest.pull.pull_id
-        createZip(request, network_name, someRequest.is_centcom, pull_number)
+        pull_number = rqst[0].pull.pull_id
+        createZip(request, network_name, rqst[0].is_centcom, pull_number)
 
     except AttributeError:
         print("Request not found in any pull.")

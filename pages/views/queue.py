@@ -23,7 +23,7 @@ from django.views.decorators.cache import never_cache
 from pages.views.auth import superUserCheck, staffCheck
 
 # responses
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, reverse
 from django.http import JsonResponse, FileResponse, response  # , HttpResponse,
 
 # model/database stuff
@@ -80,14 +80,7 @@ def queue(request):
             pull__isnull=True,
             ready_to_pull=False,
             is_centcom=True,
-        ).annotate(org_order = Case(
-            When(org='HQ', then=1), 
-            When(org='AFCENT', then=2), 
-            When(org='ARCENT', then=3), 
-            When(org='MARCENT', then=4), 
-            When(org='NAVCENT', then=5), 
-            When(org='SOCCENT', then=6), 
-            output_field=IntegerField()), needs_oneeye=Count('files')-Count('files__date_oneeye'), needs_twoeye=(Count('files__date_oneeye')-Count('files__date_twoeye'))).order_by('date_created')
+        ).annotate(needs_review=Count('files')-(Count('files__date_twoeye')+Count('files__rejection_reason'))).order_by('date_created')
 
         ds_requests_other = Request.objects.filter(
             network__name=net.name,
@@ -95,7 +88,7 @@ def queue(request):
             pull__isnull=True,
             ready_to_pull=False,
             is_centcom=False,
-        ).order_by('date_created')
+        ).annotate(needs_review=Count('files')-(Count('files__date_twoeye')+Count('files__rejection_reason'))).order_by('date_created')
         
         pullable_requests = Request.objects.filter(
             network__name=net.name,
@@ -409,15 +402,21 @@ def getFile(request, fileID, fileName):
 def updateFileReview(request, fileID, rqstID):
     rqst = Request.objects.get(request_id=rqstID)
     file = File.objects.get(file_id=fileID)
+    open_file = False
 
     if file.user_oneeye == None:
         file.user_oneeye = request.user
-    elif file.user_oneeye != None and file.date_oneeye == None:
+        open_file = True
+    elif file.user_oneeye == request.user and file.date_oneeye == None:
         file.date_oneeye = timezone.now()
     elif file.user_twoeye == None:
         file.user_twoeye = request.user
-    elif file.user_twoeye != None and file.date_twoeye == None:
+        open_file = True
+    elif file.user_twoeye == request.user and file.date_twoeye == None:
         file.date_twoeye = timezone.now()
+    else:
+        return redirect('transfer-request' , id=rqstID)
+        
     file.save()
 
     ready_to_pull = True
@@ -430,4 +429,7 @@ def updateFileReview(request, fileID, rqstID):
         rqst.ready_to_pull = ready_to_pull
         rqst.save()
 
-    return redirect('transfer-request', id=rqstID )
+    if open_file == True:
+        return redirect('/transfer-request/' + str(rqstID) + '?' + str(fileID))
+    else:
+        return redirect('transfer-request' , id=rqstID)

@@ -157,27 +157,25 @@
 .pulled.bg-light:hover{
   background-color: #bebebe !important;
 }
-
-.status-img{
-  height: 23px;
-  width: 41px;
-  padding: 2px;
-}
-.status-imgs{
-  display: flex;
-  flex-wrap: nowrap;
-  flex-direction: row;
-  justify-content: flex-start;
-}
   
 .card-bottom{
   display: flex;
   justify-content: space-between;
   position: absolute;
   bottom: 1rem;
-  align-items: center;
-  margin-left: 1rem;
-  margin-right: 1rem;
+}
+
+.review-count{
+  position: absolute;
+  top: .65rem;
+  right: 2.5rem;
+  font-size: 30px;
+}
+
+.file-icon{
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
 }
 
 @media(min-width: 700px) {

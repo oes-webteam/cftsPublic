@@ -89,7 +89,7 @@ jQuery( document ).ready( function() {
 /***************************/
 /* Show duplicate requests */
 /***************************/
-
+var dupeButton = document.querySelectorAll('.show-dupe')
   $('.show-dupe').click(e => {
     e.preventDefault();
     $('#'+scrollID).removeAttr("style")
@@ -105,9 +105,11 @@ jQuery( document ).ready( function() {
       others.forEach( other =>{
         other.classList.remove("hidden");
       });
-
-      $(e.target).text("Show Duplicates")
-      $(e.target).removeClass('dupes-visable')
+      
+      dupeButton.forEach( button =>{
+        button.textContent="Show Duplicates"
+        button.classList.remove('dupes-visable')
+      });
       
     }
 
@@ -124,8 +126,10 @@ jQuery( document ).ready( function() {
         dupe.classList.remove("hidden");
       });
       
-      $(e.target).text("Show All Requests")
-      $(e.target).addClass('dupes-visable')
+      dupeButton.forEach( button =>{
+        button.textContent="Show All Requests"
+        button.classList.add('dupes-visable')
+      });
     }
 
   });
