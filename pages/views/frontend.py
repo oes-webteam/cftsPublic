@@ -55,7 +55,6 @@ def frontend(request):
         request.session.set_expiry(0)
         
         # grab client cert form the request create user hash, ignore if no cert info is found in request
-        
         try:
             certInfo = getCert(request)
             cftsUser = getOrCreateUser(request, certInfo)
@@ -79,6 +78,10 @@ def frontend(request):
             if certInfo['status'] == "buggedPKI":
                 rc['buggedPKI'] = True
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 36e2a61e4c89c678271ae8805ca0675fa002299b
         # django dev server doesn't grab certs
         except KeyError:
             if request.user.is_authenticated:

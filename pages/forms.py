@@ -5,7 +5,7 @@ from pages.models import User, Network, Email
 from django.forms import ModelForm
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Div, Submit, HTML
-from cfts.settings import NETWORK
+from cfts.settings import NETWORK, DEBUG
 
 class userLogInForm(AuthenticationForm):
     def __init__(self, *args, **kwargs):
@@ -39,15 +39,22 @@ class NewUserForm(UserCreationForm):
         return user
     
     def check_duplicate(self, form, certInfo):
-        if certInfo['status'] == "validPKI":
-            matchingUsers = User.objects.filter(user_identifier=certInfo['userHash'])
-            if matchingUsers.count() != 0:
-                self.add_error(None, "Your " + NETWORK + " token is already tied to an account. If you forgot your password you can request a reset from the login page. If you believe this to be an error please contact us at the link below.")
+        if DEBUG == False:
+            if certInfo['status'] == "validPKI":
+                matchingUsers = User.objects.filter(user_identifier=certInfo['userHash'])
+                if matchingUsers.count() != 0:
+                    dupe = False
+                    for user in matchingUsers:
+                        if user.auth_user != None:
+                            dupe = True
+                    
+                    if dupe == True:
+                        self.add_error(None, "Your " + NETWORK + " token is already tied to an account. If you forgot your password you can request a reset from the login page. If you believe this to be an error please contact us at the link below.")
 
-        else:
-            matchingUsers = User.objects.filter(source_email__address=form.get('email'))
-            if matchingUsers.count() != 0:
-                self.add_error(None, "You email is already tied to an account. If you forgot your password you can request a reset from the login page. If you believe this to be an error please contact us at the link below.")
+            else:
+                matchingUsers = authUser.objects.filter(email=form.get('email'))
+                if matchingUsers.count() != 0:
+                    self.add_error(None, "You email is already tied to an account. If you forgot your password you can request a reset from the login page. If you believe this to be an error please contact us at the link below.")
 class userInfoForm(ModelForm):
     source_email = forms.EmailField(max_length=75, required=True)
     phone = forms.CharField(max_length=50, required=True)
