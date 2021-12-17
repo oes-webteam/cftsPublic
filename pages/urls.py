@@ -44,7 +44,9 @@ urlpatterns = [
           views.createZip, name='create-zip'),
      path('getFile/uploads/<str:fileID>/<str:fileName>',
           views.getFile, name='getFile'),
-     path('updateFileReview/<uuid:fileID>/<uuid:rqstID>', views.updateFileReview, name='reviewFile'),
+     path('updateFileReview/<uuid:fileID>/<uuid:rqstID>/', views.updateFileReview, name='reviewFile'),
+     path('updateFileReview/<uuid:fileID>/<uuid:rqstID>/<str:quit>', views.updateFileReview, name='reviewFile'),
+     path('removeFileReviewer/<int:stage>', views.removeFileReviewer, name='removeReview'),
 
      # scan
      path('scan/<str:pullZip>', views.scan, name="scan"),

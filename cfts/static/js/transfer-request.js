@@ -372,6 +372,88 @@ const sendUnrejectRequest = (data) => {
     rejectFormCallback( rejectDialog );
   })
 
+  // supersuer button to remove users from file review
+  $('.request-remove').click(e => {
+    e.preventDefault();
+
+    if($(e.target).hasClass('selected-remove')){
+      console.log("selcted Remove clicked")
+
+      const $checkedItems = $( "[name='fileSelection']:checked");
+
+      if ($checkedItems.length == 0){
+        alert( ' Select 1 or more files to remove reviewer from.' );
+      }
+      
+      else{
+        let data = [];
+
+        if($(e.target).hasClass('one-eye')){
+          stage = 1
+        }
+        else if($(e.target).hasClass('two-eye')){
+          stage = 2
+        }
+
+        $checkedItems.each( i => {
+          data.push({ 
+            'fileID': $checkedItems[i].id.slice(4), 
+          }) 
+        });
+
+        sendRemoveRequest(data, stage)
+      }
+      
+    }
+
+    else{
+      console.log("request remove clicked")
+      const checkboxes = Array.from( document.querySelectorAll( 'input[type="checkbox"]' ) );
+      checkboxes.forEach( checkbox =>{
+        checkbox.removeAttribute("hidden");
+      });
+  
+      $(e.target).text("remove Selected")
+      $(e.target).addClass('selected-remove')
+    }
+
+  });
+
+  const sendRemoveRequest = (data, stage) => {
+    console.log(stage)
+    let csrftoken = getCookie('csrftoken');
+
+    let id_list = [];
+      data.forEach( ( f ) => {
+        id_list.push( f.fileID ) 
+      });
+
+      const postData = {
+        'id_list': id_list
+      };
+
+      const removeReviewers = $.post( '/removeFileReviewer/'+ stage, postData, 'json' ).then( 
+        // success
+        function( resp, status ) {
+          console.log( 'SUCCESS' );        
+          // notifyUserSuccess("Reviewer removed Sccessfully")
+          $( "#forceReload" ).submit();
+        },
+        // fail 
+        function( resp, status ) {
+          console.log( 'FAIL' );
+
+          alert("Failed to remove reviewer, send error message to web team.")
+          responseText = resp.responseText
+          errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"))
+
+          notifyUserError("Error removing reviewer, send error message to web team: " + errorInfo)
+           //console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
+          // console.log( 'Response status: ' + status );
+        }
+      );
+    
+  };
   // RUN THIS STUFF NOW THAT THE PAGE IS LOADED
   enableGroupSelection( 'input[type="checkbox"]' )
 

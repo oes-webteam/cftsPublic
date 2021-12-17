@@ -1,53 +1,53 @@
-﻿{% load static %}
+{% load static %}
 {% load util %}
 
 {% block request %}
-            <div class="col-12">
-                <a class="card bg-light {% if request.pull != None %}pulled {% endif %} {% if request.pull.centcom_pull == True %}centcom{% endif %}" id="{{request.request_id}}" href="{% url 'transfer-request' request.request_id %}" request_hash="{{request.request_hash}}">
-                    <div class="card-body request-header {% if request.pull != None %} pending{% endif %} {% if request.centcom_pull %}centcom{% endif %}">
-                        <h5 class="card-title" style="width: 75%;">{%if request.is_centcom%}<strong>{%endif%}{{ request.user }}{%if request.is_centcom%}</strong>{%endif%}</h5>
-                        <p class="request-submitted card-subtitle mb-2 text-muted">Submitted: {{ request.date_created|date:'db'|upper }} @ {{ request.date_created|time:'Hi' }}</p>
-                        
-                        {% if request.comments != "" %}
-                            <p class="card-text" style="color: blue;">
-                                Comments: {{ request.comments|linebreaksbr|truncatechars:83 }}
-                            </p>
-                        {% endif %}
+<div class="col-12">
+    <a class="card bg-light {% if request.pull != None %}pulled {% endif %} {% if request.pull.centcom_pull == True %}centcom{% endif %}" id="{{request.request_id}}" href="{% url 'transfer-request' request.request_id %}" request_hash="{{request.request_hash}}">
+        <div class="card-body request-header {% if request.pull != None %} pending{% endif %} {% if request.centcom_pull %}centcom{% endif %}">
+            <h5 class="card-title" style="width: 75%;">{%if request.is_centcom%}<strong>{%endif%}{{ request.user }}{%if request.is_centcom%}</strong>{%endif%}</h5>
+            <p class="request-submitted card-subtitle mb-2 text-muted">Submitted: {{ request.date_created|date:'db'|upper }} @ {{ request.date_created|time:'Hi' }}</p>
+            
+            {% if request.comments != "" %}
+                <p class="card-text" style="color: blue;">
+                    Comments: {{ request.comments|linebreaksbr|truncatechars:83 }}
+                </p>
+            {% endif %}
 
-                        {% if request.destFlag %}
-                            <p class="card-text" style="color: red;">
-                                Warnings: 
-                                {% if request.destFlag %}Submitter is not the primary destination{% endif %}
-                            </p>
-                        {% endif %}
-                        
-                        {% if request.pull != None or request.ready_to_pull != False %}{% else %}<h6 class="ml-3">{{request.needs_review}} file{{ request.needs_review|pluralize:" needs,s need" }} to be reviewed</h6>{% endif %}
-                        <ul class="{% if request.pull != None %}pending {% endif %}{% if file.rejection_reason != None %}rejected {% endif %} mb-5">
-                            {% for file in request.files.all|slice:":4" %}
-                                <li class="m-2">
-                                    <p class="card-text {% if file.rejection_reason != None %} rejected {% else %} not-rejected {% endif %}" title="{{ file }}">
-                                        {% if file.is_pii or file.is_centcom_info %}
-                                            <span title="PII: {{ file.is_pii }}&#10;CENTCOM Info: {{ file.is_centcom_info }}">🔒</span>
-                                        {% endif %}
-                                        {{ file|truncatechars:30 }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</p>
-                                </li>
-                            {% endfor %}
-                            {% if request.files.count > 4 %}
-                                <li class="m-2">
-                                    <p class="card-text ">
-                                        {{request.files.count|add:"-4"}} more files...
-                                    </p>
-                                </li>
+            {% if request.destFlag %}
+                <p class="card-text" style="color: red;">
+                    Warnings: 
+                    {% if request.destFlag %}Submitter is not the primary destination{% endif %}
+                </p>
+            {% endif %}
+            
+            {% if request.pull != None or request.ready_to_pull != False %}{% else %}<h6 class="ml-3">{{request.needs_review}} file{{ request.needs_review|pluralize:" needs,s need" }} to be reviewed</h6>{% endif %}
+            <ul class="{% if request.pull != None %}pending {% endif %}{% if file.rejection_reason != None %}rejected {% endif %} mb-5">
+                {% for file in request.files.all|slice:":4" %}
+                    <li class="m-2">
+                        <p class="card-text {% if file.rejection_reason != None %} rejected {% else %} not-rejected {% endif %}" title="{{ file }}">
+                            {% if file.is_pii or file.is_centcom_info %}
+                                <span title="PII: {{ file.is_pii }}&#10;CENTCOM Info: {{ file.is_centcom_info }}">🔒</span>
                             {% endif %}
-                        </ul>
-                        <div class="card-bottom">
-                            {% if request.is_dupe %}<button href="#" class="btn btn-info show-dupe" request_hash="{{request.request_hash}}">Show Duplicates</button> {% else %}{% endif %}
-                        </div>
-                        <h6 class="review-count">{{request.files.count}}</h6><svg class="file-icon" xmlns="http://www.w3.org/2000/svg" width="25" height="24" fill="currentColor" class="bi bi-file-earmark-text-fill" viewBox="0 0 16 16">
-                            <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0zM9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1zM4.5 9a.5.5 0 0 1 0-1h7a.5.5 0 0 1 0 1h-7zM4 10.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm.5 2.5a.5.5 0 0 1 0-1h4a.5.5 0 0 1 0 1h-4z"/>
-                        </svg>
-                    </div>
-                </a>
+                            {{ file|truncatechars:30 }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</p>
+                    </li>
+                {% endfor %}
+                {% if request.files.count > 4 %}
+                    <li class="m-2">
+                        <p class="card-text ">
+                            {{request.files.count|add:"-4"}} more files...
+                        </p>
+                    </li>
+                {% endif %}
+            </ul>
+            <div class="card-bottom">
+                {% if request.is_dupe %}<button href="#" class="btn btn-info show-dupe" request_hash="{{request.request_hash}}">Show Duplicates</button> {% else %}{% endif %}
             </div>
+            <h6 class="review-count">{{request.files.count}}</h6><svg class="file-icon" xmlns="http://www.w3.org/2000/svg" width="25" height="24" fill="currentColor" class="bi bi-file-earmark-text-fill" viewBox="0 0 16 16">
+                <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0zM9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1zM4.5 9a.5.5 0 0 1 0-1h7a.5.5 0 0 1 0 1h-7zM4 10.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm.5 2.5a.5.5 0 0 1 0-1h4a.5.5 0 0 1 0 1h-4z"/>
+            </svg>
+        </div>
+    </a>
+</div>
 {% endblock %}
     

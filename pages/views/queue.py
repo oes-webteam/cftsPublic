@@ -3,6 +3,7 @@
 from email import generator
 import random
 import datetime
+from django.contrib import messages
 from django.db.models.expressions import Subquery, When
 from django.db.models.fields import IntegerField
 import pytz
@@ -24,7 +25,7 @@ from pages.views.auth import superUserCheck, staffCheck
 
 # responses
 from django.shortcuts import redirect, render, reverse
-from django.http import JsonResponse, FileResponse, response  # , HttpResponse,
+from django.http import JsonResponse, FileResponse, response, HttpResponse
 
 # model/database stuff
 from pages.models import *
@@ -400,7 +401,7 @@ def getFile(request, fileID, fileName):
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
-def updateFileReview(request, fileID, rqstID):
+def updateFileReview(request, fileID, rqstID, quit="None"):
     rqst = Request.objects.get(request_id=rqstID)
     file = File.objects.get(file_id=fileID)
     open_file = False
@@ -409,12 +410,23 @@ def updateFileReview(request, fileID, rqstID):
         file.user_oneeye = request.user
         open_file = True
     elif file.user_oneeye == request.user and file.date_oneeye == None:
-        file.date_oneeye = timezone.now()
+        if quit == "True":
+            file.user_oneeye = None
+            if file.user_twoeye != None:
+                file.user_oneeye = file.user_twoeye
+                file.date_oneeye = file.date_twoeye
+                file.user_twoeye = None
+                file.date_twoeye = None
+        else:
+            file.date_oneeye = timezone.now()
     elif file.user_twoeye == None:
         file.user_twoeye = request.user
         open_file = True
     elif file.user_twoeye == request.user and file.date_twoeye == None:
-        file.date_twoeye = timezone.now()
+        if quit == "True":
+            file.user_twoeye = None
+        else:
+            file.date_twoeye = timezone.now()
     else:
         return redirect('transfer-request' , id=rqstID)
 
@@ -434,3 +446,25 @@ def updateFileReview(request, fileID, rqstID):
         return redirect('/transfer-request/' + str(rqstID) + '?' + str(fileID))
     else:
         return redirect('transfer-request' , id=rqstID)
+
+
+@login_required
+@user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)
+def removeFileReviewer(request, stage):
+    post = dict(request.POST.lists())
+
+    id_list = post['id_list[]']
+
+    files = File.objects.filter(file_id__in=id_list)
+
+    try:
+        if stage == 1:
+            files.update(user_oneeye=None, date_oneeye=None)
+            messages.success(request, 'Selected files have had their one eye reviewer removed')
+        elif stage == 2:
+            files.update(user_twoeye=None, date_twoeye=None)
+            messages.success(request, 'Selected files have had their two eye reviewer removed')
+    except:
+        messages.error(request, 'Good job, you broke it. Something went wrong')
+
+    return HttpResponse({'response': 'Selected files have had their ' + str(stage) + ' eye review removed'})

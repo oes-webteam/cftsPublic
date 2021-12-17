@@ -1,4 +1,4 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 {% load util %}
 
@@ -63,8 +63,6 @@
                                 <button class="btn btn-primary pull-button{% if network.pullable == 0 %} disabled{% endif %}" id="pull{{network.name}}">Create {{ network.name }} Pull</button> 
                                 <!-- <button class="btn btn-warning pull-button centcom{% if network.centcom.count == 0 %} disabled{% endif %}" id="pull{{network.name}}">Pull only Centcom</button>  -->
 
-                                
-
                             {% if network.last_pull.count > 0 %}
                                 {% for lp in network.last_pull %}
                                     <a class="btn btn-primary download-button" id="dl{{network.name}}"
@@ -77,7 +75,6 @@
                         </div>
 
                         <form class="queue-form">
-                            
                             {% if network.centcom > 0 %}
                                 <br>
                                 <h4 class="org-header">CENTCOM Requests ({{network.centcom}}):</h4>

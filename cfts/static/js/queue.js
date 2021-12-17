@@ -97,13 +97,13 @@ var dupeButton = document.querySelectorAll('.show-dupe')
       console.log("hide dupes")
 
       const dupes = Array.from( document.querySelectorAll( 'a[request_hash="'+$( e.target ).attr('request_hash')+'"]' ) );
-      const others = Array.from( document.querySelectorAll( 'a.card' ) );
+      const others = Array.from( document.querySelectorAll( 'div.col-12' ) );
       dupes.forEach( dupe =>{
         dupe.classList.remove("dupe");
       });
 
       others.forEach( other =>{
-        other.classList.remove("hidden");
+        other.classList.remove("d-none");
       });
       
       dupeButton.forEach( button =>{
@@ -118,12 +118,12 @@ var dupeButton = document.querySelectorAll('.show-dupe')
       const dupes = Array.from( document.querySelectorAll( 'a[request_hash="'+$( e.target ).attr('request_hash')+'"]') );
       const others = Array.from( document.querySelectorAll( 'a.card' ) );
       others.forEach( other =>{
-        other.classList.add("hidden");
+        other.parentElement.classList.add("d-none");
       });
 
       dupes.forEach( dupe =>{
         dupe.classList.add("dupe");
-        dupe.classList.remove("hidden");
+        dupe.parentElement.classList.remove("d-none");
       });
       
       dupeButton.forEach( button =>{
