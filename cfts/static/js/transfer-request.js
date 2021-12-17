@@ -412,7 +412,10 @@ const sendUnrejectRequest = (data) => {
       checkboxes.forEach( checkbox =>{
         checkbox.removeAttribute("hidden");
       });
-  
+      const reviewers = Array.from( document.querySelectorAll('.reviewers'))
+      reviewers.forEach( elem =>{
+        elem.classList.remove('d-none')
+      })
       $(e.target).text("remove Selected")
       $(e.target).addClass('selected-remove')
     }

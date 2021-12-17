@@ -411,12 +411,14 @@ def updateFileReview(request, fileID, rqstID, quit="None"):
         open_file = True
     elif file.user_oneeye == request.user and file.date_oneeye == None:
         if quit == "True":
-            file.user_oneeye = None
             if file.user_twoeye != None:
-                file.user_oneeye = file.user_twoeye
-                file.date_oneeye = file.date_twoeye
-                file.user_twoeye = None
-                file.date_twoeye = None
+                    file.user_oneeye = file.user_twoeye
+                    file.date_oneeye = file.date_twoeye
+                    file.user_twoeye = None
+                    file.date_twoeye = None
+            else:
+                file.user_oneeye = None
+                file.date_oneeye = None
         else:
             file.date_oneeye = timezone.now()
     elif file.user_twoeye == None:
@@ -459,7 +461,16 @@ def removeFileReviewer(request, stage):
 
     try:
         if stage == 1:
-            files.update(user_oneeye=None, date_oneeye=None)
+            for file in files:
+                if file.user_twoeye != None:
+                    file.user_oneeye = file.user_twoeye
+                    file.date_oneeye = file.date_twoeye
+                    file.user_twoeye = None
+                    file.date_twoeye = None
+                else:
+                    file.user_oneeye = None
+                    file.date_oneeye = None
+                file.save()
             messages.success(request, 'Selected files have had their one eye reviewer removed')
         elif stage == 2:
             files.update(user_twoeye=None, date_twoeye=None)

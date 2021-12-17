@@ -81,7 +81,7 @@
                                 {% endif %}
                             </td>
                             <td style="width: 65%;"><a class="{% if file.rejection_reason != None %}rejected {% endif %} mr-2"title="{{ file }}" id="{{file.file_id}}" href="/getFile/{{file.file_object}}">{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</a>
-                            {% if user.is_superuser %}<strong><span class="reviewers mr-2">1 Eye:  {{file.user_oneeye}}</span> <span class="reviewers">2 Eye:  {{file.user_twoeye}}</span></strong>{% endif %}
+                            {% if user.is_superuser %}<strong><span class="reviewers mr-2 d-none">1 Eye:  {{file.user_oneeye}}</span> <span class="reviewers d-none">2 Eye:  {{file.user_twoeye}}</span></strong>{% endif %}
                             </td>
                             <td>
                                 {% if file.rejection_reason != None %}
