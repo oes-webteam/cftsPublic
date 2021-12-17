@@ -184,6 +184,7 @@ class File(models.Model):
   user_twoeye = models.ForeignKey(
     settings.AUTH_USER_MODEL, related_name='file_user_twoeye', on_delete=models.DO_NOTHING, null=True, blank=True)
   pull = models.ForeignKey(Pull, on_delete=models.DO_NOTHING, default=None, blank=True, null=True)
+  scan_results = models.JSONField(null=True, blank=True)
 
   class Meta:
     ordering = [F('file_name').asc(nulls_last=True)]

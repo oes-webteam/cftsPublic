@@ -14,10 +14,8 @@ from django.shortcuts import render, redirect
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.cache import never_cache
 from django.core import serializers
-from django.utils import cache
 
-from pages.models import User
-
+from cfts import settings as Settings
 # db/model stuff
 from pages.models import *
 
