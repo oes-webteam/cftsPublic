@@ -13,10 +13,6 @@ let addEmail = document.getElementById( "addEmail" );
   $("#userEmail").val(email) 
   $("#organization").val(org) 
 
-
-/* ************************************* */
-/* Get classifications from Django admin */
-/* ****************************** ****** */
   //Add the CSRF token to ajax requests
   $.ajaxSetup({
     beforeSend: function (xhr, settings) {
@@ -24,26 +20,10 @@ let addEmail = document.getElementById( "addEmail" );
         },
   });
 
-  // ajaxSettings = {
-  //   url: "api-getclassifications",
-  //   method: "GET",
-  //   contentType: false,
-  //   processData: false,
-  // };
-  // $.ajax(ajaxSettings).done(successHandler);
-    
-
   $('.network-switch').click(function(){
     let destEmail = $(this).attr('email')
     $('#targetEmail').val(destEmail)
   })
-
-  // function successHandler(data){
-  //   for(obj in data){
-  //     classifications.push(data[obj].fields.abbrev)
-  //   }
-  // }
-
 
 /* ********************************************************* */
 /* ADD FILES TO THE QUEUE WHEN ADDED FROM FIELD OR DROP ZONE */
@@ -159,23 +139,6 @@ const displayFileQueue = () => {
 
       let fileInfoDiv = document.createElement( "div" );
       fileInfoDiv.classList.add( "form-row" );
-      
-      // removing classification from files (JIRA ticket CFTS-371)
-      // let selectClass = document.createElement( "select" );
-      // selectClass.classList.add( "file-classification", "form-control", "col" );
-      // selectClass.setAttribute( "name", "classification" + i );
-      // selectClass.setAttribute( "id", "classification" + i );
-      // selectClass.required = true;
-
-      // classifications.forEach(  c => {
-      //   let option = document.createElement( "option" );
-      //   option.setAttribute( "value", c );
-      //   if( fileQueue[i] && fileQueue[i].cls == c ) option.selected = true;
-      //   option.appendChild( document.createTextNode( c ) );
-      //   selectClass.appendChild( option );
-      // });
-
-      // fileInfoDiv.appendChild( selectClass );
 
       let toEncrypt = document.createElement( "input" );
       toEncrypt.setAttribute( "type", "checkbox" );

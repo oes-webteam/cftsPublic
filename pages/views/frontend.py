@@ -1,6 +1,7 @@
 # ====================================================================
 # core
 from datetime import date
+from django.conf import Settings
 from django.core import paginator
 from django.contrib import messages
 
@@ -53,35 +54,23 @@ def frontend(request):
         request.session.set_expiry(0)
         
         # grab client cert form the request create user hash, ignore if no cert info is found in request
-        try:
-            certInfo = getCert(request)
-            cftsUser = getOrCreateUser(request, certInfo)
+        certInfo = getCert(request)
+        cftsUser = getOrCreateUser(request, certInfo)
 
-            if cftsUser == None:
-                return redirect("/login")
-            elif cftsUser.update_info == True:
-                return redirect("/user-info")
-            
-            checkBan(cftsUser)
+        if cftsUser == None:
+            return redirect("/login")
+        elif cftsUser.update_info == True:
+            return redirect("/user-info")
+        
+        checkBan(cftsUser)
 
-            nets = getDestinationNetworks(request, cftsUser)
-            rc = {'networks': nets, 'resources': resources, 'user': cftsUser, 'browser': browser}
-
-        # django dev server doesn't grab certs
-        except KeyError:
-            if request.user.is_authenticated:
-                rc = {'networks': nets, 'resources': resources,'browser': browser,}
-            else:
-                return redirect('login')
+        nets = getDestinationNetworks(request, cftsUser)
+        rc = {'networks': nets, 'submission_disabled': Settings.DISABLE_SUBMISSIONS, 'resources': resources, 'user': cftsUser, 'browser': browser}
 
         return render(request, 'pages/frontend.html', {'rc': rc})
     
     except KeyError:
         return redirect('consent')
-
-def getClassifications(request):
-    classifications = serializers.serialize('json',Classification.objects.only('abbrev'))
-    return HttpResponse(classifications, content_type='application/json')
 
 def userRequests(request):
     resources = ResourceLink.objects.all()
@@ -99,7 +88,6 @@ def userRequests(request):
     rc = {'requests': pageObj,'resources': resources, 'firstName': cftsUser.name_first, 'lastName': cftsUser.name_last}
     
     return render(request, 'pages/userRequests.html', {'rc': rc})
-
 
 def requestDetails(request, id):
     resources = ResourceLink.objects.all()
