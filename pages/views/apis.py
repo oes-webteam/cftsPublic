@@ -30,6 +30,7 @@ from pages.models import *
 
 from pages.views.queue import createZip, updateFileReview
 from pages.views.auth import superUserCheck, staffCheck
+from pages.views.scan import scan
 
 import hashlib
 
@@ -363,21 +364,21 @@ def process ( request ):
         if form_data.get( 'organization' ) =="CENTCOM HQ":
             org = "HQ"
             
-        request = Request(
+        rqst = Request(
             user = cftsUser,
             network = destinationNet,
             comments = form_data.get( 'comments' ),
             org = org,
             is_centcom = form_data.get( 'isCentcom' )
         )
-        request.save()
+        rqst.save()
 
         requestData += form_data.get( 'network' )
 
-        request.target_email.add( *target_list )
+        rqst.target_email.add( *target_list )
         if form_data.get( 'network' ) == "NIPR":
             if form_data.get('userEmail').split("@")[0] not in destSplit_list:
-                request.destFlag = True
+                rqst.destFlag = True
 
         fileList=[]
 
@@ -422,7 +423,7 @@ def process ( request ):
             this_file.file_name = str(this_file.file_object.name).split("/")[-1]
             this_file.save()
 
-            request.files.add( this_file )
+            rqst.files.add( this_file )
             fileList.append(str(f))
 
         fileList.sort()
@@ -434,15 +435,18 @@ def process ( request ):
         requestHash = hashlib.md5()
         requestHash.update(requestData.encode())
         requestHash = requestHash.hexdigest()
-        request.request_hash = requestHash
+        rqst.request_hash = requestHash
 
         if Request.objects.filter(pull__date_complete=None, request_hash=requestHash):
-            request.is_dupe=True
+            rqst.is_dupe=True
 
-        request.is_submitted = True
-        request.save()
+        rqst.is_submitted = True
+        rqst.save()
 
-        resp = {'status': 'success', 'request_id': request.pk}
+        # scan all files in request, append results to file
+        scan(rqst.request_id)
+
+        resp = {'status': 'success', 'request_id': rqst.pk}
 
     else:
         resp = {'status': 'fail', 'reason': 'bad-request-type',

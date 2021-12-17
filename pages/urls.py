@@ -49,7 +49,7 @@ urlpatterns = [
      path('removeFileReviewer/<int:stage>', views.removeFileReviewer, name='removeReview'),
 
      # scan
-     path('scan/<str:pullZip>', views.scan, name="scan"),
+     path('scan/<uuid:rqst_id>', views.scan, name="scan"),
 
      # pulls
      path('pulls', views.pulls, name='pulls'),

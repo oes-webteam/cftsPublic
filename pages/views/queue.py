@@ -444,7 +444,7 @@ def updateFileReview(request, fileID, rqstID, quit="None"):
         rqst.ready_to_pull = ready_to_pull
         rqst.save()
 
-    if open_file == True:
+    if open_file == True and cftsSettings.DEBUG == False:
         return redirect('/transfer-request/' + str(rqstID) + '?' + str(fileID))
     else:
         return redirect('transfer-request' , id=rqstID)

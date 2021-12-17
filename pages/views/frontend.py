@@ -65,7 +65,7 @@ def frontend(request):
         checkBan(cftsUser)
 
         nets = getDestinationNetworks(request, cftsUser)
-        rc = {'networks': nets, 'submission_disabled': Settings.DISABLE_SUBMISSIONS, 'resources': resources, 'user': cftsUser, 'browser': browser}
+        rc = {'networks': nets, 'submission_disabled': Settings.DISABLE_SUBMISSIONS, 'debug': str(Settings.DEBUG), 'resources': resources, 'user': cftsUser, 'browser': browser}
 
         return render(request, 'pages/frontend.html', {'rc': rc})
     

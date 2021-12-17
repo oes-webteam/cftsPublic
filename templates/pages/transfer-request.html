@@ -71,17 +71,19 @@
             <div class="col-6">
                 <div class="card">
                     <table>
-                        {% for file in rqst.files.all %}
+                    {% for file in rqst.files.all %}
                         <tr class="file-row">
-                            <td>
+                            {% comment %} <td>
+                                
+                            </td> {% endcomment %}
+                            <td style="width: 65%;">
                                 <input type="checkbox" name="fileSelection" id="chk_{{ file.file_id }}" request_id="{{ rqst.request_id }}" request_email="{{ rqst.user.email }}" file_name="{{ file }}" {% if file.rejection_reason != None %} rejected {% else %} not-rejected {% endif %} hidden/>
                                 <!-- Show encrypt flag? -->
                                 {% if file.is_pii%}
                                 <span title="PII: {{ file.is_pii }}&#10;">🔒</span>
                                 {% endif %}
-                            </td>
-                            <td style="width: 65%;"><a class="{% if file.rejection_reason != None %}rejected {% endif %} mr-2"title="{{ file }}" id="{{file.file_id}}" href="/getFile/{{file.file_object}}">{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</a>
-                            {% if user.is_superuser %}<strong><span class="reviewers mr-2 d-none">1 Eye:  {{file.user_oneeye}}</span> <span class="reviewers d-none">2 Eye:  {{file.user_twoeye}}</span></strong>{% endif %}
+                                <a class="{% if file.rejection_reason != None %}rejected {% endif %} mr-2"title="{{ file }}" id="{{file.file_id}}" href="/getFile/{{file.file_object}}">{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</a>
+                                {% if user.is_superuser %}<strong><span class="reviewers mr-2 d-none">1 Eye:  {{file.user_oneeye}}</span> <span class="reviewers d-none">2 Eye:  {{file.user_twoeye}}</span></strong>{% endif %}
                             </td>
                             <td>
                                 {% if file.rejection_reason != None %}
@@ -119,7 +121,13 @@
                                 {% endif %}
                             </td>
                         </tr>
-                        {% endfor %}
+                        {% if file.rejection_reason == None %}
+                            {% if file.user_oneeye == user and file.date_oneeye == None or file.user_twoeye == user and file.date_twoeye == None%}
+                                {% include 'partials/Scan_partials/scanResults.html' with results=file.scan_results %}
+                            {% endif %}
+                        {% endif %}
+                        
+                    {% endfor %}
                     </table>
                 </div>
             </div>

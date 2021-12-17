@@ -20,8 +20,6 @@ from django.http import JsonResponse
 # pdf parsing
 from io import StringIO
 import PyPDF2
-# cfts settings
-from cfts import settings as cftsSettings
 
 # db models
 from pages.models import *
@@ -34,154 +32,135 @@ logger = logging.getLogger('django')
 
 # ====================================================================
 
-@login_required
-@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
-@never_cache
-def scan(request,pullZip):
-    # request context
-    rc = {
-        'bodyText': 'Scan Tool'
-    }
+def scan(rqst_id):
+    files = Request.objects.get(request_id=rqst_id).files.all()
 
-    # POST
-    if request.method == 'POST':
+    scan_folder = settings.SCANTOOL_DIR+"\\scan_1"
 
-        extractPath = settings.SCANTOOL_DIR+"\\scan_1"
-
-        i = 2
-        while True:
-            if os.path.isdir(extractPath):
-                extractPath = settings.SCANTOOL_DIR+"\\scan_"+str(i)
-                i+=1
-            else:
-                break
-                
-        if pullZip !="none":
-            pullZip = os.path.join(cftsSettings.BASE_DIR,"pulls",pullZip)
-            zf = ZipFile(pullZip)
-            zf.extractall(extractPath)    
-            results = runScan(extractPath)
-
+    i = 2
+    while True:
+        if os.path.isdir(scan_folder):
+            scan_folder = settings.SCANTOOL_DIR+"\\scan_"+str(i)
+            i+=1
         else:
-            form_files = request.FILES
-            for i, f in enumerate(form_files.getlist("toScan")):
-                zf = ZipFile(f)
-                zf.extractall(extractPath)
-                results = runScan(extractPath)
+            break
+    #try:
+    for file in files:
+        os.makedirs(scan_folder)
+        shutil.copy(file.file_object.path, scan_folder)
+        results = runScan(scan_folder)
+        file.scan_results = results
+        file.save()
+        shutil.rmtree(scan_folder)
+    # except:
+    #     shutil.rmtree(scan_folder)
 
-        # clean up after yourself
-        shutil.rmtree(extractPath)
 
-        return render(request, 'partials/Scan_partials/scanResults.html', {'results': results})
-
-    # GET
-    if pullZip !="none":
-        return render(request, 'pages/scan.html', {'rc': rc, 'pullZip': pullZip })
-    else:
-        return render(request, 'pages/scan.html', {'rc': rc})
-    
-
-def runScan(extractPath):
+def runScan(scan_folder):
     scan_results = []
     fileList = []
     office_filetype_list = [".docx", ".dotx", ".xlsx",
                             ".xltx", ".pptx", ".potx", ".ppsx", ".onenote"]
     
-    scan_dir = os.path.abspath(extractPath)
+    # scan_dir = os.path.abspath(scan_folder)
 
+    with os.scandir(scan_folder) as files:
+        for file in files:
+            fileList.append(file.path)
+    
     # \cfts\scan should contain all the user folders from the zip file
     printBin = re.compile('printerSettings(\d+).bin')
     imgFiles = re.compile('(jpe?g|png|gif|bmp|emf)', re.IGNORECASE)
-    scanSkip = ["_email.txt", "_encrypt.txt", "_notes.txt"]
+    # scanSkip = ["_email.txt", "_encrypt.txt", "_notes.txt"]
 
-
-    for root, subdirs, files in os.walk(scan_dir):
-
-        for filename in files:            
-            fileList.append(root+"\\"+filename)
+    imgCount = 0
+    # if filename.split("\\")[-1] not in scanSkip:
     for filename in fileList:
-        imgCount = 0
-        if filename.split("\\")[-1] not in scanSkip:
-            if printBin.match(filename.split("\\")[-1]) == None:
-                try:
-                    file_results = None
-                    temp, ext = os.path.splitext(filename)
+        if printBin.match(filename.split("\\")[-1]) == None:
+            try:
+                file_results = None
+                temp, ext = os.path.splitext(filename)
+                ext = ext.lower()
 
-                    if(ext in office_filetype_list):
-                        file_results = scanOfficeFile(filename)
+                if(ext in office_filetype_list):
+                    file_results = scanOfficeFile(filename)
 
-                        if file_results is not None:
-                            for result in file_results:
-                                try:
-                                    if imgFiles.match(result['file'].split(".")[-1]) == None:
-                                        if result['findings'] != ['File is corrupt. Cannot scan.']:
-                                            temp, ext = os.path.splitext(result['file'])    
-                                            if ext in office_filetype_list:
-                                                embedOffFilePath = os.path.dirname(filename)+"\\"+result['file'].split('\\')[-1]
-                                                shutil.move(result['file'], embedOffFilePath)
-                                                fileList.append(embedOffFilePath)
-                                    else:
-                                        imgCount+=1
-                                        result['image']=True
+                    if file_results is not None:
+                        for result in file_results:
+                            try:
+                                if imgFiles.match(result['file'].split(".")[-1]) == None:
+                                    if result['findings'] != ['File is corrupt. Cannot scan.']:
+                                        temp, ext = os.path.splitext(result['file'])
+                                        ext = ext.lower()
 
-                                except KeyError:
-                                    pass
-                                
-                        # clean up after yourself
-                        if os.path.isdir(os.path.dirname(filename)+"\\office"):
-                            shutil.rmtree(os.path.dirname(filename)+"\\office")
+                                        if ext in office_filetype_list:
+                                            embedOffFilePath = os.path.dirname(filename)+"\\"+result['file'].split('\\')[-1]
+                                            shutil.move(result['file'], embedOffFilePath)
+                                            fileList.append(embedOffFilePath)
+                                else:
+                                    imgCount+=1
+                                    result['image']=True
 
-                    elif(ext == '.pdf'):
-                        textFile = open(temp+".txt", "w", encoding="utf-8")
-                        with open(filename, 'rb') as pdf:
-                            pdfReader = PyPDF2.PdfFileReader(pdf)
-                            pages = pdfReader.pages
+                            except KeyError:
+                                pass
                             
-                            for page in pages:
-                                pageText = page.extractText()
-                                textFile.write("".join(pageText.split()))
-                                
-                            pdf.close()
+                    # clean up after yourself
+                    if os.path.isdir(os.path.dirname(filename)+"\\office"):
+                        shutil.rmtree(os.path.dirname(filename)+"\\office")
 
-                        textFile.close()
-                        text_path = os.path.join(temp+".txt")
-                        file_results = [scanFile(text_path)]
-                        if file_results[0] is not None:
-                            file_results[0]['file'] = filename
-                        else:
-                            file_results = None
+                elif(ext == '.pdf'):
+                    textFile = open(temp+".txt", "w", encoding="utf-8")
+                    with open(filename, 'rb') as pdf:
+                        pdfReader = PyPDF2.PdfFileReader(pdf)
+                        pages = pdfReader.pages
+                        
+                        for page in pages:
+                            pageText = page.extractText()
+                            textFile.write("".join(pageText.split()))
+                            
+                        pdf.close()
 
-                    elif(ext == '.zip'):
-                        fileZip = ZipFile(os.path.join(root,filename))
-                        extractDir = os.path.dirname(filename)+"\\extracted_files\\"+filename.split("\\")[-1]
-                        fileZip.extractall(extractDir)
-                        for zipRoot, zipDirs, zipFiles in os.walk(extractDir):
-                            for file in zipFiles:
-                                fileList.append(zipRoot+"\\"+file)
-
+                    textFile.close()
+                    text_path = os.path.join(temp+".txt")
+                    file_results = [scanFile(text_path)]
+                    if file_results[0] is not None:
+                        file_results[0]['file'] = filename
                     else:
-                        file_results = [scanFile(filename)]
-                        if file_results[0] is not None:
-                            if imgFiles.match(file_results[0]['file'].split(".")[-1]) != None:
-                                imgCount+=1
-                        else:
-                            file_results = None
+                        file_results = None
 
-                except Exception as e:
-                    file_results = []
-                    result = {
-                        'file': filename,
-                        'findings': [str('Error in scan: ' + repr(e))]
-                        }
-                    file_results.append(result)
+                elif(ext == '.zip'):
+                    fileZip = ZipFile(filename)
+                    extractDir = os.path.dirname(filename)+"\\extracted_files\\"+filename.split("\\")[-1]
+                    fileZip.extractall(extractDir)
+                    for zipRoot, zipDirs, zipFiles in os.walk(extractDir):
+                        for file in zipFiles:
+                            fileList.append(zipRoot+"\\"+file)
 
-                if(file_results is not None):
-                    result = {}
-                    result['file'] = filename
-                    result['found'] = file_results
-                    if imgCount > 0:
-                        result['imgCount'] = imgCount
-                    scan_results.append(result)                    
+                else:
+                    file_results = [scanFile(filename)]
+                    if file_results[0] is not None:
+                        if imgFiles.match(file_results[0]['file'].split(".")[-1]) != None:
+                            imgCount+=1
+                    else:
+                        file_results = None
+
+            except Exception as e:
+                file_results = []
+                result = {
+                    'file': filename,
+                    'findings': [str('Error in scan: ' + repr(e))]
+                    }
+                file_results.append(result)
+
+            if(file_results is not None):
+                result = {}
+                result['file'] = filename
+                result['found'] = file_results
+                if imgCount > 0:
+                    result['imgCount'] = imgCount
+                    imgCount = 0
+                    result['image']=True
+                scan_results.append(result)
 
     return scan_results
 
@@ -254,14 +233,3 @@ def scanFile(text_file):
         result = {'file': text_file, 'findings': ['Unable to scan file.']}
 
     return result
-
-def cleanup(folder):
-    for oldfile in os.listdir(folder):
-        old = os.path.join(folder, oldfile)
-        try:
-            if os.path.isfile(old) or os.path.islink(old):
-                os.unlink(old)
-            elif os.path.isdir(old):
-                shutil.rmtree(old)
-        except Exception as e:
-            print('Failed to delete %s. Reason: %s' % (old, e))
