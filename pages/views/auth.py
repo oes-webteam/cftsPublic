@@ -366,10 +366,7 @@ def usernameLookup(request):
             if userMatchingEmail.exists:
                 for user in userMatchingEmail:
                     if check_password(form.cleaned_data['password'], user.password):
-                        cftsUser = User.objects.get(auth_user=user)
-                        usernameLookupFeedback = Feedback(title="Username Lookup: " + str(user.last_name) + ", " + str(user.first_name) + "(" + str(user.email) + ")", user=cftsUser, category="Username Lookup")
-                        usernameLookupFeedback.save()
-                        messages.success(request, "Username lookup request sent. An administrator will be in contact via the supplied email address")
+                        messages.success(request, "Username: " + user.username)
                         return render(request, template_name="authForms/usernameLookup.html", context={'resources': resources, "UsernameLookupForm": UsernameLookupForm})        
 
                 # password failed for all filtered users
