@@ -27,10 +27,10 @@ class EmailAdmin(admin.ModelAdmin):
     sortable_by = ('address','network')
 
 class PullAdmin(admin.ModelAdmin):
-    list_filter = ('network',)
-    list_display = (Pull.__str__, 'network', 'user_pulled', 'user_oneeye', 'user_twoeye')
-    search_fields = (Pull.__str__, 'network', 'user_pulled', 'user_oneeye', 'user_twoeye')
-    sortable_by = (Pull.__str__, 'network', 'user_pulled', 'user_oneeye', 'user_twoeye')
+    list_filter = ('network',('date_pulled', admin.DateFieldListFilter))
+    list_display = (Pull.__str__, 'network', 'date_pulled', 'user_oneeye', 'user_twoeye')
+    search_fields = ('network__name', 'date_pulled', 'user_oneeye__username', 'user_twoeye__username')
+    sortable_by = (Pull.__str__, 'network__name', 'date_pulled', 'user_oneeye__username', 'user_twoeye__username')
 
 # Register your models here.
 admin.site.register( Classification )

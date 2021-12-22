@@ -38,11 +38,10 @@ def consent(request):
     setConsentCookie(request)
     return render(request, 'pages/consent.html')
 
-def checkBan(request, cftsUser):
-    if cftsUser.banned == True:
-        if date.today() >= cftsUser.banned_until:
-            cftsUser.banned=False
-            cftsUser.save()
+def checkBan(cftsUser):
+    if cftsUser.banned == True and date.today() >= cftsUser.banned_until:
+        cftsUser.banned=False
+        cftsUser.save()
 
 @ensure_csrf_cookie
 @never_cache
@@ -56,63 +55,19 @@ def frontend(request):
         request.session.set_expiry(0)
         
         # grab client cert form the request create user hash, ignore if no cert info is found in request
-        
         try:
             certInfo = getCert(request)
+            cftsUser = getOrCreateUser(request, certInfo)
 
-            # empty cert, IIS is set to ignore certs
-            if certInfo['status'] == "empty":
-                if request.user.is_authenticated:
-                    cftsUser = getOrCreateUser(request, certInfo)
-
-                    if cftsUser == None:
-                        return redirect("/login")
-                    elif cftsUser.update_info == True:
-                        messages.info(request, "Update all required fields")
-                        return redirect("/user-info")
-
-                    nets = getDestinationNetworks(request, cftsUser)
-                    checkBan(request, cftsUser)
-                    
-                    rc = {'networks': nets, 'resources': resources, 'user': cftsUser, 'browser': browser}
-                else:
-                    return redirect('login')
+            if cftsUser == None:
+                return redirect("/login")
+            elif cftsUser.update_info == True:
+                return redirect("/user-info")
             
-            # got a cert!
-            else:
-                if certInfo['status'] == "buggedPKI":
-                    if request.user.is_authenticated:
-                        cftsUser = getOrCreateUser(request, certInfo)
+            checkBan(cftsUser)
 
-                        if cftsUser == None:
-                            return redirect("/login")
-                        elif cftsUser.update_info == True:
-                            messages.info(request, "Fill out all required fields.")
-                            return redirect("/user-info")
-
-                        nets = getDestinationNetworks(request, cftsUser)
-                        checkBan(request, cftsUser)
-
-                        rc = {'networks': nets, 'resources': resources,
-                            'cert': certInfo['cert'], 'userHash': certInfo['userHash'], 'user': cftsUser, 'browser': browser, 'buggedPKI': "true"}
-                    else:
-                        return redirect('login')
-
-                # and their cert info isn't bugged!
-                else:
-                    cftsUser = getOrCreateUser(request, certInfo)
-
-                    if cftsUser == None:
-                        return redirect("/login")
-                    elif cftsUser.update_info == True:
-                        messages.info(request, "Fill out all required fields.")
-                        return redirect("/user-info")
-
-                    nets = getDestinationNetworks(request, cftsUser)
-                    checkBan(request, cftsUser)
-
-                    rc = {'networks': nets, 'resources': resources,
-                        'cert': certInfo['cert'], 'userHash': certInfo['userHash'], 'user': cftsUser, 'browser': browser}
+            nets = getDestinationNetworks(request, cftsUser)
+            rc = {'networks': nets, 'resources': resources, 'user': cftsUser, 'browser': browser}
 
         # django dev server doesn't grab certs
         except KeyError:
