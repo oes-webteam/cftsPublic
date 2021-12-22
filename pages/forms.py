@@ -53,7 +53,7 @@ class NewUserForm(UserCreationForm):
                     if dupe == True:
                         self.add_error(None, "Your " + NETWORK + " token is already tied to an account. If you forgot your password you can request a reset from the login page. If you believe this to be an error please contact us at the link below.")
             else:
-                matchingUsers = User.objects.filter(source_email__address=form.get('email'))
+                matchingUsers = authUser.objects.filter(email=form.get('email'))
                 if matchingUsers.count() != 0:
                     self.add_error(None, "Your email is already tied to an account. If you forgot your password you can request a reset from the login page. If you believe this to be an error please contact us at the link below.")
 
