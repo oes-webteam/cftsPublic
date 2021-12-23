@@ -384,7 +384,7 @@ def process ( request ):
 
         # add files to the request
         file_info =  json.loads( form_data.get( 'fileInfo' ) )
-        print( form_files.getlist( "files" ) )
+        # print( form_files.getlist( "files" ) )
         for i, f in enumerate( form_files.getlist( "files" )):
             this_file = File(
                 file_object = f,
@@ -444,7 +444,10 @@ def process ( request ):
         rqst.save()
 
         # scan all files in request, append results to file
-        scan(rqst.request_id)
+        try:
+            scan(request, rqst.request_id)
+        except:
+            pass
 
         resp = {'status': 'success', 'request_id': rqst.pk}
 

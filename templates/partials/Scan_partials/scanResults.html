@@ -1,37 +1,50 @@
 {% load util %}
 
 {% block scanResult %}
-    {% for result in results %}
-        <tr class="file-row">
-            <td colspan="2">
-                <ul class="scanned-list">
-                    {% if result.imgCount %}
-                        <li class="img-count">{{result.imgCount}} image{{result.imgCount|pluralize}} cannot be scanned</li>
-                    {% endif %}
 
-                    {% for subFiles in result.found %}
-                        {% if result.image %}
-                        {% else %}
-                            <li class="scanned-item">{{subFiles.file}}
-                                <ul class="inner-files">
-                                    {% for hit in subFiles.findings %}
-                                    <li class="scanned-file">{{hit}}</li>
-                                    {% endfor %}
-                                </ul>
-                            </li>
-                        {% endif %}
-                    {% endfor %}
-                </ul>
-            </td>
-            <td></td>
-        </tr>
-    {% empty %}
+    {% if empty == True %}
     <tr>
         <td colspan="2">
             <ul>
-                <li>Clean Scan</li>
+                <li>File never scanned</li>
             </ul>
         </td>
     </tr>
-    {% endfor %}
+    {% else %}
+        {% for result in results %}
+            {% if result == "empty" %}
+                <tr>
+                    <td colspan="2">
+                        <ul>
+                            <li>Clean scan</li>
+                        </ul>
+                    </td>
+                </tr>
+            {% else %}
+                <tr class="file-row">
+                    <td colspan="2">
+                        <ul class="scanned-list">
+                            {% if result.imgCount %}
+                                <li class="img-count">{{result.imgCount}} image{{result.imgCount|pluralize}} cannot be scanned</li>
+                            {% endif %}
+
+                            {% for subFiles in result.found %}
+                                {% if result.image %}
+                                {% else %}
+                                    <li class="scanned-item">{{subFiles.file}}
+                                        <ul class="inner-files">
+                                            {% for hit in subFiles.findings %}
+                                            <li class="scanned-file">{{hit}}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+    
 {% endblock  %}

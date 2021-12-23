@@ -4,14 +4,14 @@ from pages.models import *
 class UserAdmin(admin.ModelAdmin):
     list_filter = ('banned',)
     list_display = ('name_last', 'name_first', 'auth_user', 'source_email', 'phone','banned','strikes','banned_until')
-    fields = ('name_first','name_last', 'auth_user','user_identifier', 'source_email','destination_emails','phone',('banned','strikes','banned_until'),'update_info','notes')
+    #fields = ('name_first','name_last', 'auth_user','user_identifier', 'source_email','destination_emails','phone',('banned','strikes','banned_until'),'update_info','notes')
     search_fields = ('name_last', 'name_first', 'auth_user__username', 'source_email__address','banned','strikes','banned_until', 'phone')
     sortable_by = ('name_last', 'name_first', 'auth_user', 'source_email','banned','strikes','banned_until')
 
 class RequestAdmin(admin.ModelAdmin):
     list_filter = ('network', 'org')
     list_display = ('user','network','pull','has_rejected','all_rejected')
-    fields = ('user','request_hash','network','org','pull','date_pulled',('files','target_email'),('comments','notes'),('is_centcom','is_dupe','has_rejected','all_rejected','destFlag'),('ready_to_pull','is_submitted'))
+    #fields = ('user','request_hash','network','org','pull','date_pulled',('files','target_email'),('comments','notes'),('is_centcom','is_dupe','has_rejected','all_rejected','destFlag'),('ready_to_pull','is_submitted'))
     search_fields = ('user','network','pull')
     sortable_by = ('user','network','pull','has_rejected','all_rejected')
 

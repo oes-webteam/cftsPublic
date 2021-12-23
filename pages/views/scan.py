@@ -14,7 +14,7 @@ from django.views.decorators.cache import never_cache
 from pages.views.auth import superUserCheck, staffCheck
 
 # responses
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.http import JsonResponse
 
 # pdf parsing
@@ -32,8 +32,9 @@ logger = logging.getLogger('django')
 
 # ====================================================================
 
-def scan(rqst_id):
-    files = Request.objects.get(request_id=rqst_id).files.all()
+def scan(request, rqst_id):
+    rqst = Request.objects.get(request_id=rqst_id)
+    files = rqst.files.all()
 
     scan_folder = settings.SCANTOOL_DIR+"\\scan_1"
 
@@ -44,18 +45,38 @@ def scan(rqst_id):
             i+=1
         else:
             break
-        
+
     try:
         for file in files:
             os.makedirs(scan_folder)
             shutil.copy(file.file_object.path, scan_folder)
             results = runScan(scan_folder)
+
+            if results == []:
+                results = ['empty']
+
             file.scan_results = results
             file.save()
             shutil.rmtree(scan_folder)
-    except:
-        shutil.rmtree(scan_folder)
 
+        rqst.files_scanned = True
+        rqst.save()
+
+    except Exception as e:
+        shutil.rmtree(scan_folder)
+        for file in files:
+            if file.scan_results == []:
+                results = [{
+                    'file': file.file_object.path,
+                    'found': [{'file': file.file_object.path,
+                    'findings': [str('Error in scan: ' + repr(e))]}]
+                }]
+
+                file.scan_results = results
+                file.save()
+
+    if request.method == 'GET':
+        return redirect('transfer-request' , id=rqst_id)
 
 def runScan(scan_folder):
     scan_results = []

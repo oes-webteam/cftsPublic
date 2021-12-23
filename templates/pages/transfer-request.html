@@ -38,6 +38,7 @@
                 <div class="btn-group mb-3">
                     <a href="#" class="btn btn-warning request-encrypt">Encrypt Files</a>
                     <a href="#" class="btn btn-danger request-reject">Reject Files</a>
+                    {% if rqst.files_scanned == False %}<a href="{% url 'scan' rqst.request_id %}" class="btn btn-info">Scan Files</a>{% endif %}
                 </div>
                 
                 {% if user.is_superuser %}
@@ -125,7 +126,11 @@
                         </tr>
                         {% if file.rejection_reason == None %}
                             {% if file.user_oneeye == user and file.date_oneeye == None or file.user_twoeye == user and file.date_twoeye == None%}
-                                {% include 'partials/Scan_partials/scanResults.html' with results=file.scan_results %}
+                                {% if file.scan_results == None %}
+                                    {% include 'partials/Scan_partials/scanResults.html' with empty=True %}
+                                {% else %}
+                                    {% include 'partials/Scan_partials/scanResults.html' with results=file.scan_results %}
+                                {% endif %}
                             {% endif %}
                         {% endif %}
                         
