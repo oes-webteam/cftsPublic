@@ -405,6 +405,7 @@ def updateFileReview(request, fileID, rqstID, quit="None"):
     rqst = Request.objects.get(request_id=rqstID)
     file = File.objects.get(file_id=fileID)
     open_file = False
+    save = True
 
     if file.user_oneeye == None:
         file.user_oneeye = request.user
@@ -430,15 +431,17 @@ def updateFileReview(request, fileID, rqstID, quit="None"):
         else:
             file.date_twoeye = timezone.now()
     else:
-        return redirect('transfer-request' , id=rqstID)
+        save = False
 
-    file.save()
+    if save == True:
+        file.save()
 
     ready_to_pull = True
     for file in rqst.files.all():
         if file.date_twoeye == None:
             if file.rejection_reason == None:
                 ready_to_pull = False
+                break
     
     if ready_to_pull == True:
         rqst.ready_to_pull = ready_to_pull

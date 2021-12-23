@@ -160,11 +160,11 @@
                   <small id="targetEmailHelp" class="form-text text-muted">on the target network</small>              
                 </div>
           
-                <h3 class="text-gray-dark">Comments</h3>
+                {% comment %} <h3 class="text-gray-dark">Comments</h3>
                 <div class="form-group">
                   <textarea class="form-control" name="comments" id="comments" placeholder="250 characters or less"></textarea>
       <textarea class="form-control" name="PKIinfo" id="PKIinfo" placeholder="PKI debug information" hidden>{{rc.cert}}</textarea>
-                </div>
+                </div> {% endcomment %}
               </div>
             </div>
           </div>

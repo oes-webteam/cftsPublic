@@ -26,3 +26,15 @@
 tr:nth-of-type(odd) {
     background-color: rgba(0,0,0,0.05);
 }
+
+/* .file-left{
+    width: 20%;
+} */
+
+.file-right{
+    text-align: end;
+}
+
+.card{
+    word-break: break-word;
+}

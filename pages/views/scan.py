@@ -44,16 +44,17 @@ def scan(rqst_id):
             i+=1
         else:
             break
-    #try:
-    for file in files:
-        os.makedirs(scan_folder)
-        shutil.copy(file.file_object.path, scan_folder)
-        results = runScan(scan_folder)
-        file.scan_results = results
-        file.save()
+        
+    try:
+        for file in files:
+            os.makedirs(scan_folder)
+            shutil.copy(file.file_object.path, scan_folder)
+            results = runScan(scan_folder)
+            file.scan_results = results
+            file.save()
+            shutil.rmtree(scan_folder)
+    except:
         shutil.rmtree(scan_folder)
-    # except:
-    #     shutil.rmtree(scan_folder)
 
 
 def runScan(scan_folder):

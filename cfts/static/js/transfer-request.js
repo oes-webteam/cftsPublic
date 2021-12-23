@@ -32,12 +32,20 @@ jQuery( document ).ready( function() {
 
   if(document.location.search){
     let file = document.location.search.split('?')[1]
-    console.log(file)
+    // console.log(file)
+    let row = document.getElementById("row_"+file)
+
+    row.scrollIntoView({behavior: "smooth", block: "center"})
+    setTimeout(function(){
+      $('#row_'+file).fadeOut(400).fadeIn(400).fadeOut(400).fadeIn(400)
+    },500)
+    
     let fileLink = document.getElementById(file)
-    console.log(fileLink)
+    // console.log(fileLink)
     history.pushState(null, "", location.href.split("?")[0])
     
-    fileLink.click()
+    // fileLink.click()
+    window.open(fileLink.href, '_blank');
   }
 
   $.ajaxSetup({ 
@@ -416,7 +424,7 @@ const sendUnrejectRequest = (data) => {
       reviewers.forEach( elem =>{
         elem.classList.remove('d-none')
       })
-      $(e.target).text("remove Selected")
+      $(e.target).text("Remove Selected")
       $(e.target).addClass('selected-remove')
     }
 

@@ -8,15 +8,14 @@
             <h5 class="card-title" style="width: 75%;">{%if request.is_centcom%}<strong>{%endif%}{{ request.user }}{%if request.is_centcom%}</strong>{%endif%}</h5>
             <p class="request-submitted card-subtitle mb-2 text-muted">Submitted: {{ request.date_created|date:'db'|upper }} @ {{ request.date_created|time:'Hi' }}</p>
             
-            {% if request.comments != "" %}
+            {% comment %} {% if request.comments != "" %}
                 <p class="card-text" style="color: blue;">
                     Comments: {{ request.comments|linebreaksbr|truncatechars:83 }}
                 </p>
-            {% endif %}
+            {% endif %} {% endcomment %}
 
             {% if request.destFlag %}
-                <p class="card-text" style="color: red;">
-                    Warnings: 
+                <p class="card-text" style="color: red;"> 
                     {% if request.destFlag %}Submitter is not the primary destination{% endif %}
                 </p>
             {% endif %}

@@ -2,9 +2,8 @@
 
 {% block scanResult %}
     {% for result in results %}
-        {% comment %} <li class="root-item list-group-item m-2 p-3">{{result.file}} {% endcomment %}
         <tr class="file-row">
-            <td>
+            <td colspan="2">
                 <ul class="scanned-list">
                     {% if result.imgCount %}
                         <li class="img-count">{{result.imgCount}} image{{result.imgCount|pluralize}} cannot be scanned</li>
@@ -26,8 +25,13 @@
             </td>
             <td></td>
         </tr>
-        {% comment %} </li> {% endcomment %}
     {% empty %}
-    <h4>No hits in scanned files</h4>
+    <tr>
+        <td colspan="2">
+            <ul>
+                <li>Clean Scan</li>
+            </ul>
+        </td>
+    </tr>
     {% endfor %}
 {% endblock  %}
