@@ -36,9 +36,9 @@
       <!-- TODO: remove this from the flow of the document -->
       <ul class="pull-menu" pull_id="{{pull.pull_id}}">
         <li class="pull-menu-option highlight"><a href="getPull/{{pull.pull_network}}_{{pull.pull_number}} {{pull.pull_date|date:"dM"}} {{pull.pull_date|time:"Hi"}}.zip">Download Again</a></li>
-        {% comment %} <li class="pull-menu-option highlight"><a href="scan/{{pull.pull_network}}_{{pull.pull_number}} {{pull.pull_date|date:"dM"}} {{pull.pull_date|time:"Hi"}}.zip">Scan Pull</a></li> {% endcomment %}
+        <li class="pull-menu-option highlight"><a href="viewscan/{{pull.pull_id}}">View Scan Results</a></li>
         {% if pull.date_complete == None %}
-        <li class="pull-menu-option"><a href="{{pull.pull_id}}" class="done">Transfer Complete</a></li>
+        <li class="pull-menu-option highlight"><a href="{{pull.pull_id}}" class="done">Transfer Complete</a></li>
         <li class="pull-menu-option highlight"><a href="cancelPull/{{pull.pull_id}}">Cancel Pull</a></li>
         {% endif %}
       </ul>
@@ -52,4 +52,3 @@
 
 <script src="{% static 'js/pulls.js' %}"></script>
 {% endblock %}
-    

@@ -83,7 +83,7 @@ def queue(request):
             pull__isnull=True,
             ready_to_pull=False,
             is_centcom=True,
-        ).annotate(needs_review=Count('files')-(Count('files', filter=~Q(files__date_oneeye=None) & ~Q(files__date_twoeye=None))+Count('files', filter=~Q(files__rejection_reason=None)&~(~Q(files__date_oneeye=None) & ~Q(files__date_twoeye=None))))).order_by('date_created')
+        ).annotate(needs_review=Count('files')-(Count('files', filter=~Q(files__user_oneeye=None) & ~Q(files__user_twoeye=None))+Count('files', filter=~Q(files__rejection_reason=None)&~(~Q(files__date_oneeye=None) & ~Q(files__date_twoeye=None))))).order_by('date_created')
 
         ds_requests_other = Request.objects.filter(
             network__name=net.name,
@@ -439,6 +439,10 @@ def updateFileReview(request, fileID, rqstID, quit="None"):
     ready_to_pull = True
     for file in rqst.files.all():
         if file.date_twoeye == None:
+            if file.rejection_reason == None:
+                ready_to_pull = False
+                break
+        elif file.date_oneeye == None:
             if file.rejection_reason == None:
                 ready_to_pull = False
                 break

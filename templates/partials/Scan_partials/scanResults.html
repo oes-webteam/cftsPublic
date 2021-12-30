@@ -3,23 +3,26 @@
 {% block scanResult %}
 
     {% if empty == True %}
-    <tr>
-        <td colspan="2">
-            <ul>
-                <li>File never scanned</li>
-            </ul>
-        </td>
-    </tr>
+        <tr class="file-row"> 
+            <td colspan="2">
+                <ul class="scanned-list">
+                    <li>File never scanned. Click the "Scan Files" button to rerun scan.</li>
+                </ul>
+            </td>
+        </tr>
     {% else %}
         {% for result in results %}
             {% if result == "empty" %}
-                <tr>
-                    <td colspan="2">
-                        <ul>
-                            <li>Clean scan</li>
-                        </ul>
-                    </td>
-                </tr>
+                {% if pull == True %}
+                {% else %}
+                    <tr class="file-row">
+                        <td colspan="2">
+                            <ul class="scanned-list">
+                                <li>Clean scan</li>
+                            </ul>
+                        </td>
+                    </tr>
+                {% endif %}
             {% else %}
                 <tr class="file-row">
                     <td colspan="2">
@@ -31,7 +34,7 @@
                             {% for subFiles in result.found %}
                                 {% if result.image %}
                                 {% else %}
-                                    <li class="scanned-item">{{subFiles.file}}
+                                    <li class="scanned-item"><a href="{% url 'admin:pages_file_change' file.file_id %}">{{subFiles.file}}</a>
                                         <ul class="inner-files">
                                             {% for hit in subFiles.findings %}
                                             <li class="scanned-file">{{hit}}</li>

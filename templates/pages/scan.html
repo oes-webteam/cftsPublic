@@ -5,39 +5,26 @@
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/scan.css' %}">
 
-<div class="alert alert-danger fadein server-error" style="display: none;" role="alert"></div>
-
-<div class="alert alert-danger fadein danger-error" style="display: none;" role="alert"></div>
-   
-<div class="alert alert-success fadein" style="display: none;" role="alert"></div>
-
-<section class="py-4">
-
-  <form action="#" id="scanForm" method="post" enctype="multipart/form-data" novalidate="true">
-    <!-- file input -->
-    <input type="file" name="toScan" />
-    <input type="submit" />
-  </form>
-</section>
-
-<div  id='loading-icon' hidden>
-<h3>Scanning Pull...</h3>
-<img src={% static 'img/loading-icon.gif' %} class='loading-icon'></img>
-
-</div>
-
-<section id="scan-results" hidden>
-  <h3>Scan contained the following findings</h3>
-  <ul id="rootList" class="list-group">
-    
-  </ul>
+<section class="p-3" id="scan-results">
+  <h3>Pull contains the following scan results:</h3>
+  <table id="rootList" class="list-group">
+    {% for request in requests %}
+      <tbody class="p-2 mb-1">
+        <tr>
+          <td class="p-1 mb-1">Request: <a href="{% url 'admin:pages_request_change' request.request_id %}">{{request.user}} {{ request.date_created|date:'db'|upper }} @ {{ request.date_created|time:'Hi' }}</a></td>
+        </tr>
+        {% for file in request.files.all %}
+          {% if file.rejection_reason == None%}
+            {% include 'partials/Scan_partials/scanResults.html' with results=file.scan_results file_id=file.file_id pull=True %}
+          {% endif %}
+        {% endfor %}
+      </tbody>
+    {% endfor %}
+  </table>
 </section>
 
 <!-- Add client side javascript checks to verify the file being uploaded is what it says it is -->
 <!-- I mean, we should be able to trust our own analysts... but they're also users. And I don't -->
 <!-- trust users any further than I can shot put them. -->
-<script src="{% static 'js/notification.js' %}"></script>
-<script> var pullZip="{{pullZip}}"; </script>
-<script src="{% static 'js/scan.js' %}"></script>
+<script>window.document.title = "Scan Tool";</script>
 {% endblock %}
-    

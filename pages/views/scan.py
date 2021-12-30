@@ -32,6 +32,12 @@ logger = logging.getLogger('django')
 
 # ====================================================================
 
+@login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
+def viewScan(request, pull_id):
+    requests = Request.objects.filter(pull__pull_id=pull_id)
+    return render(request, 'pages/scan.html', {'requests': requests})
+
 def scan(request, rqst_id):
     rqst = Request.objects.get(request_id=rqst_id)
     files = rqst.files.all()
@@ -57,7 +63,7 @@ def scan(request, rqst_id):
 
             file.scan_results = results
             file.save()
-            shutil.rmtree(scan_folder)
+            shutil.rmtree(scan_folder, ignore_errors=True)
 
         rqst.files_scanned = True
         rqst.save()
@@ -98,6 +104,12 @@ def runScan(scan_folder):
     imgCount = 0
     # if filename.split("\\")[-1] not in scanSkip:
     for filename in fileList:
+        readablePath = filename.split(scan_folder+"\\")[1]
+        try:
+            readablePath = readablePath.split("extracted_files\\")[-1]
+        except:
+            pass
+
         if printBin.match(filename.split("\\")[-1]) == None:
             try:
                 file_results = None
@@ -128,7 +140,7 @@ def runScan(scan_folder):
                             
                     # clean up after yourself
                     if os.path.isdir(os.path.dirname(filename)+"\\office"):
-                        shutil.rmtree(os.path.dirname(filename)+"\\office")
+                        shutil.rmtree(os.path.dirname(filename)+"\\office", ignore_errors=True)
 
                 elif(ext == '.pdf'):
                     textFile = open(temp+".txt", "w", encoding="utf-8")
@@ -144,13 +156,14 @@ def runScan(scan_folder):
 
                     textFile.close()
                     text_path = os.path.join(temp+".txt")
-                    file_results = [scanFile(text_path)]
+                    file_results = [scanFile(readablePath, text_path)]
                     if file_results[0] is not None:
-                        file_results[0]['file'] = filename
+                        file_results[0]['file'] = readablePath
                     else:
                         file_results = None
 
                 elif(ext == '.zip'):
+                    isZip = True
                     fileZip = ZipFile(filename)
                     extractDir = os.path.dirname(filename)+"\\extracted_files\\"+filename.split("\\")[-1]
                     fileZip.extractall(extractDir)
@@ -159,7 +172,7 @@ def runScan(scan_folder):
                             fileList.append(zipRoot+"\\"+file)
 
                 else:
-                    file_results = [scanFile(filename)]
+                    file_results = [scanFile(readablePath, filename)]
                     if file_results[0] is not None:
                         if imgFiles.match(file_results[0]['file'].split(".")[-1]) != None:
                             imgCount+=1
@@ -169,14 +182,14 @@ def runScan(scan_folder):
             except Exception as e:
                 file_results = []
                 result = {
-                    'file': filename,
+                    'file': readablePath,
                     'findings': [str('Error in scan: ' + repr(e))]
                     }
                 file_results.append(result)
 
             if(file_results is not None):
                 result = {}
-                result['file'] = filename
+                result['file'] = readablePath
                 result['found'] = file_results
                 if imgCount > 0:
                     result['imgCount'] = imgCount
@@ -192,15 +205,26 @@ def scanOfficeFile(office_file):
 
     # treat as a zip and extract to \cfts\scan\temp directory
     try:
+        name, ext = os.path.splitext(office_file)
+        name = name.split("\\")[-1]
+        ext = ext.split(".")[-1]
+        extractPath = os.path.join(os.path.dirname(office_file),"office",office_file.split("\\")[-1])
+        
         zf = ZipFile(office_file)
-        zf.extractall(os.path.dirname(office_file)+"\\office")    
+        zf.extractall(extractPath)    
 
         # step through the contents of the scantool 'temp' folder
-        for root, subdirs, files in os.walk(os.path.dirname(office_file)+"\\office"):
+        for root, subdirs, files in os.walk(extractPath):
             for filename in files:
                 if printBin.match(filename.split("\\")[-1]) == None:
                     file_path = os.path.join(root, filename)
-                    findings = scanFile(file_path)
+                    readablePath = file_path.split("scan\\")[1].split("\\")
+                    readablePath = "\\".join(readablePath[1:])
+
+                    readablePath = readablePath.split("extracted_files\\")[-1]
+                    readablePath = readablePath.replace("office\\","")
+
+                    findings = scanFile(readablePath, file_path)
 
                     if(findings is not None):
                         if(results is None):
@@ -218,7 +242,7 @@ def scanOfficeFile(office_file):
     # done
     return results
 
-def scanFile(text_file):
+def scanFile(readablePath, text_file):
     # result = {
     #     'file': text_file,
     #     'findings': []
@@ -237,7 +261,7 @@ def scanFile(text_file):
         with open(text_file, "r", encoding="utf-8") as f:
             f_content = f.read()
             result = {
-                'file': text_file,
+                'file': readablePath,
                 'findings': []
             }
             for compiled_reg in reg_lst:
@@ -252,6 +276,6 @@ def scanFile(text_file):
 
     except UnicodeDecodeError:
         # Found non-text data
-        result = {'file': text_file, 'findings': ['Unable to scan file.']}
+        result = {'file': readablePath, 'findings': ['Unable to scan file.']}
 
     return result

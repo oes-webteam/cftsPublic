@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 {% load util %}
 
 {% block request %}
@@ -20,7 +20,7 @@
                 </p>
             {% endif %}
             
-            {% if request.pull != None or request.ready_to_pull != False %}{% else %}<h6 class="ml-3">{{request.needs_review}} file{{ request.needs_review|pluralize:" needs,s need" }} to be reviewed</h6>{% endif %}
+            {% if request.pull != None or request.ready_to_pull != False %}{% else %}<h6 class="ml-3">{{request.needs_review}} file{{ request.needs_review|pluralize }} open for review</h6>{% endif %}
             <ul class="{% if request.pull != None %}pending {% endif %}{% if file.rejection_reason != None %}rejected {% endif %} mb-5">
                 {% for file in request.files.all|slice:":4" %}
                     <li class="m-2">
@@ -49,4 +49,3 @@
     </a>
 </div>
 {% endblock %}
-    

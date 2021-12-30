@@ -50,6 +50,7 @@ urlpatterns = [
 
      # scan
      path('scan/<uuid:rqst_id>', views.scan, name="scan"),
+     path('viewscan/<uuid:pull_id>', views.viewScan, name="viewscan"),
 
      # pulls
      path('pulls', views.pulls, name='pulls'),
@@ -91,4 +92,3 @@ urlpatterns = [
      path('tools-setupdb', views.setupDB, name="setupdb"),
      path('tools-updateFileInfo', views.updateFiles, name='api-updateFileInfo'),
 ]
-
