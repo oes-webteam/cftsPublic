@@ -14,7 +14,7 @@
         {% else%}
           <tbody class="p-2 mb-1">
             <tr>
-              <td class="p-1 mb-1">Request: <a href="{% url 'transfer-request' request.request_id %}">{{folder}}</a></td>
+              <td class="p-1 mb-1">Folder in zip: <a href="{% url 'transfer-request' request.request_id %}">{{folder}}</a></td>
             </tr>
 
             {% if request.imgCount != None%}

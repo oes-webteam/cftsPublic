@@ -3,7 +3,7 @@
 
 {% block request %}
 <div class="col-12">
-    <a class="card bg-light {% if request.pull != None %}pulled {% endif %} {% if request.pull.centcom_pull == True %}centcom{% endif %}" id="{{request.request_id}}" href="{% url 'transfer-request' request.request_id %}" request_hash="{{request.request_hash}}">
+    <a class="card bg-light {% if request.user_reviewing > 0 %}reviewing{% endif %}{% if request.pull != None %}pulled {% endif %} {% if request.pull.centcom_pull == True %}centcom{% endif %}" id="{{request.request_id}}" href="{% url 'transfer-request' request.request_id %}" request_hash="{{request.request_hash}}">
         <div class="card-body request-header {% if request.pull != None %} pending{% endif %} {% if request.centcom_pull %}centcom{% endif %}">
             <h5 class="card-title" style="width: 75%;">{%if request.is_centcom%}<strong>{%endif%}{{ request.user }}{%if request.is_centcom%}</strong>{%endif%}</h5>
             <p class="request-submitted card-subtitle mb-2 text-muted">Submitted: {{ request.date_created|date:'db'|upper }} @ {{ request.date_created|time:'Hi' }}</p>
@@ -20,7 +20,24 @@
                 </p>
             {% endif %}
             
-            {% if request.pull != None or request.ready_to_pull != False %}{% else %}<h6 class="ml-3">{{request.needs_review}} file{{ request.needs_review|pluralize }} open for review</h6>{% endif %}
+            {% if request.pull != None or request.ready_to_pull != False %}{% else %}
+                {% if request.needs_review > 0 %}
+                    <h6 class="ml-3">{{request.needs_review}} file{{ request.needs_review|pluralize }} open for review</h6>
+                {% else %}
+                <h6 class="ml-3">No files open for review</h6>
+                {% endif %}
+            {% endif %}
+
+            {% if request.pull != None or request.ready_to_pull != False %}{% else %}
+                {% if request.user_reviewing > 0 %}
+                    <h6 class="ml-3"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#ecc047" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
+                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                      </svg> You have {{request.user_reviewing}} file{{ request.user_reviewing|pluralize }} to review <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#ecc047" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
+                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                      </svg></h6>
+                {% endif %}
+            {% endif %}
+
             <ul class="{% if request.pull != None %}pending {% endif %}{% if file.rejection_reason != None %}rejected {% endif %} mb-5">
                 {% for file in request.files.all|slice:":4" %}
                     <li class="m-2">

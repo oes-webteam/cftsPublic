@@ -199,13 +199,5 @@ STATICFILES_STORAGE = 'cfts.static.ManifestStaticFilesStorageSubClass'
 UPLOADS_DIR = os.path.join(BASE_DIR,'uploads')
 PULLS_DIR = os.path.join(BASE_DIR,'pulls')
 TEMP_FILES_DIR = os.path.join(BASE_DIR,'tempFiles')
-
-print("----------------------------------------------------")
-print("uploads path: ",os.path.abspath(UPLOADS_DIR))
-print("pulls path: ",os.path.abspath(PULLS_DIR))
-print("tempFiles path: ",os.path.abspath(TEMP_FILES_DIR))
-print("----------------------------------------------------")
-
-
 SCANTOOL_DIR = os.path.join (BASE_DIR, 'cfts\scan' )
 SCANTOOL_TEMPDIR = os.path.join( SCANTOOL_DIR, 'temp' )

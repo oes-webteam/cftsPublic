@@ -91,7 +91,11 @@
 .btn-reject-selected { padding: 0.135rem 0.5rem; }
 
 .dupe { 
-  border-color: #5bc2f9; 
+  border-color: #5bc2f9 !important; 
+}
+
+.reviewing { 
+  border-color: #ecc047; 
 }
 
 .hidden{

@@ -83,7 +83,9 @@ def queue(request):
             pull__isnull=True,
             ready_to_pull=False,
             is_centcom=True,
-        ).annotate(needs_review=Count('files')-(Count('files', filter=~Q(files__user_oneeye=None) & ~Q(files__user_twoeye=None))+Count('files', filter=~Q(files__rejection_reason=None)&~(~Q(files__date_oneeye=None) & ~Q(files__date_twoeye=None))))).order_by('date_created')
+        ).annotate(
+            needs_review=Count('files', filter=Q(files__user_oneeye=None) | Q(files__user_twoeye=None) & ~Q(files__user_oneeye=request.user))-Count('files', filter=~Q(files__rejection_reason=None) & ~Q(files__user_oneeye=request.user) & ~Q(files__user_twoeye=request.user)), 
+            user_reviewing=Count('files', filter=Q(files__user_oneeye=request.user) & Q(files__date_oneeye=None) & Q(files__rejection_reason=None))+Count('files', filter=Q(files__user_twoeye=request.user) & Q(files__date_twoeye=None) & Q(files__rejection_reason=None))).order_by('date_created')
 
         ds_requests_other = Request.objects.filter(
             network__name=net.name,
@@ -91,8 +93,10 @@ def queue(request):
             pull__isnull=True,
             ready_to_pull=False,
             is_centcom=False,
-        ).annotate(needs_review=Count('files')-(Count('files__date_twoeye')+Count('files__rejection_reason'))).order_by('date_created')
-        
+        ).annotate(
+            needs_review=Count('files', filter=Q(files__user_oneeye=None) | Q(files__user_twoeye=None) & ~Q(files__user_oneeye=request.user))-Count('files', filter=~Q(files__rejection_reason=None) & ~Q(files__user_oneeye=request.user) & ~Q(files__user_twoeye=request.user)), 
+            user_reviewing=Count('files', filter=Q(files__user_oneeye=request.user) & Q(files__date_oneeye=None) & Q(files__rejection_reason=None))+Count('files', filter=Q(files__user_twoeye=request.user) & Q(files__date_twoeye=None) & Q(files__rejection_reason=None))).order_by('date_created')
+
         pullable_requests = Request.objects.filter(
             network__name=net.name,
             is_submitted=True,
@@ -189,26 +193,14 @@ def transferRequest( request, id ):
         })
         
     rc = { 
-        'User Name': user,
-        #'User_ID': user.user_identifier,
-        'User Email': user.source_email,
+        'User': str(user) + " ("+ str(user.auth_user.username) +")",
+        'Email': user.source_email,
         'Phone': user.phone,
-        'network': Network.objects.get( network_id = rqst.network.network_id ),
-        #'Marked as Centcom': rqst.is_centcom,
-        'Part of pull': rqst.pull,
-        'request_id': rqst.request_id,
-        'date_created': rqst.date_created,
+        'Network': Network.objects.get( network_id = rqst.network.network_id ),
         'target_email': rqst.target_email.all()[0],
-        #'is_submitted': rqst.is_submitted,
-        #'is_centcom': rqst.is_centcom,
         'org': rqst.org,
-        #'has rejected files': rqst.has_rejected,
-        #'all files rejected': rqst.all_rejected,
-        'user_banned': user.banned,
-        'strikes': user.strikes,
-        'banned_until': user.banned_until
     }
-    return render(request, 'pages/transfer-request.html', {'rqst': rqst, 'rejections': rejections ,'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": user.user_id})
+    return render(request, 'pages/transfer-request.html', {'rqst': rqst, 'rc':rc, 'rejections': rejections ,'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": user.user_id})
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
