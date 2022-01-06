@@ -331,7 +331,13 @@ def process ( request ):
 
         requestData += form_data.get('userEmail')
 
-        destinationNet = Network.objects.get( name = form_data.get( 'network' ) )
+        # log why some users are getting a Network object error, what does their form contain???
+        try:
+            destinationNet = Network.objects.get( name = form_data.get( 'network' ) )
+        except Network.DoesNotExist:
+            # log their form 'network' value but cause the error again, because I still don't want their submission to go through
+            logger.error("Network object does not exist, network value from form: " + str(form_data.get( 'network' )))
+            destinationNet = Network.objects.get( name = form_data.get( 'network' ) )
 
         destination_list = form_data.get( 'targetEmail' ).split( "," )
         destSplit_list = []
