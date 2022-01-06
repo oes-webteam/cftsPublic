@@ -1,9 +1,6 @@
-import email
 import hashlib
-from os import name
-from re import T
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.forms.widgets import MultipleHiddenInput
+from django.core import paginator
 
 from django.shortcuts import render, redirect
 from django.http.response import HttpResponse
@@ -305,7 +302,12 @@ def editUserInfo(request):
 @user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)
 def passwordResetAdmin(request):
     resetRequests = Feedback.objects.filter(category="Password Reset").order_by('completed','-date_submitted')
-    return render(request, "pages/passwordResetAdmin.html", context={'resetRequests': resetRequests})
+
+    requestPage = paginator.Paginator(resetRequests, 10)
+    pageNum = request.GET.get('page')
+    pageObj = requestPage.get_page(pageNum)
+
+    return render(request, "pages/passwordResetAdmin.html", context={'resetRequests': pageObj})
 
 def passwordResetRequest(request):
     resources = ResourceLink.objects.all()
@@ -318,8 +320,11 @@ def passwordResetRequest(request):
             if userMatchingEmail.exists():
                 for user in userMatchingEmail:
                     cftsUser = User.objects.get(auth_user=user)
-                    passwordResetFeedback = Feedback(title="Password reset: " + str(user.last_name) + ", " + str(user.first_name) + "(" + str(user.username) + ")", user=cftsUser, category="Password Reset")
-                    passwordResetFeedback.save()
+                    pendingResets = Feedback.objects.filter(user=cftsUser, category="Password Reset", completed=False).count()
+                    
+                    if pendingResets == 0:
+                        passwordResetFeedback = Feedback(title="Password reset: " + str(user.last_name) + ", " + str(user.first_name) + "(" + str(user.username) + ")", user=cftsUser, category="Password Reset")
+                        passwordResetFeedback.save()
             
             return redirect('/password-reset/done')
         else:
