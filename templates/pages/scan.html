@@ -9,16 +9,28 @@
   <h3>Pull contains the following scan results:</h3>
   <table id="rootList" class="list-group">
     {% for request in requests %}
-      <tbody class="p-2 mb-1">
-        <tr>
-          <td class="p-1 mb-1">Request: <a href="{% url 'admin:pages_request_change' request.request_id %}">{{request.user}} {{ request.date_created|date:'db'|upper }} @ {{ request.date_created|time:'Hi' }}</a></td>
-        </tr>
-        {% for file in request.files.all %}
-          {% if file.rejection_reason == None%}
-            {% include 'partials/Scan_partials/scanResults.html' with results=file.scan_results file_id=file.file_id pull=True %}
-          {% endif %}
-        {% endfor %}
-      </tbody>
+      {% with folder=requestFolders.pop %}
+        {% if request.cleanCount == request.files.count %}
+        {% else%}
+          <tbody class="p-2 mb-1">
+            <tr>
+              <td class="p-1 mb-1">Request: <a href="{% url 'transfer-request' request.request_id %}">{{folder}}</a></td>
+            </tr>
+
+            {% if request.imgCount != None%}
+              <tr>
+                <td class="p-1 mb-1">{{request.imgCount}} image{{request.imgCount|pluralize}} in request cannot be scanned</td>
+              </tr>
+            {% endif %}
+            
+            {% for file in request.files.all %}
+              {% if file.rejection_reason == None%}
+                {% include 'partials/Scan_partials/scanResults.html' with results=file.scan_results file_id=file.file_id pull=True %}
+              {% endif %}
+            {% endfor %}
+          </tbody>
+        {% endif %}
+      {% endwith %}
     {% endfor %}
   </table>
 </section>

@@ -6,6 +6,7 @@ import shutil
 from zipfile import ZipFile, BadZipFile
 from django.conf import settings
 import shutil
+from django.db.models import Sum, Count, Q, IntegerField
 
 # decorators
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -35,8 +36,22 @@ logger = logging.getLogger('django')
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def viewScan(request, pull_id):
-    requests = Request.objects.filter(pull__pull_id=pull_id)
-    return render(request, 'pages/scan.html', {'requests': requests})
+    requests = Request.objects.filter(pull__pull_id=pull_id).annotate(imgCount=Sum('files__scan_results__0__imgCount', output_field=IntegerField()), cleanCount=Count('files', filter=Q(files__scan_results__0="empty"))).order_by('user','-date_created')
+    folderNames = []
+
+    for rqst in requests:
+        folder = str(rqst.user) + "/request_1"
+
+        if folder in folderNames:
+            i = 2
+            while folder in folderNames:
+                folder = str(rqst.user) + "/request_" + str(i)
+                i+=1
+        folderNames.append(folder)
+
+    folderNames = list(reversed(folderNames))
+
+    return render(request, 'pages/scan.html', {'requests': requests, 'requestFolders': folderNames})
 
 def scan(request, rqst_id):
     rqst = Request.objects.get(request_id=rqst_id)
@@ -120,6 +135,7 @@ def runScan(scan_folder):
                     file_results = scanOfficeFile(filename)
 
                     if file_results is not None:
+                        removeResults = []
                         for result in file_results:
                             try:
                                 if imgFiles.match(result['file'].split(".")[-1]) == None:
@@ -133,10 +149,14 @@ def runScan(scan_folder):
                                             fileList.append(embedOffFilePath)
                                 else:
                                     imgCount+=1
-                                    result['image']=True
+                                    removeResults.append(result)
 
                             except KeyError:
                                 pass
+                        
+                        if removeResults is not []:
+                            for result in removeResults:
+                                file_results.remove(result)
                             
                     # clean up after yourself
                     if os.path.isdir(os.path.dirname(filename)+"\\office"):
@@ -176,6 +196,7 @@ def runScan(scan_folder):
                     if file_results[0] is not None:
                         if imgFiles.match(file_results[0]['file'].split(".")[-1]) != None:
                             imgCount+=1
+                            file_results = []
                     else:
                         file_results = None
 
@@ -194,7 +215,7 @@ def runScan(scan_folder):
                 if imgCount > 0:
                     result['imgCount'] = imgCount
                     imgCount = 0
-                    result['image']=True
+                    #result['image']=True
                 scan_results.append(result)
 
     return scan_results

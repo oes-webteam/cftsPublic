@@ -28,20 +28,20 @@
                     <td colspan="2">
                         <ul class="scanned-list">
                             {% if result.imgCount %}
+                                {% if pull == True %}
+                                {% else %}
                                 <li class="img-count">{{result.imgCount}} image{{result.imgCount|pluralize}} cannot be scanned</li>
+                                {% endif %}
                             {% endif %}
 
                             {% for subFiles in result.found %}
-                                {% if result.image %}
-                                {% else %}
-                                    <li class="scanned-item"><a href="{% url 'admin:pages_file_change' file.file_id %}">{{subFiles.file}}</a>
-                                        <ul class="inner-files">
-                                            {% for hit in subFiles.findings %}
-                                            <li class="scanned-file">{{hit}}</li>
-                                            {% endfor %}
-                                        </ul>
-                                    </li>
-                                {% endif %}
+                                <li class="scanned-item"><a href="{% url 'admin:pages_file_change' file.file_id %}">{{subFiles.file}}</a>
+                                    <ul class="inner-files">
+                                        {% for hit in subFiles.findings %}
+                                        <li class="scanned-file">{{hit}}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
                             {% endfor %}
                         </ul>
                     </td>
