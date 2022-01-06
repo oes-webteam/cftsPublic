@@ -407,7 +407,7 @@ def updateFileReview(request, fileID, rqstID, quit="None", skipComplete=False):
     open_file = False
     save = True
 
-    if skipComplete == True:
+    if skipComplete == False:
         if file.user_oneeye == None:
             file.user_oneeye = request.user
             open_file = True

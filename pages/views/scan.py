@@ -36,7 +36,7 @@ logger = logging.getLogger('django')
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def viewScan(request, pull_id):
-    requests = Request.objects.filter(pull__pull_id=pull_id).annotate(imgCount=Sum('files__scan_results__0__imgCount', output_field=IntegerField()), cleanCount=Count('files', filter=Q(files__scan_results__0="empty"))).order_by('user','-date_created')
+    requests = Request.objects.filter(pull__pull_id=pull_id, all_rejected=False).annotate(imgCount=Sum('files__scan_results__0__imgCount', output_field=IntegerField()), cleanCount=Count('files', filter=Q(files__scan_results__0="empty"))).order_by('user','-date_created')
     folderNames = []
 
     for rqst in requests:
