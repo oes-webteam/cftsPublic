@@ -180,6 +180,13 @@ def queue(request):
 def transferRequest( request, id ):
     rqst = Request.objects.get( request_id = id )
     user = User.objects.get( user_id = rqst.user.user_id )
+    dupes = Request.objects.filter(pull__date_complete=None, request_hash=rqst.request_hash).exclude(request_id=rqst.request_id).order_by('-date_created')
+    
+    mostRecentDupe = False
+
+    if dupes.count() > 0:
+        if rqst.date_created > dupes[0].date_created:
+            mostRecentDupe = True
 
     # get list of Rejections for the "Reject Files" button
     ds_rejections = Rejection.objects.filter(visible=True)
@@ -194,13 +201,14 @@ def transferRequest( request, id ):
         
     rc = { 
         #'User': str(user) + " ("+ str(user.auth_user.username) +")",
+        'Date Submitted': rqst.date_created,
         'Email': user.source_email,
         'Phone': user.phone,
         'Network': Network.objects.get( network_id = rqst.network.network_id ),
         'target_email': rqst.target_email.all()[0],
         'org': rqst.org,
     }
-    return render(request, 'pages/transfer-request.html', {'rqst': rqst, 'rc':rc, 'rejections': rejections ,'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": user.user_id})
+    return render(request, 'pages/transfer-request.html', {'rqst': rqst, 'rc':rc, 'dupes': dupes, 'mostRecentDupe': mostRecentDupe, 'rejections': rejections ,'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": user.user_id, 'debug': cftsSettings.DEBUG})
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
@@ -393,40 +401,41 @@ def getFile(request, fileID, fileName):
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
-def updateFileReview(request, fileID, rqstID, quit="None"):
+def updateFileReview(request, fileID, rqstID, quit="None", skipComplete=False):
     rqst = Request.objects.get(request_id=rqstID)
     file = File.objects.get(file_id=fileID)
     open_file = False
     save = True
 
-    if file.user_oneeye == None:
-        file.user_oneeye = request.user
-        open_file = True
-    elif file.user_oneeye == request.user and file.date_oneeye == None:
-        if quit == "True":
-            if file.user_twoeye != None:
-                    file.user_oneeye = file.user_twoeye
-                    file.date_oneeye = file.date_twoeye
-                    file.user_twoeye = None
-                    file.date_twoeye = None
+    if skipComplete == True:
+        if file.user_oneeye == None:
+            file.user_oneeye = request.user
+            open_file = True
+        elif file.user_oneeye == request.user and file.date_oneeye == None:
+            if quit == "True":
+                if file.user_twoeye != None:
+                        file.user_oneeye = file.user_twoeye
+                        file.date_oneeye = file.date_twoeye
+                        file.user_twoeye = None
+                        file.date_twoeye = None
+                else:
+                    file.user_oneeye = None
+                    file.date_oneeye = None
             else:
-                file.user_oneeye = None
-                file.date_oneeye = None
+                file.date_oneeye = timezone.now()
+        elif file.user_twoeye == None:
+            file.user_twoeye = request.user
+            open_file = True
+        elif file.user_twoeye == request.user and file.date_twoeye == None:
+            if quit == "True":
+                file.user_twoeye = None
+            else:
+                file.date_twoeye = timezone.now()
         else:
-            file.date_oneeye = timezone.now()
-    elif file.user_twoeye == None:
-        file.user_twoeye = request.user
-        open_file = True
-    elif file.user_twoeye == request.user and file.date_twoeye == None:
-        if quit == "True":
-            file.user_twoeye = None
-        else:
-            file.date_twoeye = timezone.now()
-    else:
-        save = False
+            save = False
 
-    if save == True:
-        file.save()
+        if save == True:
+            file.save()
 
     ready_to_pull = True
     for file in rqst.files.all():
@@ -439,7 +448,7 @@ def updateFileReview(request, fileID, rqstID, quit="None"):
                 ready_to_pull = False
                 break
     
-    if ready_to_pull == True:
+    if rqst.ready_to_pull != ready_to_pull:
         rqst.ready_to_pull = ready_to_pull
         rqst.save()
 

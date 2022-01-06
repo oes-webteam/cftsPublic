@@ -5,7 +5,9 @@
 
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+<link rel="stylesheet" href="{% static 'css/queue.css' %}">
 <link rel="stylesheet" href="{% static 'css/transfer-request.css' %}">
+
 
     <div class="container details">
 
@@ -36,7 +38,6 @@
                 <div class="btn-group mb-3">
                     <a href="#" class="btn btn-warning request-encrypt">Encrypt Files</a>
                     <a href="#" class="btn btn-danger request-reject">Reject Files</a>
-                    <!-- {% if rqst.files_scanned == False %}<a href="{% url 'scan' rqst.request_id %}" class="btn btn-info">Scan Files</a>{% endif %} -->
                     <a href="{% url 'scan' rqst.request_id %}" class="btn btn-info">Rescan Files</a>
                 </div>
                 
@@ -52,7 +53,7 @@
         
         <div class="row">
             <div class="col-6">
-                <div class="card">
+                <div class="details-card">
                     {% csrf_token %}
                         <div class="card-header">
             
@@ -75,7 +76,7 @@
             </div>
 
             <div class="col-6">
-                <div class="card">
+                <div class="details-card">
                     <table>
                     {% for file in rqst.files.all %}
                         <tr class="file-row" id="row_{{file.file_id}}">
@@ -88,7 +89,7 @@
                                 {% if file.is_pii%}
                                 <span title="PII: {{ file.is_pii }}&#10;">🔒</span>
                                 {% endif %}
-                                <a class="{% if file.rejection_reason != None %}rejected {% endif %} mr-2"title="{{ file }}" id="{{file.file_id}}" href="/getFile/{{file.file_object}}">{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</a>
+                                <a class="{% if file.rejection_reason != None %}rejected {% endif %} mr-2"title="{{ file }}" id="{{file.file_id}}" href={% if debug == True %}{% url 'admin:pages_file_change' file.file_id %}{% else %}"/getFile/{{file.file_object}}"{% endif %}>{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</a>
                                 {% if user.is_superuser %}{% if file.user_oneeye != None %}<strong><span class="reviewers mr-2 d-none">1 Eye:  {{file.user_oneeye}}</span>{% endif %} {% if file.user_twoeye != None %}<span class="reviewers d-none">2 Eye:  {{file.user_twoeye}}</span></strong>{% endif %}{% endif %}
                             </td>
                             <td class="file-right">
@@ -143,8 +144,34 @@
                     </table>
                 </div>
             </div>
-
         </div>
+
+        <br>
+        {% if dupes %}
+            <form class="queue-form">
+                <div class="dupe-header">
+                    {% if mostRecentDupe %}
+                    <h4 class="org-header">Duplicate Requests (Current Request is the most recent duplicate):</h4>
+                    {% else %}
+                    <h4 class="org-header">Duplicate Requests (Most recent duplicate is outlined in blue):</h4>
+                    {% endif %}
+                    <div class="btn-group mb-3">
+                        <a href="#" class="btn btn-danger reject-dupes" request_hash="{{rqst.request_hash}}">Reject All Duplicate Requests</a>
+                    </div>
+                </div>
+                
+                <hr class="mt-2 mb-3" style="border-top-width: 3px; border-top-color: rgba(0, 0, 0, 0.2);">
+                <div class="row">
+                    {% for request in dupes %}
+                        {% if forloop.first and mostRecentDupe == False %}
+                            {% include 'partials/Queue_partials/requestTemplate.html' with request=request detailspage=True highlightFirst=True %}
+                        {% else %}
+                            {% include 'partials/Queue_partials/requestTemplate.html' with request=request detailspage=True %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </form>
+        {% endif %}
 
         <div id="reject-form" title="Reject File(s)">
             <form>

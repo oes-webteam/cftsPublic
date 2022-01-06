@@ -75,6 +75,30 @@ jQuery( document ).ready( function() {
 
   });
 
+
+  $('.reject-dupes').click( e => { 
+    e.preventDefault();
+    requestIDs = []
+
+    requestHash = $(e.target).attr('request_hash');
+
+    requests = document.querySelectorAll('a.card[request_hash="' + requestHash + '"]')
+    requests.forEach(request => {
+      requestIDs.push(request.id)
+    });
+
+    data = {
+      'requestIDs': requestIDs
+    }
+
+    $.post("/api-setrejectdupes", data, 'json').then(
+      function (resp) {
+        window.location.replace(window.location)
+      },
+    ); 
+
+  });
+
   $('.request-reject').click(e => {
     e.preventDefault();
     let requests = []

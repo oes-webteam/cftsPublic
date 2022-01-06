@@ -1,29 +1,22 @@
 # ====================================================================
 # core
 import json
-import os
 from datetime import datetime
 from zipfile import ZipFile
-from django.conf import settings
-from django.http.response import FileResponse, HttpResponse
-
-# utilities
-from django.utils.dateparse import parse_date
+from django.http.response import HttpResponse
 
 # decorators
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.cache import never_cache
 
 # responses
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect
 from django.template.loader import render_to_string
-from django.template import Template, Context
 
 # , HttpResponse, FileResponse
-from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
+from django.http import JsonResponse, HttpResponse
 
 # cfts settings
-from cfts import network, settings as Settings
 from cfts.settings import NETWORK
 # model/database stuff
 from pages.models import *
@@ -40,6 +33,25 @@ import logging
 logger = logging.getLogger('django')
 # ====================================================================
 
+
+@login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
+def setRejectDupes(request):
+
+    data = dict(request.POST.lists())
+    dupeReason = Rejection.objects.get(name='Duplicate - No Email')
+    
+    dupeRequests = Request.objects.filter(request_id__in=data['requestIDs[]'])
+
+    for rqst in dupeRequests:
+        files = rqst.files.all()
+        files.update(rejection_reason=dupeReason)
+        for file in files:
+            updateFileReview(request, file.file_id, rqst.request_id)
+    
+    dupeRequests.update(has_rejected=True, all_rejected=True)
+
+    return HttpResponse("All rejected")
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
@@ -126,6 +138,7 @@ def unReject(request):
     has_rejected = False
 
     for file in files:
+        updateFileReview(request, file.file_id, request_id[0], skipComplete=True)
         if file.rejection_reason_id != None:
             has_rejected = True
 
@@ -443,8 +456,10 @@ def process ( request ):
         requestHash = requestHash.hexdigest()
         rqst.request_hash = requestHash
 
-        if Request.objects.filter(pull__date_complete=None, request_hash=requestHash):
+        dupes = Request.objects.filter(pull__date_complete=None, request_hash=requestHash)
+        if dupes:
             rqst.is_dupe=True
+            dupes.update(is_dupe=True)
 
         rqst.is_submitted = True
         rqst.save()
