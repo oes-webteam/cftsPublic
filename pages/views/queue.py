@@ -193,7 +193,7 @@ def transferRequest( request, id ):
         })
         
     rc = { 
-        'User': str(user) + " ("+ str(user.auth_user.username) +")",
+        #'User': str(user) + " ("+ str(user.auth_user.username) +")",
         'Email': user.source_email,
         'Phone': user.phone,
         'Network': Network.objects.get( network_id = rqst.network.network_id ),

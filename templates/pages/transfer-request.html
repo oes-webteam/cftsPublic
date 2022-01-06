@@ -8,7 +8,6 @@
 <link rel="stylesheet" href="{% static 'css/transfer-request.css' %}">
 
     <div class="container details">
-        {% include 'partials/messages.html' %}
 
         <div class="row">
             <div class="col-6">
@@ -58,6 +57,7 @@
                         <div class="card-header">
             
                         <ul>
+                            <li>User: <a href="{% url 'admin:pages_user_change' rqst.user.user_id %}">{{rqst.user}} ({{rqst.user.auth_user}})</a></li>
                             {% for col, val in rc.items %}
                                 <li>{{ col }}: {{ val }}</li>
                             {% endfor %}

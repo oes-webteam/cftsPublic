@@ -289,7 +289,7 @@ def editUserInfo(request):
                         cftsUser.destination_emails.add(getOrCreateEmail(request, formEmail, net.name))
 
             cftsUser.save()
-            
+            messages.success(request, "Account info updated")
             return redirect("/frontend")
         else:
             messages.error(request, "Required fields missing")
