@@ -148,6 +148,8 @@
 
         <br>
         {% if dupes %}
+        <hr class="mt-2 mb-3" style="border-top-width: 3px; border-top-color: rgba(0, 0, 0, 0.2);">
+
             <form class="queue-form">
                 <div class="dupe-header">
                     {% if mostRecentDupe %}
@@ -160,7 +162,6 @@
                     </div>
                 </div>
                 
-                <hr class="mt-2 mb-3" style="border-top-width: 3px; border-top-color: rgba(0, 0, 0, 0.2);">
                 <div class="row">
                     {% for request in dupes %}
                         {% if forloop.first and mostRecentDupe == False %}
