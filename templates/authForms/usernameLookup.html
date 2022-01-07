@@ -7,13 +7,15 @@
 
 <div class="container py-5">
     
-    <h1 class="mb-3">Update Account Info</h1>
+    {% include 'partials/messages.html' %}
+
+    <h1 class="mb-3">Username Lookup</h1>
     <form class="needs-validation" method="post" novalidate>
-        {% crispy userInfoForm %}
+        {% crispy UsernameLookupForm %}
     </form>
     <p class="text-center">Need to change your password? <a href="/password-change">Click here</a></p>
 </div>
 
-<script>window.document.title = "Update Account Info"</script>
+<script>window.document.title = "Username Lookup"</script>
 <script src="{% static 'js/form-validate.js' %}"></script>
 {% endblock %}

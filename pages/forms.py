@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm
 from django.contrib.auth.models import User as authUser
+from django.forms.widgets import PasswordInput
 from pages.models import User, Network, Email
 from django.forms import ModelForm
 from crispy_forms.helper import FormHelper
@@ -12,6 +13,7 @@ class userLogInForm(AuthenticationForm):
         super(userLogInForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper(self)
         self.helper.layout.append(Submit('login','Login'))
+
 class userPasswordChangeForm(PasswordChangeForm):
     def __init__(self, *args, **kwargs):
         super(userPasswordChangeForm, self).__init__(*args, **kwargs)
@@ -50,11 +52,11 @@ class NewUserForm(UserCreationForm):
                     
                     if dupe == True:
                         self.add_error(None, "Your " + NETWORK + " token is already tied to an account. If you forgot your password you can request a reset from the login page. If you believe this to be an error please contact us at the link below.")
-
             else:
                 matchingUsers = authUser.objects.filter(email=form.get('email'))
                 if matchingUsers.count() != 0:
                     self.add_error(None, "You email is already tied to an account. If you forgot your password you can request a reset from the login page. If you believe this to be an error please contact us at the link below.")
+
 
 class userInfoForm(ModelForm):
     source_email = forms.EmailField(max_length=75, required=True)
@@ -123,3 +125,19 @@ class userInfoForm(ModelForm):
 
         if form.get('org') == "OTHER" and form.get('other_org')=="":
             self.add_error('other_org', "List your organization")
+
+class UsernameLookupForm(ModelForm):
+    email = forms.EmailField(max_length=75, required=True)
+    password = forms.CharField(widget=PasswordInput(), required=True)
+
+    class Meta:
+        model = authUser
+        fields = ('email', 'password')
+
+    def __init__( self, *args, **kwargs):
+        super(UsernameLookupForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.fields['email'].label = NETWORK + ' Email'
+        self.fields['password'].label = 'Account Password'
+        self.helper.layout.append(Submit('save','Search'))
+        self.helper.layout.append(HTML('<a class="btn btn-danger" href="/frontend">Cancel</a>'))

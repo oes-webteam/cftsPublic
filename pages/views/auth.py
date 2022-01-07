@@ -1,11 +1,13 @@
 import hashlib
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core import paginator
+from django.contrib.auth.hashers import check_password
+from django.forms.widgets import MultipleHiddenInput
 
 from django.shortcuts import render, redirect
 from django.http.response import HttpResponse
 
-from pages.forms import NewUserForm, userInfoForm, userLogInForm, userPasswordChangeForm
+from pages.forms import NewUserForm, userInfoForm, userLogInForm, userPasswordChangeForm, UsernameLookupForm
 from django.contrib.auth.forms import PasswordResetForm
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode
@@ -356,3 +358,31 @@ def passwordResetEmail(request, id, feedback):
     passwordResetFeedback.save()
 
     return HttpResponse(str(msgBody))
+
+def usernameLookup(request):
+    resources = ResourceLink.objects.all()
+
+    if request.method == "POST":
+        form = UsernameLookupForm(request.POST)
+
+        if form.is_valid():
+            formEmail = form.cleaned_data['email']
+            userMatchingEmail = authUser.objects.filter(email=formEmail)
+
+            if userMatchingEmail.exists:
+                for user in userMatchingEmail:
+                    if check_password(form.cleaned_data['password'], user.password):
+                        messages.success(request, "Username: " + user.username)
+                        return render(request, template_name="authForms/usernameLookup.html", context={'resources': resources, "UsernameLookupForm": UsernameLookupForm})        
+
+                # password failed for all filtered users
+                messages.error(request, "No user found for that email address or incorrect password")
+                return render(request, "authForms/usernameLookup.html", context={'resources': resources, "UsernameLookupForm": UsernameLookupForm})
+
+            # no user with that email
+            else:
+                messages.error(request, "No user found for that email address or incorrect password")
+                return render(request, "authForms/usernameLookup.html", context={'resources': resources, "UsernameLookupForm": UsernameLookupForm})
+    # GET request
+    else:
+        return render(request, "authForms/usernameLookup.html", context={'resources': resources, "UsernameLookupForm": UsernameLookupForm})

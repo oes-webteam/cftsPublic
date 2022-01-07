@@ -25,6 +25,7 @@ urlpatterns = [
      path('password-reset/complete', auth_views.PasswordResetCompleteView.as_view(template_name='authForms/passwordResetForms/passwordResetComplete.html'), name='password_reset_complete'),
      path('password-reset-admin', views.passwordResetAdmin, name='password-reset-admin'),
      path('password-reset-email/<int:id>/<uuid:feedback>', views.passwordResetEmail, name='password-reset-email'),
+     path('username-lookup', views.usernameLookup, name='username-lookup'),
 
      # resources
      path('resources/<str:file>', views.resources, name='resources'),
