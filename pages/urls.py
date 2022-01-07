@@ -39,6 +39,7 @@ urlpatterns = [
 
      # queue
      path('queue', views.queue, name='queue'),
+     path('queue/cookie', views.queue, name='cookie'),
      path('transfer-request/<uuid:id>',
           views.transferRequest, name='transfer-request'),
      path('create-zip/<str:network_name>/<str:rejectPull>',

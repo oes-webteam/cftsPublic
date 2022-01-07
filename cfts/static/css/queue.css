@@ -126,6 +126,9 @@
   width: 150px;
   padding: 2px;
 }
+.cookie-hidden{
+  visibility: hidden;
+}
 
 .org-header { 
   /* float: left;  */
