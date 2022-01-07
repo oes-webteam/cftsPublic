@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.db.models.expressions import Subquery, When
 from django.db.models.fields import IntegerField
 import pytz
+from django.templatetags.static import static
 # from io import BytesIO, StringIO
 from zipfile import ZipFile
 from django.conf import settings
@@ -45,25 +46,44 @@ def queue(request):
     xfer_queues = []
     ds_networks = Network.objects.all()
     activeSelected = False
-    empty = random.choice([
-        'These pipes are clean.',
-        'LZ is clear.',
-        'Nothing here. Why not work on metadata?',
-        'Queue is empty -- just like my wallet.',
-        "There's nothing here? Huh. That's gotta be an error ... ",
-        "Xander was here.",
-        "Is PKI working yet?",
-        "It's probably the weekend right?",
-        "Shoot a dart at Ron, tell him Xander told you to.",
-        "I'll code tetris into this page one day.",
-        "Don't let Jason ban everyone, 'cause he'll do it.",
-        "Now anyone can be banned, so much power!",
-        "A bug? In my code? Impossible.",
-        "Deleting database... Just kidding",
-        "Slow day?",
-        "Pretty cards.",
-        "Ban anyone today?",
-    ])
+    if str(request.path) == '/queue/cookie':
+        cookieList1 = [
+            {'name': "Chocolate Chip", 'path':static('img/cookies/cookie.png')},
+            {'name': "Dark Chocolate Chip", 'path':static('img/cookies/darkChoc.png')},
+            {'name': "Fortune", 'path':static('img/cookies/fortune.png')},
+            {'name': "Iced Sugar", 'path':static('img/cookies/icedSugar.png')},
+            {'name': "White Chocolate Macadamia Nut", 'path':static('img/cookies/macadamia.png')},
+            {'name': "M&M", 'path':static('img/cookies/MnM.png')},
+            {'name': "Oreo", 'path':static('img/cookies/oreo.png')},
+            {'name': "Red Velvet", 'path':static('img/cookies/redVelvet.png')},
+            {'name': "Sugar", 'path':static('img/cookies/sugar.png')},
+            {'name': "Thin Mint", 'path':static('img/cookies/thinMint.png')},
+            ]
+        cookieList2 = random.sample(cookieList1, len(cookieList1))
+        random.shuffle(cookieList1)
+        empty = cookieList1+cookieList2
+
+    else:
+        empty = random.choice([
+            'These pipes are clean.',
+            'LZ is clear.',
+            'Nothing here. Why not work on metadata?',
+            'Queue is empty -- just like my wallet.',
+            "There's nothing here? Huh. That's gotta be an error ... ",
+            "Xander was here.",
+            "Is PKI working yet?",
+            "It's probably the weekend right?",
+            "Shoot a dart at Ron, tell him Xander told you to.",
+            "I'll code tetris into this page one day.",
+            "Don't let Jason ban everyone, 'cause he'll do it.",
+            "Now anyone can be banned, so much power!",
+            "A bug? In my code? Impossible.",
+            "Deleting database... Just kidding",
+            "Slow day?",
+            "Pretty cards.",
+            "Ban anyone today?",
+            "Card games are fun too."
+        ])
 
     ########################
     # FOR EACH NETWORK ... #

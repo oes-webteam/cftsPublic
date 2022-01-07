@@ -133,5 +133,67 @@ var dupeButton = document.querySelectorAll('.show-dupe')
     }
 
   });
+  var cookiesFlipped = 0;
+  var flippedCookies = []
+  var score = 0
+
+  $('.confetti').hide()
+
+  $('.cookie-card').click(e => {
+    e.preventDefault();
+    if(cookiesFlipped == 0){
+      cookiesFlipped+=1
+      flippedCookies.push(e.currentTarget)
+
+      console.log($(flippedCookies[0]).attr('cookie'))
+      $(e.currentTarget).find('.back').addClass('hidden')
+      $(e.currentTarget).find('.real').removeClass('hidden')
+    }
+    else if(cookiesFlipped == 1){
+      cookiesFlipped+=1
+      flippedCookies.push(e.currentTarget)
+
+      console.log($(flippedCookies[0]).attr('cookie'), $(flippedCookies[1]).attr('cookie'))
+
+      $(e.currentTarget).find('.back').addClass('hidden')
+      $(e.currentTarget).find('.real').removeClass('hidden')
+
+      if($(flippedCookies[0]).attr('cookie') == $(flippedCookies[1]).attr('cookie')){
+        console.log('cookie match')
+
+        setTimeout(function(){
+          $(flippedCookies[0]).addClass('cookie-hidden')
+          $(flippedCookies[1]).addClass('cookie-hidden')
+          score+= 1
+          console.log(score)
+
+          flippedCookies = []
+          cookiesFlipped = 0
+          if(score==10){
+            $('.confetti').show()
+            $('.cookie-card').hide()
+            $('.cookie-header').text("You ate all the cookies!!!")
+          }
+        },750)
+      }
+      else{
+        console.log('no match')
+        setTimeout(function(){
+          console.log('reset cards')
+
+          $(flippedCookies[0]).find('.back').removeClass('hidden')
+          $(flippedCookies[0]).find('.real').addClass('hidden')
+          $(flippedCookies[1]).find('.back').removeClass('hidden')
+          $(flippedCookies[1]).find('.real').addClass('hidden')
+
+          flippedCookies = []
+          cookiesFlipped = 0
+        },750)
+      }
+
+      
+    }
+
+  });
 
 });
