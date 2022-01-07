@@ -410,35 +410,34 @@ def updateFileReview(request, fileID, rqstID, quit="None", skipComplete=False):
     open_file = False
     save = True
 
-    if skipComplete == False:
-        if file.user_oneeye == None:
-            file.user_oneeye = request.user
-            open_file = True
-        elif file.user_oneeye == request.user and file.date_oneeye == None:
-            if quit == "True":
-                if file.user_twoeye != None:
-                        file.user_oneeye = file.user_twoeye
-                        file.date_oneeye = file.date_twoeye
-                        file.user_twoeye = None
-                        file.date_twoeye = None
-                else:
-                    file.user_oneeye = None
-                    file.date_oneeye = None
+    if file.user_oneeye == None:
+        file.user_oneeye = request.user
+        open_file = True
+    elif file.user_oneeye == request.user and file.date_oneeye == None:
+        if quit == "True":
+            if file.user_twoeye != None:
+                    file.user_oneeye = file.user_twoeye
+                    file.date_oneeye = file.date_twoeye
+                    file.user_twoeye = None
+                    file.date_twoeye = None
             else:
-                file.date_oneeye = timezone.now()
-        elif file.user_twoeye == None:
-            file.user_twoeye = request.user
-            open_file = True
-        elif file.user_twoeye == request.user and file.date_twoeye == None:
-            if quit == "True":
-                file.user_twoeye = None
-            else:
-                file.date_twoeye = timezone.now()
-        else:
-            save = False
+                file.user_oneeye = None
+                file.date_oneeye = None
+        elif skipComplete == False:
+            file.date_oneeye = timezone.now()
+    elif file.user_twoeye == None:
+        file.user_twoeye = request.user
+        open_file = True
+    elif file.user_twoeye == request.user and file.date_twoeye == None:
+        if quit == "True":
+            file.user_twoeye = None
+        elif skipComplete == False:
+            file.date_twoeye = timezone.now()
+    else:
+        save = False
 
-        if save == True:
-            file.save()
+    if save == True:
+        file.save()
 
     ready_to_pull = checkPullable(rqst)
 

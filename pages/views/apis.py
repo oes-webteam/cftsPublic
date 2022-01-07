@@ -74,7 +74,7 @@ def setReject(request):
     
     # update files review status
     for file in files:
-        updateFileReview(request, file.file_id, request_id[0])
+        updateFileReview(request, file.file_id, request_id[0], skipComplete=True)
 
     # check if all files in the request are rejected
     files = rqst[0].files.all()
@@ -131,15 +131,18 @@ def unReject(request):
     id_list = thestuff['id_list[]']
 
     # update the files to set the rejection
-    File.objects.filter(file_id__in=id_list).update(
-        rejection_reason_id=None)
+    files = File.objects.filter(file_id__in=id_list)
+
+    for file in files:
+        updateFileReview(request, file.file_id, request_id[0], skipComplete=True)
+
+    files.update(rejection_reason_id=None)
 
     # check if the request has rejected files in it
     files = Request.objects.get(request_id=request_id[0]).files.all()
     has_rejected = False
 
     for file in files:
-        updateFileReview(request, file.file_id, request_id[0], skipComplete=True)
         if file.rejection_reason_id != None:
             has_rejected = True
 
