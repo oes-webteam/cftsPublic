@@ -212,6 +212,7 @@ class Request(models.Model):
   notes = models.TextField(null=True, blank=True)
   has_rejected = models.BooleanField(default=False)
   all_rejected = models.BooleanField(default=False)
+  rejected_dupe = models.BooleanField(default=False)
   destFlag = models.BooleanField(default=False)
   ready_to_pull = models.BooleanField(default=False)
   #is_rejected = models.BooleanField(default=False)

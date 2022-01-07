@@ -41,6 +41,7 @@ def setRejectDupes(request):
     data = dict(request.POST.lists())
     dupeReason = Rejection.objects.get(name='Duplicate - No Email')
     
+    keeperRequest = Request.objects.filter(request_id=data['keeperRequest'][0]).update(is_dupe=False)
     dupeRequests = Request.objects.filter(request_id__in=data['requestIDs[]'])
 
     for rqst in dupeRequests:
@@ -49,7 +50,7 @@ def setRejectDupes(request):
         for file in files:
             updateFileReview(request, file.file_id, rqst.request_id)
     
-    dupeRequests.update(has_rejected=True, all_rejected=True)
+    dupeRequests.update(has_rejected=True, all_rejected=True, rejected_dupe=True)
 
     return HttpResponse("All rejected")
 
@@ -146,7 +147,7 @@ def unReject(request):
         Request.objects.filter(request_id=request_id[0]).update(has_rejected=False)
 
     # remove all_rejected flag from request
-    Request.objects.filter(request_id=request_id[0]).update(all_rejected=False)
+    Request.objects.filter(request_id=request_id[0]).update(all_rejected=False, rejected_dupe=False)
 
 
     # recreate the zip file for the pull

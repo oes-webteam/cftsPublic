@@ -32,20 +32,24 @@ jQuery( document ).ready( function() {
 
   if(document.location.search){
     let file = document.location.search.split('?')[1]
-    // console.log(file)
-    let row = document.getElementById("row_"+file)
+    if(file=='false'){
+      $( '.btn-back' ).attr('href', '/queue')
+    }
+    else{
+      let row = document.getElementById("row_"+file)
 
-    row.scrollIntoView({behavior: "smooth", block: "center"})
-    setTimeout(function(){
-      $('#row_'+file).fadeOut(400).fadeIn(400).fadeOut(400).fadeIn(400)
-    },500)
-    
-    let fileLink = document.getElementById(file)
-    // console.log(fileLink)
-    history.pushState(null, "", location.href.split("?")[0])
-    
-    // fileLink.click()
-    window.open(fileLink.href, '_blank');
+      row.scrollIntoView({behavior: "smooth", block: "center"})
+      setTimeout(function(){
+        $('#row_'+file).fadeOut(400).fadeIn(400).fadeOut(400).fadeIn(400)
+      },500)
+      
+      let fileLink = document.getElementById(file)
+      // console.log(fileLink)
+      history.pushState(null, "", location.href.split("?")[0])
+      
+      // fileLink.click()
+      window.open(fileLink.href, '_blank');
+    }
   }
 
   $.ajaxSetup({ 
@@ -80,6 +84,7 @@ jQuery( document ).ready( function() {
     e.preventDefault();
     requestIDs = []
 
+    keeperID = $(e.target).attr('current_id');
     requestHash = $(e.target).attr('request_hash');
 
     requests = document.querySelectorAll('a.card[request_hash="' + requestHash + '"]')
@@ -88,7 +93,8 @@ jQuery( document ).ready( function() {
     });
 
     data = {
-      'requestIDs': requestIDs
+      'requestIDs': requestIDs,
+      'keeperRequest': keeperID
     }
 
     $.post("/api-setrejectdupes", data, 'json').then(
@@ -433,7 +439,9 @@ const sendUnrejectRequest = (data) => {
           }) 
         });
 
-        sendRemoveRequest(data, stage)
+        rqst_id = $(e.target).attr('rqst_id')
+
+        sendRemoveRequest(data, stage, rqst_id)
       }
       
     }
@@ -454,7 +462,7 @@ const sendUnrejectRequest = (data) => {
 
   });
 
-  const sendRemoveRequest = (data, stage) => {
+  const sendRemoveRequest = (data, stage, rqst_id) => {
     console.log(stage)
     let csrftoken = getCookie('csrftoken');
 
@@ -463,30 +471,31 @@ const sendUnrejectRequest = (data) => {
         id_list.push( f.fileID ) 
       });
 
-      const postData = {
-        'id_list': id_list
-      };
+    const postData = {
+      'id_list': id_list,
+      'rqst_id': rqst_id
+    };
 
-      const removeReviewers = $.post( '/removeFileReviewer/'+ stage, postData, 'json' ).then( 
-        // success
-        function( resp, status ) {
-          console.log( 'SUCCESS' );        
-          // notifyUserSuccess("Reviewer removed Sccessfully")
-          $( "#forceReload" ).submit();
-        },
-        // fail 
-        function( resp, status ) {
-          console.log( 'FAIL' );
+    const removeReviewers = $.post( '/removeFileReviewer/'+ stage, postData, 'json' ).then( 
+      // success
+      function( resp, status ) {
+        console.log( 'SUCCESS' );        
+        // notifyUserSuccess("Reviewer removed Sccessfully")
+        $( "#forceReload" ).submit();
+      },
+      // fail 
+      function( resp, status ) {
+        console.log( 'FAIL' );
 
-          alert("Failed to remove reviewer, send error message to web team.")
-          responseText = resp.responseText
-          errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"))
+        alert("Failed to remove reviewer, send error message to web team.")
+        responseText = resp.responseText
+        errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"))
 
-          notifyUserError("Error removing reviewer, send error message to web team: " + errorInfo)
-           //console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
-          // console.log( 'Response status: ' + status );
-        }
-      );
+        notifyUserError("Error removing reviewer, send error message to web team: " + errorInfo)
+          //console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
+        // console.log( 'Response status: ' + status );
+      }
+    );
     
   };
   // RUN THIS STUFF NOW THAT THE PAGE IS LOADED

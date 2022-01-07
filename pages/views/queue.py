@@ -128,6 +128,8 @@ def queue(request):
         file_count_pullable = pullable_requests.annotate(
             files_in_request=Count('files__file_id')).aggregate(count=Sum('files_in_request'))['count']
 
+        hidden_dupes = pullable_requests.filter(all_rejected=True, is_dupe=True, rejected_dupe=True).count()
+
         if file_count_pullable == None:
             file_count_pullable = 0
 
@@ -148,10 +150,11 @@ def queue(request):
             'centcom': ds_requests_centcom.count(),
             'other': ds_requests_other.count(),
             'pullable': pullable_requests.count(),
+            'hidden_dupes': hidden_dupes,
             'pulled': pulled_requests.count(),
             'q': ds_requests_centcom,
             'o': ds_requests_other,
-            'a': pullable_requests,
+            'a': pullable_requests.filter(rejected_dupe=False),
             'p': pulled_requests,
             'last_pull': last_pull,
             'orgs': ds_requests_centcom.filter(pull__date_pulled__isnull=True).values_list('org', flat=True)
@@ -437,6 +440,16 @@ def updateFileReview(request, fileID, rqstID, quit="None", skipComplete=False):
         if save == True:
             file.save()
 
+    ready_to_pull = checkPullable(rqst)
+
+    if open_file == True and cftsSettings.DEBUG == False:
+        return redirect('/transfer-request/' + str(rqstID) + '?' + str(fileID))
+    elif ready_to_pull == True:
+        return redirect('/transfer-request/' + str(rqstID) + '?false')
+    else:
+        return redirect('/transfer-request/' + str(rqstID))
+
+def checkPullable(rqst):
     ready_to_pull = True
     for file in rqst.files.all():
         if file.date_twoeye == None:
@@ -451,17 +464,14 @@ def updateFileReview(request, fileID, rqstID, quit="None", skipComplete=False):
     if rqst.ready_to_pull != ready_to_pull:
         rqst.ready_to_pull = ready_to_pull
         rqst.save()
-
-    if open_file == True and cftsSettings.DEBUG == False:
-        return redirect('/transfer-request/' + str(rqstID) + '?' + str(fileID))
-    else:
-        return redirect('transfer-request' , id=rqstID)
-
+    
+    return ready_to_pull
 
 @login_required
 @user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)
 def removeFileReviewer(request, stage):
     post = dict(request.POST.lists())
+    rqst = Request.objects.get(request_id=post['rqst_id'][0])
 
     id_list = post['id_list[]']
 
@@ -485,5 +495,7 @@ def removeFileReviewer(request, stage):
             messages.success(request, 'Selected files have had their two eye reviewer removed')
     except:
         messages.error(request, 'Good job, you broke it. Something went wrong')
+
+    checkPullable(rqst)
 
     return HttpResponse({'response': 'Selected files have had their ' + str(stage) + ' eye review removed'})
