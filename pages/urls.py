@@ -41,19 +41,21 @@ urlpatterns = [
      path('queue', views.queue, name='queue'),
      path('transfer-request/<uuid:id>',
           views.transferRequest, name='transfer-request'),
-     path('create-zip/<str:network_name>/<str:isCentcom>/<str:rejectPull>',
+     path('create-zip/<str:network_name>/<str:rejectPull>',
           views.createZip, name='create-zip'),
      path('getFile/uploads/<str:fileID>/<str:fileName>',
           views.getFile, name='getFile'),
+     path('updateFileReview/<uuid:fileID>/<uuid:rqstID>/', views.updateFileReview, name='reviewFile'),
+     path('updateFileReview/<uuid:fileID>/<uuid:rqstID>/<str:quit>', views.updateFileReview, name='reviewFile'),
+     path('removeFileReviewer/<int:stage>', views.removeFileReviewer, name='removeReview'),
 
      # scan
-     path('scan/<str:pullZip>', views.scan, name="scan"),
+     path('scan/<uuid:rqst_id>', views.scan, name="scan"),
+     path('viewscan/<uuid:pull_id>', views.viewScan, name="viewscan"),
 
      # pulls
      path('pulls', views.pulls, name='pulls'),
      path('getPull/<str:fileName>', views.getPull, name='getPull'),
-     path('pulls-oneeye/<uuid:id>', views.pullsOneEye, name='pulls-oneeye'),
-     path('pulls-twoeye/<uuid:id>', views.pullsTwoEye, name='pulls-twoeye'),
      path('pulls-done/<uuid:id>/<int:cd>', views.pullsDone, name='pulls-done'),
      path('cancelPull/<uuid:id>/', views.cancelPull, name='cancelPull'),
 
@@ -73,6 +75,7 @@ urlpatterns = [
      # APIs
      path('api-getuser/<uuid:id>', views.getUser, name='api-getuser'),
      path('api-setreject', views.setReject, name='api-setreject'),
+     path('api-setrejectdupes', views.setRejectDupes, name='api-setrejectdupes'),
      path('api-unreject', views.unReject, name='api-unreject'),
      path('api-setencrypt', views.setEncrypt, name='api-setencrypt'),
      path('api-numbers', views.runNumbers, name='api-numbers'),
@@ -91,4 +94,3 @@ urlpatterns = [
      path('tools-setupdb', views.setupDB, name="setupdb"),
      path('tools-updateFileInfo', views.updateFiles, name='api-updateFileInfo'),
 ]
-

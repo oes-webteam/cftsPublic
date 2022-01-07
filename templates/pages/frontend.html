@@ -16,6 +16,8 @@
         <div class="alert alert-danger banned-notif" role="alert">Repeated policy violations have resulted in you losing access to the Combined File Transfer Service permanently.</div>
       {% endif %}
 
+    {% elif rc.submission_disabled == True %}
+      <div class="alert alert-info" role="alert">The Combined File Transfer Service is currently undergoing maintenance, file submissions have been temporarily disabled.</div>
     {% else %}
       {% if rc.browser == "IE"%}<div class="alert alert-danger browser-notif" role="alert">This service <a class="alert-link">does not</a> support Internet Explorer. Please use Microsoft Edge, Google Chrome, or Firefox to utilize CFTS.</div>{% endif %}
     
@@ -41,14 +43,12 @@
                   <div class="input-group-prepend">
                     <span class="input-group-text" id="firstNameRequired">*</span>
                   </div>
-                  {% comment %} <input type="text" class="form-control" name="firstName" id="firstName" placeholder= "First Name" readonly/> {% endcomment %}
                   <input type="text" class="form-control" name="firstName" id="firstName" placeholder= "First Name" readonly/>
                 </div>
                 <div class="form-group input-group">
                   <div class="input-group-prepend">
                     <span class="input-group-text" id="lastNameRequired">*</span>
                   </div>
-                  {% comment %} <input type="text" class="form-control" name="lastName" id="lastName" placeholder="Last Name" readonly/> {% endcomment %}
                   <input type="text" class="form-control" name="lastName" id="lastName" placeholder="Last Name" readonly/>
                 </div>
                 <div class="form-group input-group">
@@ -91,18 +91,15 @@
                 <!-- Drag and Drop-->
                 <h3 class="text-gray-dark text-center">Add Files To Queue</h3>
                 <div class="upload-console">
-                  <!--<h2 class="upload-console-header">Upload</h2>-->
                   <div class="upload-console-body">
                     <div class="form-group">
                       <!-- Added DIV to add margin to btn -->
                       <label for="standard-upload-files" class="btn btn-success"
                         >Upload Files
                         <input type="file" name="files[]" id="standard-upload-files" multiple />
-                        <!-- <input type="submit" value="Upload files" id="standard-upload" class="form-control-file mt-2"> -->
                       </label>
                     </div>
 
-                    <!--<h3>Or drag and drop files below</h3>-->
                     <div class="upload-console-drop empty" id="drop-zone">
                       Drag and drop files here
                     </div>
@@ -136,7 +133,7 @@
                     <div class="custom-control custom-switch text-left" style="margin: 0.5em 0;">
                       <input type="radio" name="network" class="custom-control-input network-switch" id="switch{{ net }}" value="{{ net }}" email="{{ email }}"/>
                       <label class="custom-control-label" for="switch{{ net }}">{{ net }}</label>
-                    </div>                    
+                    </div>
                     {% endfor %}
                   </div>
                 {% else %}
@@ -162,14 +159,12 @@
                   <span class="w-100"></span>
                   <small id="targetEmailHelp" class="form-text text-muted">on the target network</small>              
                 </div>
-                <div class="form-group" hidden>
-                  <a href="#" id="addEmail" class="btn btn-success">Add Email</a>
-                </div>
-                <h3 class="text-gray-dark">Comments</h3>
+          
+                {% comment %} <h3 class="text-gray-dark">Comments</h3>
                 <div class="form-group">
                   <textarea class="form-control" name="comments" id="comments" placeholder="250 characters or less"></textarea>
       <textarea class="form-control" name="PKIinfo" id="PKIinfo" placeholder="PKI debug information" hidden>{{rc.cert}}</textarea>
-                </div>
+                </div> {% endcomment %}
               </div>
             </div>
           </div>
@@ -179,10 +174,6 @@
         <div class="row" id="button-row">
           <div class="col-md-4"></div>
           <div class="col-md-4 mt-5 text-center">
-            <!-- 
-                TODO: Make this an actual <button> with a "click"
-                eventHandler to avoid event bubble-up issues 
-            -->
             <button class="btn btn-secondary btn-block" id="submitButton" role="button" {% if rc.userBanned or rc.networks.items|length == 0 %}disabled{% endif %}>Submit</button>
           </div>
           <div class="col-md-4"></div>
@@ -199,9 +190,9 @@
   var lastName = "{{rc.user.name_last}}";
   var email = "{{rc.user.source_email}}";
   var phone = "{{rc.user.phone}}";
-  var org = "{{rc.user.org}}"
-  
+  var org = "{{rc.user.org}}";
   var userBanned = "{{rc.userBanned}}";
+  var debug = "{{rc.debug}}"
 </script>
 <script src="{% static 'js/notification.js' %}"></script>
 <script src="{% static 'js/frontend.js' %}"></script>

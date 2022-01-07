@@ -1,0 +1,71 @@
+.rejected, .rejected:hover { 
+    color: #DD0000 !important; 
+    text-decoration: line-through; 
+}
+
+.details{
+    margin-top: 130px; 
+    min-width: 87%;
+}
+
+.status-imgs{
+    background-color: rgb(245,245,240);
+    float: right;
+    margin-top: -5px;
+}
+
+.status-img{
+    height: 23px;
+    width: 30px;
+    outline: solid;
+    outline-offset: 1px;
+    outline-width: 3px;
+    padding: 2px;
+}
+
+tr:nth-of-type(odd) {
+    background-color: rgba(0,0,0,0.05);
+}
+
+.file-right{
+    text-align: end;
+}
+
+.details-card{
+    word-break: break-word;
+    position: relative;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    min-width: 0;
+    word-wrap: break-word;
+    background-color: #fff;
+    background-clip: border-box;
+    border: 1px solid rgba(0, 0, 0, 0.125);
+    border-radius: 0.25rem;
+}
+
+.card-header{
+    height: 100%;
+}
+
+.dupe-header{
+    display: flex;
+    justify-content: space-between;
+}
+
+@media(max-width: 1575px) {
+    .btn-group{
+        margin-left: 0% !important;
+    }
+}
+
+@media(max-width: 1160px){
+    .btn{
+        padding: 0.25rem 0.5rem !important;
+        font-size: 0.875rem !important;
+        line-height: 1.5 !important;
+        border-radius: 0.2rem !important;
+    }
+}

@@ -64,48 +64,6 @@ class Rejection(models.Model):
   def __str__(self):
     return self.name
 
-@keep_lazy_text
-def get_valid_filename(name):
-    """
-    Return the given string converted to a string that can be used for a clean
-    filename. Remove leading and trailing spaces; convert other spaces to
-    underscores; and remove anything that is not an alphanumeric, dash,
-    underscore, or dot, keeps parentheses.
-    """
-    s = str(name).strip().replace(' ', '_')
-    s = re.sub(r'(?u)[^-\w.()]', '', s)
-    if s in {'', '.', '..'}:
-        raise SuspiciousFileOperation("Could not derive file name from '%s'" % name)
-    return s
-
-class CustomFileSystemStorage(FileSystemStorage):
-
-  def get_valid_name(self, name):
-    return get_valid_filename(name)
-
-class File(models.Model):
-  file_id = models.UUIDField(
-    primary_key=True, default=uuid.uuid4, editable=False)
-  file_object = models.FileField(upload_to=randomize_path, storage=CustomFileSystemStorage(), max_length=500)
-  file_name = models.CharField(max_length=255, null=True, blank=True, default=None)
-  file_hash = models.CharField(max_length=40, blank=True, null=True)
-  is_pii = models.BooleanField(default=False)
-  is_centcom = models.BooleanField(default=False)
-  rejection_reason = models.ForeignKey(
-    Rejection, on_delete=models.DO_NOTHING, null=True, blank=True)
-  rejection_text = models.TextField(default=None, blank=True, null=True)
-  org = models.CharField(max_length=50, default="")
-  NDCI = models.BooleanField(default=False)
-  file_count = models.PositiveIntegerField(default=1)
-  file_size = models.PositiveBigIntegerField(default=0)
-
-  class Meta:
-    ordering = [F('file_name').asc(nulls_last=True)]
-
-  def __str__(self):
-    return os.path.basename(self.file_object.name)
-
-
 class Network(models.Model):
   network_id = models.UUIDField(
     primary_key=True, default=uuid.uuid4, editable=settings.DEBUG)
@@ -184,6 +142,55 @@ class Pull(models.Model):
   def __str__(self):
     return self.network.__str__() + '_' + str(self.pull_number)
 
+    
+@keep_lazy_text
+def get_valid_filename(name):
+    """
+    Return the given string converted to a string that can be used for a clean
+    filename. Remove leading and trailing spaces; convert other spaces to
+    underscores; and remove anything that is not an alphanumeric, dash,
+    underscore, or dot, keeps parentheses.
+    """
+    s = str(name).strip().replace(' ', '_')
+    s = re.sub(r'(?u)[^-\w.()]', '', s)
+    if s in {'', '.', '..'}:
+        raise SuspiciousFileOperation("Could not derive file name from '%s'" % name)
+    return s
+
+class CustomFileSystemStorage(FileSystemStorage):
+
+  def get_valid_name(self, name):
+    return get_valid_filename(name)
+
+class File(models.Model):
+  file_id = models.UUIDField(
+    primary_key=True, default=uuid.uuid4, editable=False)
+  file_object = models.FileField(upload_to=randomize_path, storage=CustomFileSystemStorage(), max_length=500)
+  file_name = models.CharField(max_length=255, null=True, blank=True, default=None)
+  file_hash = models.CharField(max_length=40, blank=True, null=True)
+  is_pii = models.BooleanField(default=False)
+  is_centcom = models.BooleanField(default=False)
+  rejection_reason = models.ForeignKey(
+    Rejection, on_delete=models.DO_NOTHING, null=True, blank=True)
+  rejection_text = models.TextField(default=None, blank=True, null=True)
+  org = models.CharField(max_length=50, default="")
+  NDCI = models.BooleanField(default=False)
+  file_count = models.PositiveIntegerField(default=1)
+  file_size = models.PositiveBigIntegerField(default=0)
+  date_oneeye = models.DateTimeField(null=True, blank=True)
+  user_oneeye = models.ForeignKey(
+    settings.AUTH_USER_MODEL, related_name='file_user_oneeye', on_delete=models.DO_NOTHING, null=True, blank=True)
+  date_twoeye = models.DateTimeField(null=True, blank=True)
+  user_twoeye = models.ForeignKey(
+    settings.AUTH_USER_MODEL, related_name='file_user_twoeye', on_delete=models.DO_NOTHING, null=True, blank=True)
+  pull = models.ForeignKey(Pull, on_delete=models.DO_NOTHING, default=None, blank=True, null=True)
+  scan_results = models.JSONField(null=True, blank=True)
+
+  class Meta:
+    ordering = [F('file_name').asc(nulls_last=True)]
+
+  def __str__(self):
+    return os.path.basename(self.file_object.name)
 
 class Request(models.Model):
   request_id = models.UUIDField(
@@ -205,8 +212,11 @@ class Request(models.Model):
   notes = models.TextField(null=True, blank=True)
   has_rejected = models.BooleanField(default=False)
   all_rejected = models.BooleanField(default=False)
+  rejected_dupe = models.BooleanField(default=False)
   destFlag = models.BooleanField(default=False)
+  ready_to_pull = models.BooleanField(default=False)
   #is_rejected = models.BooleanField(default=False)
+  files_scanned = models.BooleanField(default=False)
 
   class Meta:
     ordering = ['-date_created']

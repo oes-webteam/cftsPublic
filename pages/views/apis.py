@@ -1,35 +1,29 @@
 # ====================================================================
 # core
 import json
-import os
 from datetime import datetime
 from zipfile import ZipFile
-from django.conf import settings
-from django.http.response import FileResponse, HttpResponse
-
-# utilities
-from django.utils.dateparse import parse_date
+from django.http.response import HttpResponse
 
 # decorators
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.cache import never_cache
 
 # responses
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect
 from django.template.loader import render_to_string
-from django.template import Template, Context
 
 # , HttpResponse, FileResponse
-from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
+from django.http import JsonResponse, HttpResponse
 
 # cfts settings
-from cfts import network, settings as Settings
 from cfts.settings import NETWORK
 # model/database stuff
 from pages.models import *
 
-from pages.views.queue import createZip
+from pages.views.queue import createZip, updateFileReview
 from pages.views.auth import superUserCheck, staffCheck
+from pages.views.scan import scan
 
 import hashlib
 
@@ -42,6 +36,26 @@ logger = logging.getLogger('django')
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
+def setRejectDupes(request):
+
+    data = dict(request.POST.lists())
+    dupeReason = Rejection.objects.get(name='Duplicate - No Email')
+    
+    keeperRequest = Request.objects.filter(request_id=data['keeperRequest'][0]).update(is_dupe=False)
+    dupeRequests = Request.objects.filter(request_id__in=data['requestIDs[]'])
+
+    for rqst in dupeRequests:
+        files = rqst.files.all()
+        files.update(rejection_reason=dupeReason)
+        for file in files:
+            updateFileReview(request, file.file_id, rqst.request_id)
+    
+    dupeRequests.update(has_rejected=True, all_rejected=True, rejected_dupe=True)
+
+    return HttpResponse("All rejected")
+
+@login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def setReject(request):
     thestuff = dict(request.POST.lists())
 
@@ -50,14 +64,20 @@ def setReject(request):
     id_list = thestuff['id_list[]']
 
     # update the files to set the rejection
-    File.objects.filter(file_id__in=id_list).update(
-        rejection_reason_id=reject_id[0])
+    files = File.objects.filter(file_id__in=id_list)
+    files.update(rejection_reason_id=reject_id[0])
 
     # update request with the has_rejected flag
-    Request.objects.filter(request_id=request_id[0]).update(has_rejected=True)
+    rqst = Request.objects.filter(request_id=request_id[0])
+    rqst.update(has_rejected=True)
+
+    
+    # update files review status
+    for file in files:
+        updateFileReview(request, file.file_id, request_id[0], skipComplete=True)
 
     # check if all files in the request are rejected
-    files = Request.objects.get(request_id=request_id[0]).files.all()
+    files = rqst[0].files.all()
     all_rejected = True
 
     for file in files:
@@ -65,15 +85,14 @@ def setReject(request):
             all_rejected = False
 
     if all_rejected == True:
-        Request.objects.filter(request_id=request_id[0]).update(all_rejected=True)
+        rqst.update(all_rejected=True)
 
     # recreate the zip file for the pull
-    someRequest = Request.objects.get(request_id=request_id[0])
-    network_name = someRequest.network.name
+    network_name = rqst[0].network.name
 
     try:
-        pull_number = someRequest.pull.pull_id
-        createZip(request, network_name, someRequest.is_centcom, pull_number)
+        pull_number = rqst[0].pull.pull_id
+        createZip(request, network_name, pull_number)
 
     except AttributeError:
         print("Request not found in any pull.")
@@ -88,7 +107,7 @@ def createEml( request, request_id, files_list, reject_id ):
     rqst = Request.objects.get(request_id=request_id[0])
     rejection = Rejection.objects.get(rejection_id=reject_id[0])
 
-    msgBody = "mailto:" + str(rqst.user.source_email) + "&subject=CFTS File Rejection&body=The following files have been rejected from your transfer request:%0D%0A"
+    msgBody = "mailto:" + str(rqst.user.source_email) + "?subject=CFTS File Rejection&body=The following files have been rejected from your transfer request:%0D%0A"
 
     files = File.objects.filter(file_id__in=files_list)
     for file in files:
@@ -112,8 +131,12 @@ def unReject(request):
     id_list = thestuff['id_list[]']
 
     # update the files to set the rejection
-    File.objects.filter(file_id__in=id_list).update(
-        rejection_reason_id=None)
+    files = File.objects.filter(file_id__in=id_list)
+
+    for file in files:
+        updateFileReview(request, file.file_id, request_id[0], skipComplete=True)
+
+    files.update(rejection_reason_id=None)
 
     # check if the request has rejected files in it
     files = Request.objects.get(request_id=request_id[0]).files.all()
@@ -127,7 +150,7 @@ def unReject(request):
         Request.objects.filter(request_id=request_id[0]).update(has_rejected=False)
 
     # remove all_rejected flag from request
-    Request.objects.filter(request_id=request_id[0]).update(all_rejected=False)
+    Request.objects.filter(request_id=request_id[0]).update(all_rejected=False, rejected_dupe=False)
 
 
     # recreate the zip file for the pull
@@ -137,7 +160,7 @@ def unReject(request):
     try:
         pull_number = someRequest.pull.pull_id
 
-        return redirect('create-zip',network_name=network_name,isCentcom=someRequest.is_centcom,rejectPull=pull_number)
+        return redirect('create-zip',network_name=network_name,rejectPull=pull_number)
 
     except AttributeError:
         print("Request not found in any pull.")
@@ -164,7 +187,7 @@ def setEncrypt(request):
     try:
         pull_number = someRequest.pull.pull_id
 
-        return redirect('create-zip',network_name=network_name,isCentcom=someRequest.is_centcom,rejectPull=pull_number)
+        return redirect('create-zip',network_name=network_name,rejectPull=pull_number)
 
     except AttributeError:
         print("Request not found in any pull.")
@@ -325,7 +348,13 @@ def process ( request ):
 
         requestData += form_data.get('userEmail')
 
-        destinationNet = Network.objects.get( name = form_data.get( 'network' ) )
+        # log why some users are getting a Network object error, what does their form contain???
+        try:
+            destinationNet = Network.objects.get( name = form_data.get( 'network' ) )
+        except Network.DoesNotExist:
+            # log their form 'network' value but cause the error again, because I still don't want their submission to go through
+            logger.error("Network object does not exist, network value from form: " + str(form_data.get( 'network' )))
+            destinationNet = Network.objects.get( name = form_data.get( 'network' ) )
 
         destination_list = form_data.get( 'targetEmail' ).split( "," )
         destSplit_list = []
@@ -358,27 +387,27 @@ def process ( request ):
         if form_data.get( 'organization' ) =="CENTCOM HQ":
             org = "HQ"
             
-        request = Request(
+        rqst = Request(
             user = cftsUser,
             network = destinationNet,
             comments = form_data.get( 'comments' ),
             org = org,
             is_centcom = form_data.get( 'isCentcom' )
         )
-        request.save()
+        rqst.save()
 
         requestData += form_data.get( 'network' )
 
-        request.target_email.add( *target_list )
+        rqst.target_email.add( *target_list )
         if form_data.get( 'network' ) == "NIPR":
             if form_data.get('userEmail').split("@")[0] not in destSplit_list:
-                request.destFlag = True
+                rqst.destFlag = True
 
         fileList=[]
 
         # add files to the request
         file_info =  json.loads( form_data.get( 'fileInfo' ) )
-        print( form_files.getlist( "files" ) )
+        # print( form_files.getlist( "files" ) )
         for i, f in enumerate( form_files.getlist( "files" )):
             this_file = File(
                 file_object = f,
@@ -417,7 +446,7 @@ def process ( request ):
             this_file.file_name = str(this_file.file_object.name).split("/")[-1]
             this_file.save()
 
-            request.files.add( this_file )
+            rqst.files.add( this_file )
             fileList.append(str(f))
 
         fileList.sort()
@@ -429,15 +458,23 @@ def process ( request ):
         requestHash = hashlib.md5()
         requestHash.update(requestData.encode())
         requestHash = requestHash.hexdigest()
-        request.request_hash = requestHash
+        rqst.request_hash = requestHash
 
-        if Request.objects.filter(pull__date_complete=None, request_hash=requestHash):
-            request.is_dupe=True
+        dupes = Request.objects.filter(pull__date_complete=None, request_hash=requestHash)
+        if dupes:
+            rqst.is_dupe=True
+            dupes.update(is_dupe=True)
 
-        request.is_submitted = True
-        request.save()
+        rqst.is_submitted = True
+        rqst.save()
 
-        resp = {'status': 'success', 'request_id': request.pk}
+        # scan all files in request, append results to file
+        try:
+            scan(request, rqst.request_id)
+        except:
+            pass
+
+        resp = {'status': 'success', 'request_id': rqst.pk}
 
     else:
         resp = {'status': 'fail', 'reason': 'bad-request-type',

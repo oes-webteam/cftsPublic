@@ -13,10 +13,6 @@ let addEmail = document.getElementById( "addEmail" );
   $("#userEmail").val(email) 
   $("#organization").val(org) 
 
-
-/* ************************************* */
-/* Get classifications from Django admin */
-/* ****************************** ****** */
   //Add the CSRF token to ajax requests
   $.ajaxSetup({
     beforeSend: function (xhr, settings) {
@@ -24,26 +20,10 @@ let addEmail = document.getElementById( "addEmail" );
         },
   });
 
-  // ajaxSettings = {
-  //   url: "api-getclassifications",
-  //   method: "GET",
-  //   contentType: false,
-  //   processData: false,
-  // };
-  // $.ajax(ajaxSettings).done(successHandler);
-    
-
   $('.network-switch').click(function(){
     let destEmail = $(this).attr('email')
     $('#targetEmail').val(destEmail)
   })
-
-  // function successHandler(data){
-  //   for(obj in data){
-  //     classifications.push(data[obj].fields.abbrev)
-  //   }
-  // }
-
 
 /* ********************************************************* */
 /* ADD FILES TO THE QUEUE WHEN ADDED FROM FIELD OR DROP ZONE */
@@ -159,23 +139,6 @@ const displayFileQueue = () => {
 
       let fileInfoDiv = document.createElement( "div" );
       fileInfoDiv.classList.add( "form-row" );
-      
-      // removing classification from files (JIRA ticket CFTS-371)
-      // let selectClass = document.createElement( "select" );
-      // selectClass.classList.add( "file-classification", "form-control", "col" );
-      // selectClass.setAttribute( "name", "classification" + i );
-      // selectClass.setAttribute( "id", "classification" + i );
-      // selectClass.required = true;
-
-      // classifications.forEach(  c => {
-      //   let option = document.createElement( "option" );
-      //   option.setAttribute( "value", c );
-      //   if( fileQueue[i] && fileQueue[i].cls == c ) option.selected = true;
-      //   option.appendChild( document.createTextNode( c ) );
-      //   selectClass.appendChild( option );
-      // });
-
-      // fileInfoDiv.appendChild( selectClass );
 
       let toEncrypt = document.createElement( "input" );
       toEncrypt.setAttribute( "type", "checkbox" );
@@ -230,70 +193,6 @@ const deleteEmailField = ( e ) => {
   preventDefaults( e );
   console.log(e.parentNode)
 };
-
-/* ******************************* */
-/* ADD NEW DESTINATION EMAIL FIELD */
-/* ******************************* */
-const createEmailField = ( e ) => {
-  
-  preventDefaults( e );
-  let emailFields = document.getElementsByName('targetEmail');
-  let emailFieldEmpty = false;
-
-  emailFields.forEach(field => {
-    if(field.value == ""){
-      console.log("empty email field")
-      field.classList.add('is-invalid');
-      emailFieldEmpty = true;
-    }
-    else{
-      if(field.classList.contains('is-invalid')){
-        field.classList.remove('is-invalid');
-      }
-    }
-  })
-
-  if(emailFieldEmpty == false){
-    let theButton = e.target;
-    let count = document.getElementsByName( 'targetEmail' ).length - 1;
-    
-  //  let spacerSpan = document.createElement( 'span' );
-  //  spacerSpan.classList.add( 'w-100' );
-
-    let newField = document.createElement( 'input' );
-    newField.setAttribute( 'type', 'email' );
-    newField.setAttribute( 'name', 'targetEmail' );
-    newField.setAttribute( 'id', 'destination' + count );
-    newField.setAttribute( 'placeholder', 'Email Address' );
-    newField.classList.add( 'form-control' );
-
-    let appendSpan = document.createElement('span');
-    appendSpan.classList.add('input-group-text')
-    appendSpan.setAttribute('id', 'removeEmail' + count)
-    appendSpan.textContent="X"
-    appendSpan.addEventListener( "click", () => {
-      appendSpan.parentNode.parentNode.remove();
-    }, false );
-
-
-    let removeField = document.createElement('div');
-    removeField.classList.add('input-group-append')
-    removeField.appendChild(appendSpan);
-    
-    let formGroup = document.createElement( 'div' );
-    formGroup.classList.add( 'form-group', 'add-email', 'input-group' );
-    formGroup.appendChild( newField );
-    formGroup.appendChild(removeField);
-
-
-    // inputGroup.insertBefore( spacerSpan, inputGroup.children[ position ] )
-    theButton.parentElement.insertAdjacentElement( "beforeBegin", formGroup );
-  }
-}
-
-addEmail.addEventListener( 'click', createEmailField, false );
-
-
 
 /* *************** */
 /* EVENT LISTENERS */

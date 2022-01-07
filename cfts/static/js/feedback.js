@@ -96,10 +96,10 @@ function validateForm(form) {
   }
 
   // title
-  if (!(form.elements.title.value.length )) {
-    errors.push(form.elements.title);
-    isValid = false;
-  }
+  // if (!(form.elements.title.value.length )) {
+  //   errors.push(form.elements.title);
+  //   isValid = false;
+  // }
 
   // category
   if (!(form.elements.category.value.length )) {

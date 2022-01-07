@@ -3,7 +3,8 @@
 from email import generator
 import random
 import datetime
-from django.db.models.expressions import When
+from django.contrib import messages
+from django.db.models.expressions import Subquery, When
 from django.db.models.fields import IntegerField
 import pytz
 # from io import BytesIO, StringIO
@@ -23,8 +24,8 @@ from django.views.decorators.cache import never_cache
 from pages.views.auth import superUserCheck, staffCheck
 
 # responses
-from django.shortcuts import redirect, render
-from django.http import JsonResponse, FileResponse, response  # , HttpResponse,
+from django.shortcuts import redirect, render, reverse
+from django.http import JsonResponse, FileResponse, response, HttpResponse
 
 # model/database stuff
 from pages.models import *
@@ -59,7 +60,9 @@ def queue(request):
         "Now anyone can be banned, so much power!",
         "A bug? In my code? Impossible.",
         "Deleting database... Just kidding",
-        "Slow day?"
+        "Slow day?",
+        "Pretty cards.",
+        "Ban anyone today?",
     ])
 
     ########################
@@ -73,43 +76,88 @@ def queue(request):
             'user_pulled__username'
         ).filter(network__name=net.name).order_by('-date_pulled')[:1]
 
-
         # get all the xfer requests (pending and pulled) submitted for this network
-        ds_requests = Request.objects.filter(
+        ds_requests_centcom = Request.objects.filter(
             network__name=net.name,
             is_submitted=True,
-            pull__date_complete__isnull=True,
-            #files__in=File.objects.filter( rejection_reason__isnull=True )
-        ).annotate(org_order = Case(
-            When(org='HQ', then=1), 
-            When(org='AFCENT', then=2), 
-            When(org='ARCENT', then=3), 
-            When(org='MARCENT', then=4), 
-            When(org='NAVCENT', then=5), 
-            When(org='SOCCENT', then=6), 
-            When(org='OTHER', then=7), output_field=IntegerField())).order_by('org_order', 'user__str__','-date_created')
+            pull__isnull=True,
+            ready_to_pull=False,
+            is_centcom=True,
+        ).annotate(
+            needs_review=Count('files', filter=Q(files__user_oneeye=None) | Q(files__user_twoeye=None) & ~Q(files__user_oneeye=request.user))-Count('files', filter=~Q(files__rejection_reason=None) & ~Q(files__user_oneeye=request.user) & ~Q(files__user_twoeye=request.user)), 
+            user_reviewing=Count('files', filter=Q(files__user_oneeye=request.user) & Q(files__date_oneeye=None) & Q(files__rejection_reason=None))+Count('files', filter=Q(files__user_twoeye=request.user) & Q(files__date_twoeye=None) & Q(files__rejection_reason=None))).order_by('date_created')
 
-        # count how many total files are in all the pending requests (excluding ones that have already been pulled)
-        file_count = ds_requests.annotate(
-            files_in_request=Count('files__file_id', filter=Q(
-                pull__date_pulled__isnull=True))
-        ).aggregate(
-            files_in_dataset=Sum('files_in_request')
-        )
+        ds_requests_other = Request.objects.filter(
+            network__name=net.name,
+            is_submitted=True,
+            pull__isnull=True,
+            ready_to_pull=False,
+            is_centcom=False,
+        ).annotate(
+            needs_review=Count('files', filter=Q(files__user_oneeye=None) | Q(files__user_twoeye=None) & ~Q(files__user_oneeye=request.user))-Count('files', filter=~Q(files__rejection_reason=None) & ~Q(files__user_oneeye=request.user) & ~Q(files__user_twoeye=request.user)), 
+            user_reviewing=Count('files', filter=Q(files__user_oneeye=request.user) & Q(files__date_oneeye=None) & Q(files__rejection_reason=None))+Count('files', filter=Q(files__user_twoeye=request.user) & Q(files__date_twoeye=None) & Q(files__rejection_reason=None))).order_by('date_created')
+
+        pullable_requests = Request.objects.filter(
+            network__name=net.name,
+            is_submitted=True,
+            pull__isnull=True,
+            ready_to_pull=True,
+            pull__date_complete__isnull=True,
+        ).order_by('user__str__')
+
+        pulled_requests = Request.objects.filter(
+            network__name=net.name,
+            is_submitted=True,
+            pull__isnull=False,
+            pull__date_complete__isnull=True,
+        ).order_by('pull','user__str__')
+
+        # count how many total files are in all the requests requests
+        file_count_centcom = ds_requests_centcom.annotate(
+            files_in_request=Count('files__file_id')).aggregate(count=Sum('files_in_request'))['count']
+        
+        if file_count_centcom == None:
+            file_count_centcom = 0
+
+        file_count_other = ds_requests_other.annotate(
+            files_in_request=Count('files__file_id')).aggregate(count=Sum('files_in_request'))['count']
+
+        if file_count_other == None:
+            file_count_other = 0
+
+        file_count_pullable = pullable_requests.annotate(
+            files_in_request=Count('files__file_id')).aggregate(count=Sum('files_in_request'))['count']
+
+        hidden_dupes = pullable_requests.filter(all_rejected=True, is_dupe=True, rejected_dupe=True).count()
+
+        if file_count_pullable == None:
+            file_count_pullable = 0
+
+        file_count_pulled = pulled_requests.annotate(
+            files_in_request=Count('files__file_id')).aggregate(count=Sum('files_in_request'))['count']
+
+        if file_count_pulled == None:
+            file_count_pulled = 0
 
         # smoosh all the info together into one big, beautiful data object ...
         queue = {
             'name': net.name,
             'order_by': net.sort_order,
-            'file_count': file_count,
-            'count': ds_requests.count(),
+            'count': ds_requests_centcom.count() + ds_requests_other.count() + pullable_requests.count() + pulled_requests.count(),
+            'file_count': file_count_centcom + file_count_other + file_count_pullable,
             'activeNet': False,
-            'pending': ds_requests.aggregate(count=Count('request_id', filter=Q(pull__date_pulled__isnull=True))),
-            'pulled': ds_requests.aggregate(count=Count('request_id', filter=Q(pull__date_pulled__isnull=False))),
-            'q': ds_requests,
-            'centcom': ds_requests.aggregate(count=Count('request_id', filter=Q(pull__date_pulled__isnull=True, is_centcom=True))),
+            'pending': ds_requests_centcom.count() + ds_requests_other.count() + pullable_requests.count(),
+            'centcom': ds_requests_centcom.count(),
+            'other': ds_requests_other.count(),
+            'pullable': pullable_requests.count(),
+            'hidden_dupes': hidden_dupes,
+            'pulled': pulled_requests.count(),
+            'q': ds_requests_centcom,
+            'o': ds_requests_other,
+            'a': pullable_requests.filter(rejected_dupe=False),
+            'p': pulled_requests,
             'last_pull': last_pull,
-            'orgs': ds_requests.filter(pull__date_pulled__isnull=True).values_list('org', flat=True)
+            'orgs': ds_requests_centcom.filter(pull__date_pulled__isnull=True).values_list('org', flat=True)
         }
 
         if activeSelected == False and queue['count'] > 0:
@@ -123,19 +171,8 @@ def queue(request):
     xfer_queues = sorted(
         xfer_queues, key=lambda k: k['order_by'], reverse=False)
 
-    # get list of Rejections for the "Reject Files" button
-    ds_rejections = Rejection.objects.filter(visible=True)
-    rejections = []
-    for row in ds_rejections:
-        rejections.append({
-            'rejection_id': row.rejection_id,
-            'name': row.name,
-            'subject': row.subject,
-            'text': row.text
-        })
-
     # create the request context
-    rc = {'queues': xfer_queues, 'empty': empty, 'rejections': rejections, 'easterEgg': activeSelected}
+    rc = {'queues': xfer_queues, 'empty': empty, 'easterEgg': activeSelected}
 
     # roll that beautiful bean footage
     return render(request, 'pages/queue.html', {'rc': rc})
@@ -146,29 +183,35 @@ def queue(request):
 def transferRequest( request, id ):
     rqst = Request.objects.get( request_id = id )
     user = User.objects.get( user_id = rqst.user.user_id )
-            
+    dupes = Request.objects.filter(pull__date_complete=None, request_hash=rqst.request_hash).exclude(request_id=rqst.request_id).order_by('-date_created')
+    
+    mostRecentDupe = False
+
+    if dupes.count() > 0:
+        if rqst.date_created > dupes[0].date_created:
+            mostRecentDupe = True
+
+    # get list of Rejections for the "Reject Files" button
+    ds_rejections = Rejection.objects.filter(visible=True)
+    rejections = []
+    for row in ds_rejections:
+        rejections.append({
+            'rejection_id': row.rejection_id,
+            'name': row.name,
+            'subject': row.subject,
+            'text': row.text
+        })
+        
     rc = { 
-        'User Name': user,
-        #'User_ID': user.user_identifier,
-        'User Email': user.source_email,
+        #'User': str(user) + " ("+ str(user.auth_user.username) +")",
+        'Date Submitted': rqst.date_created,
+        'Email': user.source_email,
         'Phone': user.phone,
-        'network': Network.objects.get( network_id = rqst.network.network_id ),
-        #'Marked as Centcom': rqst.is_centcom,
-        'Part of pull': rqst.pull,
-        'request_id': rqst.request_id,
-        'date_created': rqst.date_created,
-        'files': rqst.files.all(),
-        'target_email': rqst.target_email.all(),
-        #'is_submitted': rqst.is_submitted,
-        #'is_centcom': rqst.is_centcom,
+        'Network': Network.objects.get( network_id = rqst.network.network_id ),
+        'target_email': rqst.target_email.all()[0],
         'org': rqst.org,
-        #'has rejected files': rqst.has_rejected,
-        #'all files rejected': rqst.all_rejected,
-        'user_banned': user.banned,
-        'strikes': user.strikes,
-        'banned_until': user.banned_until
     }
-    return render(request, 'pages/transfer-request.html', {'rc': rc, 'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": user.user_id,})
+    return render(request, 'pages/transfer-request.html', {'rqst': rqst, 'rc':rc, 'dupes': dupes, 'mostRecentDupe': mostRecentDupe, 'rejections': rejections ,'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": user.user_id, 'debug': cftsSettings.DEBUG})
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
@@ -221,7 +264,7 @@ def banUser(request, userid, requestid, temp=False):
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
-def createZip(request, network_name, isCentcom, rejectPull):
+def createZip(request, network_name, rejectPull):
     if rejectPull == 'false':
         
         # create pull
@@ -236,40 +279,21 @@ def createZip(request, network_name, isCentcom, rejectPull):
         except Pull.DoesNotExist:
             pull_number = 1
 
-        if isCentcom == "True":
-            new_pull = Pull(
-                pull_number=pull_number,
-                network=Network.objects.get(name=network_name),
-                #date_pulled=datetime.datetime.now(),
-                date_pulled=timezone.now(),
-                user_pulled=request.user,
-                centcom_pull=True
-            )
-        else:
-            new_pull = Pull(
-                pull_number=pull_number,
-                network=Network.objects.get(name=network_name),
-                #date_pulled=datetime.datetime.now(),
-                date_pulled=timezone.now(),
-                user_pulled=request.user,
-            )
+        new_pull = Pull(
+            pull_number=pull_number,
+            network=Network.objects.get(name=network_name),
+            #date_pulled=datetime.datetime.now(),
+            date_pulled=timezone.now(),
+            user_pulled=request.user,
+        )
 
-        # select Requests based on network and status
-        if(isCentcom == "True"):
-            qs = Request.objects.filter(
-                network__name=network_name, pull=None, is_centcom=True, is_submitted=True)
-            for rqst in qs:
-                rqst.centcom_pull = True
-
-        elif(isCentcom == "False"):
-            qs = Request.objects.filter(
-                network__name=network_name, pull=None, is_submitted=True)
-            
+        qs = Request.objects.filter(
+            network__name=network_name, pull=None, ready_to_pull=True, is_submitted=True)
         new_pull.save()
         
         pull=new_pull
 
-    else:        
+    else:
         qs = Request.objects.filter(pull=rejectPull)
         pull = Pull.objects.filter(pull_id=rejectPull)[0]
         pull_number = pull.pull_number
@@ -358,6 +382,10 @@ def createZip(request, network_name, isCentcom, rejectPull):
             rqst.pull_id = new_pull.pull_id
             rqst.date_pulled = new_pull.date_pulled
             rqst.save()
+            files = rqst.files.all()
+            files.update(pull=new_pull)
+
+
 
     zip.close()
 
@@ -373,3 +401,100 @@ def getFile(request, fileID, fileName):
     response = FileResponse(
         open(os.path.join("uploads", fileID, fileName), 'rb'))
     return response
+
+@login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
+def updateFileReview(request, fileID, rqstID, quit="None", skipComplete=False):
+    rqst = Request.objects.get(request_id=rqstID)
+    file = File.objects.get(file_id=fileID)
+    open_file = False
+    save = True
+
+    if file.user_oneeye == None:
+        file.user_oneeye = request.user
+        open_file = True
+    elif file.user_oneeye == request.user and file.date_oneeye == None:
+        if quit == "True":
+            if file.user_twoeye != None:
+                    file.user_oneeye = file.user_twoeye
+                    file.date_oneeye = file.date_twoeye
+                    file.user_twoeye = None
+                    file.date_twoeye = None
+            else:
+                file.user_oneeye = None
+                file.date_oneeye = None
+        elif skipComplete == False:
+            file.date_oneeye = timezone.now()
+    elif file.user_twoeye == None:
+        file.user_twoeye = request.user
+        open_file = True
+    elif file.user_twoeye == request.user and file.date_twoeye == None:
+        if quit == "True":
+            file.user_twoeye = None
+        elif skipComplete == False:
+            file.date_twoeye = timezone.now()
+    else:
+        save = False
+
+    if save == True:
+        file.save()
+
+    ready_to_pull = checkPullable(rqst)
+
+    if open_file == True and cftsSettings.DEBUG == False:
+        return redirect('/transfer-request/' + str(rqstID) + '?' + str(fileID))
+    elif ready_to_pull == True:
+        return redirect('/transfer-request/' + str(rqstID) + '?false')
+    else:
+        return redirect('/transfer-request/' + str(rqstID))
+
+def checkPullable(rqst):
+    ready_to_pull = True
+    for file in rqst.files.all():
+        if file.date_twoeye == None:
+            if file.rejection_reason == None:
+                ready_to_pull = False
+                break
+        elif file.date_oneeye == None:
+            if file.rejection_reason == None:
+                ready_to_pull = False
+                break
+    
+    if rqst.ready_to_pull != ready_to_pull:
+        rqst.ready_to_pull = ready_to_pull
+        rqst.save()
+    
+    return ready_to_pull
+
+@login_required
+@user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)
+def removeFileReviewer(request, stage):
+    post = dict(request.POST.lists())
+    rqst = Request.objects.get(request_id=post['rqst_id'][0])
+
+    id_list = post['id_list[]']
+
+    files = File.objects.filter(file_id__in=id_list)
+
+    try:
+        if stage == 1:
+            for file in files:
+                if file.user_twoeye != None:
+                    file.user_oneeye = file.user_twoeye
+                    file.date_oneeye = file.date_twoeye
+                    file.user_twoeye = None
+                    file.date_twoeye = None
+                else:
+                    file.user_oneeye = None
+                    file.date_oneeye = None
+                file.save()
+            messages.success(request, 'Selected files have had their one eye reviewer removed')
+        elif stage == 2:
+            files.update(user_twoeye=None, date_twoeye=None)
+            messages.success(request, 'Selected files have had their two eye reviewer removed')
+    except:
+        messages.error(request, 'Good job, you broke it. Something went wrong')
+
+    checkPullable(rqst)
+
+    return HttpResponse({'response': 'Selected files have had their ' + str(stage) + ' eye review removed'})

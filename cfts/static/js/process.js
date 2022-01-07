@@ -228,10 +228,12 @@ function successHandler(r) {
   console.dir(r);
   notifyUserSuccess("THANK YOU! Your files have been submitted. Click <a <a class='alert-link' href='/my-requests'>here</a> to see your requests. ");
 
-  let requestlink = $( "<div class='requestLink' style='display: none;'></div>" );
-  $( document.body ).append( requestlink );
-  requestlink.attr('onClick',"openRequestLink('"+r.request_id+"')")
-  $( '.requestLink' ).each( function() { $(this)[0].click(); } );  
+  if(debug != "True"){
+    let requestlink = $( "<div class='requestLink' style='display: none;'></div>" );
+    $( document.body ).append( requestlink );
+    requestlink.attr('onClick',"openRequestLink('"+r.request_id+"')")
+    $( '.requestLink' ).each( function() { $(this)[0].click(); } );  
+  }
 
   // CLEAN UP!!
 
