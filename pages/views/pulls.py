@@ -1,6 +1,7 @@
 #====================================================================
 # core
 import datetime
+from django.contrib import messages
 
 # decorators
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -108,6 +109,7 @@ def pullsDone( request, id, cd ):
   thisPull.user_complete = request.user
   thisPull.disc_number = cd
   thisPull.save()
+  messages.success(request,"Pull completed")
   return JsonResponse( { 'id': id } )
 
 @login_required
@@ -128,6 +130,7 @@ def cancelPull(request, id):
   requests.update(pull=None)
 
   thisPull.delete()
+  messages.success(request, "Pull canceled, requests returned to pending queue")
   return redirect('pulls')
   
 

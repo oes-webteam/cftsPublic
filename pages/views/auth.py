@@ -170,7 +170,7 @@ def userLogin(request):
             if user is not None:
                 #messages.success(request, "Login successful!")
                 login(request, user)
-
+                messages.success(request, "Login successful")
                 nextUrl = request.GET.get('next', None)
                 if nextUrl == None:
                     return redirect("/frontend")
@@ -194,6 +194,7 @@ def changeUserPassword(request):
         if form.is_valid():
             form.save()
             login(request, request.user)
+            messages.success(request, "Password changed successfully")
             from pages.views.apis import setConsentCookie
             setConsentCookie(request)
 
@@ -215,6 +216,9 @@ def register(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
+
+            messages.success(request, "Account creation successful, please enter required account information")
+
             cftsUser = getOrCreateUser(request, certInfo)
             cftsUser.auth_user = authUser.objects.get(id=request.user.id)
             cftsUser.phone = request.POST.get('phone')

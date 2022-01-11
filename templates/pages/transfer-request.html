@@ -20,7 +20,7 @@
 
                 <div class="btn-group ml-3">
                     {% if centcom == True %}<a class="btn btn-warning" href="{% url 'api-removeCentcom' rqst.request_id %}">Remove Centcom Status</a>{% endif %}
-                    {% if not rqst.user.user_banned%}
+                    {% if not rqst.user.banned%}
                         {% if user.is_superuser %}
                             <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rqst.request_id "True" %}">Ban User, 1 day
                             </a>

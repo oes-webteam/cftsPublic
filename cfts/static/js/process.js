@@ -242,14 +242,14 @@ function successHandler(r) {
   document.getElementById("transfer-request-form").reset();
   resetFileQueue();
   resetAdditionalEmails();
-  autoFileUserInfo(email,phone, destEmail);
+  autoFillUserInfo(email,phone, destEmail);
 
 
   // re-enable the submit button
   $('#submitButton').prop('disabled',false);
 }
 
-function autoFileUserInfo(email, phone, destEmail){
+function autoFillUserInfo(email, phone, destEmail){
   $("#firstName").val(firstName)
   $("#lastName").val(lastName) 
   $("#userPhone").val(phone) 

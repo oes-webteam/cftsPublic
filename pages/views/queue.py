@@ -243,6 +243,7 @@ def requestNotes( request, requestid ):
     notes = postData['notes'][0]
     Request.objects.filter(request_id=requestid).update(notes=notes)
     rqst = Request.objects.get(request_id=requestid)
+    messages.success(request, "Notes Saved")
 
     try:
         pull_number = rqst.pull.pull_id
@@ -256,6 +257,8 @@ def requestNotes( request, requestid ):
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def removeCentcom( request, id ):
     Request.objects.filter(request_id = id).update(is_centcom=False)
+
+    messages.success(request,"Request moved to Other group")
     return redirect('transfer-request', id)
 
 @login_required
@@ -264,18 +267,24 @@ def banUser(request, userid, requestid, temp=False):
     userToBan = User.objects.filter(user_id=userid)[0]
     strikes = userToBan.strikes
     
+    days = 0
+
     if temp == "True":
         User.objects.filter(user_id=userid).update(banned=True, banned_until=datetime.date.today() + datetime.timedelta(days=1))
+        days = 1
     else:
         # users first ban, 3 days
         if strikes == 0:
             User.objects.filter(user_id=userid).update(banned=True, strikes=1, banned_until=datetime.date.today() + datetime.timedelta(days=3))
+            days = 3
         # second ban, 7 days
         elif strikes == 1:
             User.objects.filter(user_id=userid).update(banned=True, strikes=2, banned_until=datetime.date.today() + datetime.timedelta(days=7))
+            days = 7
         # third ban, 30 days
         elif strikes == 2:
             User.objects.filter(user_id=userid).update(banned=True, strikes=3, banned_until=datetime.date.today() + datetime.timedelta(days=30))
+            days = 30
         # fourth ban, lifetime
         elif strikes == 3:
             User.objects.filter(user_id=userid).update(banned=True, strikes=4, banned_until=datetime.date.today().replace(year=datetime.date.today().year+1000))
@@ -283,6 +292,11 @@ def banUser(request, userid, requestid, temp=False):
         else:
             pass
     
+    if days == 0:
+        messages.success(request, "User banned for a really long time")
+    else:
+        messages.success(request, "User banned for " + str(days) + " days")
+
     return redirect('transfer-request', requestid)
 
 @login_required
@@ -408,12 +422,11 @@ def createZip(request, network_name, rejectPull):
             files = rqst.files.all()
             files.update(pull=new_pull)
 
-
-
     zip.close()
 
     # see if we can't provide something more useful to the analysts - maybe the new pull number?
     if rejectPull == "false":
+        messages.success(request, "Pull " + str(new_pull) + " successfully created")
         return JsonResponse({'pullNumber': new_pull.pull_number, 'datePulled': new_pull.date_pulled.strftime("%d%b %H%M").upper(), 'userPulled': str(new_pull.user_pulled)})
     else:
         return JsonResponse({'pullNumber': pull.pull_number, 'datePulled': pull.date_pulled.strftime("%d%b %H%M").upper(), 'userPulled': str(pull.user_pulled)})
@@ -471,6 +484,7 @@ def updateFileReview(request, fileID, rqstID, quit="None", skipComplete=False):
     if open_file == True and cftsSettings.DEBUG == False:
         return redirect('/transfer-request/' + str(rqstID) + '?' + str(fileID))
     elif ready_to_pull == True:
+        messages.success(request, "All files in request have been fully reviewed. Request ready to pull")
         return redirect('/transfer-request/' + str(rqstID) + '?false')
     else:
         return redirect('/transfer-request/' + str(rqstID))

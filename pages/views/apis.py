@@ -4,6 +4,7 @@ import json
 from datetime import datetime
 from zipfile import ZipFile
 from django.http.response import HttpResponse
+from django.contrib import messages
 
 # decorators
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -51,7 +52,9 @@ def setRejectDupes(request):
             updateFileReview(request, file.file_id, rqst.request_id)
     
     dupeRequests.update(has_rejected=True, all_rejected=True, rejected_dupe=True)
-
+    
+    list(messages.get_messages(request))
+    messages.success(request, "All duplicate requests rejected")
     return HttpResponse("All rejected")
 
 @login_required
@@ -89,6 +92,8 @@ def setReject(request):
 
     # recreate the zip file for the pull
     network_name = rqst[0].network.name
+
+    messages.success(request, "Files rejected successfully")
 
     try:
         pull_number = rqst[0].pull.pull_id
@@ -159,6 +164,7 @@ def unReject(request):
     someRequest = Request.objects.get(request_id=request_id[0])
     network_name = someRequest.network.name
 
+    messages.success(request, "Files unrejected successfully")
     try:
         pull_number = someRequest.pull.pull_id
 
@@ -186,6 +192,8 @@ def setEncrypt(request):
     someRequest = Request.objects.get(request_id=request_id[0])
     network_name = someRequest.network.name
 
+    messages.success(request, "Files marked for encryption")
+    
     try:
         pull_number = someRequest.pull.pull_id
 

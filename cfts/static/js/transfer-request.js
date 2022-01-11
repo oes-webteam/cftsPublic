@@ -72,7 +72,6 @@ jQuery( document ).ready( function() {
 
     $.post("/api-requestnotes/"+ rqst_id , data, 'json').then(
       function (resp) {
-        alert("Notes saved")
         window.location.replace(window.location)
       },
     ); 
