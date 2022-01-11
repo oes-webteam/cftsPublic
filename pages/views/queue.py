@@ -148,9 +148,9 @@ def queue(request):
         file_count_pullable = pullable_requests.annotate(
             files_in_request=Count('files__file_id')).aggregate(count=Sum('files_in_request'))['count']
 
-        hidden_dupes_pullable = pullable_requests.filter(all_rejected=True, is_dupe=True, rejected_dupe=True).count()
+        hidden_dupes_pullable = pullable_requests.filter(all_rejected=True, rejected_dupe=True).count()
 
-        hidden_dupes_pulled = pulled_requests.filter(all_rejected=True, is_dupe=True, rejected_dupe=True).count()
+        hidden_dupes_pulled = pulled_requests.filter(all_rejected=True, rejected_dupe=True).count()
 
         if file_count_pullable == None:
             file_count_pullable = 0
