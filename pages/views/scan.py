@@ -39,7 +39,12 @@ def viewScan(request, pull_id):
     requests = Request.objects.filter(pull__pull_id=pull_id, all_rejected=False).annotate(imgCount=Sum('files__scan_results__0__imgCount', output_field=IntegerField()), cleanCount=Count('files', filter=Q(files__scan_results__0="empty"))).order_by('user','-date_created')
     folderNames = []
 
+    allClean = True
+
     for rqst in requests:
+        if rqst.cleanCount!=rqst.files.count():
+            allClean = False
+
         folder = str(rqst.user) + "/request_1"
 
         if folder in folderNames:
@@ -51,7 +56,7 @@ def viewScan(request, pull_id):
 
     folderNames = list(reversed(folderNames))
 
-    return render(request, 'pages/scan.html', {'requests': requests, 'requestFolders': folderNames})
+    return render(request, 'pages/scan.html', {'requests': requests, 'requestFolders': folderNames, 'allClean': allClean})
 
 def scan(request, rqst_id):
     rqst = Request.objects.get(request_id=rqst_id)

@@ -39,8 +39,8 @@
         <li class="pull-menu-option highlight"><a href="viewscan/{{pull.pull_id}}">View Scan Results</a></li>
         {% if pull.date_complete == None %}
         <li class="pull-menu-option highlight"><a href="{{pull.pull_id}}" class="done">Transfer Complete</a></li>
-        <li class="pull-menu-option highlight"><a href="cancelPull/{{pull.pull_id}}">Cancel Pull</a></li>
         {% endif %}
+        <li class="pull-menu-option highlight"><a href="cancelPull/{{pull.pull_id}}">Cancel Pull</a></li>
       </ul>
       <!-- END TODO -->
     </li>
