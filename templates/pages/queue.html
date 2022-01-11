@@ -113,8 +113,8 @@
                                 <br>
                                 <h4 class="org-header">Pullable Requests ({{network.pullable}}):</h4>
 
-                                {% if network.hidden_dupes > 0 %}
-                                    <h4 class="org-header">{{network.hidden_dupes}} hidden duplicate requests</h4>
+                                {% if network.hidden_dupes_pullable > 0 %}
+                                    <h4 class="org-header">{{network.hidden_dupes_pullable}} hidden duplicate requests</h4>
                                 {% endif %}
                                 
                                 <div class="row">
@@ -128,6 +128,11 @@
                             {% if network.pulled > 0 %}
                                 <br>
                                 <h4 class="org-header">Pulled Requests ({{network.pulled}}):</h4>
+
+                                {% if network.hidden_dupes_pulled > 0 %}
+                                    <h4 class="org-header">{{network.hidden_dupes_pulled}} hidden duplicate requests</h4>
+                                {% endif %}
+
                                 <div class="row">
                                 {% for request in network.p %}
                                         {% include 'partials/Queue_partials/requestTemplate.html' with request=request %}

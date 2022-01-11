@@ -120,12 +120,11 @@ def getPull(request, fileName):
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def cancelPull(request, id):
-  thisPull = Pull.objects.get( pull_id = id )
-  requests = Request.objects.filter(pull = id)
-  for rqst in requests:
-    files = rqst.files.all()
-    files.update(pull=None)
+  thisPull = Pull.objects.get(pull_id=id)
+  files = File.objects.filter(pull=id)
+  requests = Request.objects.filter(pull=id)
 
+  files.update(pull=None)
   requests.update(pull=None)
 
   thisPull.delete()

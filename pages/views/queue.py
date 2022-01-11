@@ -148,7 +148,9 @@ def queue(request):
         file_count_pullable = pullable_requests.annotate(
             files_in_request=Count('files__file_id')).aggregate(count=Sum('files_in_request'))['count']
 
-        hidden_dupes = pullable_requests.filter(all_rejected=True, is_dupe=True, rejected_dupe=True).count()
+        hidden_dupes_pullable = pullable_requests.filter(all_rejected=True, is_dupe=True, rejected_dupe=True).count()
+
+        hidden_dupes_pulled = pulled_requests.filter(all_rejected=True, is_dupe=True, rejected_dupe=True).count()
 
         if file_count_pullable == None:
             file_count_pullable = 0
@@ -170,12 +172,13 @@ def queue(request):
             'centcom': ds_requests_centcom.count(),
             'other': ds_requests_other.count(),
             'pullable': pullable_requests.count(),
-            'hidden_dupes': hidden_dupes,
+            'hidden_dupes_pullable': hidden_dupes_pullable,
+            'hidden_dupes_pulled': hidden_dupes_pulled,
             'pulled': pulled_requests.count(),
             'q': ds_requests_centcom,
             'o': ds_requests_other,
             'a': pullable_requests.filter(rejected_dupe=False),
-            'p': pulled_requests,
+            'p': pulled_requests.filter(rejected_dupe=False),
             'last_pull': last_pull,
             'orgs': ds_requests_centcom.filter(pull__date_pulled__isnull=True).values_list('org', flat=True)
         }
@@ -445,7 +448,7 @@ def updateFileReview(request, fileID, rqstID, quit="None", skipComplete=False):
                 file.date_oneeye = None
         elif skipComplete == False:
             file.date_oneeye = timezone.now()
-    elif file.user_twoeye == None:
+    elif file.user_twoeye == None and file.user_oneeye != request.user:
         file.user_twoeye = request.user
         open_file = True
     elif file.user_twoeye == request.user and file.date_twoeye == None:
@@ -460,6 +463,12 @@ def updateFileReview(request, fileID, rqstID, quit="None", skipComplete=False):
         file.save()
 
     ready_to_pull = checkPullable(rqst)
+
+    print(save, ready_to_pull)
+    
+    if save == False and ready_to_pull == True and rqst.pull != None:
+        rqst.pull = None
+        rqst.save()
 
     if open_file == True and cftsSettings.DEBUG == False:
         return redirect('/transfer-request/' + str(rqstID) + '?' + str(fileID))
@@ -515,6 +524,8 @@ def removeFileReviewer(request, stage):
     except:
         messages.error(request, 'Good job, you broke it. Something went wrong')
 
-    checkPullable(rqst)
+    if checkPullable(rqst) == False and rqst.pull != None:
+        rqst.pull = None
+        rqst.save()
 
     return HttpResponse({'response': 'Selected files have had their ' + str(stage) + ' eye review removed'})

@@ -348,19 +348,19 @@ const sendUnrejectRequest = (data) => {
           console.log( 'SUCCESS' );
           notifyUserSuccess("File rejection Successful")
           //console.log( 'Server response: ' + resp);
+          if(resp!="DEBUG"){
+            // create mailto anchor
+            let $anchor = $( "<a class='emailLink' target='_blank' href='" + resp + "''></a>" );
+            $( document.body ).append( $anchor );
+            
+            $( '.emailLink' ).each( function() { $(this)[0].click(); } );  
+        
 
-      // create mailto anchor
-      let $anchor = $( "<a class='emailLink' target='_blank' href='" + resp + "''></a>" );
-      $( document.body ).append( $anchor );
-      
-      $( '.emailLink' ).each( function() { $(this)[0].click(); } );  
-	
-
-      // close the dialog
-      $( theDialog ).dialog( 'close' );
-      
-      // reload the page from server
-      $( "#forceReload" ).submit();
+            // close the dialog
+            $( theDialog ).dialog( 'close' );
+          }
+          // reload the page from server
+          $( "#forceReload" ).submit();
 
         },
         // fail 
