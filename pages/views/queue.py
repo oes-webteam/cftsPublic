@@ -256,7 +256,7 @@ def requestNotes( request, requestid ):
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def removeCentcom( request, id ):
     Request.objects.filter(request_id = id).update(is_centcom=False)
-    return redirect('queue')
+    return redirect('transfer-request', id)
 
 @login_required
 @user_passes_test(superUserCheck, login_url='queue', redirect_field_name=None)
@@ -463,8 +463,6 @@ def updateFileReview(request, fileID, rqstID, quit="None", skipComplete=False):
         file.save()
 
     ready_to_pull = checkPullable(rqst)
-
-    print(save, ready_to_pull)
     
     if save == False and ready_to_pull == True and rqst.pull != None:
         rqst.pull = None
