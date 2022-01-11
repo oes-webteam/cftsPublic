@@ -209,7 +209,7 @@ const sendUnrejectRequest = (data) => {
         // success
         function( resp, status ) {
           console.log( 'SUCCESS' );        
-          notifyUserSuccess("File Unreject Successful")
+          // notifyUserSuccess("File Unreject Successful")
           $( "#forceReload" ).submit();
         },
         // fail 
@@ -292,7 +292,7 @@ const sendUnrejectRequest = (data) => {
         // success
         function( resp, status ) {
           console.log( 'SUCCESS' );        
-          notifyUserSuccess("File Encryption Successful")
+          // notifyUserSuccess("File Encryption Successful")
           $( "#forceReload" ).submit();
         },
         // fail 
@@ -352,7 +352,7 @@ const sendUnrejectRequest = (data) => {
         // success
         function( resp ) {
           console.log( 'SUCCESS' );
-          notifyUserSuccess("File rejection Successful")
+          // notifyUserSuccess("File rejection Successful")
           //console.log( 'Server response: ' + resp);
           if(resp!="DEBUG"){
             // create mailto anchor
