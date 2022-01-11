@@ -31,24 +31,31 @@ function enableGroupSelection( selector ) {
 jQuery( document ).ready( function() {
 
   if(document.location.search){
-    let file = document.location.search.split('?')[1]
-    if(file=='false'){
-      $( '.btn-back' ).attr('href', '/queue')
+    eml = document.location.search.substring(1,7)
+    if(eml == "mailto"){
+      window.open(document.location.search.substring(1))
+      history.pushState(null, "", location.href.split("?")[0])
     }
     else{
-      let row = document.getElementById("row_"+file)
-
-      row.scrollIntoView({behavior: "smooth", block: "center"})
-      setTimeout(function(){
-        $('#row_'+file).fadeOut(400).fadeIn(400).fadeOut(400).fadeIn(400)
-      },500)
-      
-      let fileLink = document.getElementById(file)
-      // console.log(fileLink)
-      history.pushState(null, "", location.href.split("?")[0])
-      
-      // fileLink.click()
-      window.open(fileLink.href, '_blank');
+      let file = document.location.search.split('?')[1]
+      if(file=='false'){
+        $( '.btn-back' ).attr('href', '/queue')
+      }
+      else{
+        let row = document.getElementById("row_"+file)
+  
+        row.scrollIntoView({behavior: "smooth", block: "center"})
+        setTimeout(function(){
+          $('#row_'+file).fadeOut(400).fadeIn(400).fadeOut(400).fadeIn(400)
+        },500)
+        
+        let fileLink = document.getElementById(file)
+        // console.log(fileLink)
+        history.pushState(null, "", location.href.split("?")[0])
+        
+        // fileLink.click()
+        window.open(fileLink.href, '_blank');
+      }
     }
   }
 

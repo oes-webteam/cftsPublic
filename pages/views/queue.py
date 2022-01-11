@@ -26,6 +26,8 @@ from pages.views.auth import superUserCheck, staffCheck
 
 # responses
 from django.shortcuts import redirect, render, reverse
+from django.template.loader import render_to_string
+
 from django.http import JsonResponse, FileResponse, response, HttpResponse
 
 # model/database stuff
@@ -296,8 +298,22 @@ def banUser(request, userid, requestid, temp=False):
         messages.success(request, "User banned for a really long time")
     else:
         messages.success(request, "User banned for " + str(days) + " days")
+    eml = banEml(request, requestid)
 
-    return redirect('transfer-request', requestid)
+    return redirect('/transfer-request/' + str(requestid) + "?" + eml)
+
+@login_required
+@user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)
+def banEml(request, request_id ):
+
+    rqst = Request.objects.get(request_id=request_id)
+
+    msgBody = "mailto:" + str(rqst.user.source_email) + "?subject=CFTS Ban Notice&body="
+    
+    msgBody += render_to_string('partials/Queue_partials/banTemplate.html', {'rqst': rqst, }, request)
+
+    return msgBody
+
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
