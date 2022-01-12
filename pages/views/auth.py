@@ -1,14 +1,13 @@
-import email
 import hashlib
-from os import name
-from re import T
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core import paginator
+from django.contrib.auth.hashers import check_password
 from django.forms.widgets import MultipleHiddenInput
 
 from django.shortcuts import render, redirect
 from django.http.response import HttpResponse
 
-from pages.forms import NewUserForm, userInfoForm, userLogInForm, userPasswordChangeForm
+from pages.forms import NewUserForm, userInfoForm, userLogInForm, userPasswordChangeForm, UsernameLookupForm
 from django.contrib.auth.forms import PasswordResetForm
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode
@@ -171,7 +170,7 @@ def userLogin(request):
             if user is not None:
                 #messages.success(request, "Login successful!")
                 login(request, user)
-
+                messages.success(request, "Login successful")
                 nextUrl = request.GET.get('next', None)
                 if nextUrl == None:
                     return redirect("/frontend")
@@ -195,6 +194,7 @@ def changeUserPassword(request):
         if form.is_valid():
             form.save()
             login(request, request.user)
+            messages.success(request, "Password changed successfully")
             from pages.views.apis import setConsentCookie
             setConsentCookie(request)
 
@@ -216,6 +216,9 @@ def register(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
+
+            messages.success(request, "Account creation successful, please enter required account information")
+
             cftsUser = getOrCreateUser(request, certInfo)
             cftsUser.auth_user = authUser.objects.get(id=request.user.id)
             cftsUser.phone = request.POST.get('phone')
@@ -292,7 +295,7 @@ def editUserInfo(request):
                         cftsUser.destination_emails.add(getOrCreateEmail(request, formEmail, net.name))
 
             cftsUser.save()
-            
+            messages.success(request, "Account info updated")
             return redirect("/frontend")
         else:
             messages.error(request, "Required fields missing")
@@ -305,7 +308,12 @@ def editUserInfo(request):
 @user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)
 def passwordResetAdmin(request):
     resetRequests = Feedback.objects.filter(category="Password Reset").order_by('completed','-date_submitted')
-    return render(request, "pages/passwordResetAdmin.html", context={'resetRequests': resetRequests})
+
+    requestPage = paginator.Paginator(resetRequests, 10)
+    pageNum = request.GET.get('page')
+    pageObj = requestPage.get_page(pageNum)
+
+    return render(request, "pages/passwordResetAdmin.html", context={'resetRequests': pageObj})
 
 def passwordResetRequest(request):
     resources = ResourceLink.objects.all()
@@ -318,8 +326,11 @@ def passwordResetRequest(request):
             if userMatchingEmail.exists():
                 for user in userMatchingEmail:
                     cftsUser = User.objects.get(auth_user=user)
-                    passwordResetFeedback = Feedback(title="Password reset: " + str(user.last_name) + ", " + str(user.first_name) + "(" + str(user.username) + ")", user=cftsUser, category="Password Reset")
-                    passwordResetFeedback.save()
+                    pendingResets = Feedback.objects.filter(user=cftsUser, category="Password Reset", completed=False).count()
+                    
+                    if pendingResets == 0:
+                        passwordResetFeedback = Feedback(title="Password reset: " + str(user.last_name) + ", " + str(user.first_name) + "(" + str(user.username) + ")", user=cftsUser, category="Password Reset")
+                        passwordResetFeedback.save()
             
             return redirect('/password-reset/done')
         else:
@@ -351,3 +362,31 @@ def passwordResetEmail(request, id, feedback):
     passwordResetFeedback.save()
 
     return HttpResponse(str(msgBody))
+
+def usernameLookup(request):
+    resources = ResourceLink.objects.all()
+
+    if request.method == "POST":
+        form = UsernameLookupForm(request.POST)
+
+        if form.is_valid():
+            formEmail = form.cleaned_data['email']
+            userMatchingEmail = authUser.objects.filter(email=formEmail)
+
+            if userMatchingEmail.exists:
+                for user in userMatchingEmail:
+                    if check_password(form.cleaned_data['password'], user.password):
+                        messages.success(request, "Username: " + user.username)
+                        return render(request, template_name="authForms/usernameLookup.html", context={'resources': resources, "UsernameLookupForm": UsernameLookupForm})        
+
+                # password failed for all filtered users
+                messages.error(request, "No user found for that email address or incorrect password")
+                return render(request, "authForms/usernameLookup.html", context={'resources': resources, "UsernameLookupForm": UsernameLookupForm})
+
+            # no user with that email
+            else:
+                messages.error(request, "No user found for that email address or incorrect password")
+                return render(request, "authForms/usernameLookup.html", context={'resources': resources, "UsernameLookupForm": UsernameLookupForm})
+    # GET request
+    else:
+        return render(request, "authForms/usernameLookup.html", context={'resources': resources, "UsernameLookupForm": UsernameLookupForm})

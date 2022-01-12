@@ -2,27 +2,20 @@
   color: red;
 }
 
-#rootList {
-  border-radius: 1.67ex;
-}
-
-.root-item {
+tbody {
   border: 1px dashed red;
-  border-radius: 1.67ex;
+  border-radius: 1.5rem;
   max-width: 50vw;
   min-width: 50vmax;
   font-size: 1.25em;
   font-weight: bold;
 }
 
-.scanned-list {
-  font-size: 0.75em;
-  font-weight: normal;
-}
-
 .scanned-item {}
 
-.inner-files {}
+.inner-files {
+  font-weight: normal;
+}
 
 .scanned-file {}
 

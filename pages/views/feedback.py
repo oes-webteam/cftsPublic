@@ -1,6 +1,7 @@
 # ====================================================================
 # core
 from django.conf import settings
+from django.contrib import messages
 
 # responses
 from django.shortcuts import render, redirect
@@ -79,7 +80,6 @@ def submitFeedback( request ):
                     pass
 
         feedback.save()
-
 
         return JsonResponse({'status': "Success"})
     else:

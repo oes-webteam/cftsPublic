@@ -25,6 +25,7 @@ urlpatterns = [
      path('password-reset/complete', auth_views.PasswordResetCompleteView.as_view(template_name='authForms/passwordResetForms/passwordResetComplete.html'), name='password_reset_complete'),
      path('password-reset-admin', views.passwordResetAdmin, name='password-reset-admin'),
      path('password-reset-email/<int:id>/<uuid:feedback>', views.passwordResetEmail, name='password-reset-email'),
+     path('username-lookup', views.usernameLookup, name='username-lookup'),
 
      # resources
      path('resources/<str:file>', views.resources, name='resources'),
@@ -38,21 +39,24 @@ urlpatterns = [
 
      # queue
      path('queue', views.queue, name='queue'),
+     path('queue/cookie', views.queue, name='cookie'),
      path('transfer-request/<uuid:id>',
           views.transferRequest, name='transfer-request'),
-     path('create-zip/<str:network_name>/<str:isCentcom>/<str:rejectPull>',
+     path('create-zip/<str:network_name>/<str:rejectPull>',
           views.createZip, name='create-zip'),
      path('getFile/uploads/<str:fileID>/<str:fileName>',
           views.getFile, name='getFile'),
+     path('updateFileReview/<uuid:fileID>/<uuid:rqstID>/', views.updateFileReview, name='reviewFile'),
+     path('updateFileReview/<uuid:fileID>/<uuid:rqstID>/<str:quit>', views.updateFileReview, name='reviewFile'),
+     path('removeFileReviewer/<int:stage>', views.removeFileReviewer, name='removeReview'),
 
      # scan
-     path('scan/<str:pullZip>', views.scan, name="scan"),
+     path('scan/<uuid:rqst_id>', views.scan, name="scan"),
+     path('viewscan/<uuid:pull_id>', views.viewScan, name="viewscan"),
 
      # pulls
      path('pulls', views.pulls, name='pulls'),
      path('getPull/<str:fileName>', views.getPull, name='getPull'),
-     path('pulls-oneeye/<uuid:id>', views.pullsOneEye, name='pulls-oneeye'),
-     path('pulls-twoeye/<uuid:id>', views.pullsTwoEye, name='pulls-twoeye'),
      path('pulls-done/<uuid:id>/<int:cd>', views.pullsDone, name='pulls-done'),
      path('cancelPull/<uuid:id>/', views.cancelPull, name='cancelPull'),
 
@@ -72,6 +76,7 @@ urlpatterns = [
      # APIs
      path('api-getuser/<uuid:id>', views.getUser, name='api-getuser'),
      path('api-setreject', views.setReject, name='api-setreject'),
+     path('api-setrejectdupes', views.setRejectDupes, name='api-setrejectdupes'),
      path('api-unreject', views.unReject, name='api-unreject'),
      path('api-setencrypt', views.setEncrypt, name='api-setencrypt'),
      path('api-numbers', views.runNumbers, name='api-numbers'),
@@ -90,4 +95,3 @@ urlpatterns = [
      path('tools-setupdb', views.setupDB, name="setupdb"),
      path('tools-updateFileInfo', views.updateFiles, name='api-updateFileInfo'),
 ]
-

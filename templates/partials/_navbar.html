@@ -76,7 +76,7 @@
               <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                 {% if user.is_staff %}
                   <a class="dropdown-item" href="{% url 'queue' %}">Transfer Queue</a>
-                  <a class="dropdown-item" href="{% url 'scan' 'none' %}">Scan Tool</a>
+                  {% comment %} <a class="dropdown-item" href="{% url 'scan' 'none' %}">Scan Tool</a> {% endcomment %}
                   <a class="dropdown-item" href="{% url 'pulls' %}">Pulls History</a>
                   <a class="dropdown-item" href="{% url 'archive' %}">Transfers Archive</a>
                   <a class="dropdown-item" href="{% url 'reports' %}">Reporting</a>

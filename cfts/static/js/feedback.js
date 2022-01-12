@@ -96,10 +96,10 @@ function validateForm(form) {
   }
 
   // title
-  if (!(form.elements.title.value.length )) {
-    errors.push(form.elements.title);
-    isValid = false;
-  }
+  // if (!(form.elements.title.value.length )) {
+  //   errors.push(form.elements.title);
+  //   isValid = false;
+  // }
 
   // category
   if (!(form.elements.category.value.length )) {
@@ -154,13 +154,13 @@ function successHandler(r) {
   document.getElementById("transfer-request-form").reset();
   //resetFileQueue();
   //resetAdditionalEmails();
-  autoFileUserInfo(email);
+  autoFillUserInfo(email);
 
   // re-enable the submit button
   $('#submitButton').prop('disabled',false);
 }
 
-function autoFileUserInfo(email){
+function autoFillUserInfo(email){
   if(xferForm.elements.userName){
     $("#userName").val(userName)
   }
