@@ -1,6 +1,7 @@
 #====================================================================
 # core
 import datetime
+from django.contrib import messages
 
 # decorators
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -20,6 +21,11 @@ from cfts import settings
 from pages.views.auth import superUserCheck, staffCheck
 #====================================================================
 
+def getReviewers(pull):
+  oneEyers = Request.objects.filter(pull=pull).values_list('files__user_oneeye__username', flat=True)
+  twoEyers = Request.objects.filter(pull=pull).values_list('files__user_twoeye__username', flat=True)
+  reviewers = list(oneEyers) + list(twoEyers)
+  return set(reviewers)
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
@@ -41,38 +47,34 @@ def pulls( request ):
     
     these_pulls = []
     for pull in pulls:
+      reviewers = getReviewers(pull)
+      
       this_pull = {
         'pull_id': pull.pull_id,
         'pull_number': pull.pull_number,
         'pull_date': pull.date_pulled,
         'pull_user': pull.user_pulled,
-        'date_oneeye': pull.date_oneeye,
-        'user_oneeye': pull.user_oneeye,
-        'date_twoeye': pull.date_twoeye,
-        'user_twoeye': pull.user_twoeye,
         'date_complete': pull.date_complete,
         'user_complete': pull.user_complete,
         'disk_number': pull.disc_number,
         'pull_network': net.name,
-        'centcom_pull': pull.centcom_pull
+        'reviewers': reviewers,
       }
       these_pulls.append( this_pull )
 
     for pull in incompletePulls:
+      reviewers = getReviewers(pull)
+
       this_pull = {
         'pull_id': pull.pull_id,
         'pull_number': pull.pull_number,
         'pull_date': pull.date_pulled,
         'pull_user': pull.user_pulled,
-        'date_oneeye': pull.date_oneeye,
-        'user_oneeye': pull.user_oneeye,
-        'date_twoeye': pull.date_twoeye,
-        'user_twoeye': pull.user_twoeye,
         'date_complete': pull.date_complete,
         'user_complete': pull.user_complete,
         'disk_number': pull.disc_number,
         'pull_network': net.name,
-        'centcom_pull': pull.centcom_pull
+        'reviewers': reviewers,
       }
       these_pulls.append( this_pull )
       
@@ -81,23 +83,23 @@ def pulls( request ):
 
   return render( request, 'pages/pulls.html', { 'rc': rc } )
 
-@login_required
-@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
-def pullsOneEye( request, id ):
-  thisPull = Pull.objects.get( pull_id = id )
-  thisPull.date_oneeye = datetime.datetime.now()
-  thisPull.user_oneeye = request.user
-  thisPull.save()
-  return JsonResponse( { 'id': id } )
+# @login_required
+# @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
+# def pullsOneEye( request, id ):
+#   thisPull = Pull.objects.get( pull_id = id )
+#   thisPull.date_oneeye = datetime.datetime.now()
+#   thisPull.user_oneeye = request.user
+#   thisPull.save()
+#   return JsonResponse( { 'id': id } )
 
-@login_required
-@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
-def pullsTwoEye( request, id ):
-  thisPull = Pull.objects.get( pull_id = id )
-  thisPull.date_twoeye = datetime.datetime.now()
-  thisPull.user_twoeye = request.user
-  thisPull.save()
-  return JsonResponse( { 'id': id } )
+# @login_required
+# @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
+# def pullsTwoEye( request, id ):
+#   thisPull = Pull.objects.get( pull_id = id )
+#   thisPull.date_twoeye = datetime.datetime.now()
+#   thisPull.user_twoeye = request.user
+#   thisPull.save()
+#   return JsonResponse( { 'id': id } )
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
@@ -107,6 +109,7 @@ def pullsDone( request, id, cd ):
   thisPull.user_complete = request.user
   thisPull.disc_number = cd
   thisPull.save()
+  messages.success(request,"Pull completed")
   return JsonResponse( { 'id': id } )
 
 @login_required
@@ -119,9 +122,15 @@ def getPull(request, fileName):
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def cancelPull(request, id):
-  thisPull = Pull.objects.get( pull_id = id )
-  requests = Request.objects.filter(pull = id).update(pull = None)
+  thisPull = Pull.objects.get(pull_id=id)
+  files = File.objects.filter(pull=id)
+  requests = Request.objects.filter(pull=id)
+
+  files.update(pull=None)
+  requests.update(pull=None)
+
   thisPull.delete()
+  messages.success(request, "Pull canceled, requests returned to pending queue")
   return redirect('pulls')
   
 

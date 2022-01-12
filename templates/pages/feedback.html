@@ -95,13 +95,14 @@
           <div class="col-lg-8">
           <div class="card text-center border-secondary mb-resp bg-light">
             <div class="card-body">
-
-                <h3 id="title">Title</h3>
-                <div class="form-group input-group">
-                <div class="input-group-prepend">
-                    <span class="input-group-text" id="categoryRequired">*</span>
+                <div style="display: none;">
+                  <h3 id="title">Title</h3>
+                  <div class="form-group input-group">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text" id="categoryRequired">*</span>
+                    </div>
+                    <input class="form-control" name="title" id="title" value="{% if rc.rqst %}Ban Request: {{rc.rqst.user}}{% elif rc.user != None %}{{rc.user}} ({{rc.user.auth_user.username}}){% endif %}"></input>
                   </div>
-                  <input class="form-control" name="title" id="title" {% if rc.rqst %}value="Ban Request: {{rc.rqst.user}}"{% endif %}></input>
                 </div>
 
                 <h3>Category</h3>

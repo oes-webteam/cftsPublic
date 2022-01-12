@@ -60,7 +60,7 @@ jQuery( document ).ready( function() {
 
     url = '/pulls-done/' + $this.attr( 'href' ) + '/' + cd;
     success = ( resp ) => {
-        alert( "Pull id " + resp.id + " marked as 'Transfer Complete'." );
+        // alert( "Pull id " + resp.id + " marked as 'Transfer Complete'." );
         location.reload();        
     };
     $.get( url, {}, success, 'json' );
