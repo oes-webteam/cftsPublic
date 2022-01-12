@@ -4,6 +4,7 @@ import json
 from datetime import datetime
 from zipfile import ZipFile
 from django.http.response import HttpResponse
+from django.contrib import messages
 
 # decorators
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -17,7 +18,7 @@ from django.template.loader import render_to_string
 from django.http import JsonResponse, HttpResponse
 
 # cfts settings
-from cfts.settings import NETWORK
+from cfts.settings import NETWORK, DEBUG
 # model/database stuff
 from pages.models import *
 
@@ -51,7 +52,9 @@ def setRejectDupes(request):
             updateFileReview(request, file.file_id, rqst.request_id)
     
     dupeRequests.update(has_rejected=True, all_rejected=True, rejected_dupe=True)
-
+    
+    list(messages.get_messages(request))
+    messages.success(request, "All duplicate requests rejected")
     return HttpResponse("All rejected")
 
 @login_required
@@ -90,15 +93,19 @@ def setReject(request):
     # recreate the zip file for the pull
     network_name = rqst[0].network.name
 
+    messages.success(request, "Files rejected successfully")
+
     try:
         pull_number = rqst[0].pull.pull_id
         createZip(request, network_name, pull_number)
 
     except AttributeError:
         print("Request not found in any pull.")
-
-    eml = createEml(request,request_id,id_list,reject_id)
-    return HttpResponse(str(eml))
+    if DEBUG == True:
+        return(HttpResponse("DEBUG"))
+    else:
+        eml = createEml(request,request_id,id_list,reject_id)
+        return HttpResponse(str(eml))
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
@@ -133,10 +140,10 @@ def unReject(request):
     # update the files to set the rejection
     files = File.objects.filter(file_id__in=id_list)
 
+    files.update(rejection_reason_id=None)
+
     for file in files:
         updateFileReview(request, file.file_id, request_id[0], skipComplete=True)
-
-    files.update(rejection_reason_id=None)
 
     # check if the request has rejected files in it
     files = Request.objects.get(request_id=request_id[0]).files.all()
@@ -157,6 +164,7 @@ def unReject(request):
     someRequest = Request.objects.get(request_id=request_id[0])
     network_name = someRequest.network.name
 
+    messages.success(request, "Files unrejected successfully")
     try:
         pull_number = someRequest.pull.pull_id
 
@@ -184,6 +192,8 @@ def setEncrypt(request):
     someRequest = Request.objects.get(request_id=request_id[0])
     network_name = someRequest.network.name
 
+    messages.success(request, "Files marked for encryption")
+    
     try:
         pull_number = someRequest.pull.pull_id
 

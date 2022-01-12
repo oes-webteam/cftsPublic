@@ -26,6 +26,8 @@ from pages.views.auth import superUserCheck, staffCheck
 
 # responses
 from django.shortcuts import redirect, render, reverse
+from django.template.loader import render_to_string
+
 from django.http import JsonResponse, FileResponse, response, HttpResponse
 
 # model/database stuff
@@ -148,7 +150,9 @@ def queue(request):
         file_count_pullable = pullable_requests.annotate(
             files_in_request=Count('files__file_id')).aggregate(count=Sum('files_in_request'))['count']
 
-        hidden_dupes = pullable_requests.filter(all_rejected=True, is_dupe=True, rejected_dupe=True).count()
+        hidden_dupes_pullable = pullable_requests.filter(all_rejected=True, rejected_dupe=True).count()
+
+        hidden_dupes_pulled = pulled_requests.filter(all_rejected=True, rejected_dupe=True).count()
 
         if file_count_pullable == None:
             file_count_pullable = 0
@@ -170,12 +174,13 @@ def queue(request):
             'centcom': ds_requests_centcom.count(),
             'other': ds_requests_other.count(),
             'pullable': pullable_requests.count(),
-            'hidden_dupes': hidden_dupes,
+            'hidden_dupes_pullable': hidden_dupes_pullable,
+            'hidden_dupes_pulled': hidden_dupes_pulled,
             'pulled': pulled_requests.count(),
             'q': ds_requests_centcom,
             'o': ds_requests_other,
             'a': pullable_requests.filter(rejected_dupe=False),
-            'p': pulled_requests,
+            'p': pulled_requests.filter(rejected_dupe=False),
             'last_pull': last_pull,
             'orgs': ds_requests_centcom.filter(pull__date_pulled__isnull=True).values_list('org', flat=True)
         }
@@ -240,6 +245,7 @@ def requestNotes( request, requestid ):
     notes = postData['notes'][0]
     Request.objects.filter(request_id=requestid).update(notes=notes)
     rqst = Request.objects.get(request_id=requestid)
+    messages.success(request, "Notes Saved")
 
     try:
         pull_number = rqst.pull.pull_id
@@ -253,7 +259,9 @@ def requestNotes( request, requestid ):
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def removeCentcom( request, id ):
     Request.objects.filter(request_id = id).update(is_centcom=False)
-    return redirect('queue')
+
+    messages.success(request,"Request moved to Other group")
+    return redirect('transfer-request', id)
 
 @login_required
 @user_passes_test(superUserCheck, login_url='queue', redirect_field_name=None)
@@ -261,18 +269,24 @@ def banUser(request, userid, requestid, temp=False):
     userToBan = User.objects.filter(user_id=userid)[0]
     strikes = userToBan.strikes
     
+    days = 0
+
     if temp == "True":
         User.objects.filter(user_id=userid).update(banned=True, banned_until=datetime.date.today() + datetime.timedelta(days=1))
+        days = 1
     else:
         # users first ban, 3 days
         if strikes == 0:
             User.objects.filter(user_id=userid).update(banned=True, strikes=1, banned_until=datetime.date.today() + datetime.timedelta(days=3))
+            days = 3
         # second ban, 7 days
         elif strikes == 1:
             User.objects.filter(user_id=userid).update(banned=True, strikes=2, banned_until=datetime.date.today() + datetime.timedelta(days=7))
+            days = 7
         # third ban, 30 days
         elif strikes == 2:
             User.objects.filter(user_id=userid).update(banned=True, strikes=3, banned_until=datetime.date.today() + datetime.timedelta(days=30))
+            days = 30
         # fourth ban, lifetime
         elif strikes == 3:
             User.objects.filter(user_id=userid).update(banned=True, strikes=4, banned_until=datetime.date.today().replace(year=datetime.date.today().year+1000))
@@ -280,7 +294,26 @@ def banUser(request, userid, requestid, temp=False):
         else:
             pass
     
-    return redirect('transfer-request', requestid)
+    if days == 0:
+        messages.success(request, "User banned for a really long time")
+    else:
+        messages.success(request, "User banned for " + str(days) + " days")
+    eml = banEml(request, requestid)
+
+    return redirect('/transfer-request/' + str(requestid) + "?" + eml)
+
+@login_required
+@user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)
+def banEml(request, request_id ):
+
+    rqst = Request.objects.get(request_id=request_id)
+
+    msgBody = "mailto:" + str(rqst.user.source_email) + "?subject=CFTS Ban Notice&body="
+    
+    msgBody += render_to_string('partials/Queue_partials/banTemplate.html', {'rqst': rqst, }, request)
+
+    return msgBody
+
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
@@ -405,12 +438,11 @@ def createZip(request, network_name, rejectPull):
             files = rqst.files.all()
             files.update(pull=new_pull)
 
-
-
     zip.close()
 
     # see if we can't provide something more useful to the analysts - maybe the new pull number?
     if rejectPull == "false":
+        messages.success(request, "Pull " + str(new_pull) + " successfully created")
         return JsonResponse({'pullNumber': new_pull.pull_number, 'datePulled': new_pull.date_pulled.strftime("%d%b %H%M").upper(), 'userPulled': str(new_pull.user_pulled)})
     else:
         return JsonResponse({'pullNumber': pull.pull_number, 'datePulled': pull.date_pulled.strftime("%d%b %H%M").upper(), 'userPulled': str(pull.user_pulled)})
@@ -445,7 +477,7 @@ def updateFileReview(request, fileID, rqstID, quit="None", skipComplete=False):
                 file.date_oneeye = None
         elif skipComplete == False:
             file.date_oneeye = timezone.now()
-    elif file.user_twoeye == None:
+    elif file.user_twoeye == None and file.user_oneeye != request.user:
         file.user_twoeye = request.user
         open_file = True
     elif file.user_twoeye == request.user and file.date_twoeye == None:
@@ -460,10 +492,15 @@ def updateFileReview(request, fileID, rqstID, quit="None", skipComplete=False):
         file.save()
 
     ready_to_pull = checkPullable(rqst)
+    
+    if save == False and ready_to_pull == True and rqst.pull != None:
+        rqst.pull = None
+        rqst.save()
 
     if open_file == True and cftsSettings.DEBUG == False:
         return redirect('/transfer-request/' + str(rqstID) + '?' + str(fileID))
     elif ready_to_pull == True:
+        messages.success(request, "All files in request have been fully reviewed. Request ready to pull")
         return redirect('/transfer-request/' + str(rqstID) + '?false')
     else:
         return redirect('/transfer-request/' + str(rqstID))
@@ -515,6 +552,8 @@ def removeFileReviewer(request, stage):
     except:
         messages.error(request, 'Good job, you broke it. Something went wrong')
 
-    checkPullable(rqst)
+    if checkPullable(rqst) == False and rqst.pull != None:
+        rqst.pull = None
+        rqst.save()
 
     return HttpResponse({'response': 'Selected files have had their ' + str(stage) + ' eye review removed'})

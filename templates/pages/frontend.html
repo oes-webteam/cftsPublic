@@ -6,7 +6,7 @@
 
 
 <!--Cards Start Here -->
-<section id="boxes" class="py-5">
+<section id="boxes" class="">
 
   <div class="container">
     {% if rc.user.banned %}
@@ -173,7 +173,7 @@
 
         <div class="row" id="button-row">
           <div class="col-md-4"></div>
-          <div class="col-md-4 mt-5 text-center">
+          <div class="col-md-4 mt-3 text-center">
             <button class="btn btn-secondary btn-block" id="submitButton" role="button" {% if rc.userBanned or rc.networks.items|length == 0 %}disabled{% endif %}>Submit</button>
           </div>
           <div class="col-md-4"></div>

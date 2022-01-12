@@ -55,6 +55,15 @@ tr:nth-of-type(odd) {
     justify-content: space-between;
 }
 
+.button-row{
+    top: 130px;
+}
+
+.alert{
+    margin-top: 8rem;
+    margin-bottom: -7rem;
+}
+
 @media(max-width: 1575px) {
     .btn-group{
         margin-left: 0% !important;

@@ -52,7 +52,7 @@ jQuery( document ).ready( function() {
         function(resp, status){
           // TODO: AJAX success != pull success
           // display success to the user
-          alert( 'Pull complete. New ZIP file created for ' + netName + '.  Click the download button to retrieve it.' );
+          // alert( 'Pull complete. New ZIP file created for ' + netName + '.  Click the download button to retrieve it.' );
           
           // prevent a second pull
           //pullBtn.addClass( 'disabled' );
@@ -68,7 +68,7 @@ jQuery( document ).ready( function() {
           // update last pulled info
           $( '.last-pull-info .date-pulled' ).text( resp.datePulled );
           $( '.last-pull-info .user-pulled' ).text( resp.userPulled );
-          notifyUserSuccess("Pull Created Successfully")
+          //notifyUserSuccess("Pull Created Successfully")
 
           $( "#forceReload" ).submit();
 
@@ -80,7 +80,7 @@ jQuery( document ).ready( function() {
           responseText = resp.responseText
           errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"))
 
-          notifyUserError("Error Creating Pull, send error message to web team:  " + errorInfo)
+          //notifyUserError("Error Creating Pull, send error message to web team:  " + errorInfo)
         }
       );
     }

@@ -1,6 +1,7 @@
 #====================================================================
 # core
 import datetime
+from django.contrib import messages
 
 # decorators
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -108,6 +109,7 @@ def pullsDone( request, id, cd ):
   thisPull.user_complete = request.user
   thisPull.disc_number = cd
   thisPull.save()
+  messages.success(request,"Pull completed")
   return JsonResponse( { 'id': id } )
 
 @login_required
@@ -120,15 +122,15 @@ def getPull(request, fileName):
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def cancelPull(request, id):
-  thisPull = Pull.objects.get( pull_id = id )
-  requests = Request.objects.filter(pull = id)
-  for rqst in requests:
-    files = rqst.files.all()
-    files.update(pull=None)
+  thisPull = Pull.objects.get(pull_id=id)
+  files = File.objects.filter(pull=id)
+  requests = Request.objects.filter(pull=id)
 
+  files.update(pull=None)
   requests.update(pull=None)
 
   thisPull.delete()
+  messages.success(request, "Pull canceled, requests returned to pending queue")
   return redirect('pulls')
   
 

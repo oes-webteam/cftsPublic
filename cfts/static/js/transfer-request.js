@@ -31,24 +31,31 @@ function enableGroupSelection( selector ) {
 jQuery( document ).ready( function() {
 
   if(document.location.search){
-    let file = document.location.search.split('?')[1]
-    if(file=='false'){
-      $( '.btn-back' ).attr('href', '/queue')
+    eml = document.location.search.substring(1,7)
+    if(eml == "mailto"){
+      window.open(document.location.search.substring(1))
+      history.pushState(null, "", location.href.split("?")[0])
     }
     else{
-      let row = document.getElementById("row_"+file)
-
-      row.scrollIntoView({behavior: "smooth", block: "center"})
-      setTimeout(function(){
-        $('#row_'+file).fadeOut(400).fadeIn(400).fadeOut(400).fadeIn(400)
-      },500)
-      
-      let fileLink = document.getElementById(file)
-      // console.log(fileLink)
-      history.pushState(null, "", location.href.split("?")[0])
-      
-      // fileLink.click()
-      window.open(fileLink.href, '_blank');
+      let file = document.location.search.split('?')[1]
+      if(file=='false'){
+        $( '.btn-back' ).attr('href', '/queue')
+      }
+      else{
+        let row = document.getElementById("row_"+file)
+  
+        row.scrollIntoView({behavior: "smooth", block: "center"})
+        setTimeout(function(){
+          $('#row_'+file).fadeOut(400).fadeIn(400).fadeOut(400).fadeIn(400)
+        },500)
+        
+        let fileLink = document.getElementById(file)
+        // console.log(fileLink)
+        history.pushState(null, "", location.href.split("?")[0])
+        
+        // fileLink.click()
+        window.open(fileLink.href, '_blank');
+      }
     }
   }
 
@@ -72,7 +79,6 @@ jQuery( document ).ready( function() {
 
     $.post("/api-requestnotes/"+ rqst_id , data, 'json').then(
       function (resp) {
-        alert("Notes saved")
         window.location.replace(window.location)
       },
     ); 
@@ -203,7 +209,7 @@ const sendUnrejectRequest = (data) => {
         // success
         function( resp, status ) {
           console.log( 'SUCCESS' );        
-          notifyUserSuccess("File Unreject Successful")
+          // notifyUserSuccess("File Unreject Successful")
           $( "#forceReload" ).submit();
         },
         // fail 
@@ -286,7 +292,7 @@ const sendUnrejectRequest = (data) => {
         // success
         function( resp, status ) {
           console.log( 'SUCCESS' );        
-          notifyUserSuccess("File Encryption Successful")
+          // notifyUserSuccess("File Encryption Successful")
           $( "#forceReload" ).submit();
         },
         // fail 
@@ -346,21 +352,21 @@ const sendUnrejectRequest = (data) => {
         // success
         function( resp ) {
           console.log( 'SUCCESS' );
-          notifyUserSuccess("File rejection Successful")
+          // notifyUserSuccess("File rejection Successful")
           //console.log( 'Server response: ' + resp);
+          if(resp!="DEBUG"){
+            // create mailto anchor
+            let $anchor = $( "<a class='emailLink' target='_blank' href='" + resp + "''></a>" );
+            $( document.body ).append( $anchor );
+            
+            $( '.emailLink' ).each( function() { $(this)[0].click(); } );  
+        
 
-      // create mailto anchor
-      let $anchor = $( "<a class='emailLink' target='_blank' href='" + resp + "''></a>" );
-      $( document.body ).append( $anchor );
-      
-      $( '.emailLink' ).each( function() { $(this)[0].click(); } );  
-	
-
-      // close the dialog
-      $( theDialog ).dialog( 'close' );
-      
-      // reload the page from server
-      $( "#forceReload" ).submit();
+            // close the dialog
+            $( theDialog ).dialog( 'close' );
+          }
+          // reload the page from server
+          $( "#forceReload" ).submit();
 
         },
         // fail 

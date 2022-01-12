@@ -5,7 +5,7 @@
 <div class="col-12">
     <a class="card bg-light {% if highlightFirst == True %}dupe{% endif %}{% if request.user_reviewing > 0 %}reviewing{% endif %}{% if request.pull != None %}pulled {% endif %} {% if request.pull.centcom_pull == True %}centcom{% endif %}" id="{{request.request_id}}" href="{% url 'transfer-request' request.request_id %}" request_hash="{{request.request_hash}}">
         <div class="card-body request-header {% if request.pull != None %} pending{% endif %} {% if request.centcom_pull %}centcom{% endif %}">
-            <h5 class="card-title" style="width: 75%;">{%if request.is_centcom%}<strong>{%endif%}{{ request.user }}{%if request.is_centcom%}</strong>{%endif%}</h5>
+            <h5 class="card-title" style="width: 75%;">{%if request.is_centcom%}{%endif%}{{ request.user }}{%if request.is_centcom%}{%endif%}</h5>
             <p class="request-submitted card-subtitle mb-2 text-muted">Submitted: {{ request.date_created|date:'db'|upper }} @ {{ request.date_created|time:'Hi' }}</p>
             
             {% comment %} {% if request.comments != "" %}
