@@ -7,7 +7,16 @@ window.document.title = "CFTS -- Transfer Queue";
 jQuery( document ).ready( function() {
 
   if(document.location.search){
-    let network = document.location.search.split('?')[1]
+    const search = document.location.search
+    const params = new URLSearchParams(search);
+    let paramObj = {};
+    for(var value of params.keys()) {
+        paramObj[value] = params.get(value);
+    }
+
+    console.log(paramObj)
+    
+    let network = paramObj.network
     let activeQueue = document.getElementsByClassName("tab-pane container active")[0]
     let activeTab = document.getElementsByClassName("nav-link active")[0]
     let newActiveTab = document.querySelector('a.nav-link[href="#tab'+network+'"]')
@@ -20,7 +29,7 @@ jQuery( document ).ready( function() {
     activeQueue = document.getElementById("tab"+network)
     activeQueue.classList.add("active")
     
-    var scrollID = document.location.search.split('?')[2]
+    var scrollID = paramObj.rqst
     history.pushState(null, "", location.href.split("?")[0])
     let scrollElm = document.getElementById(scrollID)
     scrollElm.scrollIntoView({behavior: "smooth", block: "center"})

@@ -31,43 +31,44 @@ function enableGroupSelection( selector ) {
 jQuery( document ).ready( function() {
 
   if(document.location.search){
-    eml = document.location.search.substring(1,7)
-    if(eml == "mailto"){
-      window.open(document.location.search.substring(1))
+    const search = document.location.search
+    const params = new URLSearchParams(search);
+    let paramObj = {};
+    for(var value of params.keys()) {
+        paramObj[value] = params.get(value);
+    }
+
+    console.log(paramObj)
+
+    if(paramObj.eml){
+      window.open(paramObj.eml+"&body="+paramObj.body)
       history.pushState(null, "", location.href.split("?")[0])
     }
-    else{
-      let file = document.location.search.split('?')[1]
-      if(file=='false'){
+    else if(paramObj.flash=="false"){
         $( '.btn-back' ).attr('href', '/queue')
       }
-      else{
-        let row = document.getElementById("row_"+file)
-  
-        row.scrollIntoView({behavior: "smooth", block: "center"})
-        setTimeout(function(){
-          $('#row_'+file).fadeOut(400).fadeIn(400).fadeOut(400).fadeIn(400)
-        },500)
-        
-        let fileLink = document.getElementById(file)
-        // console.log(fileLink)
-        history.pushState(null, "", location.href.split("?")[0])
-        
-        // fileLink.click()
-        window.open(fileLink.href, '_blank');
-      }
+    else if(paramObj.file){
+      let row = document.getElementById("row_"+paramObj.file)
+
+      row.scrollIntoView({behavior: "smooth", block: "center"})
+      setTimeout(function(){
+        $('#row_'+paramObj.file).fadeOut(400).fadeIn(400).fadeOut(400).fadeIn(400)
+      },500)
+      
+      let fileLink = document.getElementById(paramObj.file)
+      // console.log(fileLink)
+      history.pushState(null, "", location.href.split("?")[0])
+      
+      // fileLink.click()
+      window.open(fileLink.href, '_blank');
     }
   }
+  
 
   $.ajaxSetup({ 
     beforeSend: function( xhr, settings ) {
       xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
     } 
-   });
-  
-  $( '.btn-back' ).click( e => {  
-    e.preventDefault();
-    window.location.href = jQuery( e.target ).attr( 'href' ); 
   });
 
   $( '#noteBtn' ).click( e => {  
@@ -353,21 +354,25 @@ const sendUnrejectRequest = (data) => {
         function( resp ) {
           console.log( 'SUCCESS' );
           // notifyUserSuccess("File rejection Successful")
-          //console.log( 'Server response: ' + resp);
-          if(resp!="DEBUG"){
+          // console.log( 'Server response: ' + JSON.stringify(resp, null, 4));
+
+          if(resp.debug != true){
             // create mailto anchor
-            let $anchor = $( "<a class='emailLink' target='_blank' href='" + resp + "''></a>" );
+            let $anchor = $( "<a class='emailLink' target='_blank' href='" + resp.eml + "''></a>" );
             $( document.body ).append( $anchor );
             
             $( '.emailLink' ).each( function() { $(this)[0].click(); } );  
-        
-
+            
             // close the dialog
             $( theDialog ).dialog( 'close' );
           }
           // reload the page from server
-          $( "#forceReload" ).submit();
-
+          if(resp.flash == false){
+            window.location = window.location + '?flash=false'
+          }
+          else{
+            window.location = window.location
+          }
         },
         // fail 
         function( resp, status ) {
