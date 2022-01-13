@@ -9,7 +9,9 @@
 <section id="boxes" class="">
 
   <div class="container">
-    {% if rc.user.banned %}
+    {% if rc.browser == "IE"%}
+      <div class="alert alert-danger browser-notif" role="alert">This service <a class="alert-link">does not</a> support Internet Explorer. Please use Microsoft Edge, Google Chrome, or Firefox to utilize CFTS.</div>
+    {% elif rc.user.banned %}
       {% if rc.user.strikes != 4%}
         <div class="alert alert-danger banned-notif" role="alert">Repeated policy violations have resulted in you losing access to the Combined File Transfer Service. You will regain access to this service on {{rc.user.banned_until}}</div>
       {% else %}
@@ -19,8 +21,6 @@
     {% elif rc.submission_disabled == True %}
       <div class="alert alert-info" role="alert">The Combined File Transfer Service is currently undergoing maintenance, file submissions have been temporarily disabled.</div>
     {% else %}
-      {% if rc.browser == "IE"%}<div class="alert alert-danger browser-notif" role="alert">This service <a class="alert-link">does not</a> support Internet Explorer. Please use Microsoft Edge, Google Chrome, or Firefox to utilize CFTS.</div>{% endif %}
-    
       <div class="alert alert-warning encrypt-notif" role="alert">Please review the <a class="alert-link" href="{% url 'resources' "Combined_File_Transfer_Service_Policies.pdf" %}">CFTS Policies</a> before submitting your request. If your files contain CUI, PII, or PHI please mark them for encryption.</div>
       
       <div class="alert alert-danger fadein server-error" style="display: none;" role="alert"></div>

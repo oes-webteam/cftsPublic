@@ -56,11 +56,11 @@ jQuery( document ).ready( function() {
       },500)
       
       let fileLink = document.getElementById(paramObj.file)
-      // console.log(fileLink)
+      console.log(fileLink)
       history.pushState(null, "", location.href.split("?")[0])
       
-      // fileLink.click()
-      window.open(fileLink.href, '_blank');
+      fileLink.click()
+      // window.open(fileLink.href, '_blank');
     }
   }
   

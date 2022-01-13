@@ -50,6 +50,10 @@ def frontend(request):
 
     # get the consent header, redirect to consent page if not found
     try:
+        if browser == "IE":
+            rc = {'resources': resources, 'browser': browser}
+            return render(request, 'pages/frontend.html', {'rc': rc})
+
         request.session.__getitem__('consent')
         request.session.set_expiry(0)
         

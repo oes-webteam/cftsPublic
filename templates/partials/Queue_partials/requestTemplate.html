@@ -45,7 +45,7 @@
                             {% if file.is_pii or file.is_centcom_info %}
                                 <span title="PII: {{ file.is_pii }}&#10;CENTCOM Info: {{ file.is_centcom_info }}">🔒</span>
                             {% endif %}
-                            {{ file|truncatechars:30 }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</p>
+                            {{ file|truncatechars:25 }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</p>
                     </li>
                 {% endfor %}
                 {% if request.files.count > 4 %}

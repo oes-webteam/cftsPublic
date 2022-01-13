@@ -300,8 +300,10 @@ def banUser(request, userid, requestid, temp=False):
     else:
         messages.success(request, "User banned for " + str(days) + " days")
     eml = banEml(request, requestid)
-
-    return redirect('/transfer-request/' + str(requestid) + "?eml=" + eml)
+    if cftsSettings.DEBUG == True:
+        return redirect('/transfer-request/' + str(requestid))
+    else:
+        return redirect('/transfer-request/' + str(requestid) + "?eml=" + eml)
 
 @login_required
 @user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)

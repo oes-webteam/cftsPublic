@@ -34,7 +34,7 @@ class PullAdmin(admin.ModelAdmin):
     
 class FileAdmin(admin.ModelAdmin):
     list_display = ('file_name', 'pull')
-    search_fields = ('file_name', 'pull')
+    search_fields = ('file_name', )
     sortable_by = ('file_name', 'pull')
 
 # Register your models here.
