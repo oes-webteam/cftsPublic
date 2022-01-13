@@ -19,23 +19,30 @@ jQuery( document ).ready( function() {
     let network = paramObj.network
     let activeQueue = document.getElementsByClassName("tab-pane container active")[0]
     let activeTab = document.getElementsByClassName("nav-link active")[0]
-    let newActiveTab = document.querySelector('a.nav-link[href="#tab'+network+'"]')
-
-    activeTab.classList.remove("active")
-    newActiveTab.classList.add("active")
-
-    activeQueue.classList.remove("active")
-
-    activeQueue = document.getElementById("tab"+network)
-    activeQueue.classList.add("active")
     
-    var scrollID = paramObj.rqst
-    history.pushState(null, "", location.href.split("?")[0])
-    let scrollElm = document.getElementById(scrollID)
-    scrollElm.scrollIntoView({behavior: "smooth", block: "center"})
-    setTimeout(function(){
-      $('#'+scrollID).fadeOut(400).fadeIn(400).fadeOut(400).fadeIn(400)
-    },500)
+    try {
+      let newActiveTab = document.querySelector('a.nav-link[href="#tab'+network+'"]')
+    
+      newActiveTab.classList.add("active")
+      activeTab.classList.remove("active")
+
+      activeQueue.classList.remove("active")
+
+      activeQueue = document.getElementById("tab"+network)
+      activeQueue.classList.add("active")
+      
+      var scrollID = paramObj.rqst
+      history.pushState(null, "", location.href.split("?")[0])
+      let scrollElm = document.getElementById(scrollID)
+      scrollElm.scrollIntoView({behavior: "smooth", block: "center"})
+      setTimeout(function(){
+        $('#'+scrollID).fadeOut(400).fadeIn(400).fadeOut(400).fadeIn(400)
+      },500)
+    } 
+    catch (TypeError) {
+      console.log("Network not active in queue")
+      history.pushState(null, "", location.href.split("?")[0])
+    }
   }
   
   $.ajaxSetup({ 
