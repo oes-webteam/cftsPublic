@@ -165,7 +165,7 @@ var dupeButton = document.querySelectorAll('.show-dupe')
       $(e.currentTarget).find('.back').addClass('hidden')
       $(e.currentTarget).find('.real').removeClass('hidden')
     }
-    else if(cookiesFlipped == 1){
+    else if(cookiesFlipped == 1 && e.currentTarget != flippedCookies[0]){
       cookiesFlipped+=1
       flippedCookies.push(e.currentTarget)
 
@@ -192,7 +192,7 @@ var dupeButton = document.querySelectorAll('.show-dupe')
           }
         },750)
       }
-      else{
+      else if(e.currentTarget != flippedCookies[0]){
         console.log('no match')
         setTimeout(function(){
           console.log('reset cards')
