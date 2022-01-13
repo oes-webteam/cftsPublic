@@ -7,26 +7,42 @@ window.document.title = "CFTS -- Transfer Queue";
 jQuery( document ).ready( function() {
 
   if(document.location.search){
-    let network = document.location.search.split('?')[1]
+    const search = document.location.search
+    const params = new URLSearchParams(search);
+    let paramObj = {};
+    for(var value of params.keys()) {
+        paramObj[value] = params.get(value);
+    }
+
+    console.log(paramObj)
+    
+    let network = paramObj.network
     let activeQueue = document.getElementsByClassName("tab-pane container active")[0]
     let activeTab = document.getElementsByClassName("nav-link active")[0]
-    let newActiveTab = document.querySelector('a.nav-link[href="#tab'+network+'"]')
-
-    activeTab.classList.remove("active")
-    newActiveTab.classList.add("active")
-
-    activeQueue.classList.remove("active")
-
-    activeQueue = document.getElementById("tab"+network)
-    activeQueue.classList.add("active")
     
-    var scrollID = document.location.search.split('?')[2]
-    history.pushState(null, "", location.href.split("?")[0])
-    let scrollElm = document.getElementById(scrollID)
-    scrollElm.scrollIntoView({behavior: "smooth", block: "center"})
-    setTimeout(function(){
-      $('#'+scrollID).fadeOut(400).fadeIn(400).fadeOut(400).fadeIn(400)
-    },500)
+    try {
+      let newActiveTab = document.querySelector('a.nav-link[href="#tab'+network+'"]')
+    
+      newActiveTab.classList.add("active")
+      activeTab.classList.remove("active")
+
+      activeQueue.classList.remove("active")
+
+      activeQueue = document.getElementById("tab"+network)
+      activeQueue.classList.add("active")
+      
+      var scrollID = paramObj.rqst
+      history.pushState(null, "", location.href.split("?")[0])
+      let scrollElm = document.getElementById(scrollID)
+      scrollElm.scrollIntoView({behavior: "smooth", block: "center"})
+      setTimeout(function(){
+        $('#'+scrollID).fadeOut(400).fadeIn(400).fadeOut(400).fadeIn(400)
+      },500)
+    } 
+    catch (TypeError) {
+      console.log("Network not active in queue")
+      history.pushState(null, "", location.href.split("?")[0])
+    }
   }
   
   $.ajaxSetup({ 
@@ -149,7 +165,7 @@ var dupeButton = document.querySelectorAll('.show-dupe')
       $(e.currentTarget).find('.back').addClass('hidden')
       $(e.currentTarget).find('.real').removeClass('hidden')
     }
-    else if(cookiesFlipped == 1){
+    else if(cookiesFlipped == 1 && e.currentTarget != flippedCookies[0]){
       cookiesFlipped+=1
       flippedCookies.push(e.currentTarget)
 
@@ -176,7 +192,7 @@ var dupeButton = document.querySelectorAll('.show-dupe')
           }
         },750)
       }
-      else{
+      else if(e.currentTarget != flippedCookies[0]){
         console.log('no match')
         setTimeout(function(){
           console.log('reset cards')

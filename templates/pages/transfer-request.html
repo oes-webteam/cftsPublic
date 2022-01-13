@@ -14,7 +14,7 @@
         <div class="row button-row sticky-top bg-white mb-2 p-3">
             <div class="col-6">
                 <div class="btn-group">
-                    <button type="button" class="btn btn-primary btn-back" href="/queue?{{rqst.network}}?{{rqst.request_id}}">Back</button>
+                    <a type="button" class="btn btn-primary btn-back" href="/queue?network={{rqst.network}}&rqst={{rqst.request_id}}">Back</a>
                     <a class="btn btn-info" id="noteBtn" href="#">Save Notes</a>
                 </div>
 
@@ -89,7 +89,7 @@
                                 {% if file.is_pii%}
                                 <span title="PII: {{ file.is_pii }}&#10;">🔒</span>
                                 {% endif %}
-                                <a class="{% if file.rejection_reason != None %}rejected {% endif %} mr-2"title="{{ file }}" id="{{file.file_id}}" href={% if debug == True %}{% url 'admin:pages_file_change' file.file_id %}{% else %}"/getFile/{{file.file_object}}"{% endif %}>{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</a>
+                                <a class="{% if file.rejection_reason != None %}rejected {% endif %} mr-2"title="{{ file }}" id="{{file.file_id}}" href={% if debug == True %}{% url 'admin:pages_file_change' file.file_id %}{% else %}"/getFile/{{file.file_object}}"{% endif %} download="{{file.file_name}}">{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</a>
                                 {% if user.is_superuser %}{% if file.user_oneeye != None %}<strong><span class="reviewers mr-2 d-none">1 Eye:  {{file.user_oneeye}}</span>{% endif %} {% if file.user_twoeye != None %}<span class="reviewers d-none">2 Eye:  {{file.user_twoeye}}</span></strong>{% endif %}{% endif %}
                             </td>
                             <td class="file-right p-1">

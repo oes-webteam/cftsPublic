@@ -3,6 +3,7 @@
 from email import generator
 import random
 import datetime
+from re import T
 from django.contrib import messages
 from django.db.models.expressions import Subquery, When
 from django.db.models.fields import IntegerField
@@ -299,8 +300,10 @@ def banUser(request, userid, requestid, temp=False):
     else:
         messages.success(request, "User banned for " + str(days) + " days")
     eml = banEml(request, requestid)
-
-    return redirect('/transfer-request/' + str(requestid) + "?" + eml)
+    if cftsSettings.DEBUG == True:
+        return redirect('/transfer-request/' + str(requestid))
+    else:
+        return redirect('/transfer-request/' + str(requestid) + "?eml=" + eml)
 
 @login_required
 @user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)
@@ -496,12 +499,15 @@ def updateFileReview(request, fileID, rqstID, quit="None", skipComplete=False):
     if save == False and ready_to_pull == True and rqst.pull != None:
         rqst.pull = None
         rqst.save()
-
+    
     if open_file == True and cftsSettings.DEBUG == False:
-        return redirect('/transfer-request/' + str(rqstID) + '?' + str(fileID))
+        return redirect('/transfer-request/' + str(rqstID) + '?file=' + str(fileID))
     elif ready_to_pull == True:
         messages.success(request, "All files in request have been fully reviewed. Request ready to pull")
-        return redirect('/transfer-request/' + str(rqstID) + '?false')
+        if skipComplete == True:
+            return ready_to_pull
+        else:
+            return redirect('/transfer-request/' + str(rqstID) + '?flash=false')
     else:
         return redirect('/transfer-request/' + str(rqstID))
 

@@ -74,10 +74,9 @@ def setReject(request):
     rqst = Request.objects.filter(request_id=request_id[0])
     rqst.update(has_rejected=True)
 
-    
     # update files review status
     for file in files:
-        updateFileReview(request, file.file_id, request_id[0], skipComplete=True)
+        ready_to_pull = updateFileReview(request, file.file_id, request_id[0], skipComplete=True)
 
     # check if all files in the request are rejected
     files = rqst[0].files.all()
@@ -102,10 +101,16 @@ def setReject(request):
     except AttributeError:
         print("Request not found in any pull.")
     if DEBUG == True:
-        return(HttpResponse("DEBUG"))
+        if ready_to_pull == True:
+            return JsonResponse({'debug': True, 'flash': False})
+        else:
+            return JsonResponse({'debug': True})
     else:
         eml = createEml(request,request_id,id_list,reject_id)
-        return HttpResponse(str(eml))
+        if ready_to_pull == True:
+            return JsonResponse({'eml': str(eml), 'flash': False})
+        else:
+            return JsonResponse({'eml': str(eml)})
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
