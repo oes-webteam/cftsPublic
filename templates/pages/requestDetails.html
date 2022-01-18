@@ -3,19 +3,19 @@
 {% load util %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
-<link rel="stylesheet" href="{% static 'css/requestDetails.css' %}">    
+    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'css/requestDetails.css' %}">
 
     <div class="container" style="margin-top: 155px;">
         <table class="data-table">
             <tr class="xfer-status">
                 <a type="button" class="btn btn-primary btn-back" href="{% url 'userRequests' %}">Back</a>
-            <h3 class="status-text">Request Status: 
+                <h3 class="status-text">Request Status:
                     {% if rc.request.all_rejected == True %}
                         Rejected
-                    {% elif rc.request.pull.date_pulled == None %} 
+                    {% elif rc.request.pull.date_pulled == None %}
                         Submitted
-                    {% elif rc.request.pull.date_oneeye == None %} 
+                    {% elif rc.request.pull.date_oneeye == None %}
                         Initial review
                     {% elif rc.request.pull.date_twoeye == None %}
                         Secondary review
@@ -25,68 +25,68 @@
                         Inbound to destination network
                     {% endif %}
                 </h3>
-                
-                <div class="status-icons" >
+
+                <div class="status-icons">
                     {% if rc.request.pull.date_complete != None %}
-                    <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
-                    <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
-                    <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
-                    <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
+                        <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
+                        <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
+                        <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
+                        <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
                         {% if rc.request.all_rejected == True %}
                             <img src="{% static 'img/red_status.svg' %}" class="status-img"></img>
-                            {% else %}
+                        {% else %}
                             <img src="{% static 'img/green_status.svg' %}" class="status-img"></img>
                         {% endif %}
 
                     {% elif rc.request.pull.date_twoeye != None %}
-                    <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
-                    <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
-                    <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
+                        <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
+                        <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
+                        <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
                         {% if rc.request.all_rejected == True %}
                             <img src="{% static 'img/red_status.svg' %}" class="status-img"></img>
-                            {% else %}
+                        {% else %}
                             <img src="{% static 'img/deep-blue_status.svg' %}" class="status-img"></img>
                         {% endif %}
-                    <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
+                        <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
 
                     {% elif rc.request.pull.date_oneeye != None %}
-                    <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
-                    <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
+                        <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
+                        <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
                         {% if rc.request.all_rejected == True %}
                             <img src="{% static 'img/red_status.svg' %}" class="status-img"></img>
-                            {% else %}
+                        {% else %}
                             <img src="{% static 'img/deep-blue_status.svg' %}" class="status-img"></img>
                         {% endif %}
-                    <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
-                    <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
+                        <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
+                        <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
 
                     {% elif rc.request.pull.date_pulled != None %}
-                    <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
+                        <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
                         {% if rc.request.all_rejected == True %}
                             <img src="{% static 'img/red_status.svg' %}" class="status-img"></img>
-                            {% else %}
+                        {% else %}
                             <img src="{% static 'img/deep-blue_status.svg' %}" class="status-img"></img>
                         {% endif %}
-                    <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
-                    <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
-                    <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
+                        <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
+                        <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
+                        <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
 
                     {% else%}
                         {% if rc.request.all_rejected == True %}
                             <img src="{% static 'img/red_status.svg' %}" class="status-img"></img>
-                            {% else %}
+                        {% else %}
                             <img src="{% static 'img/deep-blue_status.svg' %}" class="status-img"></img>
                         {% endif %}
-                    <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
-                    <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
-                    <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
-                    <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
+                        <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
+                        <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
+                        <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
+                        <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
                     {% endif %}
                 </div>
-            </tr>	
+            </tr>
 
             <tr>
-                <th>Submitter</th>  <!-- add filter by user -->
+                <th>Submitter</th> <!-- add filter by user -->
                 <th>Date Submitted</th>
                 <th>Network</th>
                 <th>Files</th>
@@ -98,11 +98,11 @@
                 <td class="xfer-net">{{ rc.request.network }}</td>
                 <td class="xfer-files">
                     <ul class="file-list">
-                    {%  for f in rc.request.files.all %}
-                        {% with f.file_object.name|split:"/" as name %}
-                        <li class="{% if f.rejection_reason != Null %}rejected{% endif %}" x-file-name="{{ name.2 }}">{{ name.2|truncatechars:50 }}</li>
-                        {% endwith %}
-                    {% endfor %}
+                        {%  for f in rc.request.files.all %}
+                            {% with f.file_object.name|split:"/" as name %}
+                                <li class="{% if f.rejection_reason != Null %}rejected{% endif %}" x-file-name="{{ name.2 }}">{{ name.2|truncatechars:50 }}</li>
+                            {% endwith %}
+                        {% endfor %}
                     </ul>
                 </td>
                 <td class="xfer-email">
@@ -112,7 +112,7 @@
                         {% endfor %}
                     </ul>
                 </td>
-                    
+
             </tr>
         </table>
 
@@ -127,9 +127,9 @@
                     {% if f.rejection_reason != Null %}
                         <tr class="data-row">
                             <td class="xfer-files">
-                                    {% with f.file_object.name|split:"/" as name %}
-                                        <p x-file-name="{{ name.2 }}">{{ name.2|truncatechars:50 }}</p>
-                                    {% endwith %}
+                                {% with f.file_object.name|split:"/" as name %}
+                                    <p x-file-name="{{ name.2 }}">{{ name.2|truncatechars:50 }}</p>
+                                {% endwith %}
                             </td>
                             <td>
                                 <p>{{f.rejection_reason}}</p>
@@ -144,6 +144,8 @@
         {% endif %}
     </div> <!-- END container -->
 
-    <script>window.document.title = "Request Details"</script>
+    <script>
+        window.document.title = "Request Details"
+    </script>
 
 {% endblock  %}

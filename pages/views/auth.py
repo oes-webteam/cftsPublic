@@ -21,22 +21,26 @@ from django.contrib.auth.models import User as authUser
 from pages.models import Feedback, Network, User, Email, Feedback, ResourceLink
 from cfts.settings import NETWORK
 
+
 def superUserCheck(user):
     return user.is_superuser
+
 
 def staffCheck(user):
     return user.is_staff
 
+
 def getCert(request):
-    buggedPKIs = ['2ab155e3a751644ee4073972fc4534be158aa0891e8a8df6cd1631f56c61f06073d288fed905d0932fde78155c83208deb661361e64eb1a0f3d736ed04a7e4dc']#,'85582ff68bd0225a7bf8a7b150b547e3eac6c987c0c616d6411c6ac8c31bba0c09b330c220c51080fca2cd54c893a4a3fb256b81e8845490c6a0f9caf93984eb'] #[ acutally bugged hash, my hash for testing]
+    # ,'85582ff68bd0225a7bf8a7b150b547e3eac6c987c0c616d6411c6ac8c31bba0c09b330c220c51080fca2cd54c893a4a3fb256b81e8845490c6a0f9caf93984eb'] #[ acutally bugged hash, my hash for testing]
+    buggedPKIs = ['2ab155e3a751644ee4073972fc4534be158aa0891e8a8df6cd1631f56c61f06073d288fed905d0932fde78155c83208deb661361e64eb1a0f3d736ed04a7e4dc']
 
     try:
         cert = request.META['CERT_SUBJECT']
 
         # empty cert, IIS is set to ignore certs
-        if cert =="":
+        if cert == "":
             return {'status': "empty"}
-        
+
         # got a cert!
         else:
             md5Hash = hashlib.md5()
@@ -46,8 +50,7 @@ def getCert(request):
             sha512Hash = hashlib.sha512()
             sha512Hash.update(md5Hash.encode())
             userHash = sha512Hash.hexdigest()
-            
-            
+
             if userHash in buggedPKIs:
                 return {'status': "buggedPKI", 'cert': cert, 'userHash': userHash}
 
@@ -59,8 +62,9 @@ def getCert(request):
     except KeyError:
         return {'status': "empty"}
         # below lines are for testing PKI with django
-        #return {'status': "buggedPKI", 'cert': "test.tester2.12345", 'userHash': "2ab155e3a751644ee4073972fc4534be158aa0891e8a8df6cd1631f56c61f06073d288fed905d0932fde78155c83208deb661361e64eb1a0f3d736ed04a7e4dc"}
-        #return {'status': "validPKI", 'cert': "", 'userHash': "2ab155e3a751644ee4073972fc4534be158aa0891e8a8df6cd1631f56c61f06073d288fed905d0932fde78155c83208deb661361e64eb1a0f3d736ed04a7e4dc"}
+        # return {'status': "buggedPKI", 'cert': "test.tester2.12345", 'userHash': "2ab155e3a751644ee4073972fc4534be158aa0891e8a8df6cd1631f56c61f06073d288fed905d0932fde78155c83208deb661361e64eb1a0f3d736ed04a7e4dc"}
+        # return {'status': "validPKI", 'cert': "", 'userHash': "2ab155e3a751644ee4073972fc4534be158aa0891e8a8df6cd1631f56c61f06073d288fed905d0932fde78155c83208deb661361e64eb1a0f3d736ed04a7e4dc"}
+
 
 def getOrCreateEmail(request, address, network):
     emailNet = Network.objects.get(name=network)
@@ -84,7 +88,7 @@ def getOrCreateEmail(request, address, network):
         except Email.DoesNotExist:
             userEmail = Email(address=address, network=emailNet)
             userEmail.save()
-        
+
         # oops, got multiple results, grab the first
         except Email.MultipleObjectsReturned:
             userEmail = Email.objects.filter(address=address)[0]
@@ -95,7 +99,7 @@ def getOrCreateEmail(request, address, network):
     # oops, got multiple results, grab the first
     except Email.MultipleObjectsReturned:
         userEmail = Email.objects.filter(address=address, network=emailNet)[0]
-    
+
     return userEmail
 
 
@@ -117,20 +121,20 @@ def getOrCreateUser(request, certInfo):
                 user = User.objects.get(auth_user=request.user)
             else:
                 return None
-        
+
     except User.DoesNotExist:
         print("No user found with ID")
         if request.user.is_authenticated:
             userEmail = getOrCreateEmail(request, request.user.email, NETWORK)
             user = User(
-                auth_user = request.user,
+                auth_user=request.user,
                 name_first=request.user.first_name,
                 name_last=request.user.last_name,
-                source_email = userEmail
+                source_email=userEmail
             )
 
             if certInfo['status'] == "validPKI":
-                user.user_identifier=certInfo['userHash']
+                user.user_identifier = certInfo['userHash']
 
             user.save()
         else:
@@ -146,10 +150,10 @@ def getOrCreateUser(request, certInfo):
             if request.user.is_authenticated:
                 userEmail = getOrCreateEmail(request, request.user.email, NETWORK)
                 user = User(
-                    auth_user = request.user,
+                    auth_user=request.user,
                     name_first=request.user.first_name,
                     name_last=request.user.last_name,
-                    source_email = userEmail
+                    source_email=userEmail
                 )
                 user.save()
 
@@ -157,6 +161,7 @@ def getOrCreateUser(request, certInfo):
                 return None
 
     return user
+
 
 def userLogin(request):
     resources = ResourceLink.objects.all()
@@ -177,13 +182,14 @@ def userLogin(request):
                 else:
                     return redirect(nextUrl)
             else:
-                return render(request, template_name="authForms/userLogin.html", context={'resources': resources, "login_form":form,})
-            
+                return render(request, template_name="authForms/userLogin.html", context={'resources': resources, "login_form": form, })
+
         else:
-            return render(request, template_name="authForms/userLogin.html", context={'resources': resources, "login_form":form,})
+            return render(request, template_name="authForms/userLogin.html", context={'resources': resources, "login_form": form, })
 
     form = userLogInForm()
-    return render(request, template_name="authForms/userLogin.html", context={'resources': resources, "login_form":form})
+    return render(request, template_name="authForms/userLogin.html", context={'resources': resources, "login_form": form})
+
 
 @login_required
 def changeUserPassword(request):
@@ -199,12 +205,13 @@ def changeUserPassword(request):
             setConsentCookie(request)
 
             return redirect("/frontend")
-            
+
         else:
-            return render(request, template_name="authForms/userPassChange.html", context={'resources': resources, "pass_change_form":form,})
+            return render(request, template_name="authForms/userPassChange.html", context={'resources': resources, "pass_change_form": form, })
 
     form = userPasswordChangeForm(request.user)
-    return render(request, template_name="authForms/userPassChange.html", context={'resources': resources, "pass_change_form":form})
+    return render(request, template_name="authForms/userPassChange.html", context={'resources': resources, "pass_change_form": form})
+
 
 def register(request):
     resources = ResourceLink.objects.all()
@@ -229,10 +236,11 @@ def register(request):
 
             return redirect("/user-info")
         else:
-            return render(request, template_name="authForms/register.html", context={'resources': resources, "register_form":form,})
+            return render(request, template_name="authForms/register.html", context={'resources': resources, "register_form": form, })
 
     form = NewUserForm()
-    return render(request, template_name="authForms/register.html", context={'resources': resources, "register_form":form})
+    return render(request, template_name="authForms/register.html", context={'resources': resources, "register_form": form})
+
 
 @login_required
 def editUserInfo(request):
@@ -266,7 +274,7 @@ def editUserInfo(request):
             else:
                 cftsUser.other_org = None
             cftsUser.update_info = False
-            
+
             # create or update destination emails
             for net in nets:
                 formEmail = request.POST.get(str(net.name)+' Email')
@@ -304,16 +312,18 @@ def editUserInfo(request):
     form = userInfoForm(instance=cftsUser, networks=nets)
     return render(request, 'authForms/editUserInfo.html', context={'resources': resources, "userInfoForm": form})
 
+
 @login_required
 @user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)
 def passwordResetAdmin(request):
-    resetRequests = Feedback.objects.filter(category="Password Reset").order_by('completed','-date_submitted')
+    resetRequests = Feedback.objects.filter(category="Password Reset").order_by('completed', '-date_submitted')
 
     requestPage = paginator.Paginator(resetRequests, 10)
     pageNum = request.GET.get('page')
     pageObj = requestPage.get_page(pageNum)
 
     return render(request, "pages/passwordResetAdmin.html", context={'resetRequests': pageObj})
+
 
 def passwordResetRequest(request):
     resources = ResourceLink.objects.all()
@@ -327,24 +337,25 @@ def passwordResetRequest(request):
                 for user in userMatchingEmail:
                     cftsUser = User.objects.get(auth_user=user)
                     pendingResets = Feedback.objects.filter(user=cftsUser, category="Password Reset", completed=False).count()
-                    
+
                     if pendingResets == 0:
                         passwordResetFeedback = Feedback(title="Password reset: " + str(user.last_name) + ", " + str(user.first_name) + "(" + str(user.username) + ")", user=cftsUser, category="Password Reset")
                         passwordResetFeedback.save()
-            
+
             return redirect('/password-reset/done')
         else:
-            return render(request, template_name="authForms/passwordResetForms/passwordReset.html", context={'resources': resources, "password_reset_form":form, "envNet":NETWORK})
+            return render(request, template_name="authForms/passwordResetForms/passwordReset.html", context={'resources': resources, "password_reset_form": form, "envNet": NETWORK})
 
     form = PasswordResetForm()
-    return render(request, template_name="authForms/passwordResetForms/passwordReset.html", context={'resources': resources, "password_reset_form":form, "envNet":NETWORK})
+    return render(request, template_name="authForms/passwordResetForms/passwordReset.html", context={'resources': resources, "password_reset_form": form, "envNet": NETWORK})
+
 
 @login_required
 @user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)
 def passwordResetEmail(request, id, feedback):
     auth_user = authUser.objects.get(id=id)
     passwordResetFeedback = Feedback.objects.get(feedback_id=feedback)
-    rc ={
+    rc = {
         'user': auth_user,
         'email': auth_user.email,
         'uid': urlsafe_base64_encode(force_bytes(auth_user.pk)),
@@ -353,7 +364,7 @@ def passwordResetEmail(request, id, feedback):
     }
 
     msgBody = "mailto:" + str(auth_user.email) + "?subject=CFTS Password Reset&body="
-    
+
     msgBody += render_to_string('authForms/passwordResetForms/passwordResetEmail.html', rc, request)
 
     print(msgBody)
@@ -362,6 +373,7 @@ def passwordResetEmail(request, id, feedback):
     passwordResetFeedback.save()
 
     return HttpResponse(str(msgBody))
+
 
 def usernameLookup(request):
     resources = ResourceLink.objects.all()
@@ -377,7 +389,7 @@ def usernameLookup(request):
                 for user in userMatchingEmail:
                     if check_password(form.cleaned_data['password'], user.password):
                         messages.success(request, "Username: " + user.username)
-                        return render(request, template_name="authForms/usernameLookup.html", context={'resources': resources, "UsernameLookupForm": UsernameLookupForm})        
+                        return render(request, template_name="authForms/usernameLookup.html", context={'resources': resources, "UsernameLookupForm": UsernameLookupForm})
 
                 # password failed for all filtered users
                 messages.error(request, "No user found for that email address or incorrect password")

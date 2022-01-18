@@ -33,16 +33,18 @@ logger = logging.getLogger('django')
 
 # ====================================================================
 
+
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def viewScan(request, pull_id):
-    requests = Request.objects.filter(pull__pull_id=pull_id, all_rejected=False).annotate(imgCount=Sum('files__scan_results__0__imgCount', output_field=IntegerField()), cleanCount=Count('files', filter=Q(files__scan_results__0="empty"))).order_by('user','-date_created')
+    requests = Request.objects.filter(pull__pull_id=pull_id, all_rejected=False).annotate(imgCount=Sum('files__scan_results__0__imgCount', output_field=IntegerField()),
+                                                                                          cleanCount=Count('files', filter=Q(files__scan_results__0="empty"))).order_by('user', '-date_created')
     folderNames = []
 
     allClean = True
 
     for rqst in requests:
-        if rqst.cleanCount!=rqst.files.count():
+        if rqst.cleanCount != rqst.files.count():
             allClean = False
 
         folder = str(rqst.user) + "/request_1"
@@ -51,12 +53,13 @@ def viewScan(request, pull_id):
             i = 2
             while folder in folderNames:
                 folder = str(rqst.user) + "/request_" + str(i)
-                i+=1
+                i += 1
         folderNames.append(folder)
 
     folderNames = list(reversed(folderNames))
 
     return render(request, 'pages/scan.html', {'requests': requests, 'requestFolders': folderNames, 'allClean': allClean})
+
 
 def scan(request, rqst_id):
     rqst = Request.objects.get(request_id=rqst_id)
@@ -68,7 +71,7 @@ def scan(request, rqst_id):
     while True:
         if os.path.isdir(scan_folder):
             scan_folder = settings.SCANTOOL_DIR+"\\scan_"+str(i)
-            i+=1
+            i += 1
         else:
             break
 
@@ -95,27 +98,28 @@ def scan(request, rqst_id):
                 results = [{
                     'file': file.file_object.path,
                     'found': [{'file': file.file_object.path,
-                    'findings': [str('Error in scan: ' + repr(e))]}]
+                               'findings': [str('Error in scan: ' + repr(e))]}]
                 }]
 
                 file.scan_results = results
                 file.save()
 
     if request.method == 'GET':
-        return redirect('transfer-request' , id=rqst_id)
+        return redirect('transfer-request', id=rqst_id)
+
 
 def runScan(scan_folder):
     scan_results = []
     fileList = []
     office_filetype_list = [".docx", ".dotx", ".xlsx",
                             ".xltx", ".pptx", ".potx", ".ppsx", ".onenote"]
-    
+
     # scan_dir = os.path.abspath(scan_folder)
 
     with os.scandir(scan_folder) as files:
         for file in files:
             fileList.append(file.path)
-    
+
     # \cfts\scan should contain all the user folders from the zip file
     printBin = re.compile('printerSettings(\d+).bin')
     imgFiles = re.compile('(jpe?g|png|gif|bmp|emf)', re.IGNORECASE)
@@ -153,16 +157,16 @@ def runScan(scan_folder):
                                             shutil.move(result['file'], embedOffFilePath)
                                             fileList.append(embedOffFilePath)
                                 else:
-                                    imgCount+=1
+                                    imgCount += 1
                                     removeResults.append(result)
 
                             except KeyError:
                                 pass
-                        
+
                         if removeResults is not []:
                             for result in removeResults:
                                 file_results.remove(result)
-                            
+
                     # clean up after yourself
                     if os.path.isdir(os.path.dirname(filename)+"\\office"):
                         shutil.rmtree(os.path.dirname(filename)+"\\office", ignore_errors=True)
@@ -172,11 +176,11 @@ def runScan(scan_folder):
                     with open(filename, 'rb') as pdf:
                         pdfReader = PyPDF2.PdfFileReader(pdf)
                         pages = pdfReader.pages
-                        
+
                         for page in pages:
                             pageText = page.extractText()
                             textFile.write("".join(pageText.split()))
-                            
+
                         pdf.close()
 
                     textFile.close()
@@ -200,7 +204,7 @@ def runScan(scan_folder):
                     file_results = [scanFile(readablePath, filename)]
                     if file_results[0] is not None:
                         if imgFiles.match(file_results[0]['file'].split(".")[-1]) != None:
-                            imgCount+=1
+                            imgCount += 1
                             file_results = []
                     else:
                         file_results = None
@@ -210,7 +214,7 @@ def runScan(scan_folder):
                 result = {
                     'file': readablePath,
                     'findings': [str('Error in scan: ' + repr(e))]
-                    }
+                }
                 file_results.append(result)
 
             if(file_results is not None):
@@ -220,10 +224,11 @@ def runScan(scan_folder):
                 if imgCount > 0:
                     result['imgCount'] = imgCount
                     imgCount = 0
-                    #result['image']=True
+                    # result['image']=True
                 scan_results.append(result)
 
     return scan_results
+
 
 def scanOfficeFile(office_file):
     results = None
@@ -234,10 +239,10 @@ def scanOfficeFile(office_file):
         name, ext = os.path.splitext(office_file)
         name = name.split("\\")[-1]
         ext = ext.split(".")[-1]
-        extractPath = os.path.join(os.path.dirname(office_file),"office",office_file.split("\\")[-1])
-        
+        extractPath = os.path.join(os.path.dirname(office_file), "office", office_file.split("\\")[-1])
+
         zf = ZipFile(office_file)
-        zf.extractall(extractPath)    
+        zf.extractall(extractPath)
 
         # step through the contents of the scantool 'temp' folder
         for root, subdirs, files in os.walk(extractPath):
@@ -248,7 +253,7 @@ def scanOfficeFile(office_file):
                     readablePath = "\\".join(readablePath[1:])
 
                     readablePath = readablePath.split("extracted_files\\")[-1]
-                    readablePath = readablePath.replace("office\\","")
+                    readablePath = readablePath.replace("office\\", "")
 
                     findings = scanFile(readablePath, file_path)
 
@@ -259,14 +264,15 @@ def scanOfficeFile(office_file):
     except BadZipFile:
         if results is None:
             results = []
-            
+
         result = {
             'file': office_file,
             'findings': ['File is corrupt. Cannot scan.'],
-            }
+        }
         results.append(result)
     # done
     return results
+
 
 def scanFile(readablePath, text_file):
     # result = {
@@ -277,10 +283,10 @@ def scanFile(readablePath, text_file):
 
     reg_lst = []
 
-    for raw_regex in DirtyWord.objects.filter(case_sensitive = False):
+    for raw_regex in DirtyWord.objects.filter(case_sensitive=False):
         reg_lst.append(re.compile(raw_regex.word, re.IGNORECASE))
-    
-    for raw_regex in DirtyWord.objects.filter(case_sensitive = True):
+
+    for raw_regex in DirtyWord.objects.filter(case_sensitive=True):
         reg_lst.append(re.compile(raw_regex.word))
 
     try:

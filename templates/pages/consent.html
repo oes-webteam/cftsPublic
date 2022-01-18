@@ -1,48 +1,52 @@
-{% load static %} <!-- Has to load first to use static helper -->
+{% load static %}
+<!-- Has to load first to use static helper -->
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <title>CFTS NDA</title>
-</head>
-<body>
 
-<div class="container">
-    <h2 class="text-center">Notice and Consent</h2>
-    <br>
-    <blockquote class="blockquote">
-        You are accessing a U.S. Government (USG) Information System (IS) that is provided for
-        USG-authorized use only. By using this IS (which includes any device attached to this IS),
-        you consent to the following conditions: The USG routinely intercepts and monitors
-        communications on this IS for purposes including, but not limited to, penetration testing,
-        COMSEC monitoring, network operations and defense, personnel misconduct (PM),
-        law enforcement (LE), and counterintelligence (CI) investigations. At any time, the USG
-        may inspect and seize data stored on this IS. Communications using, or data stored on, this
-        IS are not private, are subject to routine monitoring, interception, and search, and may be
-        disclosed or used for any USG authorized purpose. This IS includes security measures
-        (e.g., authentication and access controls) to protect USG interests--not for your personal
-        benefit or privacy. Not withstanding the above, using this IS does not constitute consent to PM,
-        LE or CI investigative searching or monitoring of the content of privileged communications, or
-        work product, related to personal representation or services by attorneys, psychotherapists, or
-        clergy, and their assistants. Such communications and work product are private and confidential.
-        See User Agreement for details.
-    </blockquote>
-    <br>
-    <br>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+        <title>CFTS NDA</title>
+    </head>
 
-    <div class="row">
-    <div class="col-md-4"></div>
-    <div class="col-md-4 text-center">
-        <a href="{% url 'frontend' %}" class="btn btn-success btn-lg active" role="button" aria-pressed="true">I Acknowledge</a>
-    </div>
-    <div class="col-md-4"></div>
-    </div>
+    <body>
 
-</div>
+        <div class="container">
+            <h2 class="text-center">Notice and Consent</h2>
+            <br>
+            <blockquote class="blockquote">
+                You are accessing a U.S. Government (USG) Information System (IS) that is provided for
+                USG-authorized use only. By using this IS (which includes any device attached to this IS),
+                you consent to the following conditions: The USG routinely intercepts and monitors
+                communications on this IS for purposes including, but not limited to, penetration testing,
+                COMSEC monitoring, network operations and defense, personnel misconduct (PM),
+                law enforcement (LE), and counterintelligence (CI) investigations. At any time, the USG
+                may inspect and seize data stored on this IS. Communications using, or data stored on, this
+                IS are not private, are subject to routine monitoring, interception, and search, and may be
+                disclosed or used for any USG authorized purpose. This IS includes security measures
+                (e.g., authentication and access controls) to protect USG interests--not for your personal
+                benefit or privacy. Not withstanding the above, using this IS does not constitute consent to PM,
+                LE or CI investigative searching or monitoring of the content of privileged communications, or
+                work product, related to personal representation or services by attorneys, psychotherapists, or
+                clergy, and their assistants. Such communications and work product are private and confidential.
+                See User Agreement for details.
+            </blockquote>
+            <br>
+            <br>
 
-</body>
+            <div class="row">
+                <div class="col-md-4"></div>
+                <div class="col-md-4 text-center">
+                    <a href="{% url 'frontend' %}" class="btn btn-success btn-lg active" role="button" aria-pressed="true">I Acknowledge</a>
+                </div>
+                <div class="col-md-4"></div>
+            </div>
+
+        </div>
+
+    </body>
+
 </html>
