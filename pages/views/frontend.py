@@ -30,7 +30,19 @@ def getDestinationNetworks(request, cftsUser):
     networkEmails = {}
     nets = Network.objects.filter(visible=True, network_id__in=cftsUser.destination_emails.values('network_id'))
     for net in nets:
-        networkEmails[net.name] = cftsUser.destination_emails.get(network__name=net.name).address
+        try:
+            networkEmails[net.name] = cftsUser.destination_emails.get(network__name=net.name).address
+        except Email.MultipleObjectsReturned:
+            duplicateEmails = cftsUser.destination_emails.filter(network__name=net.name)
+
+            for email in duplicateEmails:
+                cftsUser.destination_emails.remove(email)
+                email.network = None
+                email.save()
+
+            cftsUser.save()
+            messages.info(request, "An error has occured, please check and re-enter any missing information.")
+            return None
 
     return networkEmails
 
@@ -73,6 +85,8 @@ def frontend(request):
         checkBan(cftsUser)
 
         nets = getDestinationNetworks(request, cftsUser)
+        if nets == None:
+            return redirect('user-info')
         rc = {'networks': nets, 'submission_disabled': Settings.DISABLE_SUBMISSIONS, 'debug': str(Settings.DEBUG), 'resources': resources, 'user': cftsUser, 'browser': browser}
 
         return render(request, 'pages/frontend.html', {'rc': rc})
