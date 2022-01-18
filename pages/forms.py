@@ -8,18 +8,21 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Div, Submit, HTML
 from cfts.settings import NETWORK, DEBUG
 
+
 class userLogInForm(AuthenticationForm):
     def __init__(self, *args, **kwargs):
         super(userLogInForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper(self)
-        self.helper.layout.append(Submit('login','Login'))
+        self.helper.layout.append(Submit('login', 'Login'))
+
 
 class userPasswordChangeForm(PasswordChangeForm):
     def __init__(self, *args, **kwargs):
         super(userPasswordChangeForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper(self)
-        self.helper.layout.append(Submit('save','Save'))
+        self.helper.layout.append(Submit('save', 'Save'))
         self.helper.layout.append(HTML('<a class="btn btn-danger" href="/frontend">Cancel</a>'))
+
 
 class NewUserForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -39,7 +42,7 @@ class NewUserForm(UserCreationForm):
         if commit:
             user.save()
         return user
-    
+
     def check_duplicate(self, form, certInfo):
         if DEBUG == False:
             if certInfo['status'] == "validPKI":
@@ -49,7 +52,7 @@ class NewUserForm(UserCreationForm):
                     for user in matchingUsers:
                         if user.auth_user != None:
                             dupe = True
-                    
+
                     if dupe == True:
                         self.add_error(None, "Your " + NETWORK + " token is already tied to an account. If you forgot your password you can request a reset from the login page. If you believe this to be an error please contact us at the link below.")
             else:
@@ -62,16 +65,16 @@ class userInfoForm(ModelForm):
     source_email = forms.EmailField(max_length=75, required=True)
     phone = forms.CharField(max_length=50, required=True)
     org = forms.ChoiceField(choices=[
-        ('None','---------------------'),
-        ('CENTCOM HQ','CENTCOM HQ'),
-        ('AFCENT','AFCENT'),
-        ('ARCENT','ARCENT'),
-        ('MARCENT','MARCENT'),
-        ('NAVCENT','NAVCENT'),
-        ('SOCCENT','SOCCENT'),
-        ('OTHER','OTHER - Describe')], required=True)
+        ('None', '---------------------'),
+        ('CENTCOM HQ', 'CENTCOM HQ'),
+        ('AFCENT', 'AFCENT'),
+        ('ARCENT', 'ARCENT'),
+        ('MARCENT', 'MARCENT'),
+        ('NAVCENT', 'NAVCENT'),
+        ('SOCCENT', 'SOCCENT'),
+        ('OTHER', 'OTHER - Describe')], required=True)
     other_org = forms.CharField(max_length=50, required=False)
-    
+
     class Meta:
         model = User
         fields = ('name_first', 'name_last')
@@ -80,7 +83,7 @@ class userInfoForm(ModelForm):
         networks = kwargs.pop('networks')
         user = kwargs.get('instance')
         email = Email.objects.get(email_id=user.source_email.email_id)
-        
+
         super(userInfoForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper(self)
 
@@ -93,28 +96,29 @@ class userInfoForm(ModelForm):
         self.fields['org'].label = "Organization"
         self.fields['other_org'].initial = user.other_org
         self.fields['other_org'].label = "Other Organization"
-        self.helper.layout.append(HTML('<div style="width: 100%"><hr class="mt-2 mb-3" style="border-top-width: 3px; border-top-color: rgba(0, 0, 0, 0.2);"/><h3 class="mt-3">Destination Emails</h3><p class="mb-4">You can only submit transfer requests to networks you have a valid email for.</p></div>'))
+        self.helper.layout.append(HTML(
+            '<div style="width: 100%"><hr class="mt-2 mb-3" style="border-top-width: 3px; border-top-color: rgba(0, 0, 0, 0.2);"/><h3 class="mt-3">Destination Emails</h3><p class="mb-4">You can only submit transfer requests to networks you have a valid email for.</p></div>'))
 
         for network in networks:
             net = Network.objects.get(name=network)
             fieldName = net.name+' Email'
-            self.fields[fieldName] = forms.EmailField(max_length=75 ,required=False)
+            self.fields[fieldName] = forms.EmailField(max_length=75, required=False)
             self.fields[fieldName].label = fieldName
             try:
                 networkEmail = user.destination_emails.get(network__name=network)
                 self.fields[fieldName].initial = networkEmail.address
-            
-            except Email.MultipleObjectsReturned: 
+
+            except Email.MultipleObjectsReturned:
                 networkEmail = user.destination_emails.filter(network__name=network)
                 self.fields[fieldName].initial = networkEmail[0].address
-                
+
             except Email.DoesNotExist:
                 pass
             self.helper.layout.append(fieldName)
 
         self.helper.all().wrap_together(Div, css_class="inline-fields")
-        self.helper.layout.append(Submit('save','Save'))
-    
+        self.helper.layout.append(Submit('save', 'Save'))
+
     def validate_form(self, form):
         for network in Network.objects.filter(visible=True):
             if form.get(network.name+' Email') == form.get('source_email'):
@@ -123,8 +127,9 @@ class userInfoForm(ModelForm):
         if form.get('org') == "None":
             self.add_error('org', "Select an organization")
 
-        if form.get('org') == "OTHER" and form.get('other_org')=="":
+        if form.get('org') == "OTHER" and form.get('other_org') == "":
             self.add_error('other_org', "List your organization")
+
 
 class UsernameLookupForm(ModelForm):
     email = forms.EmailField(max_length=75, required=True)
@@ -134,10 +139,10 @@ class UsernameLookupForm(ModelForm):
         model = authUser
         fields = ('email', 'password')
 
-    def __init__( self, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(UsernameLookupForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper(self)
         self.fields['email'].label = NETWORK + ' Email'
         self.fields['password'].label = 'Account Password'
-        self.helper.layout.append(Submit('save','Search'))
+        self.helper.layout.append(Submit('save', 'Search'))
         self.helper.layout.append(HTML('<a class="btn btn-danger" href="/frontend">Cancel</a>'))

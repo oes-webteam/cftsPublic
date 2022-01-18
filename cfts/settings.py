@@ -183,7 +183,6 @@ LOGGING = {
         },
     },
 }
-    
 
 
 # Static files (CSS, JavaScript, Images)
@@ -196,8 +195,8 @@ STATICFILES_DIRS = [
 
 STATICFILES_STORAGE = 'cfts.static.ManifestStaticFilesStorageSubClass'
 
-UPLOADS_DIR = os.path.join(BASE_DIR,'uploads')
-PULLS_DIR = os.path.join(BASE_DIR,'pulls')
-TEMP_FILES_DIR = os.path.join(BASE_DIR,'tempFiles')
-SCANTOOL_DIR = os.path.join (BASE_DIR, 'cfts\scan' )
-SCANTOOL_TEMPDIR = os.path.join( SCANTOOL_DIR, 'temp' )
+UPLOADS_DIR = os.path.join(BASE_DIR, 'uploads')
+PULLS_DIR = os.path.join(BASE_DIR, 'pulls')
+TEMP_FILES_DIR = os.path.join(BASE_DIR, 'tempFiles')
+SCANTOOL_DIR = os.path.join(BASE_DIR, 'cfts\scan')
+SCANTOOL_TEMPDIR = os.path.join(SCANTOOL_DIR, 'temp')

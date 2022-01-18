@@ -1,40 +1,52 @@
 /* archive.css */
-table { 
-  border-collapse: separate; 
-  border-spacing: 0.3vw; 
-  width: 100%;
+table {
+    border-collapse: separate;
+    border-spacing: 0.3vw;
+    width: 100%;
 }
-table td { 
-  padding: 1vw 0.5vw; 
-  vertical-align: top;
-}
-table tr:first-child td { padding: 0.3vw 0.5vw;  }
 
-.data-table .form-group .filter { font-size: inherit; }
+table td {
+    padding: 1vw 0.5vw;
+    vertical-align: top;
+}
+
+table tr:first-child td {
+    padding: 0.3vw 0.5vw;
+}
+
+.data-table .form-group .filter {
+    font-size: inherit;
+}
 
 .data-table .form-group .filter-active,
-.data-table .form-group .filter-active:focus { 
-  background-color: rgba( 220, 200, 5, 0.3 ); 
+.data-table .form-group .filter-active:focus {
+    background-color: rgba(220, 200, 5, 0.3);
 }
 
-ul.file-list, ul.email-list {
-  padding-left: 0;
+ul.file-list,
+ul.email-list {
+    padding-left: 0;
 }
 
 
-.modal ul { padding-left: 0; }
-.modal ul li { list-style: none; }
-
-th{
-  text-indent: .5rem;
+.modal ul {
+    padding-left: 0;
 }
 
-.status-icons{
-  display: inline-block;
-  list-style: none;
+.modal ul li {
+    list-style: none;
 }
 
-.status-img{
-  height: 41px;
-  width: 32px;
+th {
+    text-indent: .5rem;
+}
+
+.status-icons {
+    display: inline-block;
+    list-style: none;
+}
+
+.status-img {
+    height: 41px;
+    width: 32px;
 }
