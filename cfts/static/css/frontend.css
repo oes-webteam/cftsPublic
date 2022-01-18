@@ -1,124 +1,152 @@
 ﻿/* frontend.css */
 
 /* layout overrides */
-.navbar.py-4 { padding: 1rem 1.5rem !important }
-#boxes.py-5 { padding: 1.5rem 0 !important }
+.navbar.py-4 {
+    padding: 1rem 1.5rem !important
+}
 
-.card-body { min-height: 636px; }
+#boxes.py-5 {
+    padding: 1.5rem 0 !important
+}
 
-#boxes { margin-bottom: 100px; }
+.card-body {
+    min-height: 636px;
+}
 
-.card-body h3 { line-height: 1.5em; }
- 
-.spacer { line-height: 2em; }
+#boxes {
+    margin-bottom: 100px;
+}
 
-.sub_btn { font-size: 1.4rem; }
+.card-body h3 {
+    line-height: 1.5em;
+}
+
+.spacer {
+    line-height: 2em;
+}
+
+.sub_btn {
+    font-size: 1.4rem;
+}
 
 label.custom-control-label {
-	line-height: 1.67em;
+    line-height: 1.67em;
 }
 
-.input-group-prepend .input-group-text, .input-group-append .input-group-text{
-	color: red !important;
-	font-weight: bold;
+.input-group-prepend .input-group-text,
+.input-group-append .input-group-text {
+    color: red !important;
+    font-weight: bold;
 }
 
-input[type="checkbox"] { 
-  margin-top: 0.5rem;
-  transform: scale(2) !important; 
+input[type="checkbox"] {
+    margin-top: 0.5rem;
+    transform: scale(2) !important;
 }
 
 /* file input button */
 /* hide the standard file input visually, but keep it in the DOM for accessability and validation */
 #standard-upload-files {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap; /* 1 */
-  clip-path: inset(50%);
-  border: 0;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    /* 1 */
+    clip-path: inset(50%);
+    border: 0;
 }
 
-.upload-console .form-group { text-align: center; }
+.upload-console .form-group {
+    text-align: center;
+}
 
 /* Drag & drop styles (from ddGlobal) */
 .upload-console-drop {
-	border: 2px dashed #ccc;
-	color: #ccc;
-  height: auto;
-	margin-top: 15px;
-	margin-bottom: 20px;
-  min-height: 100px;
-  text-align: left;
+    border: 2px dashed #ccc;
+    color: #ccc;
+    height: auto;
+    margin-top: 15px;
+    margin-bottom: 20px;
+    min-height: 100px;
+    text-align: left;
 }
+
 .upload-console-drop.empty {
-  height: 100px;
-	line-height: 100px;
-  text-align: center;
+    height: 100px;
+    line-height: 100px;
+    text-align: center;
 }
+
 /* end ddGlobal */
 
 .highlight-active {
-  border-color: #07F !important;
-  box-shadow: 0 0 3px 0 #07F;
+    border-color: #07F !important;
+    box-shadow: 0 0 3px 0 #07F;
 }
 
-.file-list.init { text-align: center; }
-.file-list span { 
-	display: block;
-	font-style: italic; 
-	margin: 1em 0;
+.file-list.init {
+    text-align: center;
+}
+
+.file-list span {
+    display: block;
+    font-style: italic;
+    margin: 1em 0;
 }
 
 .file-list ul {
-  line-height: 1.67em;
-  list-style-type: "❌";
-  margin-left: -1em;
+    line-height: 1.67em;
+    list-style-type: "❌";
+    margin-left: -1em;
 }
-.file-list ul li { 
-	padding-left: 0.33em; 
+
+.file-list ul li {
+    padding-left: 0.33em;
 }
-.file-list ul li a.remove { 
-  display: inline-block; 
-  margin: 0.5em 0 0 -2em;
-  cursor: pointer;
-  height: 1.67em;
-  width: 2em;
+
+.file-list ul li a.remove {
+    display: inline-block;
+    margin: 0.5em 0 0 -2em;
+    cursor: pointer;
+    height: 1.67em;
+    width: 2em;
 }
 
 .file-list .file-classification {
-	display: inline-block;
-	font-size: 1em;
-	margin-right: 2em;
-	width: 50%;
+    display: inline-block;
+    font-size: 1em;
+    margin-right: 2em;
+    width: 50%;
 }
 
-.file-list input[ type = checkbox ] {
-  /* position: relative; */
-  width: auto;
-  margin-right: -3rem;
-  margin-left: 8.8rem;
+.file-list input[ type=checkbox] {
+    /* position: relative; */
+    width: auto;
+    margin-right: -3rem;
+    margin-left: 8.8rem;
 }
 
-.file-list label { white-space: nowrap; }
+.file-list label {
+    white-space: nowrap;
+}
 
-.alert{
-  text-align: center;
+.alert {
+    text-align: center;
 }
 
 h6.isCentcom {
-  text-align: left;
+    text-align: left;
 }
 
 .required {
-  color: red !important;
-  font-weight: bold;
-  font-size: 1rem;
+    color: red !important;
+    font-weight: bold;
+    font-size: 1rem;
 }
 
 .organization {
-  width: 12rem;
+    width: 12rem;
 }

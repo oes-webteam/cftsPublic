@@ -1,9 +1,21 @@
 /* reports.css */
-.ui-datepicker{ z-index: 2000 !important; }
+.ui-datepicker {
+    z-index: 2000 !important;
+}
 
-.results { display: none; }
-.results h3 { color: red; }
+.results {
+    display: none;
+}
 
-.results-data { font-size: 2em; }
+.results h3 {
+    color: red;
+}
 
-.fileCount, #size{ font-size: 1.75em;}
+.results-data {
+    font-size: 2em;
+}
+
+.fileCount,
+#size {
+    font-size: 1.75em;
+}

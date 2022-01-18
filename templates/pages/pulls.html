@@ -3,52 +3,56 @@
 {% load util %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/pulls.css' %}">
+    <link rel="stylesheet" href="{% static 'css/pulls.css' %}">
 
-<div class="grid-container" style="grid-template-columns: 5% repeat( {{ rc.pull_history|length }}, 1fr [col-start]) 5%;">
-  <div><!-- spacer --></div>  
-{% for net in rc.pull_history %}
-  <ul class="grid-column" style="grid-column: {{ forloop.counter|add:1 }}">
-  {% for pull in net %}
-    {% if forloop.counter0 == 0 %}<h3 class="grid-column-header">{{ pull.pull_network }}</h3>{% endif %}
-    <li class="pull-card {% if pull.date_complete != None %}is-done{% elif pull.date_twoeye != None %}to-complete{% elif pull.date_oneeye != None %}to-twoeye{% endif %}" pull_id="{{pull.pull_id}}">
+    <div class="grid-container" style="grid-template-columns: 5% repeat( {{ rc.pull_history|length }}, 1fr [col-start]) 5%;">
+        <div>
+            <!-- spacer -->
+        </div>
+        {% for net in rc.pull_history %}
+            <ul class="grid-column" style="grid-column: {{ forloop.counter|add:1 }}">
+                {% for pull in net %}
+                    {% if forloop.counter0 == 0 %}<h3 class="grid-column-header">{{ pull.pull_network }}</h3>{% endif %}
+                    <li class="pull-card {% if pull.date_complete != None %}is-done{% elif pull.date_twoeye != None %}to-complete{% elif pull.date_oneeye != None %}to-twoeye{% endif %}" pull_id="{{pull.pull_id}}">
 
-      <ul>
-        <li class="title-line"><strong>{{ pull.pull_network }}_{{ pull.pull_number }}</strong></li>
-        <li>Pulled by {{pull.pull_user}} on {{pull.pull_date}} </li>
-        <li>Reviewed by:
-          <ul>
-            {% for reviewer in pull.reviewers %}
-              {% if reviewer != None %}
-              <li>{{reviewer}}</li>
-              {% endif %}
-            {% endfor %}
-          </ul>
-        </li>
+                        <ul>
+                            <li class="title-line"><strong>{{ pull.pull_network }}_{{ pull.pull_number }}</strong></li>
+                            <li>Pulled by {{pull.pull_user}} on {{pull.pull_date}} </li>
+                            <li>Reviewed by:
+                                <ul>
+                                    {% for reviewer in pull.reviewers %}
+                                        {% if reviewer != None %}
+                                            <li>{{reviewer}}</li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+                            </li>
 
-        {% if pull.date_complete != None %}
-          <li>Completed by {{pull.user_complete}} on {{pull.date_complete}}</li>
-          <li>Burned to disk #{{pull.disk_number}}</li>
-        {% endif %}
-      </ul>
+                            {% if pull.date_complete != None %}
+                                <li>Completed by {{pull.user_complete}} on {{pull.date_complete}}</li>
+                                <li>Burned to disk #{{pull.disk_number}}</li>
+                            {% endif %}
+                        </ul>
 
-      <button class="pull-menu-btn" >&hellip;</button>
-      <!-- TODO: remove this from the flow of the document -->
-      <ul class="pull-menu" pull_id="{{pull.pull_id}}">
-        <li class="pull-menu-option highlight"><a href="getPull/{{pull.pull_network}}_{{pull.pull_number}} {{pull.pull_date|date:"dM"}} {{pull.pull_date|time:"Hi"}}.zip">Download Again</a></li>
-        <li class="pull-menu-option highlight"><a href="viewscan/{{pull.pull_id}}">View Scan Results</a></li>
-        {% if pull.date_complete == None %}
-        <li class="pull-menu-option highlight"><a href="{{pull.pull_id}}" class="done">Transfer Complete</a></li>
-        {% endif %}
-        <li class="pull-menu-option highlight"><a href="cancelPull/{{pull.pull_id}}">Cancel Pull</a></li>
-      </ul>
-      <!-- END TODO -->
-    </li>
-  {% endfor %}
-  </ul>
-{% endfor %}
-  <div><!-- spacer --></div>  
-</div>
+                        <button class="pull-menu-btn">&hellip;</button>
+                        <!-- TODO: remove this from the flow of the document -->
+                        <ul class="pull-menu" pull_id="{{pull.pull_id}}">
+                            <li class="pull-menu-option highlight"><a href="getPull/{{pull.pull_network}}_{{pull.pull_number}} {{pull.pull_date|date:"dM"}} {{pull.pull_date|time:"Hi"}}.zip">Download Again</a></li>
+                            <li class="pull-menu-option highlight"><a href="viewscan/{{pull.pull_id}}">View Scan Results</a></li>
+                            {% if pull.date_complete == None %}
+                                <li class="pull-menu-option highlight"><a href="{{pull.pull_id}}" class="done">Transfer Complete</a></li>
+                            {% endif %}
+                            <li class="pull-menu-option highlight"><a href="cancelPull/{{pull.pull_id}}">Cancel Pull</a></li>
+                        </ul>
+                        <!-- END TODO -->
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endfor %}
+        <div>
+            <!-- spacer -->
+        </div>
+    </div>
 
-<script src="{% static 'js/pulls.js' %}"></script>
+    <script src="{% static 'js/pulls.js' %}"></script>
 {% endblock %}

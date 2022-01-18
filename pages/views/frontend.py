@@ -25,22 +25,26 @@ from pages.views.apis import setConsentCookie
 
 # ====================================================================
 
+
 def getDestinationNetworks(request, cftsUser):
     networkEmails = {}
     nets = Network.objects.filter(visible=True, network_id__in=cftsUser.destination_emails.values('network_id'))
     for net in nets:
         networkEmails[net.name] = cftsUser.destination_emails.get(network__name=net.name).address
-    
+
     return networkEmails
+
 
 def consent(request):
     setConsentCookie(request)
     return render(request, 'pages/consent.html')
 
+
 def checkBan(cftsUser):
     if cftsUser.banned == True and date.today() >= cftsUser.banned_until:
-        cftsUser.banned=False
+        cftsUser.banned = False
         cftsUser.save()
+
 
 @ensure_csrf_cookie
 @never_cache
@@ -50,9 +54,13 @@ def frontend(request):
 
     # get the consent header, redirect to consent page if not found
     try:
+        if browser == "IE":
+            rc = {'resources': resources, 'browser': browser}
+            return render(request, 'pages/frontend.html', {'rc': rc})
+
         request.session.__getitem__('consent')
         request.session.set_expiry(0)
-        
+
         # grab client cert form the request create user hash, ignore if no cert info is found in request
         certInfo = getCert(request)
         cftsUser = getOrCreateUser(request, certInfo)
@@ -61,16 +69,17 @@ def frontend(request):
             return redirect("/login")
         elif cftsUser.update_info == True:
             return redirect("/user-info")
-        
+
         checkBan(cftsUser)
 
         nets = getDestinationNetworks(request, cftsUser)
         rc = {'networks': nets, 'submission_disabled': Settings.DISABLE_SUBMISSIONS, 'debug': str(Settings.DEBUG), 'resources': resources, 'user': cftsUser, 'browser': browser}
 
         return render(request, 'pages/frontend.html', {'rc': rc})
-    
+
     except KeyError:
         return redirect('consent')
+
 
 def userRequests(request):
     resources = ResourceLink.objects.all()
@@ -80,19 +89,20 @@ def userRequests(request):
     if cftsUser == None:
         return redirect("/login")
     else:
-        requests = Request.objects.filter( user=cftsUser, is_submitted=True )
+        requests = Request.objects.filter(user=cftsUser, is_submitted=True)
         requestPage = paginator.Paginator(requests, 8)
         pageNum = request.GET.get('page')
         pageObj = requestPage.get_page(pageNum)
 
-    rc = {'requests': pageObj,'resources': resources, 'firstName': cftsUser.name_first, 'lastName': cftsUser.name_last}
-    
+    rc = {'requests': pageObj, 'resources': resources, 'firstName': cftsUser.name_first, 'lastName': cftsUser.name_last}
+
     return render(request, 'pages/userRequests.html', {'rc': rc})
+
 
 def requestDetails(request, id):
     resources = ResourceLink.objects.all()
     userRequest = Request.objects.get(request_id=id)
 
-    rc = {'request': userRequest,'resources': resources, 'firstName': userRequest.user.name_first.split("_buggedPKI")[0], 'lastName': userRequest.user.name_last}
+    rc = {'request': userRequest, 'resources': resources, 'firstName': userRequest.user.name_first.split("_buggedPKI")[0], 'lastName': userRequest.user.name_last}
 
     return render(request, 'pages/requestDetails.html', {'rc': rc})

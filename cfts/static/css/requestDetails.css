@@ -1,77 +1,90 @@
 /* archive.css */
-table { 
-  border-collapse: separate; 
-  border-spacing: 0.3vw; 
-  width: 100%;
+table {
+    border-collapse: separate;
+    border-spacing: 0.3vw;
+    width: 100%;
 }
-table td { 
-  padding: 1vw 0.5vw; 
-  vertical-align: top;
-}
-table tr:first-child td { padding: 0.3vw 0.5vw;  }
 
-.data-table .form-group .filter { font-size: inherit; }
+table td {
+    padding: 1vw 0.5vw;
+    vertical-align: top;
+}
+
+table tr:first-child td {
+    padding: 0.3vw 0.5vw;
+}
+
+.data-table .form-group .filter {
+    font-size: inherit;
+}
 
 .data-table .form-group .filter-active,
-.data-table .form-group .filter-active:focus { 
-  background-color: rgba( 220, 200, 5, 0.3 ); 
+.data-table .form-group .filter-active:focus {
+    background-color: rgba(220, 200, 5, 0.3);
 }
 
-ul.file-list, ul.email-list {
-  padding-left: 0;
+ul.file-list,
+ul.email-list {
+    padding-left: 0;
 }
 
 
-.modal ul { padding-left: 0; }
-.modal ul li { list-style: none; }
+.modal ul {
+    padding-left: 0;
+}
 
-th{
-  text-indent: .5rem;
-  white-space: nowrap;
+.modal ul li {
+    list-style: none;
+}
+
+th {
+    text-indent: .5rem;
+    white-space: nowrap;
 
 }
 
-.status-icons{
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 1rem;
+.status-icons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 1rem;
 }
 
-.btn-back{
-  margin-right: 18rem;
+.btn-back {
+    margin-right: 18rem;
 }
 
-.status-text{
-  text-align: center;
+.status-text {
+    text-align: center;
 }
 
-.status-img{
-  width: 80px;
+.status-img {
+    width: 80px;
 }
 
-.card, .card:hover{
-  margin-bottom: 1rem;
-  border-width: 0.3rem;
-  height: 95%;
-  text-decoration: none;
-  color: black;
+.card,
+.card:hover {
+    margin-bottom: 1rem;
+    border-width: 0.3rem;
+    height: 95%;
+    text-decoration: none;
+    color: black;
 }
 
-.col-3{
-  padding-right: 10px;
-  padding-left: 10px;
+.col-3 {
+    padding-right: 10px;
+    padding-left: 10px;
 }
 
-.border-red{
-  border-color: #EF476F;
+.border-red {
+    border-color: #EF476F;
 }
 
-.border-green{
-  border-color: #06D6A0;
+.border-green {
+    border-color: #06D6A0;
 }
 
-.rejected{
-  color: #DD0000; 
-  text-decoration: line-through; 
+.rejected {
+    color: #DD0000;
+    text-decoration: line-through;
 }
