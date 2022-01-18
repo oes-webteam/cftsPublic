@@ -1,30 +1,32 @@
-jQuery( document ).ready( function() {
-  
-  $.ajaxSetup({ 
-    beforeSend: function( xhr, settings ) {
-      xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
-    } 
-  });
+jQuery(document).ready(function() {
 
-  $('.generateButton').click(e => {
-    let csrftoken = getCookie('csrftoken');
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+        }
+    });
 
-    let url = '/password-reset-email/' + $(e.currentTarget).attr('userID') + "/" + $(e.currentTarget).attr('feedbackID')
+    $('.generateButton').click(e => {
+        let csrftoken = getCookie('csrftoken');
 
-    const setRejectOnFiles = $.post( url, 'json' ).then(
-      // success
-      function( resp ) {      
-        // create mailto anchor
-        let $anchor = $( "<a class='emailLink' target='_blank' href='" + resp + "'></a>" );
-        $( document.body ).append( $anchor );
+        let url = '/password-reset-email/' + $(e.currentTarget).attr('userID') + "/" + $(e.currentTarget).attr('feedbackID')
 
-        $( '.emailLink' ).each( function() { $(this)[0].click(); } );  
+        const setRejectOnFiles = $.post(url, 'json').then(
+            // success
+            function(resp) {
+                // create mailto anchor
+                let $anchor = $("<a class='emailLink' target='_blank' href='" + resp + "'></a>");
+                $(document.body).append($anchor);
 
-        // reload the page from server
-        $( "#forceReload" ).submit();
+                $('.emailLink').each(function() {
+                    $(this)[0].click();
+                });
 
-      },
-    );
-  })
+                // reload the page from server
+                $("#forceReload").submit();
+
+            },
+        );
+    })
 
 });

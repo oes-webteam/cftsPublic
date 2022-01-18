@@ -3,45 +3,47 @@
 {% load util %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/scan.css' %}">
+    <link rel="stylesheet" href="{% static 'css/scan.css' %}">
 
-<section class="p-3" id="scan-results">
-  
-    {% if allClean %}
-      <h3>All files in pull are clean... somehow...</h3>
-    {% else %}
-      <h3>Pull contains the following scan results:</h3>
-      <table id="rootList" class="list-group">
-      {% for request in requests %}
-        {% with folder=requestFolders.pop %}
-          {% if request.cleanCount == request.files.count %}
-          {% else%}
-            <tbody class="p-2 mb-1">
-              <tr>
-                <td class="p-1 mb-1">Folder in zip: <a href="{% url 'transfer-request' request.request_id %}">{{folder}}</a></td>
-              </tr>
+    <section class="p-3" id="scan-results">
 
-              {% if request.imgCount != None%}
-                <tr>
-                  <td class="p-1 mb-1">{{request.imgCount}} image{{request.imgCount|pluralize}} in request cannot be scanned</td>
-                </tr>
-              {% endif %}
-              
-              {% for file in request.files.all %}
-                {% if file.rejection_reason == None%}
-                  {% include 'partials/Scan_partials/scanResults.html' with results=file.scan_results file_id=file.file_id pull=True %}
-                {% endif %}
-              {% endfor %}
-            </tbody>
-          {% endif %}
-        {% endwith %}
-      {% endfor %}
-    {% endif %}
-  </table>
-</section>
+        {% if allClean %}
+            <h3>All files in pull are clean... somehow...</h3>
+        {% else %}
+            <h3>Pull contains the following scan results:</h3>
+            <table id="rootList" class="list-group">
+                {% for request in requests %}
+                    {% with folder=requestFolders.pop %}
+                        {% if request.cleanCount == request.files.count %}
+                        {% else%}
+                            <tbody class="p-2 mb-1">
+                                <tr>
+                                    <td class="p-1 mb-1">Folder in zip: <a href="{% url 'transfer-request' request.request_id %}">{{folder}}</a></td>
+                                </tr>
 
-<!-- Add client side javascript checks to verify the file being uploaded is what it says it is -->
-<!-- I mean, we should be able to trust our own analysts... but they're also users. And I don't -->
-<!-- trust users any further than I can shot put them. -->
-<script>window.document.title = "Scan Tool";</script>
+                                {% if request.imgCount != None%}
+                                    <tr>
+                                        <td class="p-1 mb-1">{{request.imgCount}} image{{request.imgCount|pluralize}} in request cannot be scanned</td>
+                                    </tr>
+                                {% endif %}
+
+                                {% for file in request.files.all %}
+                                    {% if file.rejection_reason == None%}
+                                        {% include 'partials/Scan_partials/scanResults.html' with results=file.scan_results file_id=file.file_id pull=True %}
+                                    {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        {% endif %}
+                    {% endwith %}
+                {% endfor %}
+        {% endif %}
+    </table>
+    </section>
+
+    <!-- Add client side javascript checks to verify the file being uploaded is what it says it is -->
+    <!-- I mean, we should be able to trust our own analysts... but they're also users. And I don't -->
+    <!-- trust users any further than I can shot put them. -->
+    <script>
+        window.document.title = "Scan Tool";
+    </script>
 {% endblock %}

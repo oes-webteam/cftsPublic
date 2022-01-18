@@ -3,155 +3,149 @@
 {% load util %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/queue.css' %}">    
+    <link rel="stylesheet" href="{% static 'css/queue.css' %}">
 
-<!--  To make the tabs toggleable, add the data-toggle="tab" attribute to each link. Then add a .tab-pane class with a unique ID for every tab and wrap them inside a div element with class .tab-content.  -->
-<div class="container queue-container">
-    <div class="card">
-        <div class="card-header">
+    <!--  To make the tabs toggleable, add the data-toggle="tab" attribute to each link. Then add a .tab-pane class with a unique ID for every tab and wrap them inside a div element with class .tab-content.  -->
+    <div class="container queue-container">
+        <div class="card">
+            <div class="card-header">
 
-        <div class="alert alert-danger fadein server-error" style="display: none;" role="alert"></div>
+                <div class="alert alert-danger fadein server-error" style="display: none;" role="alert"></div>
 
-        <div class="alert alert-danger fadein danger-error" style="display: none;" role="alert"></div>
+                <div class="alert alert-danger fadein danger-error" style="display: none;" role="alert"></div>
 
-        <div class="alert alert-success fadein" style="display: none;" role="alert"></div>
+                <div class="alert alert-success fadein" style="display: none;" role="alert"></div>
 
-            <ul class="nav nav-tabs networks sticky-top">
+                <ul class="nav nav-tabs networks sticky-top">
 
-            {% for network in rc.queues %}
-                <li class="nav-item" {% if network.count == 0 %} hidden{% endif %}>
-                    <a class="nav-link{% if network.activeNet %} active{% endif %}"
-                    {% if network.count != 0 %} 
-                        data-toggle="tab" 
-                        href="#tab{{ network.name }}"
-                    {% endif %}>
-                        {{ network.name }}
-                    </a>
-                </li>
-            {% endfor %}
-            </ul>
+                    {% for network in rc.queues %}
+                        <li class="nav-item" {% if network.count == 0 %} hidden{% endif %}>
+                            <a class="nav-link{% if network.activeNet %} active{% endif %}" {% if network.count != 0 %} data-toggle="tab" href="#tab{{ network.name }}" {% endif %}>
+                                {{ network.name }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
 
-            <div class="tab-content">
-            {% for network in rc.queues %}
-                <div id="tab{{ network.name }}" class="tab-pane container {% if network.activeNet %} active{% else %} {% if forloop.counter0 == 0 %}{% if not rc.easterEgg %}active {% else %} fade{% endif %}{% endif %}{% endif %}">
-                    {% if request.path == '/queue/cookie' %}
-                    <form class="queue-form">
-                        <br>
-                        <h4 class="org-header cookie-header">Match them up:</h4>
-                        <div class="row">
-                        {% for cookie in rc.empty %}
-                                {% include 'partials/Queue_partials/cookieTemplate.html' with cookie=cookie %}
-                        {% endfor %}
-                        <img class="cookie confetti" style="width: 100%; height: 100%; margin: 1rem;" src="{% static 'img/cookies/confetti.gif' %}" />
-                        </div>
-                    </form>
-                    {% elif network.count == 0 %}
-                        <h6>Wow, you cleared the queue!</h6>
-                        <h6>Click the cookie to play a game!</h6>
-                        <a href="{% url 'cookie' %}"><img src="{% static 'img/cookies/cookie.png' %}" class="cookie" alt="Cookie" /></a>
-                        {{ rc.empty }}
+                <div class="tab-content">
+                    {% for network in rc.queues %}
+                        <div id="tab{{ network.name }}" class="tab-pane container {% if network.activeNet %} active{% else %} {% if forloop.counter0 == 0 %}{% if not rc.easterEgg %}active {% else %} fade{% endif %}{% endif %}{% endif %}">
+                            {% if request.path == '/queue/cookie' %}
+                                <form class="queue-form">
+                                    <br>
+                                    <h4 class="org-header cookie-header">Match them up:</h4>
+                                    <div class="row">
+                                        {% for cookie in rc.empty %}
+                                            {% include 'partials/Queue_partials/cookieTemplate.html' with cookie=cookie %}
+                                        {% endfor %}
+                                        <img class="cookie confetti" style="width: 100%; height: 100%; margin: 1rem;" src="{% static 'img/cookies/confetti.gif' %}" />
+                                    </div>
+                                </form>
+                            {% elif network.count == 0 %}
+                                <h6>Wow, you cleared the queue!</h6>
+                                <h6>Click the cookie to play a game!</h6>
+                                <a href="{% url 'cookie' %}"><img src="{% static 'img/cookies/cookie.png' %}" class="cookie" alt="Cookie" /></a>
+                                {{ rc.empty }}
 
-                    {% else %}
-                        <div id="network-header" class="nav sticky-top network-header">
-                            
-                            <div class="pending-info">
-                                Pending Requests: {{ network.pending }} ({{network.file_count}} Files)
-                                <br />
-                                {% for lp in network.last_pull %}
-                                <span class="last-pull-info">Last pull created: 
-                                    <span class="date-pulled">
-                                        {{ lp.date_pulled|date:'d b'|upper }} @ {{ lp.date_pulled|time:'Hi' }}
-                                    </span> 
-                                    by <span class="user-pulled">
-                                        {{ lp.user_pulled__username }}
-                                    </span>
-                                </span>
-                                {% endfor %}
-                            </div>
-
-                            <div class="pull-button-group">
-                                <!-- <a href="#" class="btn btn-warning request-encrypt">Encrypt Files</a>
-                                <a href="#" class="btn btn-danger request-reject">Reject Files</a> -->
-                                <button class="btn queue-btn btn-primary pull-button{% if network.pullable == 0 %} disabled{% endif %}" id="pull{{network.name}}">Create {{ network.name }} Pull</button> 
-                                <!-- <button class="btn btn-warning pull-button centcom{% if network.centcom.count == 0 %} disabled{% endif %}" id="pull{{network.name}}">Pull only Centcom</button>  -->
-
-                            {% if network.last_pull.count > 0 %}
-                                {% for lp in network.last_pull %}
-                                    <a class="btn queue-btn btn-primary download-button" id="dl{{network.name}}"
-                                        href="getPull/{{ network.name }}_{{ lp.pull_number }} {{lp.date_pulled|date:"dM"}} {{lp.date_pulled|time:"Hi"}}.zip">Download Current {{ network.name }} Zip</a>
-                                    {% endfor %}
                             {% else %}
-                                <a class="btn queue-btn btn-primary download-button" id="dl{{network.name}}" href="#" hidden></a>
+                                <div id="network-header" class="nav sticky-top network-header">
+
+                                    <div class="pending-info">
+                                        Pending Requests: {{ network.pending }} ({{network.file_count}} Files)
+                                        <br />
+                                        {% for lp in network.last_pull %}
+                                            <span class="last-pull-info">Last pull created:
+                                                <span class="date-pulled">
+                                                    {{ lp.date_pulled|date:'d b'|upper }} @ {{ lp.date_pulled|time:'Hi' }}
+                                                </span>
+                                                by <span class="user-pulled">
+                                                    {{ lp.user_pulled__username }}
+                                                </span>
+                                            </span>
+                                        {% endfor %}
+                                    </div>
+
+                                    <div class="pull-button-group">
+                                        <!-- <a href="#" class="btn btn-warning request-encrypt">Encrypt Files</a>
+                                <a href="#" class="btn btn-danger request-reject">Reject Files</a> -->
+                                        <button class="btn queue-btn btn-primary pull-button{% if network.pullable == 0 %} disabled{% endif %}" id="pull{{network.name}}">Create {{ network.name }} Pull</button>
+                                        <!-- <button class="btn btn-warning pull-button centcom{% if network.centcom.count == 0 %} disabled{% endif %}" id="pull{{network.name}}">Pull only Centcom</button>  -->
+
+                                        {% if network.last_pull.count > 0 %}
+                                            {% for lp in network.last_pull %}
+                                                <a class="btn queue-btn btn-primary download-button" id="dl{{network.name}}" href="getPull/{{ network.name }}_{{ lp.pull_number }} {{lp.date_pulled|date:"dM"}} {{lp.date_pulled|time:"Hi"}}.zip">Download Current {{ network.name }} Zip</a>
+                                            {% endfor %}
+                                        {% else %}
+                                            <a class="btn queue-btn btn-primary download-button" id="dl{{network.name}}" href="#" hidden></a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <form class="queue-form">
+                                    {% if network.centcom > 0 %}
+                                        <br>
+                                        <h4 class="org-header">CENTCOM Requests ({{network.centcom}}):</h4>
+                                        <div class="row">
+                                            {% for request in network.q %}
+                                                {% include 'partials/Queue_partials/requestTemplate.html' with request=request %}
+                                                {% comment %} {% if forloop.last %}</div>{% endif %} {% endcomment %}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+
+                                    {% if network.other > 0 %}
+                                        <br>
+                                        <h4 class="org-header">Other Requests ({{network.other}}):</h4>
+                                        <div class="row">
+                                            {% for request in network.o %}
+                                                {% include 'partials/Queue_partials/requestTemplate.html' with request=request %}
+                                                {% comment %} {% if forloop.last %}</div>{% endif %} {% endcomment %}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+
+                                    {% if network.pullable > 0 %}
+                                        <br>
+                                        <h4 class="org-header">Pullable Requests ({{network.pullable}}):</h4>
+
+                                        {% if network.hidden_dupes_pullable > 0 %}
+                                            <h4 class="org-header">{{network.hidden_dupes_pullable}} hidden duplicate requests</h4>
+                                        {% endif %}
+
+                                        <div class="row">
+                                            {% for request in network.a %}
+                                                {% include 'partials/Queue_partials/requestTemplate.html' with request=request %}
+                                                {% comment %} {% if forloop.last %}</div>{% endif %} {% endcomment %}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+
+                                    {% if network.pulled > 0 %}
+                                        <br>
+                                        <h4 class="org-header">Pulled Requests ({{network.pulled}}):</h4>
+
+                                        {% if network.hidden_dupes_pulled > 0 %}
+                                            <h4 class="org-header">{{network.hidden_dupes_pulled}} hidden duplicate requests</h4>
+                                        {% endif %}
+
+                                        <div class="row">
+                                            {% for request in network.p %}
+                                                {% include 'partials/Queue_partials/requestTemplate.html' with request=request %}
+                                                {% comment %} {% if forloop.last %}</div>{% endif %} {% endcomment %}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+
+                                </form>
                             {% endif %}
-                            </div>
                         </div>
-
-                        <form class="queue-form">
-                            {% if network.centcom > 0 %}
-                                <br>
-                                <h4 class="org-header">CENTCOM Requests ({{network.centcom}}):</h4>
-                                <div class="row">
-                                {% for request in network.q %}
-                                        {% include 'partials/Queue_partials/requestTemplate.html' with request=request %}
-                                    {% comment %} {% if forloop.last %}</div>{% endif %} {% endcomment %}
-                                {% endfor %}
-                                </div>
-                            {% endif %}
-                            
-                            {% if network.other > 0 %}
-                                <br>
-                                <h4 class="org-header">Other Requests ({{network.other}}):</h4>
-                                <div class="row">
-                                {% for request in network.o %}
-                                        {% include 'partials/Queue_partials/requestTemplate.html' with request=request %}
-                                    {% comment %} {% if forloop.last %}</div>{% endif %} {% endcomment %}
-                                {% endfor %}
-                                </div>
-                            {% endif %}
-
-                            {% if network.pullable > 0 %}
-                                <br>
-                                <h4 class="org-header">Pullable Requests ({{network.pullable}}):</h4>
-
-                                {% if network.hidden_dupes_pullable > 0 %}
-                                    <h4 class="org-header">{{network.hidden_dupes_pullable}} hidden duplicate requests</h4>
-                                {% endif %}
-                                
-                                <div class="row">
-                                {% for request in network.a %}
-                                        {% include 'partials/Queue_partials/requestTemplate.html' with request=request %}
-                                    {% comment %} {% if forloop.last %}</div>{% endif %} {% endcomment %}
-                                {% endfor %}
-                                </div>
-                            {% endif %}
-
-                            {% if network.pulled > 0 %}
-                                <br>
-                                <h4 class="org-header">Pulled Requests ({{network.pulled}}):</h4>
-
-                                {% if network.hidden_dupes_pulled > 0 %}
-                                    <h4 class="org-header">{{network.hidden_dupes_pulled}} hidden duplicate requests</h4>
-                                {% endif %}
-
-                                <div class="row">
-                                {% for request in network.p %}
-                                        {% include 'partials/Queue_partials/requestTemplate.html' with request=request %}
-                                    {% comment %} {% if forloop.last %}</div>{% endif %} {% endcomment %}
-                                {% endfor %}
-                                </div>
-                            {% endif %} 
-                            
-                        </form>
-                    {% endif %}
+                    {% endfor %}
                 </div>
-            {% endfor %} 
-            </div>
 
-        </div> <!-- END card-header -->
-    </div><!-- END card -->
-</div> <!-- END container -->
+            </div> <!-- END card-header -->
+        </div><!-- END card -->
+    </div> <!-- END container -->
 
-{% include 'partials/_forceReloadForm.html' %}
-<script src="{% static 'js/queue.js' %}"></script>
+    {% include 'partials/_forceReloadForm.html' %}
+    <script src="{% static 'js/queue.js' %}"></script>
 {% endblock %}
-    

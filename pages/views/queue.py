@@ -3,6 +3,7 @@
 from email import generator
 import random
 import datetime
+from re import T
 from django.contrib import messages
 from django.db.models.expressions import Subquery, When
 from django.db.models.fields import IntegerField
@@ -40,6 +41,7 @@ import logging
 logger = logging.getLogger('django')
 # ====================================================================
 
+
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 @ensure_csrf_cookie
@@ -50,17 +52,17 @@ def queue(request):
     activeSelected = False
     if str(request.path) == '/queue/cookie':
         cookieList1 = [
-            {'name': "Chocolate Chip", 'path':static('img/cookies/cookie.png')},
-            {'name': "Dark Chocolate Chip", 'path':static('img/cookies/darkChoc.png')},
-            {'name': "Fortune", 'path':static('img/cookies/fortune.png')},
-            {'name': "Iced Sugar", 'path':static('img/cookies/icedSugar.png')},
-            {'name': "White Chocolate Macadamia Nut", 'path':static('img/cookies/macadamia.png')},
-            {'name': "M&M", 'path':static('img/cookies/MnM.png')},
-            {'name': "Oreo", 'path':static('img/cookies/oreo.png')},
-            {'name': "Red Velvet", 'path':static('img/cookies/redVelvet.png')},
-            {'name': "Sugar", 'path':static('img/cookies/sugar.png')},
-            {'name': "Thin Mint", 'path':static('img/cookies/thinMint.png')},
-            ]
+            {'name': "Chocolate Chip", 'path': static('img/cookies/cookie.png')},
+            {'name': "Dark Chocolate Chip", 'path': static('img/cookies/darkChoc.png')},
+            {'name': "Fortune", 'path': static('img/cookies/fortune.png')},
+            {'name': "Iced Sugar", 'path': static('img/cookies/icedSugar.png')},
+            {'name': "White Chocolate Macadamia Nut", 'path': static('img/cookies/macadamia.png')},
+            {'name': "M&M", 'path': static('img/cookies/MnM.png')},
+            {'name': "Oreo", 'path': static('img/cookies/oreo.png')},
+            {'name': "Red Velvet", 'path': static('img/cookies/redVelvet.png')},
+            {'name': "Sugar", 'path': static('img/cookies/sugar.png')},
+            {'name': "Thin Mint", 'path': static('img/cookies/thinMint.png')},
+        ]
         cookieList2 = random.sample(cookieList1, len(cookieList1))
         random.shuffle(cookieList1)
         empty = cookieList1+cookieList2
@@ -106,7 +108,8 @@ def queue(request):
             ready_to_pull=False,
             is_centcom=True,
         ).annotate(
-            needs_review=Count('files', filter=Q(files__user_oneeye=None) | Q(files__user_twoeye=None) & ~Q(files__user_oneeye=request.user))-Count('files', filter=~Q(files__rejection_reason=None) & ~Q(files__user_oneeye=request.user) & ~Q(files__user_twoeye=request.user)), 
+            needs_review=Count('files', filter=Q(files__user_oneeye=None) | Q(files__user_twoeye=None) & ~Q(files__user_oneeye=request.user)) -
+            Count('files', filter=~Q(files__rejection_reason=None) & ~Q(files__user_oneeye=request.user) & ~Q(files__user_twoeye=request.user)),
             user_reviewing=Count('files', filter=Q(files__user_oneeye=request.user) & Q(files__date_oneeye=None) & Q(files__rejection_reason=None))+Count('files', filter=Q(files__user_twoeye=request.user) & Q(files__date_twoeye=None) & Q(files__rejection_reason=None))).order_by('date_created')
 
         ds_requests_other = Request.objects.filter(
@@ -116,7 +119,8 @@ def queue(request):
             ready_to_pull=False,
             is_centcom=False,
         ).annotate(
-            needs_review=Count('files', filter=Q(files__user_oneeye=None) | Q(files__user_twoeye=None) & ~Q(files__user_oneeye=request.user))-Count('files', filter=~Q(files__rejection_reason=None) & ~Q(files__user_oneeye=request.user) & ~Q(files__user_twoeye=request.user)), 
+            needs_review=Count('files', filter=Q(files__user_oneeye=None) | Q(files__user_twoeye=None) & ~Q(files__user_oneeye=request.user)) -
+            Count('files', filter=~Q(files__rejection_reason=None) & ~Q(files__user_oneeye=request.user) & ~Q(files__user_twoeye=request.user)),
             user_reviewing=Count('files', filter=Q(files__user_oneeye=request.user) & Q(files__date_oneeye=None) & Q(files__rejection_reason=None))+Count('files', filter=Q(files__user_twoeye=request.user) & Q(files__date_twoeye=None) & Q(files__rejection_reason=None))).order_by('date_created')
 
         pullable_requests = Request.objects.filter(
@@ -132,12 +136,12 @@ def queue(request):
             is_submitted=True,
             pull__isnull=False,
             pull__date_complete__isnull=True,
-        ).order_by('pull','user__str__')
+        ).order_by('pull', 'user__str__')
 
         # count how many total files are in all the requests requests
         file_count_centcom = ds_requests_centcom.annotate(
             files_in_request=Count('files__file_id')).aggregate(count=Sum('files_in_request'))['count']
-        
+
         if file_count_centcom == None:
             file_count_centcom = 0
 
@@ -188,7 +192,7 @@ def queue(request):
         if activeSelected == False and queue['count'] > 0:
             queue['activeNet'] = True
             activeSelected = True
-        
+
         # ... and add it to the list
         xfer_queues.append(queue)
 
@@ -205,11 +209,11 @@ def queue(request):
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
-def transferRequest( request, id ):
-    rqst = Request.objects.get( request_id = id )
-    user = User.objects.get( user_id = rqst.user.user_id )
+def transferRequest(request, id):
+    rqst = Request.objects.get(request_id=id)
+    user = User.objects.get(user_id=rqst.user.user_id)
     dupes = Request.objects.filter(pull__date_complete=None, request_hash=rqst.request_hash).exclude(request_id=rqst.request_id).order_by('-date_created')
-    
+
     mostRecentDupe = False
 
     if dupes.count() > 0:
@@ -226,21 +230,22 @@ def transferRequest( request, id ):
             'subject': row.subject,
             'text': row.text
         })
-        
-    rc = { 
-        #'User': str(user) + " ("+ str(user.auth_user.username) +")",
+
+    rc = {
+        # 'User': str(user) + " ("+ str(user.auth_user.username) +")",
         'Date Submitted': rqst.date_created,
         'Email': user.source_email,
         'Phone': user.phone,
-        'Network': Network.objects.get( network_id = rqst.network.network_id ),
+        'Network': Network.objects.get(network_id=rqst.network.network_id),
         'target_email': rqst.target_email.all()[0],
         'org': rqst.org,
     }
-    return render(request, 'pages/transfer-request.html', {'rqst': rqst, 'rc':rc, 'dupes': dupes, 'mostRecentDupe': mostRecentDupe, 'rejections': rejections ,'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": user.user_id, 'debug': cftsSettings.DEBUG})
+    return render(request, 'pages/transfer-request.html', {'rqst': rqst, 'rc': rc, 'dupes': dupes, 'mostRecentDupe': mostRecentDupe, 'rejections': rejections, 'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": user.user_id, 'debug': cftsSettings.DEBUG})
+
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
-def requestNotes( request, requestid ):
+def requestNotes(request, requestid):
     postData = dict(request.POST.lists())
     notes = postData['notes'][0]
     Request.objects.filter(request_id=requestid).update(notes=notes)
@@ -251,24 +256,26 @@ def requestNotes( request, requestid ):
         pull_number = rqst.pull.pull_id
         createZip(request, rqst.network.name, rqst.is_centcom, pull_number)
     except AttributeError:
-                print("Request not found in any pull.")
+        print("Request not found in any pull.")
 
     return JsonResponse({'response': "Notes saved"})
 
+
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
-def removeCentcom( request, id ):
-    Request.objects.filter(request_id = id).update(is_centcom=False)
+def removeCentcom(request, id):
+    Request.objects.filter(request_id=id).update(is_centcom=False)
 
-    messages.success(request,"Request moved to Other group")
+    messages.success(request, "Request moved to Other group")
     return redirect('transfer-request', id)
+
 
 @login_required
 @user_passes_test(superUserCheck, login_url='queue', redirect_field_name=None)
 def banUser(request, userid, requestid, temp=False):
     userToBan = User.objects.filter(user_id=userid)[0]
     strikes = userToBan.strikes
-    
+
     days = 0
 
     if temp == "True":
@@ -293,23 +300,26 @@ def banUser(request, userid, requestid, temp=False):
         # just incase any other stike number comes in
         else:
             pass
-    
+
     if days == 0:
         messages.success(request, "User banned for a really long time")
     else:
         messages.success(request, "User banned for " + str(days) + " days")
     eml = banEml(request, requestid)
+    if cftsSettings.DEBUG == True:
+        return redirect('/transfer-request/' + str(requestid))
+    else:
+        return redirect('/transfer-request/' + str(requestid) + "?eml=" + eml)
 
-    return redirect('/transfer-request/' + str(requestid) + "?" + eml)
 
 @login_required
 @user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)
-def banEml(request, request_id ):
+def banEml(request, request_id):
 
     rqst = Request.objects.get(request_id=request_id)
 
     msgBody = "mailto:" + str(rqst.user.source_email) + "?subject=CFTS Ban Notice&body="
-    
+
     msgBody += render_to_string('partials/Queue_partials/banTemplate.html', {'rqst': rqst, }, request)
 
     return msgBody
@@ -319,23 +329,23 @@ def banEml(request, request_id ):
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def createZip(request, network_name, rejectPull):
     if rejectPull == 'false':
-        
+
         # create pull
         try:
-            maxPull = Pull.objects.filter(network=Network.objects.get(name=network_name)).latest('date_pulled')#.aggregate(Max('pull_number'),Max('date_pulled'))
-            
+            maxPull = Pull.objects.filter(network=Network.objects.get(name=network_name)).latest('date_pulled')  # .aggregate(Max('pull_number'),Max('date_pulled'))
+
             if(datetime.datetime.now().date() > maxPull.date_pulled.date()):
                 pull_number = 1
             else:
                 pull_number = 1 if maxPull.pull_number == None else maxPull.pull_number + 1
-                
+
         except Pull.DoesNotExist:
             pull_number = 1
 
         new_pull = Pull(
             pull_number=pull_number,
             network=Network.objects.get(name=network_name),
-            #date_pulled=datetime.datetime.now(),
+            # date_pulled=datetime.datetime.now(),
             date_pulled=timezone.now(),
             user_pulled=request.user,
         )
@@ -343,8 +353,8 @@ def createZip(request, network_name, rejectPull):
         qs = Request.objects.filter(
             network__name=network_name, pull=None, ready_to_pull=True, is_submitted=True)
         new_pull.save()
-        
-        pull=new_pull
+
+        pull = new_pull
 
     else:
         qs = Request.objects.filter(pull=rejectPull)
@@ -352,8 +362,8 @@ def createZip(request, network_name, rejectPull):
         pull_number = pull.pull_number
 
     # create/overwrite zip file
-    zipPath = os.path.join(cftsSettings.PULLS_DIR+"\\") + network_name + "_" + str(pull_number)+ " " + str(pull.date_pulled.astimezone().strftime("%d%b %H%M")) + ".zip"
-    
+    zipPath = os.path.join(cftsSettings.PULLS_DIR+"\\") + network_name + "_" + str(pull_number) + " " + str(pull.date_pulled.astimezone().strftime("%d%b %H%M")) + ".zip"
+
     zip = ZipFile(zipPath, "w")
 
     # for each xfer request ...
@@ -368,7 +378,7 @@ def createZip(request, network_name, rejectPull):
             i = 2
             while zip_folder in requestDirs:
                 zip_folder = str(rqst.user) + "/request_" + str(i)
-                i+=1
+                i += 1
 
             requestDirs.append(zip_folder)
 
@@ -376,7 +386,7 @@ def createZip(request, network_name, rejectPull):
             for f in theseFiles:
                 if f.is_pii == True:
                     encryptRequest = True
-                    
+
                 zip_path = os.path.join(zip_folder, str(f))
                 zip.write(f.file_object.path, zip_path)
 
@@ -384,13 +394,12 @@ def createZip(request, network_name, rejectPull):
 
             if encryptRequest == True:
                 email_file_name = '_encrypt.txt'
-                
+
             elif encryptRequest == False:
                 email_file_name = '_email.txt'
 
             notes_file_name = zip_folder + "/_notes.txt"
-            
-            
+
             email_file_path = zip_folder + "/" + email_file_name
 
             if email_file_path in zip.namelist():
@@ -399,7 +408,7 @@ def createZip(request, network_name, rejectPull):
                 while True:
                     if encryptRequest == True:
                         email_file_name = "_encrypt"+str(i)+".txt"
-                    else:  
+                    else:
                         email_file_name = "_email"+str(i)+".txt"
 
                     email_file_path = zip_folder + "/" + email_file_name
@@ -409,14 +418,13 @@ def createZip(request, network_name, rejectPull):
                         i = i + 1
                     else:
                         break
-            
-                
+
             with zip.open(email_file_path, 'w') as fp:
                 emailString = ""
 
                 for this_email in rqst.target_email.all():
                     emailString = emailString + this_email.address + '\n'
-                
+
                 fp.write(emailString.encode('utf-8'))
                 fp.close()
 
@@ -426,8 +434,7 @@ def createZip(request, network_name, rejectPull):
                     print(notes)
                     nfp.write(notes.encode('utf-8'))
                     nfp.close()
-            
-            
+
         else:
             print("all files in request rejected")
         # update the record
@@ -447,12 +454,14 @@ def createZip(request, network_name, rejectPull):
     else:
         return JsonResponse({'pullNumber': pull.pull_number, 'datePulled': pull.date_pulled.strftime("%d%b %H%M").upper(), 'userPulled': str(pull.user_pulled)})
 
+
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def getFile(request, fileID, fileName):
     response = FileResponse(
         open(os.path.join("uploads", fileID, fileName), 'rb'))
     return response
+
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
@@ -468,10 +477,10 @@ def updateFileReview(request, fileID, rqstID, quit="None", skipComplete=False):
     elif file.user_oneeye == request.user and file.date_oneeye == None:
         if quit == "True":
             if file.user_twoeye != None:
-                    file.user_oneeye = file.user_twoeye
-                    file.date_oneeye = file.date_twoeye
-                    file.user_twoeye = None
-                    file.date_twoeye = None
+                file.user_oneeye = file.user_twoeye
+                file.date_oneeye = file.date_twoeye
+                file.user_twoeye = None
+                file.date_twoeye = None
             else:
                 file.user_oneeye = None
                 file.date_oneeye = None
@@ -492,18 +501,22 @@ def updateFileReview(request, fileID, rqstID, quit="None", skipComplete=False):
         file.save()
 
     ready_to_pull = checkPullable(rqst)
-    
+
     if save == False and ready_to_pull == True and rqst.pull != None:
         rqst.pull = None
         rqst.save()
 
     if open_file == True and cftsSettings.DEBUG == False:
-        return redirect('/transfer-request/' + str(rqstID) + '?' + str(fileID))
+        return redirect('/transfer-request/' + str(rqstID) + '?file=' + str(fileID))
     elif ready_to_pull == True:
         messages.success(request, "All files in request have been fully reviewed. Request ready to pull")
-        return redirect('/transfer-request/' + str(rqstID) + '?false')
+        if skipComplete == True:
+            return ready_to_pull
+        else:
+            return redirect('/transfer-request/' + str(rqstID) + '?flash=false')
     else:
         return redirect('/transfer-request/' + str(rqstID))
+
 
 def checkPullable(rqst):
     ready_to_pull = True
@@ -516,12 +529,13 @@ def checkPullable(rqst):
             if file.rejection_reason == None:
                 ready_to_pull = False
                 break
-    
+
     if rqst.ready_to_pull != ready_to_pull:
         rqst.ready_to_pull = ready_to_pull
         rqst.save()
-    
+
     return ready_to_pull
+
 
 @login_required
 @user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)

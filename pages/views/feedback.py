@@ -21,21 +21,23 @@ from django.contrib.auth.models import User as authUser
 
 import hashlib
 
-def feedback( request, requestid=False ):
+
+def feedback(request, requestid=False):
     resources = ResourceLink.objects.all()
 
     certInfo = getCert(request)
     cftsUser = getOrCreateUser(request, certInfo)
 
     if requestid != False:
-        rc = {'resources': resources, 'user': cftsUser,'rqst': Request.objects.get(request_id=requestid)}
+        rc = {'resources': resources, 'user': cftsUser, 'rqst': Request.objects.get(request_id=requestid)}
     else:
         rc = {'resources': resources, 'user': cftsUser}
 
     return render(request, 'pages/feedback.html', {'rc': rc})
 
-def submitFeedback( request ):
-    
+
+def submitFeedback(request):
+
     if request.method == 'POST':
         form_data = request.POST
 
@@ -43,12 +45,12 @@ def submitFeedback( request ):
         cftsUser = getOrCreateUser(request, certInfo)
 
         feedback = Feedback(
-            title = form_data.get('title'),
-            body = form_data.get('feedback'),
+            title=form_data.get('title'),
+            body=form_data.get('feedback'),
             #user = cftsUser,
-            category = form_data.get('category'),
-            admin_feedback = form_data.get('adminUser'),
-            date_submitted = timezone.now()
+            category=form_data.get('category'),
+            admin_feedback=form_data.get('adminUser'),
+            date_submitted=timezone.now()
         )
 
         if cftsUser != None:
@@ -64,7 +66,7 @@ def submitFeedback( request ):
 
             '''.format(uname=form_data.get('userName'), fname=form_data.get('firstName'), lname=form_data.get('lastName'), email=form_data.get('userEmail'), phone=form_data.get('userPhone'))
             feedback.body = buggedUserInfo + form_data.get('feedback')
-            
+
             # bugged PKI user, try and return a CFTS userser account based on username
             try:
                 userFromUserName = User.objects.get(auth_user=authUser.objects.get(username=form_data.get('userName')))

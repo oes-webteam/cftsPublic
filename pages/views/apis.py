@@ -41,7 +41,7 @@ def setRejectDupes(request):
 
     data = dict(request.POST.lists())
     dupeReason = Rejection.objects.get(name='Duplicate - No Email')
-    
+
     keeperRequest = Request.objects.filter(request_id=data['keeperRequest'][0]).update(is_dupe=False)
     dupeRequests = Request.objects.filter(request_id__in=data['requestIDs[]'])
 
@@ -50,12 +50,13 @@ def setRejectDupes(request):
         files.update(rejection_reason=dupeReason)
         for file in files:
             updateFileReview(request, file.file_id, rqst.request_id)
-    
+
     dupeRequests.update(has_rejected=True, all_rejected=True, rejected_dupe=True)
-    
+
     list(messages.get_messages(request))
     messages.success(request, "All duplicate requests rejected")
     return HttpResponse("All rejected")
+
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
@@ -74,10 +75,9 @@ def setReject(request):
     rqst = Request.objects.filter(request_id=request_id[0])
     rqst.update(has_rejected=True)
 
-    
     # update files review status
     for file in files:
-        updateFileReview(request, file.file_id, request_id[0], skipComplete=True)
+        ready_to_pull = updateFileReview(request, file.file_id, request_id[0], skipComplete=True)
 
     # check if all files in the request are rejected
     files = rqst[0].files.all()
@@ -102,14 +102,21 @@ def setReject(request):
     except AttributeError:
         print("Request not found in any pull.")
     if DEBUG == True:
-        return(HttpResponse("DEBUG"))
+        if ready_to_pull == True:
+            return JsonResponse({'debug': True, 'flash': False})
+        else:
+            return JsonResponse({'debug': True})
     else:
-        eml = createEml(request,request_id,id_list,reject_id)
-        return HttpResponse(str(eml))
+        eml = createEml(request, request_id, id_list, reject_id)
+        if ready_to_pull == True:
+            return JsonResponse({'eml': str(eml), 'flash': False})
+        else:
+            return JsonResponse({'eml': str(eml)})
+
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
-def createEml( request, request_id, files_list, reject_id ):
+def createEml(request, request_id, files_list, reject_id):
 
     rqst = Request.objects.get(request_id=request_id[0])
     rejection = Rejection.objects.get(rejection_id=reject_id[0])
@@ -123,11 +130,11 @@ def createEml( request, request_id, files_list, reject_id ):
         else:
             msgBody += str(file.file_object).split("/")[-1] + ", "
 
-
     url = "https://"+str(request.get_host())+"/request/"+str(rqst.request_id)
-    msgBody += render_to_string('partials/Queue_partials/rejectionEmailTemplate.html', {'rqst': rqst, 'rejection': rejection, 'firstName': rqst.user.name_first, 'url':url}, request)
+    msgBody += render_to_string('partials/Queue_partials/rejectionEmailTemplate.html', {'rqst': rqst, 'rejection': rejection, 'firstName': rqst.user.name_first, 'url': url}, request)
 
     return msgBody
+
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
@@ -159,7 +166,6 @@ def unReject(request):
     # remove all_rejected flag from request
     Request.objects.filter(request_id=request_id[0]).update(all_rejected=False, rejected_dupe=False)
 
-
     # recreate the zip file for the pull
     someRequest = Request.objects.get(request_id=request_id[0])
     network_name = someRequest.network.name
@@ -168,13 +174,14 @@ def unReject(request):
     try:
         pull_number = someRequest.pull.pull_id
 
-        return redirect('create-zip',network_name=network_name,rejectPull=pull_number)
+        return redirect('create-zip', network_name=network_name, rejectPull=pull_number)
 
     except AttributeError:
         print("Request not found in any pull.")
         return JsonResponse({'Response': 'File not part of pull, reject status reset'})
 
     return JsonResponse({'error': 'error'})
+
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
@@ -193,15 +200,16 @@ def setEncrypt(request):
     network_name = someRequest.network.name
 
     messages.success(request, "Files marked for encryption")
-    
+
     try:
         pull_number = someRequest.pull.pull_id
 
-        return redirect('create-zip',network_name=network_name,rejectPull=pull_number)
+        return redirect('create-zip', network_name=network_name, rejectPull=pull_number)
 
     except AttributeError:
         print("Request not found in any pull.")
     return JsonResponse({'mystring': 'isgreat'})
+
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
@@ -214,6 +222,7 @@ def getUser(request, id):
         'email': user.source_email.address
     }
     return JsonResponse(data)
+
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
@@ -237,7 +246,7 @@ def runNumbers(request):
         "zipContents": 0,
         "other": 0
     }
-    org_counts= {
+    org_counts = {
         "HQ": 0,
         "ARCENT": 0,
         "AFCENT": 0,
@@ -247,7 +256,6 @@ def runNumbers(request):
         "OTHER": 0,
     }
     file_size = 0
-
 
     start_date = datetime.strptime(
         request.POST.get('start_date'), "%m/%d/%Y").date()
@@ -272,28 +280,26 @@ def runNumbers(request):
             ext = str(file_name.split('.')[-1]).lower()
             file_types.append(ext)
 
-
-
-            files_reviewed+= f.file_count
-            file_size+= f.file_size
+            files_reviewed += f.file_count
+            file_size += f.file_size
 
             # exclude the rejects from the transfers numbers
             if f.rejection_reason == None:
-                files_transfered+= f.file_count
-                
+                files_transfered += f.file_count
+
                 if f.is_centcom == True:
-                    centcom_files+= f.file_count
+                    centcom_files += f.file_count
             else:
-                files_rejected+= f.file_count
+                files_rejected += f.file_count
 
             if ext == "zip":
-                    file_type_counts['zipContents']+= f.file_count
+                file_type_counts['zipContents'] += f.file_count
 
             org = str(f.org)
             if org != "":
                 if org == "CENTCOM HQ":
                     org = "HQ"
-                org_counts[org]+=f.file_count
+                org_counts[org] += f.file_count
 
     # add up all file type counts
     pdfCount = file_types.count("pdf")
@@ -322,7 +328,7 @@ def runNumbers(request):
 
     # make bytes more human readable
     i = 0
-    sizeSuffix = {0 : 'Bytes', 1: 'KB', 2: 'MB', 3: 'GB', 4: 'TB'}
+    sizeSuffix = {0: 'Bytes', 1: 'KB', 2: 'MB', 3: 'GB', 4: 'TB'}
 
     while file_size > 1024:
         file_size /= 1024
@@ -330,10 +336,11 @@ def runNumbers(request):
 
     unique_users_count = len(unique_users)
     banned_users_count = len(banned_users)
-    return JsonResponse({'org_counts': org_counts,'files_reviewed': files_reviewed, 'files_transfered': files_transfered, 'files_rejected': files_rejected, 'centcom_files': centcom_files,
-    'file_types': file_type_counts, 'file_sizes': str(round(file_size,2))+" "+sizeSuffix[i], 'user_count': unique_users_count, 'banned_count':banned_users_count})
+    return JsonResponse({'org_counts': org_counts, 'files_reviewed': files_reviewed, 'files_transfered': files_transfered, 'files_rejected': files_rejected, 'centcom_files': centcom_files,
+                         'file_types': file_type_counts, 'file_sizes': str(round(file_size, 2))+" "+sizeSuffix[i], 'user_count': unique_users_count, 'banned_count': banned_users_count})
 
-def process ( request ):
+
+def process(request):
     resp = {}
 
     if request.method == 'POST':
@@ -351,7 +358,7 @@ def process ( request ):
             source_email.save()
         except Email.MultipleObjectsReturned:
             source_email = Email.objects.filter(address=form_data.get('userEmail'))[0]
-            
+
         if source_email.network == None:
             source_email.network = sourceNet
             source_email.save()
@@ -360,13 +367,13 @@ def process ( request ):
 
         # log why some users are getting a Network object error, what does their form contain???
         try:
-            destinationNet = Network.objects.get( name = form_data.get( 'network' ) )
+            destinationNet = Network.objects.get(name=form_data.get('network'))
         except Network.DoesNotExist:
             # log their form 'network' value but cause the error again, because I still don't want their submission to go through
-            logger.error("Network object does not exist, network value from form: " + str(form_data.get( 'network' )))
-            destinationNet = Network.objects.get( name = form_data.get( 'network' ) )
+            logger.error("Network object does not exist, network value from form: " + str(form_data.get('network')))
+            destinationNet = Network.objects.get(name=form_data.get('network'))
 
-        destination_list = form_data.get( 'targetEmail' ).split( "," )
+        destination_list = form_data.get('targetEmail').split(",")
         destSplit_list = []
 
         target_list = []
@@ -381,50 +388,50 @@ def process ( request ):
                 target_email = Email.objects.filter(address=destination, network=destinationNet)[0]
 
             requestData += destination
-            target_list.append( target_email )
+            target_list.append(target_email)
 
         # only check for unique users if userID is provided
 
-        requestData += form_data.get('firstName').replace(" ","").lower()
-        requestData += form_data.get('lastName').replace(" ","").lower()
+        requestData += form_data.get('firstName').replace(" ", "").lower()
+        requestData += form_data.get('lastName').replace(" ", "").lower()
 
         from pages.views.auth import getCert, getOrCreateUser
 
         certInfo = getCert(request)
         cftsUser = getOrCreateUser(request, certInfo)
 
-        org = form_data.get( 'organization' )
-        if form_data.get( 'organization' ) =="CENTCOM HQ":
+        org = form_data.get('organization')
+        if form_data.get('organization') == "CENTCOM HQ":
             org = "HQ"
-            
+
         rqst = Request(
-            user = cftsUser,
-            network = destinationNet,
-            comments = form_data.get( 'comments' ),
-            org = org,
-            is_centcom = form_data.get( 'isCentcom' )
+            user=cftsUser,
+            network=destinationNet,
+            comments=form_data.get('comments'),
+            org=org,
+            is_centcom=form_data.get('isCentcom')
         )
         rqst.save()
 
-        requestData += form_data.get( 'network' )
+        requestData += form_data.get('network')
 
-        rqst.target_email.add( *target_list )
-        if form_data.get( 'network' ) == "NIPR":
+        rqst.target_email.add(*target_list)
+        if form_data.get('network') == "NIPR":
             if form_data.get('userEmail').split("@")[0] not in destSplit_list:
                 rqst.destFlag = True
 
-        fileList=[]
+        fileList = []
 
         # add files to the request
-        file_info =  json.loads( form_data.get( 'fileInfo' ) )
+        file_info = json.loads(form_data.get('fileInfo'))
         # print( form_files.getlist( "files" ) )
-        for i, f in enumerate( form_files.getlist( "files" )):
+        for i, f in enumerate(form_files.getlist("files")):
             this_file = File(
-                file_object = f,
+                file_object=f,
                 # classification = Classification.objects.get( abbrev = file_info[ i ][ 'classification' ] ),
-                is_pii = file_info[ i ][ 'encrypt' ] == 'true',
-                org = form_data.get( 'organization' ),
-                is_centcom = form_data.get( 'isCentcom' ),
+                is_pii=file_info[i]['encrypt'] == 'true',
+                org=form_data.get('organization'),
+                is_centcom=form_data.get('isCentcom'),
             )
 
             # if the uploaded file is a zip get the info of the contente
@@ -444,7 +451,7 @@ def process ( request ):
                     # count the total uncompressed file size for all files in the zip
                     fileSize = 0
                     for file in info:
-                        fileSize+=file.file_size
+                        fileSize += file.file_size
 
                     this_file.file_size = fileSize
 
@@ -456,14 +463,13 @@ def process ( request ):
             this_file.file_name = str(this_file.file_object.name).split("/")[-1]
             this_file.save()
 
-            rqst.files.add( this_file )
+            rqst.files.add(this_file)
             fileList.append(str(f))
 
         fileList.sort()
 
         for file in fileList:
             requestData += file
-
 
         requestHash = hashlib.md5()
         requestHash.update(requestData.encode())
@@ -472,7 +478,7 @@ def process ( request ):
 
         dupes = Request.objects.filter(pull__date_complete=None, request_hash=requestHash)
         if dupes:
-            rqst.is_dupe=True
+            rqst.is_dupe = True
             dupes.update(is_dupe=True)
 
         rqst.is_submitted = True
@@ -490,11 +496,11 @@ def process ( request ):
         resp = {'status': 'fail', 'reason': 'bad-request-type',
                 'msg': "The 'api-processrequest' view only accepts POST requests."}
 
-
     return JsonResponse(resp)
+
 
 @never_cache
 def setConsentCookie(request):
-    request.session.__setitem__('consent','consent given')
+    request.session.__setitem__('consent', 'consent given')
     request.session.set_expiry(0)
     return HttpResponse("Consent Header Set")

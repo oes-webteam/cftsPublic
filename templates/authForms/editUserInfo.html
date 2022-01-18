@@ -2,18 +2,20 @@
 {% load static %}
 
 {% block content %}
-{% load crispy_forms_tags %}
-<link rel="stylesheet" href="{% static 'css/authForms.css' %}" />
+    {% load crispy_forms_tags %}
+    <link rel="stylesheet" href="{% static 'css/authForms.css' %}" />
 
-<div class="container py-5">
-    
-    <h1 class="mb-3">Update Account Info</h1>
-    <form class="needs-validation" method="post" novalidate>
-        {% crispy userInfoForm %}
-    </form>
-    <p class="text-center">Need to change your password? <a href="/password-change">Click here</a></p>
-</div>
+    <div class="container pt-2">
 
-<script>window.document.title = "Update Account Info"</script>
-<script src="{% static 'js/form-validate.js' %}"></script>
+        <h1 class="mb-3">Update Account Info</h1>
+        <form class="needs-validation" method="post" novalidate>
+            {% crispy userInfoForm %}
+        </form>
+        <p class="text-center">Need to change your password? <a href="/password-change">Click here</a></p>
+    </div>
+
+    <script>
+        window.document.title = "Update Account Info"
+    </script>
+    <script src="{% static 'js/form-validate.js' %}"></script>
 {% endblock %}

@@ -1,27 +1,27 @@
 {% load util %}
 
 {% block results %}
-        <tr>
-            <th style="width: 15em;">User</th>  <!-- add filter by user -->
-            <th>Date Created</th>
-            <th style="width: 12em;">Network</th>
-            <th>Files</th>
-            <th >Target Email</th>
-            <th>Pull</th> <!-- add filter by pull -->
-            <th style="width: 10em;">Org</th>
-        </tr>
-{% for r in rc.requests %}
+    <tr>
+        <th style="width: 15em;">User</th> <!-- add filter by user -->
+        <th>Date Created</th>
+        <th style="width: 12em;">Network</th>
+        <th>Files</th>
+        <th>Target Email</th>
+        <th>Pull</th> <!-- add filter by pull -->
+        <th style="width: 10em;">Org</th>
+    </tr>
+    {% for r in rc.requests %}
         <tr class="data-row">
             <td class="xfer-user"><a href="{% url 'userRequests' r.request_id %}" class="user" id="{{ r.user.user_id }}">{{ r.user }}</a></td>
             <td class="xfer-date">{{ r.date_created|date:"m/d/Y Hi" }}</td>
             <td class="xfer-net">{{ r.network }}</td>
             <td class="xfer-files">
                 <ul class="file-list">
-                {%  for f in r.files.all %}
-                    {% with f.file_object.name|split:"/" as name %}
-                    <li x-file-name="{{ name.2 }}"><a href="{% url 'admin:pages_file_change' f.file_id %}">{{ name.2|truncatechars:50 }}</a></li>
-                    {% endwith %}
-                {% endfor %}
+                    {%  for f in r.files.all %}
+                        {% with f.file_object.name|split:"/" as name %}
+                            <li x-file-name="{{ name.2 }}"><a href="{% url 'admin:pages_file_change' f.file_id %}">{{ name.2|truncatechars:50 }}</a></li>
+                        {% endwith %}
+                    {% endfor %}
                 </ul>
             </td>
             <td class="xfer-email">
@@ -32,12 +32,12 @@
                 </ul>
             </td>
             <td class="xfer-pull">
-            <a href="getPull/{{r.pull}} {{r.date_pulled|date:"dM"}} {{r.date_pulled|time:"Hi"}}.zip">{{r.pull}} {% if r.pull.centcom_pull %}
-            Centcom Only
+                <a href="getPull/{{r.pull}} {{r.date_pulled|date:"dM"}} {{r.date_pulled|time:"Hi"}}.zip">{{r.pull}} {% if r.pull.centcom_pull %}
+                    Centcom Only
                 {% endif %}</a>
             </td>
             <td class="xfer-org">
-            <div>{{r.org}}</div>
+                <div>{{r.org}}</div>
             </td>
         </tr>
     {% endfor %}
@@ -50,11 +50,11 @@
                         <a href="?page={{ rc.requests.previous_page_number }}">previous</a>
                     {% endif %}
                     {% if rc.requests.has_next %}
-                    <span class="current">
-                        Page {{ rc.requests.number }} of {{ rc.requests.paginator.num_pages }}.
-                    </span>
+                        <span class="current">
+                            Page {{ rc.requests.number }} of {{ rc.requests.paginator.num_pages }}.
+                        </span>
 
-                    
+
                         <a href="?page={{ rc.requests.next_page_number }}">next</a>
                         <a href="?page={{ rc.requests.paginator.num_pages }}">last &raquo;</a>
                     {% endif %}
