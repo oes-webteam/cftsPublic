@@ -62,11 +62,9 @@
                             {% for col, val in rc.items %}
                                 <li>{{ col }}: {{ val }}</li>
                             {% endfor %}
-                            {% if user.is_superuser %}
-                                <li>Banned: {{rqst.user.banned}}</li>
-                                <li>Banned Until: {{rqst.user.banned_until}}</li>
-                                <li>Strikes: {{rqst.user.strikes}}</li>
-                            {% endif %}
+                            <li>Banned: {{rqst.user.banned}}</li>
+                            <li>Banned Until: {{rqst.user.banned_until}}</li>
+                            <li>Strikes: {{rqst.user.strikes}}</li>
                             <li>Notes:</li>
                             <textarea name="notesField" id="notesField" style="width: 100%; height: 10rem;">{% if notes != None  %}{{ notes }}{% endif %}</textarea>
                         </ul>
