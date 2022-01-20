@@ -400,6 +400,10 @@ def process(request):
         certInfo = getCert(request)
         cftsUser = getOrCreateUser(request, certInfo)
 
+        # check to see if a user is banned, if so kick them to the home page
+        if cftsUser.banned == True:
+            return JsonResponse({'banned': True})
+
         org = form_data.get('organization')
         if form_data.get('organization') == "CENTCOM HQ":
             org = "HQ"
