@@ -226,6 +226,9 @@ function openRequestLink(id) {
 
 function successHandler(r) {
     console.dir(r);
+    if (r.banned) {
+        window.location = "/"
+    }
     notifyUserSuccess("THANK YOU! Your files have been submitted. Click <a <a class='alert-link' href='/my-requests'>here</a> to see your requests. ");
 
     if (debug != "True") {
