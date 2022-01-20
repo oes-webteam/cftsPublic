@@ -30,6 +30,12 @@
                         {% else %}
                             <a class="btn btn-danger" id="banBtn" href="{% url 'ban-request' rqst.request_id %}">Request User Ban</a>
                         {% endif %}
+                    {% else %}
+                        {% if rqst.user.strikes < 4 %}
+                            {% if user.is_superuser %}
+                                <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rqst.request_id %}">Escalate to Permanent Ban</a>
+                            {% endif %}
+                        {% endif %}
                     {% endif %}
                 </div>
 
