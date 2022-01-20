@@ -274,7 +274,11 @@ def removeCentcom(request, id):
 @user_passes_test(superUserCheck, login_url='queue', redirect_field_name=None)
 def banUser(request, userid, requestid, temp=False):
     userToBan = User.objects.filter(user_id=userid)[0]
-    strikes = userToBan.strikes
+
+    if userToBan.banned == True:
+        strikes = 3
+    else:
+        strikes = userToBan.strikes
 
     days = 0
 
