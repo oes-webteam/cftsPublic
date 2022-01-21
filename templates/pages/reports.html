@@ -3,99 +3,99 @@
 {% load util %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/reports.css' %}">    
+    <link rel="stylesheet" href="{% static 'css/reports.css' %}">
 
-<div class="container" style="margin-top: 200px;">
-  <form>
-    <!-- date pickers for start/end dates -->
-    <!-- default to week prior to current date -->
-    <div class="row">
-      <div class="col">
-        <label for="startDate">Start Date</label>
-        <input type="text" id="numbersStartDate" class="form-control datepicker xfer-numbers start" placeholder="Enter Date">
-      </div>
-      <div class="col">
-        <label for="endDate">End Date</label>
-        <input type="text" id="numbersEndDate" class="form-control datepicker xfer-numbers end" placeholder="Enter Date">
-      </div>
+    <div class="container" style="margin-top: 200px;">
+        <form>
+            <!-- date pickers for start/end dates -->
+            <!-- default to week prior to current date -->
+            <div class="row">
+                <div class="col">
+                    <label for="startDate">Start Date</label>
+                    <input type="text" id="numbersStartDate" class="form-control datepicker xfer-numbers start" placeholder="Enter Date">
+                </div>
+                <div class="col">
+                    <label for="endDate">End Date</label>
+                    <input type="text" id="numbersEndDate" class="form-control datepicker xfer-numbers end" placeholder="Enter Date">
+                </div>
+            </div>
+        </form>
+
+        <div class="row">
+            <div class="col results">
+                <h3>Files reviewed</h3>
+                <div id="reviewed" class="results-data"></div>
+            </div>
+            <div class="col results">
+                <h3>Files transfered</h3>
+                <div id="transfered" class="results-data"></div>
+            </div>
+            <div class="col results">
+                <h3>Files rejected</h3>
+                <div id="rejected" class="results-data"></div>
+            </div>
+            <div class="col results">
+                <h3>CENTCOM files</h3>
+                <div id="centcom" class="results-data"></div>
+            </div>
+        </div>
+
+        </br></br></br></br>
+
+        <div class="row">
+            <div class="col results">
+                <h3>File Types</h3>
+                <div id="types">
+
+                    <div class="fileCount results-data" id="word"></div>
+                    <div class="fileCount results-data" id="pdf"></div>
+                    <div class="fileCount results-data" id="txt"></div>
+                    <div class="fileCount results-data" id="excel"></div>
+                    <div class="fileCount results-data" id="ppt"></div>
+                    <div class="fileCount results-data" id="img"></div>
+                    <div class="fileCount results-data" id="zip"></div>
+                    <div class="fileCount results-data" id="zipContents"></div>
+                    <div class="fileCount results-data" id="other"></div>
+
+                </div>
+            </div>
+
+            <div class="col results">
+                <h3>Combined File Size</h3>
+                <div id="size" class="results-data"></div>
+            </div>
+
+            <div class="col results">
+                <h3>Files By Organization</h3>
+                <div id="org" class="results-data">
+                    <div class="orgs" id="CENTCOM-HQ"></div>
+                    <div class="orgs" id="AFCENT"></div>
+                    <div class="orgs" id="ARCENT"></div>
+                    <div class="orgs" id="NAVCENT"></div>
+                    <div class="orgs" id="MARCENT"></div>
+                    <div class="orgs" id="SOCCENT"></div>
+                    <div class="orgs" id="OTHER"></div>
+                </div>
+            </div>
+
+        </div>
+
+        </br></br></br></br>
+
+        <div class="row">
+            <div class="col results">
+                <h3>Unique users</h3>
+                <div id="users" class="results-data"></div>
+            </div>
+
+            <div class="col results">
+                <h3>User Banned</h3>
+                <div id="users-banned" class="results-data"></div>
+            </div>
+        </div>
+
+
     </div>
-  </form>
 
-  <div class="row">
-    <div class="col results">
-      <h3>Files reviewed</h3>
-      <div id="reviewed" class="results-data"></div>
-    </div>
-    <div class="col results">
-      <h3>Files transfered</h3>
-      <div id="transfered" class="results-data"></div>
-    </div>
-    <div class="col results">
-      <h3>Files rejected</h3>
-      <div id="rejected" class="results-data"></div>
-    </div>
-    <div class="col results">
-      <h3>CENTCOM files</h3>
-      <div id="centcom" class="results-data"></div>
-    </div>
-  </div>
-
-  </br></br></br></br>
-  
-  <div class="row">
-    <div class="col results">
-      <h3>File Types</h3>
-      <div id="types">
-      
-      <div class="fileCount results-data" id="word"></div>
-      <div class="fileCount results-data" id="pdf"></div>
-      <div class="fileCount results-data" id="txt"></div>
-      <div class="fileCount results-data" id="excel"></div>
-      <div class="fileCount results-data" id="ppt"></div>
-      <div class="fileCount results-data" id="img"></div>
-      <div class="fileCount results-data" id="zip"></div>
-      <div class="fileCount results-data" id="zipContents"></div>
-      <div class="fileCount results-data" id="other"></div>
-      
-      </div>
-    </div>
-
-    <div class="col results">
-      <h3>Combined File Size</h3>
-      <div id="size" class="results-data"></div>
-    </div>
-
-    <div class="col results">
-      <h3>Files By Organization</h3>
-      <div id="org" class="results-data">
-        <div class="orgs" id="CENTCOM-HQ"></div>
-        <div class="orgs" id="AFCENT"></div>
-        <div class="orgs" id="ARCENT"></div>
-        <div class="orgs" id="NAVCENT"></div>
-        <div class="orgs" id="MARCENT"></div>
-        <div class="orgs" id="SOCCENT"></div>
-        <div class="orgs" id="OTHER"></div>
-      </div>
-    </div>
-
-  </div>
-
-  </br></br></br></br>
-
-  <div class="row">
-    <div class="col results">
-      <h3>Unique users</h3>
-      <div id="users" class="results-data"></div>
-    </div>
-
-    <div class="col results">
-      <h3>User Banned</h3>
-      <div id="users-banned" class="results-data"></div>
-    </div>
-  </div>
-
-  
-</div>
-
-<script src="{% static 'js/reports.js' %}"></script>
+    <script src="{% static 'js/reports.js' %}"></script>
 {% endblock %}

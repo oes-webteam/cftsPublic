@@ -2,10 +2,10 @@
 {% load util %}
 
 {% block cookie %}
-<div class="col-12">
-    <a class="card bg-light p-2 cookie-card" style="align-items: center;" href="#" cookie="{{cookie.name}}">
-        <img src="{% static 'img/logo_temp.png' %}" class="cookie back" alt="Cookie"/>
-        <img src="{{cookie.path}}" class="cookie real hidden" alt="Cookie"/>
-    </a>
-</div>
+    <div class="col-12">
+        <a class="card bg-light p-2 cookie-card" style="align-items: center;" href="#" cookie="{{cookie.name}}">
+            <img src="{% static 'img/logo_temp.png' %}" class="cookie back" alt="Cookie" />
+            <img src="{{cookie.path}}" class="cookie real hidden" alt="Cookie" />
+        </a>
+    </div>
 {% endblock %}
