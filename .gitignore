@@ -120,3 +120,4 @@ templates/partials/files/
 .idea/
 # network specific settings file
 cfts/network.py
+.pre-commit-config.yaml

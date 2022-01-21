@@ -4,9 +4,9 @@
 <title>Request Info</title>
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
-<link rel="stylesheet" href="{% static 'css/queue.css' %}">
-<link rel="stylesheet" href="{% static 'css/transfer-request.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'css/queue.css' %}">
+    <link rel="stylesheet" href="{% static 'css/transfer-request.css' %}">
 
 
     <div class="container details">
@@ -30,7 +30,13 @@
                         {% else %}
                             <a class="btn btn-danger" id="banBtn" href="{% url 'ban-request' rqst.request_id %}">Request User Ban</a>
                         {% endif %}
-                {% endif %}
+                    {% else %}
+                        {% if rqst.user.strikes < 4 %}
+                            {% if user.is_superuser %}
+                                <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rqst.request_id %}">Escalate to Permanent Ban</a>
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
                 </div>
 
             </div>
@@ -40,107 +46,105 @@
                     <a href="#" class="btn btn-danger request-reject">Reject Files</a>
                     <a href="{% url 'scan' rqst.request_id %}" class="btn btn-info">Rescan Files</a>
                 </div>
-                
+
                 {% if user.is_superuser %}
                     <div class="btn-group ml-3">
                         <a href="#" class="btn btn-info request-remove one-eye" rqst_id="{{rqst.request_id}}">Remove One Eyer</a>
                         <a href="#" class="btn btn-primary request-remove two-eye" rqst_id="{{rqst.request_id}}">Remove Two Eyer</a>
                     </div>
                 {% endif %}
-                
+
             </div>
         </div>
-        
+
         <div class="row">
             <div class="col-6">
                 <div class="details-card">
                     {% csrf_token %}
-                        <div class="card-header">
-            
+                    <div class="card-header">
+
                         <ul>
                             <li>User: <a href="{% url 'admin:pages_user_change' rqst.user.user_id %}">{{rqst.user}} ({{rqst.user.auth_user}})</a></li>
                             {% for col, val in rc.items %}
                                 <li>{{ col }}: {{ val }}</li>
                             {% endfor %}
-                            {% if user.is_superuser %}
-                                <li>Banned: {{rqst.user.banned}}</li>
-                                <li>Banned Until: {{rqst.user.banned_until}}</li>
-                                <li>Strikes: {{rqst.user.strikes}}</li>
-                            {% endif %}
+                            <li>Banned: {{rqst.user.banned}}</li>
+                            <li>Banned Until: {{rqst.user.banned_until}}</li>
+                            <li>Strikes: {{rqst.user.strikes}}</li>
                             <li>Notes:</li>
                             <textarea name="notesField" id="notesField" style="width: 100%; height: 10rem;">{% if notes != None  %}{{ notes }}{% endif %}</textarea>
                         </ul>
-            
-                        </div> <!-- END card-header -->
-                    </div><!-- END card -->
+
+                    </div> <!-- END card-header -->
+                </div><!-- END card -->
             </div>
 
             <div class="col-6">
                 <div class="details-card">
                     <table>
-                    {% for file in rqst.files.all %}
-                        <tr class="file-row" id="row_{{file.file_id}}">
-                            {% comment %} <td>
-                                
-                            </td> {% endcomment %}
-                            <td class="file-left">
-                                <input type="checkbox" name="fileSelection" id="chk_{{ file.file_id }}" request_id="{{ rqst.request_id }}" request_email="{{ rqst.user.email }}" file_name="{{ file }}" {% if file.rejection_reason != None %} rejected {% else %} not-rejected {% endif %} hidden/>
-                                <!-- Show encrypt flag? -->
-                                {% if file.is_pii%}
-                                <span title="PII: {{ file.is_pii }}&#10;">🔒</span>
-                                {% endif %}
-                                <a class="{% if file.rejection_reason != None %}rejected {% endif %} mr-2"title="{{ file }}" id="{{file.file_id}}" href={% if debug == True %}{% url 'admin:pages_file_change' file.file_id %}{% else %}"/getFile/{{file.file_object}}"{% endif %} download="{{file.file_name}}">{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</a>
-                                {% if user.is_superuser %}{% if file.user_oneeye != None %}<strong><span class="reviewers mr-2 d-none">1 Eye:  {{file.user_oneeye}}</span>{% endif %} {% if file.user_twoeye != None %}<span class="reviewers d-none">2 Eye:  {{file.user_twoeye}}</span></strong>{% endif %}{% endif %}
-                            </td>
-                            <td class="file-right p-1">
-                                {% if file.rejection_reason != None %}
-                                    File rejected: {{file.rejection_reason}}
-                                {% else %}
-                                    {% if file.date_oneeye != None and file.date_twoeye != None %}
-                                                File reviewed by {{file.user_oneeye}} and {{file.user_twoeye}}
-                                    {% elif file.user_oneeye == None %}
-                                        <a href="{% url 'reviewFile' file.file_id rqst.request_id %}" class="btn btn-info">Begin Review</a>
-                                    {% elif file.user_oneeye != None and file.user_oneeye == user and file.date_oneeye == None %}
-                                        <div class="btn-group">
-                                            <a href="{% url 'reviewFile' file.file_id rqst.request_id %}" class="btn btn-success">Complete Review</a>
-                                            <a href="{% url 'reviewFile' file.file_id rqst.request_id "True" %}" class="btn btn-warning">Quit Review</a>
-                                        </div>
-                                    {% elif file.user_twoeye == None %}
-                                        {% if file.user_oneeye == user %}
-                                            File waiting for second review
-                                        {% else %}
+                        {% for file in rqst.files.all %}
+                            <tr class="file-row" id="row_{{file.file_id}}">
+                                {% comment %} <td>
+
+                        </td> {% endcomment %}
+                                <td class="file-left">
+                                    <input type="checkbox" name="fileSelection" id="chk_{{ file.file_id }}" request_id="{{ rqst.request_id }}" request_email="{{ rqst.user.email }}" file_name="{{ file }}" {% if file.rejection_reason != None %} rejected {% else %} not-rejected {% endif %} hidden />
+                                    <!-- Show encrypt flag? -->
+                                    {% if file.is_pii%}
+                                        <span title="PII: {{ file.is_pii }}&#10;">🔒</span>
+                                    {% endif %}
+                                    <a class="{% if file.rejection_reason != None %}rejected {% endif %} mr-2" title="{{ file }}" id="{{file.file_id}}" href={% if debug == True %}{% url 'admin:pages_file_change' file.file_id %}{% else %}"/getFile/ {{file.file_object}}"{% endif %} download="{{file.file_name}}">{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</a>
+                                    {% if user.is_superuser %}{% if file.user_oneeye != None %}<strong><span class="reviewers mr-2 d-none">1 Eye: {{file.user_oneeye}}</span>{% endif %} {% if file.user_twoeye != None %}<span class="reviewers d-none">2 Eye: {{file.user_twoeye}}</span></strong>{% endif %}{% endif %}
+                                </td>
+                                <td class="file-right p-1">
+                                    {% if file.rejection_reason != None %}
+                                        File rejected: {{file.rejection_reason}}
+                                    {% else %}
+                                        {% if file.date_oneeye != None and file.date_twoeye != None %}
+                                            File reviewed by {{file.user_oneeye}} and {{file.user_twoeye}}
+                                        {% elif file.user_oneeye == None %}
                                             <a href="{% url 'reviewFile' file.file_id rqst.request_id %}" class="btn btn-info">Begin Review</a>
-                                        {% endif %}
-                                    {% elif file.user_twoeye != None %}
-                                        {% if file.user_twoeye == user and file.date_twoeye == None %}
-                                        <div class="btn-group">
-                                            <a href="{% url 'reviewFile' file.file_id rqst.request_id %}" class="btn btn-success">Complete Review</a>
-                                            <a href="{% url 'reviewFile' file.file_id rqst.request_id "True" %}" class="btn btn-warning">Quit Review</a>
-                                        </div>
-                                        {% else %}
-                                            {% if file.date_oneeye != None and file.date_twoeye == None %}
-                                                {{file.user_twoeye}} is reviewing this file
-                                            {% elif file.date_twoeye != None and file.date_oneeye == None %}
-                                                {{file.user_oneeye}} is reviewing this file
-                                            {% elif file.date_twoeye == None and file.date_oneeye == None %}
-                                                {{file.user_oneeye}} and {{file.user_twoeye}} are reviewing this file
+                                        {% elif file.user_oneeye != None and file.user_oneeye == user and file.date_oneeye == None %}
+                                            <div class="btn-group">
+                                                <a href="{% url 'reviewFile' file.file_id rqst.request_id %}" class="btn btn-success">Complete Review</a>
+                                                <a href="{% url 'reviewFile' file.file_id rqst.request_id "True" %}" class="btn btn-warning">Quit Review</a>
+                                            </div>
+                                        {% elif file.user_twoeye == None %}
+                                            {% if file.user_oneeye == user %}
+                                                File waiting for second review
+                                            {% else %}
+                                                <a href="{% url 'reviewFile' file.file_id rqst.request_id %}" class="btn btn-info">Begin Review</a>
+                                            {% endif %}
+                                        {% elif file.user_twoeye != None %}
+                                            {% if file.user_twoeye == user and file.date_twoeye == None %}
+                                                <div class="btn-group">
+                                                    <a href="{% url 'reviewFile' file.file_id rqst.request_id %}" class="btn btn-success">Complete Review</a>
+                                                    <a href="{% url 'reviewFile' file.file_id rqst.request_id "True" %}" class="btn btn-warning">Quit Review</a>
+                                                </div>
+                                            {% else %}
+                                                {% if file.date_oneeye != None and file.date_twoeye == None %}
+                                                    {{file.user_twoeye}} is reviewing this file
+                                                {% elif file.date_twoeye != None and file.date_oneeye == None %}
+                                                    {{file.user_oneeye}} is reviewing this file
+                                                {% elif file.date_twoeye == None and file.date_oneeye == None %}
+                                                    {{file.user_oneeye}} and {{file.user_twoeye}} are reviewing this file
+                                                {% endif %}
                                             {% endif %}
                                         {% endif %}
                                     {% endif %}
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% if file.rejection_reason == None %}
-                            {% if file.user_oneeye == user and file.date_oneeye == None or file.user_twoeye == user and file.date_twoeye == None%}
-                                {% if file.scan_results == None %}
-                                    {% include 'partials/Scan_partials/scanResults.html' with empty=True %}
-                                {% else %}
-                                    {% include 'partials/Scan_partials/scanResults.html' with results=file.scan_results %}
+                                </td>
+                            </tr>
+                            {% if file.rejection_reason == None %}
+                                {% if file.user_oneeye == user and file.date_oneeye == None or file.user_twoeye == user and file.date_twoeye == None%}
+                                    {% if file.scan_results == None %}
+                                        {% include 'partials/Scan_partials/scanResults.html' with empty=True %}
+                                    {% else %}
+                                        {% include 'partials/Scan_partials/scanResults.html' with results=file.scan_results %}
+                                    {% endif %}
                                 {% endif %}
                             {% endif %}
-                        {% endif %}
-                        
-                    {% endfor %}
+
+                        {% endfor %}
                     </table>
                 </div>
             </div>
@@ -148,20 +152,20 @@
 
         <br>
         {% if dupes %}
-        <hr class="mt-2 mb-3" style="border-top-width: 3px; border-top-color: rgba(0, 0, 0, 0.2);">
+            <hr class="mt-2 mb-3" style="border-top-width: 3px; border-top-color: rgba(0, 0, 0, 0.2);">
 
             <form class="queue-form">
                 <div class="dupe-header">
                     {% if mostRecentDupe %}
-                    <h4 class="org-header">Duplicate Requests (Current Request is the most recent duplicate):</h4>
+                        <h4 class="org-header">Duplicate Requests (Current Request is the most recent duplicate):</h4>
                     {% else %}
-                    <h4 class="org-header">Duplicate Requests (Most recent duplicate is outlined in blue):</h4>
+                        <h4 class="org-header">Duplicate Requests (Most recent duplicate is outlined in blue):</h4>
                     {% endif %}
                     <div class="btn-group mb-3">
                         <a href="#" class="btn btn-danger reject-dupes" request_hash="{{rqst.request_hash}}" current_id="{{rqst.request_id}}">Reject All Duplicate Requests</a>
                     </div>
                 </div>
-                
+
                 <div class="row">
                     {% for request in dupes %}
                         {% if forloop.first and mostRecentDupe == False %}
@@ -181,18 +185,22 @@
                     <select name="reason" class="form-control">
                         <option value=""></option>
                         {% for r in rejections %}
-                        <option value="{{ r.rejection_id }}" data-subject="{{ r.subject }}" data-text="{{ r.text }}">{{ r.name }}</option>
+                            <option value="{{ r.rejection_id }}" data-subject="{{ r.subject }}" data-text="{{ r.text }}">{{ r.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
             </form>
         </div>
-        
+
     </div> <!-- END container -->
 
 
-    <script>let rqst_id = "{{ rqst.request_id }}"</script>
-    <script>let user_id = "{{user_id }}"</script>
+    <script>
+        let rqst_id = "{{ rqst.request_id }}"
+    </script>
+    <script>
+        let user_id = "{{user_id }}"
+    </script>
     <script src="{% static 'js/transfer-request.js' %}"></script>
     {% include 'partials/_forceReloadForm.html' %}
     <script src="{% static 'js/notification.js' %}"></script>

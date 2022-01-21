@@ -1,25 +1,22 @@
-#scan-results h3, #loading-icon h3 {
-  color: red;
+#scan-results h3,
+#loading-icon h3 {
+    color: red;
 }
 
 tbody {
-  border: 1px dashed red;
-  border-radius: 1.5rem;
-  max-width: 50vw;
-  min-width: 50vmax;
-  font-size: 1.25em;
-  font-weight: bold;
+    border: 1px dashed red;
+    border-radius: 1.5rem;
+    max-width: 50vw;
+    min-width: 50vmax;
+    font-size: 1.25em;
+    font-weight: bold;
 }
-
-.scanned-item {}
 
 .inner-files {
-  font-weight: normal;
+    font-weight: normal;
 }
 
-.scanned-file {}
-
-.img-count{
-  list-style-type: none;
-  font-size: 1rem;
+.img-count {
+    list-style-type: none;
+    font-size: 1rem;
 }
