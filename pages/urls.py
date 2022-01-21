@@ -89,9 +89,6 @@ urlpatterns = [
     path('api-banuser/<uuid:userid>/<uuid:requestid>/<str:temp>', views.banUser, name='api-banuser'),
 
     # dev tools
-    path('tools-makefiles', views.makeFiles, name='make-files'),
-    path('tools-stubget', views.stubGet, name='stub-get'),
-    path('tools-stubpost', views.stubPost, name='stub-post'),
     path('tools-setupdb', views.setupDB, name="setupdb"),
     path('tools-updateFileInfo', views.updateFiles, name='api-updateFileInfo'),
 ]
