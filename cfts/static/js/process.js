@@ -97,8 +97,14 @@ function validateForm(form) {
     }
 
     // target network
+    // user has multiple destination network options
     if (!form.elements.network.value.length) {
         form.elements.network.forEach((elem) => errors.push(elem));
+        isValid = false;
+    }
+    // user only has one destination network option
+    else if (form.elements.network.length == undefined && form.elements.network.checked == false) {
+        errors.push(form.elements.network);
         isValid = false;
     }
 
