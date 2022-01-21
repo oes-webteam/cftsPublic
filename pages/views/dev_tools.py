@@ -4,12 +4,58 @@ from django.shortcuts import render
 from pages.models import *
 from django.contrib.auth.decorators import login_required, user_passes_test
 from zipfile import BadZipFile, ZipFile
+from cfts import settings
+import os
+import shutil
+from datetime import datetime
 
 from pages.views.auth import superUserCheck, staffCheck
 
 
 # from django.core.files.base import ContentFile
 # ====================================================================
+
+# get all files in folder
+def deleteFiles(directory, maxAge):
+    with os.scandir(directory) as files:
+        for file in files:
+            if file.path.split("\\")[-1] != ".gitignore":
+                # file last modified date
+                modTime = datetime.fromtimestamp(file.stat().st_mtime)
+                fileAge = datetime.fromtimestamp(datetime.now().timestamp())-modTime
+                if fileAge.days < maxAge:
+                    print("File %s is %s days old. Deleting..." % (file.path, fileAge.days))
+                    # delete upload if older than maxAge variable
+                    if directory == settings.UPLOADS_DIR:
+                        shutil.rmtree(file.path)
+                    # delete single files
+                    else:
+                        os.remove(file.path)
+
+                else:
+                    daysRemaining = maxAge-fileAge.days
+                    if daysRemaining == 0:
+                        print("File %s will be deleted in 1 day." % file.path)
+
+                    print("File %s will be deleted in %s days." % (file.path, daysRemaining))
+
+
+@login_required
+@user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)
+def fileCleanup(request):
+    # path to uploads folder
+    uploadsPath = settings.UPLOADS_DIR
+    pullsPath = settings.PULLS_DIR
+    scanPath = os.path.join(settings.BASE_DIR, "cfts\\scan")
+
+    try:
+        deleteFiles(uploadsPath, 30)
+        deleteFiles(pullsPath, 30)
+        deleteFiles(scanPath, 1)
+        return HttpResponse("Old files deleted")
+    except Exception as e:
+        return HttpResponse(str("Error deleting files:" + repr(e)))
+
 
 def resetUpdateInfo(apps, schema_editor):
     User = apps.get_model("pages", "User")
