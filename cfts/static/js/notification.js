@@ -7,7 +7,7 @@ notifyUserSuccess = (msg) => {
     $(".server-error").hide()
     $(".danger-error").hide()
     $(".file-error").hide().text("")
-    let alertDiv = $(".alert-success");
+    let alertDiv = $(".notification-success");
     alertDiv.html(msg);
     alertDiv.fadeIn();
     // window.setTimeout( function() {
@@ -17,7 +17,7 @@ notifyUserSuccess = (msg) => {
 
 notifyFileWarning = (msg) => {
     console.log("Warning message")
-    $(".alert-success").hide()
+    $(".notification-success").hide()
     $(".server-error").hide()
     let alertDiv = $(".file-error");
     if (alertDiv.is(':visible')) msg = "<hr />" + msg;
@@ -27,7 +27,7 @@ notifyFileWarning = (msg) => {
 
 notifyUserWarning = (msg) => {
     console.log("Warning message")
-    $(".alert-success").hide()
+    $(".notification-success").hide()
     $(".server-error").hide()
     let alertDiv = $(".danger-error");
     alertDiv.text(msg);
@@ -36,7 +36,7 @@ notifyUserWarning = (msg) => {
 
 notifyUserError = (msg) => {
     console.log("Error message")
-    $(".alert-success").hide()
+    $(".notification-success").hide()
     $(".danger-error").hide()
     let alertDiv = $(".server-error");
     alertDiv.text(msg);
