@@ -70,124 +70,41 @@ def reverseFunction():
     pass
 
 
-def stubGet(request):
-    return JsonResponse({})
-
-
-def stubPost(request):
-    data = {}
-    if request.method == 'POST':
-        data = request.POST.dict()
-
-    return JsonResponse(data)
-
-
-def makeFiles(request):
-    unclass = Classification.objects.get(abbrev='U')
-    return HttpResponse('Made the files')
-    '''
-  for i in range( 16, 20 ):
-    # filename
-    new_f = 'textfile_' + str(i) + '.txt'
-    # new CFTS File object
-    new_file = File( classification = unclass )
-    # save the new CFTS file
-    new_file.save()
-    # save the Django File into the CFTS File
-    new_file.file_object.save( new_f, ContentFile( new_f ) )
-  '''
-
-
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def setupDB(request):
     if Network.objects.count() == 0:
-        # Classifications
-        unclass = Classification(classification_id='8cefbfbe3e5a4d46aea10c22c879569d', full_name='UNCLASSIFIED', abbrev='U', sort_order=1)
-        unclass.save()
-        fouo = Classification(classification_id='fbeeca2f48bc4ebebdc428a8a94a2a90', full_name='UNCLASSIFIED//FOR OFFICIAL USE ONLY', abbrev='U//FOUO', sort_order=2)
-        fouo.save()
-        c = Classification(classification_id='49c821fc4bd9487e86ded88610c59f54', full_name='CONFIDENTIAL', abbrev='C', sort_order=3)
-        c.save()
-        c_rel = Classification(classification_id='a605c8d9b6fe404d98812d944c3cf3ca', full_name='CONFIDENTIAL//RELEASABLE', abbrev='C//REL', sort_order=4)
-        c_rel.save()
-        cui = Classification(classification_id='b14598a66fa84472a817ee8eae488be3', full_name='CONTROLLED UNCLASSIFIED INORMATION', abbrev='CUI', sort_order=4)
-        cui.save()
-        s = Classification(classification_id='3fd32c420cc74af0b7a5afd1e481b92e', full_name='SECRET', abbrev='S', sort_order=5)
-        s.save()
-        s_rel = Classification(classification_id='b8f6928f278d4891a77f32cb7c411094', full_name='SECRET//RELEASABLE', abbrev='S//REL', sort_order=6)
-        s_rel.save()
 
         # Networks
         nipr = Network(network_id='dabcf4d26dcf475286351de3ac7f0c49', name='NIPR', sort_order=1)
         nipr.save()
-        nipr.classifications.add(unclass)
-        nipr.classifications.add(fouo)
-        nipr.classifications.add(cui)
 
-        bices = Network(network_id='7cc549aba3064d5b9cb8fa8ec846f252', name='BICES', sort_order=2)
+        sipr = Network(network_id='9db4f002-78ef-4a90-9b76-baaf28603dc3', name='SIPR', sort_order=2)
+        sipr.save()
+
+        bices = Network(network_id='7cc549aba3064d5b9cb8fa8ec846f252', name='BICES', sort_order=3)
         bices.save()
-        bices.classifications.add(unclass)
-        bices.classifications.add(fouo)
-        bices.classifications.add(c_rel)
-        bices.classifications.add(cui)
-        bices.classifications.add(s_rel)
 
-        are = Network(network_id='56ea084ed72c47cab3ee48371afdb504', name='CPN-ARE', sort_order=3)
+        are = Network(network_id='56ea084ed72c47cab3ee48371afdb504', name='CPN-ARE', sort_order=4)
         are.save()
-        are.classifications.add(unclass)
-        are.classifications.add(fouo)
-        are.classifications.add(c_rel)
-        are.classifications.add(cui)
-        are.classifications.add(s_rel)
 
-        bhr = Network(network_id='d451005a8b5043e9b61394ea99b961d2', name='CPN-BHR', sort_order=4)
+        bhr = Network(network_id='d451005a8b5043e9b61394ea99b961d2', name='CPN-BHR', sort_order=5)
         bhr.save()
-        bhr.classifications.add(unclass)
-        bhr.classifications.add(fouo)
-        bhr.classifications.add(c_rel)
-        bhr.classifications.add(cui)
-        bhr.classifications.add(s_rel)
 
-        jor = Network(network_id='6caad0cf9f0a4160b290c2c6407aa04d', name='CPN-JOR', sort_order=5)
+        jor = Network(network_id='6caad0cf9f0a4160b290c2c6407aa04d', name='CPN-JOR', sort_order=6)
         jor.save()
-        jor.classifications.add(unclass)
-        jor.classifications.add(fouo)
-        jor.classifications.add(c_rel)
-        jor.classifications.add(cui)
-        jor.classifications.add(s_rel)
 
-        kwt = Network(network_id='5fde10fa2e424b5795ce76f5ece5305a', name='CPN-KWT', sort_order=6)
+        kwt = Network(network_id='5fde10fa2e424b5795ce76f5ece5305a', name='CPN-KWT', sort_order=7)
         kwt.save()
-        kwt.classifications.add(unclass)
-        kwt.classifications.add(fouo)
-        kwt.classifications.add(c_rel)
-        kwt.classifications.add(cui)
-        kwt.classifications.add(s_rel)
 
-        qat = Network(network_id='c8628ca885d7436e96f664e8d6c1f2d9', name='CPN-QAT', sort_order=7)
+        qat = Network(network_id='c8628ca885d7436e96f664e8d6c1f2d9', name='CPN-QAT', sort_order=8)
         qat.save()
-        qat.classifications.add(unclass)
-        qat.classifications.add(fouo)
-        qat.classifications.add(c_rel)
-        qat.classifications.add(cui)
-        qat.classifications.add(s_rel)
 
-        sau = Network(network_id='be27f19fd42147ebabc098da6d8bb35c', name='CPN-SAU', sort_order=8)
+        sau = Network(network_id='be27f19fd42147ebabc098da6d8bb35c', name='CPN-SAU', sort_order=9)
         sau.save()
-        sau.classifications.add(unclass)
-        sau.classifications.add(fouo)
-        sau.classifications.add(c_rel)
-        sau.classifications.add(cui)
-        sau.classifications.add(s_rel)
 
-        cpnx = Network(network_id='20c87ade9349487ba9f67b358f470add', name='CPN-X', sort_order=9)
+        cpnx = Network(network_id='20c87ade9349487ba9f67b358f470add', name='CPN-X', sort_order=10)
         cpnx.save()
-        cpnx.classifications.add(unclass)
-        cpnx.classifications.add(fouo)
-        cpnx.classifications.add(c_rel)
-        cpnx.classifications.add(cui)
-        cpnx.classifications.add(s_rel)
 
         # Rejection Reasons
 
