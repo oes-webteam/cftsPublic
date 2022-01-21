@@ -1,3 +1,4 @@
+# see comment in settings.py for a more detailed explanation of what this file is for
 from django.contrib.staticfiles.storage import ManifestStaticFilesStorage
 
 
