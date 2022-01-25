@@ -460,16 +460,16 @@ def process(request):
         if form_data.get('network') == "NIPR":
             if form_data.get('userEmail').split("@")[0] not in destSplit_list:
                 rqst.destFlag = True
-        ############################################################################################################################################
+
         fileList = []
 
-        # add files to the request
+        # get files from request form
         file_info = json.loads(form_data.get('fileInfo'))
-        # print( form_files.getlist( "files" ) )
+
+        # create a File object for every file
         for i, f in enumerate(form_files.getlist("files")):
             this_file = File(
                 file_object=f,
-                # classification = Classification.objects.get( abbrev = file_info[ i ][ 'classification' ] ),
                 is_pii=file_info[i]['encrypt'] == 'true',
                 org=form_data.get('organization'),
                 is_centcom=form_data.get('isCentcom'),
@@ -482,6 +482,7 @@ def process(request):
                     info = zip.infolist()
                     fileCount = 0
 
+                    # only count files, not folders
                     for entry in info:
                         if entry.is_dir() == False:
                             fileCount += 1
@@ -500,32 +501,40 @@ def process(request):
                 # if its not a zip just get the file size from the file object, file count defaults to 1
                 this_file.file_size = this_file.file_object.size
 
+            # save the file, let Django strip illegal characters from the path, and trim the dir path from the filename
             this_file.save()
             this_file.file_name = str(this_file.file_object.name).split("/")[-1]
             this_file.save()
 
+            # add the file to the request and the list of files used in the request hash
             rqst.files.add(this_file)
             fileList.append(str(f))
 
+        # sort the list of files so the order of files does not affect the duplicate checking
         fileList.sort()
 
         for file in fileList:
             requestData += file
 
+        # create the request hash and add it to the Request object
         requestHash = hashlib.md5()
         requestHash.update(requestData.encode())
         requestHash = requestHash.hexdigest()
         rqst.request_hash = requestHash
 
+        # check for any files with the same hash that have not been pulled yet
         dupes = Request.objects.filter(pull__date_complete=None, request_hash=requestHash)
+
+        # update duplicate flags for all Request objects returned
         if dupes:
             rqst.is_dupe = True
             dupes.update(is_dupe=True)
 
+        # if we have gotten this far without an error than this request is good to go, Requests where is_submitted == False are filtered out from the queue and pulls
         rqst.is_submitted = True
         rqst.save()
 
-        # scan all files in request, append results to file
+        # scan all files in request for any match of a DirtyWord object, append results to file, an error in a scan will NOT prevent the request from being submitted
         try:
             scan(request, rqst.request_id)
         except:
@@ -539,7 +548,7 @@ def process(request):
 
     return JsonResponse(resp)
 
-
+# function to set the consent cookie for the current browser session, this cookie is required to reach any CFTS page
 @never_cache
 def setConsentCookie(request):
     request.session.__setitem__('consent', 'consent given')
