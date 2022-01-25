@@ -85,24 +85,6 @@ def pulls(request):
 
     return render(request, 'pages/pulls.html', {'rc': rc})
 
-# @login_required
-# @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
-# def pullsOneEye( request, id ):
-#   thisPull = Pull.objects.get( pull_id = id )
-#   thisPull.date_oneeye = datetime.datetime.now()
-#   thisPull.user_oneeye = request.user
-#   thisPull.save()
-#   return JsonResponse( { 'id': id } )
-
-# @login_required
-# @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
-# def pullsTwoEye( request, id ):
-#   thisPull = Pull.objects.get( pull_id = id )
-#   thisPull.date_twoeye = datetime.datetime.now()
-#   thisPull.user_twoeye = request.user
-#   thisPull.save()
-#   return JsonResponse( { 'id': id } )
-
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)

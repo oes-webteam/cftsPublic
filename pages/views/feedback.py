@@ -47,7 +47,6 @@ def submitFeedback(request):
         feedback = Feedback(
             title=form_data.get('title'),
             body=form_data.get('feedback'),
-            #user = cftsUser,
             category=form_data.get('category'),
             admin_feedback=form_data.get('adminUser'),
             date_submitted=timezone.now()

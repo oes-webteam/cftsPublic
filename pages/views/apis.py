@@ -69,7 +69,7 @@ def setRejectDupes(request):
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def setReject(request):
     postData = dict(request.POST.lists())
-    
+
     reject_id = postData['reject_id']
     request_id = postData['request_id']
     id_list = postData['id_list[]']
@@ -96,7 +96,7 @@ def setReject(request):
 
     if all_rejected == True:
         rqst.update(all_rejected=True)
-    
+
     messages.success(request, "Files rejected successfully")
 
     # recreate the zip file for the pull, this will exclude the newly rejected files
@@ -110,7 +110,7 @@ def setReject(request):
     # request wasn't part of a pull, no need to call createZip()
     except AttributeError:
         print("Request not found in any pull.")
-    
+
     # normally rejecting a file would also generate an email to go along with it, but that gets really annoying when doing dev work so emails are disabled when DEBUG==True
     # if DEBUG==False then we call createEml() and return the email generated with a JSON response
     if DEBUG == True:
@@ -147,9 +147,9 @@ def createEml(request, request_id, files_list, reject_id):
             msgBody += str(file.file_object).split("/")[-1] + ", "
 
     # this is the url that users can use to get more details about their request
-    url = "https://"+str(request.get_host())+"/request/"+str(rqst.request_id)
+    url = "https://" + str(request.get_host()) + "/request/" + str(rqst.request_id)
 
-    #render out the email template and append it to the mailto link
+    # render out the email template and append it to the mailto link
     msgBody += render_to_string('partials/Queue_partials/rejectionEmailTemplate.html', {'rqst': rqst, 'rejection': rejection, 'firstName': rqst.user.name_first, 'url': url}, request)
 
     return msgBody
@@ -238,10 +238,10 @@ def runNumbers(request):
     '''
     ughhhh...
     So users all have a unique userID which is a hash of the "Subject Alternative Name" from the certificate on a users SIPR card, but trafic from users outside of USCENTCOM is sent throuh F5 boundery servers
-    and somewhere along the lines their user certificate is replaced with the server certificate for CFTS. Why? beats me, but the F5 team is taking their sweet time fixing the issue. What this all means is that
-    internal USCENTCOM users have a hased userID as expected and all external users would have the same hash. This wasn't apparent at first and took a while to find a work around which means that there are a ton
-    of User objects in the database with the hash below. We wouldn't count any of these users in our metrics because many of these users we duplicate account. This isn't really a problem any more because now all
-    users need to register an account to use CFTS, but this is a reminder of the days when all you needed to use CFTS was you SIPR card.
+    and somewhere along the line their user certificate is replaced with the server certificate for CFTS. Why? beats me, but the F5 team is taking their sweet time fixing the issue. What this all means is that
+    internal USCENTCOM users have a hased userID as expected, but all external users would have the same hash as eachother. This wasn't apparent at first and took a while to find a work around which means that
+    there are a ton of User objects in the database with the hash below. We wouldn't count any of these users in our metrics because many of these users we duplicate account. This isn't really a problem any
+    more because now all users need to register an account to use CFTS, but this is a reminder of the days when all you needed to use CFTS was you SIPR card.
     '''
     skipUsers = ['2ab155e3a751644ee4073972fc4534be158aa0891e8a8df6cd1631f56c61f06073d288fed905d0932fde78155c83208deb661361e64eb1a0f3d736ed04a7e4dc', '00000.0000.0.0000000']
     files_reviewed = 0
@@ -314,7 +314,7 @@ def runNumbers(request):
             # count how many files were in zips
             if ext == "zip":
                 file_type_counts['zipContents'] += f.file_count
-            
+
             # file count by organization
             org = str(f.org)
             if org != "":
@@ -326,19 +326,19 @@ def runNumbers(request):
     pdfCount = file_types.count("pdf")
     file_type_counts["pdf"] = pdfCount
 
-    excelCount = file_types.count("xlsx")+file_types.count("xls")+file_types.count("xlsm")+file_types.count("xlsb")+file_types.count("xltx")+file_types.count("xltm")+file_types.count("xlt")+file_types.count("csv")
+    excelCount = file_types.count("xlsx") + file_types.count("xls") + file_types.count("xlsm") + file_types.count("xlsb") + file_types.count("xltx") + file_types.count("xltm") + file_types.count("xlt") + file_types.count("csv")
     file_type_counts["excel"] = excelCount
 
-    wordCount = file_types.count("doc")+file_types.count("docx")
+    wordCount = file_types.count("doc") + file_types.count("docx")
     file_type_counts["word"] = wordCount
 
     textCount = file_types.count("txt")
     file_type_counts["text"] = textCount
 
-    pptCount = file_types.count("ppt")+file_types.count("pptx")+file_types.count("pps")
+    pptCount = file_types.count("ppt") + file_types.count("pptx") + file_types.count("pps")
     file_type_counts["ppt"] = pptCount
 
-    imgCount = file_types.count("png")+file_types.count("jpg")+file_types.count("jpeg")+file_types.count("svg")+file_types.count("gif")
+    imgCount = file_types.count("png") + file_types.count("jpg") + file_types.count("jpeg") + file_types.count("svg") + file_types.count("gif")
     file_type_counts["img"] = imgCount
 
     zipCount = file_types.count("zip")
@@ -385,7 +385,7 @@ def process(request):
         except Email.DoesNotExist:
             source_email = Email(address=form_data.get('userEmail'), network=sourceNet)
             source_email.save()
-        
+
         # get() returned more than one Email object, use filter instead and use first object, update Email.network if needed
         except Email.MultipleObjectsReturned:
             source_email = Email.objects.filter(address=form_data.get('userEmail'))[0]
@@ -396,7 +396,7 @@ def process(request):
 
         # add source email to request hash
         requestData += form_data.get('userEmail')
-        
+
         # get the destination Network object
         destinationNet = Network.objects.get(name=form_data.get('network'))
 
@@ -417,7 +417,7 @@ def process(request):
                 target_email.save()
             except Email.MultipleObjectsReturned:
                 target_email = Email.objects.filter(address=destination, network=destinationNet)[0]
-            
+
             # add destination email to request hash
             requestData += destination
             target_list.append(target_email)
@@ -441,7 +441,7 @@ def process(request):
         org = form_data.get('organization')
         if form_data.get('organization') == "CENTCOM HQ":
             org = "HQ"
-        
+
         # create the initial Request object
         rqst = Request(
             user=cftsUser,
@@ -475,7 +475,7 @@ def process(request):
                 is_centcom=form_data.get('isCentcom'),
             )
 
-            # if the uploaded file is a zip get the info of the contente
+            # if the uploaded file is a zip get the info of the contents
             if str(f).split('.')[-1] == "zip":
                 with ZipFile(f, 'r') as zip:
                     # get info for all files
