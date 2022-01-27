@@ -40,17 +40,25 @@ import logging
 
 logger = logging.getLogger('django')
 # ====================================================================
+# I really don't want to comment this file, the is so much hacky shit going on here
 
-
+# function to collect Request objects and serve the transfer queue page, only available to staff users
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 @ensure_csrf_cookie
 @never_cache
 def queue(request):
+    # instansiate the list that will contain all of the dictionaries of Request objects per network
     xfer_queues = []
     ds_networks = Network.objects.all()
+
+    # used to determine which network tab on the queue shuold be selected by default
     activeSelected = False
+
+    # if else statement used to activate the easter egg on the queue page when the queue is completely empty
+    # /queue/cookie will take the user to a cookie card matching game
     if str(request.path) == '/queue/cookie':
+        # list of "cards" for the matching game
         cookieList1 = [
             {'name': "Chocolate Chip", 'path': static('img/cookies/cookie.png')},
             {'name': "Dark Chocolate Chip", 'path': static('img/cookies/darkChoc.png')},
@@ -63,10 +71,15 @@ def queue(request):
             {'name': "Sugar", 'path': static('img/cookies/sugar.png')},
             {'name': "Thin Mint", 'path': static('img/cookies/thinMint.png')},
         ]
+
+        # second list of "cards"
         cookieList2 = random.sample(cookieList1, len(cookieList1))
+
+        # combine and shuffle the cards
         random.shuffle(cookieList1)
         empty = cookieList1+cookieList2
 
+    # sent a message to the empty queue page, kinda like a fortune cookie
     else:
         empty = random.choice([
             'These pipes are clean.',
@@ -89,30 +102,32 @@ def queue(request):
             "Card games are fun too."
         ])
 
-    ########################
-    # FOR EACH NETWORK ... #
-    ########################
+    # for every network
     for net in ds_networks:
-        # get information about the last pull that was done on each network
+        # get information about the last pull that was done on this network
         last_pull = Pull.objects.values(
             'pull_number',
             'date_pulled',
             'user_pulled__username'
         ).filter(network__name=net.name).order_by('-date_pulled')[:1]
 
-        # get all the xfer requests (pending and pulled) submitted for this network
+        # get all the xfer requests (pending and pulled) submitted for this network... in the ugliest way possible
+
+        # get all pending centcom Request objects for this network
         ds_requests_centcom = Request.objects.filter(
             network__name=net.name,
             is_submitted=True,
             pull__isnull=True,
             ready_to_pull=False,
             is_centcom=True,
+            # annotate count of files that need reviewing and count of files the current user is reviewing to each request
         ).annotate(
             needs_review=Count('files', filter=Q(files__user_oneeye=None) | Q(files__user_twoeye=None) & ~Q(files__user_oneeye=request.user)) -
             Count('files', filter=~Q(files__rejection_reason=None) & ~Q(files__user_oneeye=request.user) & ~Q(files__user_twoeye=request.user)),
             user_reviewing=Count('files', filter=Q(files__user_oneeye=request.user) & Q(files__date_oneeye=None) & Q(files__rejection_reason=None)) +
             Count('files', filter=Q(files__user_twoeye=request.user) & Q(files__date_twoeye=None) & Q(files__rejection_reason=None))).order_by('date_created')
 
+        # get all pending other Request objects for this network
         ds_requests_other = Request.objects.filter(
             network__name=net.name,
             is_submitted=True,
@@ -125,6 +140,7 @@ def queue(request):
             user_reviewing=Count('files', filter=Q(files__user_oneeye=request.user) & Q(files__date_oneeye=None) & Q(files__rejection_reason=None)) +
             Count('files', filter=Q(files__user_twoeye=request.user) & Q(files__date_twoeye=None) & Q(files__rejection_reason=None))).order_by('date_created')
 
+        # get all pullable Request objects for this network
         pullable_requests = Request.objects.filter(
             network__name=net.name,
             is_submitted=True,
@@ -133,6 +149,7 @@ def queue(request):
             pull__date_complete__isnull=True,
         ).order_by('user__str__')
 
+        # get all pulledRequest objects for this network
         pulled_requests = Request.objects.filter(
             network__name=net.name,
             is_submitted=True,
@@ -140,7 +157,7 @@ def queue(request):
             pull__date_complete__isnull=True,
         ).order_by('pull', 'user__str__')
 
-        # count how many total files are in all the requests requests
+        # get File object counts based on which group a Request object falls in
         file_count_centcom = ds_requests_centcom.annotate(
             files_in_request=Count('files__file_id')).aggregate(count=Sum('files_in_request'))['count']
 
@@ -156,10 +173,6 @@ def queue(request):
         file_count_pullable = pullable_requests.annotate(
             files_in_request=Count('files__file_id')).aggregate(count=Sum('files_in_request'))['count']
 
-        hidden_dupes_pullable = pullable_requests.filter(all_rejected=True, rejected_dupe=True).count()
-
-        hidden_dupes_pulled = pulled_requests.filter(all_rejected=True, rejected_dupe=True).count()
-
         if file_count_pullable == None:
             file_count_pullable = 0
 
@@ -169,6 +182,12 @@ def queue(request):
         if file_count_pulled == None:
             file_count_pulled = 0
 
+        # count the number of hidden duplicate requests in the "pullable" and "pulled" groups
+        hidden_dupes_pullable = pullable_requests.filter(all_rejected=True, rejected_dupe=True).count()
+
+        hidden_dupes_pulled = pulled_requests.filter(all_rejected=True, rejected_dupe=True).count()
+
+        #############################################################################################################################
         # smoosh all the info together into one big, beautiful data object ...
         queue = {
             'name': net.name,
