@@ -375,70 +375,88 @@ def editUserInfo(request):
     form = userInfoForm(instance=cftsUser, networks=nets)
     return render(request, 'authForms/editUserInfo.html', context={'resources': resources, "userInfoForm": form})
 
-###############################################################################################################################
 
+# function to collect and display user password reset requests, only available to superusers
 @login_required
 @user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)
 def passwordResetAdmin(request):
+    # get all Feedback objects with the "password reset" category, sort by most recent uncompleted objects
     resetRequests = Feedback.objects.filter(category="Password Reset").order_by('completed', '-date_submitted')
 
+    # paginate results, 10 per page
     requestPage = paginator.Paginator(resetRequests, 10)
     pageNum = request.GET.get('page')
     pageObj = requestPage.get_page(pageNum)
 
     return render(request, "pages/passwordResetAdmin.html", context={'resetRequests': pageObj})
 
-
+# function for users to submit password reset requests based on email
 def passwordResetRequest(request):
     resources = ResourceLink.objects.all()
 
+    # only process data from a POST request
     if request.method == "POST":
+        # instantiate a password reset form with data from the POST request
         form = PasswordResetForm(request.POST)
+
+        # proceed if form passes validity checks
         if form.is_valid():
             formEmail = form.cleaned_data['email']
+            # get all Django user accounts with the entered email
             userMatchingEmail = authUser.objects.filter(email=formEmail)
+
             if userMatchingEmail.exists():
+                # create a Feedback object for every Django user account returned
                 for user in userMatchingEmail:
                     cftsUser = User.objects.get(auth_user=user)
                     pendingResets = Feedback.objects.filter(user=cftsUser, category="Password Reset", completed=False).count()
 
+                    # only create a Feedback object if the user has no pending password reset requests
                     if pendingResets == 0:
                         passwordResetFeedback = Feedback(title="Password reset: " + str(user.last_name) + ", " + str(user.first_name) + "(" + str(user.username) + ")", user=cftsUser, category="Password Reset")
                         passwordResetFeedback.save()
 
+            # redirect user to the password reset confirmation page, even if the email they entered in returned no Django users
             return redirect('/password-reset/done')
+
+        # validity check failed, serve the instantiated form back to the user, it will contain helpful error messages for them
         else:
             return render(request, template_name="authForms/passwordResetForms/passwordReset.html", context={'resources': resources, "password_reset_form": form, "envNet": NETWORK})
 
+    # all GET requests should be served a blank form
     form = PasswordResetForm()
     return render(request, template_name="authForms/passwordResetForms/passwordReset.html", context={'resources': resources, "password_reset_form": form, "envNet": NETWORK})
 
 
+# function to generate email with a unique password reset link for a user, only available to superusers
 @login_required
 @user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)
 def passwordResetEmail(request, id, feedback):
+    # get the Django user account we are generating the link for, as well as the password reset request
     auth_user = authUser.objects.get(id=id)
     passwordResetFeedback = Feedback.objects.get(feedback_id=feedback)
+
     rc = {
         'user': auth_user,
         'email': auth_user.email,
+        # generate the uid and token to create a unique one-time password reset link for the user
         'uid': urlsafe_base64_encode(force_bytes(auth_user.pk)),
         'token': default_token_generator.make_token(auth_user),
         'urlPrefix': "https://"+str(request.get_host())
     }
 
+    # create mailto link from password reset email template
     msgBody = "mailto:" + str(auth_user.email) + "?subject=CFTS Password Reset&body="
 
     msgBody += render_to_string('authForms/passwordResetForms/passwordResetEmail.html', rc, request)
 
-    print(msgBody)
-
+    # set the password reset Feedback object to completed
     passwordResetFeedback.completed = True
     passwordResetFeedback.save()
 
     return HttpResponse(str(msgBody))
 
-
+# function for users to lookup their own username, because users can't remember anything
 def usernameLookup(request):
     resources = ResourceLink.objects.all()
 
