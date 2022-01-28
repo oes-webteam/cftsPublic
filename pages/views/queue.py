@@ -187,11 +187,12 @@ def queue(request):
 
         hidden_dupes_pulled = pulled_requests.filter(all_rejected=True, rejected_dupe=True).count()
 
-        #############################################################################################################################
         # smoosh all the info together into one big, beautiful data object ...
         queue = {
             'name': net.name,
             'order_by': net.sort_order,
+
+            # add up all the counts, this is used to know if we need to display a network or not
             'count': ds_requests_centcom.count() + ds_requests_other.count() + pullable_requests.count() + pulled_requests.count(),
             'file_count': file_count_centcom + file_count_other + file_count_pullable,
             'activeNet': False,
@@ -202,14 +203,19 @@ def queue(request):
             'hidden_dupes_pullable': hidden_dupes_pullable,
             'hidden_dupes_pulled': hidden_dupes_pulled,
             'pulled': pulled_requests.count(),
+
+            # the actuall set of Request objects
             'q': ds_requests_centcom,
             'o': ds_requests_other,
             'a': pullable_requests.filter(rejected_dupe=False),
             'p': pulled_requests.filter(rejected_dupe=False),
             'last_pull': last_pull,
+
+            # don't think this is used any more, was used in the old list style queue design, remove and test later
             'orgs': ds_requests_centcom.filter(pull__date_pulled__isnull=True).values_list('org', flat=True)
         }
 
+        # set the first network with files as the active network
         if activeSelected == False and queue['count'] > 0:
             queue['activeNet'] = True
             activeSelected = True
@@ -218,23 +224,28 @@ def queue(request):
         xfer_queues.append(queue)
 
     # sort the list of network queues into network order
-    xfer_queues = sorted(
-        xfer_queues, key=lambda k: k['order_by'], reverse=False)
+    xfer_queues = sorted(xfer_queues, key=lambda k: k['order_by'], reverse=False)
 
     # create the request context
     rc = {'queues': xfer_queues, 'empty': empty, 'easterEgg': activeSelected}
 
     # roll that beautiful bean footage
+    # ^-- I've always wondered what he meant by that, never did ask him
     return render(request, 'pages/queue.html', {'rc': rc})
 
-
+# function to serve the request details page for a single Request object, only available to staff users
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def transferRequest(request, id):
+    # get the Request object
     rqst = Request.objects.get(request_id=id)
+    # get the User object... for some reason, we already have the Request object, so why not just use that? You even used the Request object to get the User object......
     user = User.objects.get(user_id=rqst.user.user_id)
+
+    # get all the Request objects with a matching request hash as the current Request object, not including the current Request object
     dupes = Request.objects.filter(pull__date_complete=None, request_hash=rqst.request_hash).exclude(request_id=rqst.request_id).order_by('-date_created')
 
+    # check to see if the current Request object is the most recent object submitted with that request hash
     mostRecentDupe = False
 
     if dupes.count() > 0:
@@ -261,28 +272,36 @@ def transferRequest(request, id):
         'target_email': rqst.target_email.all()[0],
         'org': rqst.org,
     }
+
+    # wow thats a lot of context!
     return render(request, 'pages/transfer-request.html', {'rqst': rqst, 'rc': rc, 'dupes': dupes, 'mostRecentDupe': mostRecentDupe, 'rejections': rejections,
                                                            'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": user.user_id, 'debug': cftsSettings.DEBUG})
 
-
+# function to save staff added notes to a Request object, only avaliable to staff users
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def requestNotes(request, requestid):
+    # get notes, entered from request details page.
+    # this will be a combination of any previously entered notes and the most recently entered in note
     postData = dict(request.POST.lists())
     notes = postData['notes'][0]
+
+    # update the notes field on the Request object
     Request.objects.filter(request_id=requestid).update(notes=notes)
     rqst = Request.objects.get(request_id=requestid)
     messages.success(request, "Notes Saved")
 
+    # call for a pull zip to be rewritten, Requests objects with notes will generate a _notes.txt in the pull zip
     try:
         pull_number = rqst.pull.pull_id
-        createZip(request, rqst.network.name, rqst.is_centcom, pull_number)
+        createZip(request, rqst.network.name, pull_number)
     except AttributeError:
         print("Request not found in any pull.")
 
     return JsonResponse({'response': "Notes saved"})
 
 
+# function to remeve the is_centcom status from a Request object
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def removeCentcom(request, id):
@@ -292,18 +311,27 @@ def removeCentcom(request, id):
     return redirect('transfer-request', id)
 
 
+# function to ban a user for a length of time, only available to superusers, staff uses can only request a user be banned
 @login_required
 @user_passes_test(superUserCheck, login_url='queue', redirect_field_name=None)
 def banUser(request, userid, requestid, temp=False):
+    # get the user to ban, grab the first from the returned filter results
+    # I don't really remember why I chose to get the user this way, user_id is the database index for the object, which is always unique
+    # ... I should have added comments while I was writing all this
     userToBan = User.objects.filter(user_id=userid)[0]
 
+    # if the user is already banned and we arrived back to this function that means the 'Escalate to Permanent Ban' button was clicked
+    # set the user to 3 strikes, the following if statments will set them to perma ban
     if userToBan.banned == True:
         strikes = 3
+    # if they aren't banned then just use the strikes from the strikes field
     else:
         strikes = userToBan.strikes
 
+    # used in the success message
     days = 0
 
+    # if the function has a temp arg of "True" then give the user a 1 day ban, 1 day bans do not increase stike count
     if temp == "True":
         User.objects.filter(user_id=userid).update(banned=True, banned_until=datetime.date.today() + datetime.timedelta(days=1))
         days = 1
@@ -320,7 +348,7 @@ def banUser(request, userid, requestid, temp=False):
         elif strikes == 2:
             User.objects.filter(user_id=userid).update(banned=True, strikes=3, banned_until=datetime.date.today() + datetime.timedelta(days=30))
             days = 30
-        # fourth ban, lifetime
+        # fourth ban, lifetime... assuming the user isn't alive 1000 years from now. I sure hope I'm not...
         elif strikes == 3:
             User.objects.filter(user_id=userid).update(banned=True, strikes=4, banned_until=datetime.date.today().replace(year=datetime.date.today().year+1000))
         # just incase any other stike number comes in
@@ -331,6 +359,8 @@ def banUser(request, userid, requestid, temp=False):
         messages.success(request, "User banned for a really long time")
     else:
         messages.success(request, "User banned for " + str(days) + " days")
+
+    # generate a ban email template, but only when DEBUG == False... for my sanity
     eml = banEml(request, requestid)
     if cftsSettings.DEBUG == True:
         return redirect('/transfer-request/' + str(requestid))
@@ -338,19 +368,18 @@ def banUser(request, userid, requestid, temp=False):
         return redirect('/transfer-request/' + str(requestid) + "?eml=" + eml)
 
 
+# function to generate a ban email
 @login_required
 @user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)
 def banEml(request, request_id):
-
     rqst = Request.objects.get(request_id=request_id)
 
     msgBody = "mailto:" + str(rqst.user.source_email) + "?subject=CFTS Ban Notice&body="
-
     msgBody += render_to_string('partials/Queue_partials/banTemplate.html', {'rqst': rqst, }, request)
 
     return msgBody
 
-
+####################################################################################################################
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def createZip(request, network_name, rejectPull):
@@ -457,7 +486,6 @@ def createZip(request, network_name, rejectPull):
             if rqst.notes != None:
                 with zip.open(notes_file_name, 'w') as nfp:
                     notes = rqst.notes
-                    print(notes)
                     nfp.write(notes.encode('utf-8'))
                     nfp.close()
 
