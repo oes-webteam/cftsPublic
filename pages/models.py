@@ -112,6 +112,7 @@ class User(models.Model):
     update_info = models.BooleanField(default=True)
     org = models.CharField(default=None, null=True, blank=True, max_length=20)
     other_org = models.CharField(default=None, null=True, blank=True, max_length=20)
+    read_policy = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['name_last']
