@@ -235,6 +235,7 @@ def queue(request):
 
 # function to serve the request details page for a single Request object, only available to staff users
 @login_required
+@never_cache
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def transferRequest(request, id):
     # get the Request object
@@ -313,28 +314,28 @@ def removeCentcom(request, id):
 
 # function to ban a user for a length of time, only available to superusers, staff uses can only request a user be banned
 @login_required
-@user_passes_test(superUserCheck, login_url='queue', redirect_field_name=None)
-def banUser(request, userid, requestid, temp=False):
+@user_passes_test(staffCheck, login_url='queue', redirect_field_name=None)
+def banUser(request, userid, requestid, ignore_strikes=False):
     # get the user to ban, grab the first from the returned filter results
     # I don't really remember why I chose to get the user this way, user_id is the database index for the object, which is always unique
     # ... I should have added comments while I was writing all this
     userToBan = User.objects.filter(user_id=userid)[0]
 
-    # if the user is already banned and we arrived back to this function that means the 'Escalate to Permanent Ban' button was clicked
-    # set the user to 3 strikes, the following if statments will set them to perma ban
-    if userToBan.banned == True:
-        strikes = 3
     # if they aren't banned then just use the strikes from the strikes field
-    else:
-        strikes = userToBan.strikes
+    strikes = userToBan.strikes
 
     # used in the success message
     days = 0
 
-    # if the function has a temp arg of "True" then give the user a 1 day ban, 1 day bans do not increase stike count
-    if temp == "True":
-        User.objects.filter(user_id=userid).update(banned=True, banned_until=datetime.date.today() + datetime.timedelta(days=1))
-        days = 1
+    # if the function has a temp arg of "True" then give the user a 1 day ban, 1 day bans do not increase stike count but we do count them
+    if ignore_strikes == "True":
+        # if the user is already banned and we arrived back to this function that means the 'Escalate to Permanent Ban' button was clicked
+        # set the user to 3 strikes, the following if statments will set them to perma ban
+        if userToBan.banned == True:
+            User.objects.filter(user_id=userid).update(banned=True, strikes=4, banned_until=datetime.date.today().replace(year=datetime.date.today().year+1000))
+        else:
+            User.objects.filter(user_id=userid).update(banned=True, temp_ban_count=F('temp_ban_count') + 1, banned_until=datetime.date.today() + datetime.timedelta(days=1))
+            days = 1
     else:
         # users first ban, 3 days
         if strikes == 0:

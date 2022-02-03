@@ -21,19 +21,23 @@
                 <div class="btn-group ml-3">
                     {% if centcom == True %}<a class="btn btn-warning" href="{% url 'api-removeCentcom' rqst.request_id %}">Remove Centcom Status</a>{% endif %}
                     {% if not rqst.user.banned%}
+                        <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rqst.request_id "True" %}">Ban User, 1 day</a>
                         {% if user.is_superuser %}
-                            <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rqst.request_id "True" %}">Ban User, 1 day
-                            </a>
                             <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rqst.request_id %}">Ban User,
                                 {% if rqst.user.strikes == 0 %} 3 days{% elif rqst.user.strikes == 1 %} 7 days{% elif rqst.user.strikes == 2 %} 30 days{% elif rqst.user.strikes == 3 %} Permanently{% endif %}
                             </a>
-                        {% else %}
-                            <a class="btn btn-danger" id="banBtn" href="{% url 'ban-request' rqst.request_id %}">Request User Ban</a>
                         {% endif %}
                     {% else %}
                         {% if rqst.user.strikes < 4 %}
                             {% if user.is_superuser %}
-                                <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rqst.request_id %}">Escalate to Permanent Ban</a>
+                                {% if rqst.user.strikes < 3 %}
+                                    <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rqst.request_id %}">Escalate to
+                                        {% if rqst.user.strikes == 0 %} 3 day{% elif rqst.user.strikes == 1 %} 7 day{% elif rqst.user.strikes == 2 %} 30 day{% endif %} Ban
+                                    </a>
+                                {% endif %}
+                                <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rqst.request_id "True" %}">Escalate to Permanent Ban</a>
+                            {% else %}
+                                <a class="btn btn-danger" id="banBtn" href="{% url 'ban-request' rqst.request_id %}">Request Ban Escelation</a>
                             {% endif %}
                         {% endif %}
                     {% endif %}
@@ -68,9 +72,19 @@
                             {% for col, val in rc.items %}
                                 <li>{{ col }}: {{ val }}</li>
                             {% endfor %}
-                            <li>Banned: {{rqst.user.banned}}</li>
-                            <li>Banned Until: {{rqst.user.banned_until}}</li>
-                            <li>Strikes: {{rqst.user.strikes}}</li>
+                            {% if rqst.user.banned == True %}
+                                {% if rqst.user.strikes == 4 %}
+                                    <li style="color: red;">This user is banned until the end of time</li>
+                                {% else %}
+                                    <li style="color: red;">This user is currently banned until {{rqst.user.banned_until}}</li>
+                                {% endif %}
+                            {% else %}
+                                <li>This user is not currently banned</li>
+                            {% endif %}
+                            {% comment %} <li>Banned: {{rqst.user.banned}}</li>
+                        <li>Banned Until: {{rqst.user.banned_until}}</li> {% endcomment %}
+                            <li>They currently have {{rqst.user.strikes}} account strikes</li>
+                            <li>They have been temporarily banned {{rqst.user.temp_ban_count}} times</li>
                             <li>Notes:</li>
                             <textarea name="notesField" id="notesField" style="width: 100%; height: 10rem;">{% if notes != None  %}{{ notes }}{% endif %}</textarea>
                         </ul>
@@ -93,7 +107,7 @@
                                     {% if file.is_pii%}
                                         <span title="PII: {{ file.is_pii }}&#10;">🔒</span>
                                     {% endif %}
-                                    <a class="{% if file.rejection_reason != None %}rejected {% endif %} mr-2" title="{{ file }}" id="{{file.file_id}}" href={% if debug == True %}{% url 'admin:pages_file_change' file.file_id %}{% else %}"/getFile/ {{file.file_object}}"{% endif %} download="{{file.file_name}}">{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</a>
+                                    <a class="{% if file.rejection_reason != None %}rejected {% endif %} mr-2" title="{{ file }}" id="{{file.file_id}}" href={% if debug == True %}{% url 'admin:pages_file_change' file.file_id %}{% else %}"/getFile/{{file.file_object}}"{% endif %} download="{{file.file_name}}">{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</a>
                                     {% if user.is_superuser %}{% if file.user_oneeye != None %}<strong><span class="reviewers mr-2 d-none">1 Eye: {{file.user_oneeye}}</span>{% endif %} {% if file.user_twoeye != None %}<span class="reviewers d-none">2 Eye: {{file.user_twoeye}}</span></strong>{% endif %}{% endif %}
                                 </td>
                                 <td class="file-right p-1">
