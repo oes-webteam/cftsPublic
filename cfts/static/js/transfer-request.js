@@ -38,10 +38,18 @@ jQuery(document).ready(function() {
             paramObj[value] = params.get(value);
         }
 
-        console.log(paramObj)
+        //console.log(paramObj)
 
         if (paramObj.eml) {
-            window.open(paramObj.eml + "&body=" + paramObj.body)
+
+            let eml = paramObj.eml + "&body=" + paramObj.body
+            let $anchor = $("<a class='banEmailLink' target='_blank' href='" + eml.replace(/<br>/g, "%0D%0A%0D%0A") + "''></a>");
+            $(document.body).append($anchor);
+
+            $('.banEmailLink').each(function() {
+                $(this)[0].click();
+            });
+
             history.pushState(null, "", location.href.split("?")[0])
         } else if (paramObj.flash == "false") {
             $('.btn-back').attr('href', '/queue')

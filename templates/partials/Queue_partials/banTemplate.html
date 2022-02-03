@@ -1,37 +1,15 @@
 {% spaceless %}
-{% load util %}
+    {% load util %}
 
-{% block email%}
-{% if rqst.user.strikes == 0 %}
-Due to violating the CFTS policy your account has been suspended for 24 hours.
-
-It is your responsibility as a user to review and follow the policy that
-governs the use of the service.
-
-Continued violations will result in longer account suspension.
-{% elif rqst.user.strikes == 1 %}
-Due to violating the CFTS policy your account has been suspended for 3 days.
-
-It is your responsibility as a user to review and follow the policy that
-governs the use of the service.
-
-Continued violations will result in longer account suspension.
-{% elif rqst.user.strikes == 2 %}
-Due to violating the CFTS policy your account has been suspended for 7 days.
-
-It is your responsibility as a user to review and follow the policy that
-governs the use of the service.
-
-Continued violations will result in longer account suspension.
-{% elif rqst.user.strikes == 3 %}
-Due to violating the CFTS policy your account has been suspended for 30 days.
-
-It is your responsibility as a user to review and follow the policy that
-governs the use of the service.
-
-Continued violations will result in permanent account suspension.
-{% elif rqst.user.strikes == 4 %}
-Due to continued violation of the CFTS policy your account has been permanently suspended.
-{% endif %}
-{% endblock %}
+    {% if rqst.user.strikes == 0 %}
+        Due to violating the CFTS policy your account has been suspended for 24 hours.<br>It is your responsibility as a user to review and follow the policy that governs the use of the service.<br>Continued violations will result in longer account suspension.
+    {% elif rqst.user.strikes == 1 %}
+        Due to violating the CFTS policy your account has been suspended for 3 days.<br>It is your responsibility as a user to review and follow the policy that governs the use of the service.<br>Continued violations will result in longer account suspension.
+    {% elif rqst.user.strikes == 2 %}
+        Due to violating the CFTS policy your account has been suspended for 7 days.<br>It is your responsibility as a user to review and follow the policy that governs the use of the service.<br>Continued violations will result in longer account suspension.
+    {% elif rqst.user.strikes == 3 %}
+        Due to violating the CFTS policy your account has been suspended for 30 days.<br>It is your responsibility as a user to review and follow the policy that governs the use of the service.<br>Continued violations will result in permanent account suspension.
+    {% elif rqst.user.strikes == 4 %}
+        Due to continued violation of the CFTS policy your account has been permanently suspended.
+    {% endif %}
 {% endspaceless %}
