@@ -1,3 +1,4 @@
+from dataclasses import Field
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm
 from django.contrib.auth.models import User as authUser
@@ -74,6 +75,7 @@ class userInfoForm(ModelForm):
         ('SOCCENT', 'SOCCENT'),
         ('OTHER', 'OTHER - Describe')], required=True)
     other_org = forms.CharField(max_length=50, required=False)
+    read_policy = forms.BooleanField()
 
     class Meta:
         model = User
@@ -96,6 +98,8 @@ class userInfoForm(ModelForm):
         self.fields['org'].label = "Organization"
         self.fields['other_org'].initial = user.other_org
         self.fields['other_org'].label = "Other Organization"
+        self.fields['read_policy'].initial = user.read_policy
+        self.fields['read_policy'].label = "I have read and agree to follow the Combined File Transfer Service policies"
         self.helper.layout.append(HTML(
             '<div style="width: 100%"><hr class="mt-2 mb-3" style="border-top-width: 3px; border-top-color: rgba(0, 0, 0, 0.2);"/><h3 class="mt-3">Destination Emails</h3><p class="mb-4">You can only submit transfer requests to networks you have a valid email for.</p></div>'))
 

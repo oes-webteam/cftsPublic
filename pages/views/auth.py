@@ -332,6 +332,7 @@ def editUserInfo(request):
             # this ensures that they have filled in all the required information for their account
             # on successful form save change set update_info to False
             cftsUser.update_info = False
+            cftsUser.read_policy = True
 
             # create or update destination emails for all non blank destination email fields
             for net in nets:
