@@ -109,6 +109,7 @@ class User(models.Model):
     phone = models.CharField(max_length=50, default=None, null=True, blank=True)
     banned = models.BooleanField(default=False)
     strikes = models.IntegerField(default=0)
+    temp_ban_count = models.IntegerField(default=0)
     banned_until = models.DateField(null=True, blank=True)
     update_info = models.BooleanField(default=True)
     org = models.CharField(default=None, null=True, blank=True, max_length=20)

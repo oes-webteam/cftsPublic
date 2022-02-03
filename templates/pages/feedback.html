@@ -14,7 +14,7 @@
 
             <div class="alert alert-danger fadein danger-error" style="display: none;" role="alert"></div>
 
-            <div class="alert alert-success fadein" style="display: none;" role="alert"></div>
+            <div class="alert alert-success notification-success fadein" style="display: none;" role="alert"></div>
 
             <form action="#" id="transfer-request-form" method="post" enctype="multipart/form-data" novalidate="true">
                 {% csrf_token %}
@@ -124,10 +124,7 @@
             <div class="row" id="button-row">
                 <div class="col-md-4"></div>
                 <div class="col-md-4 mt-5 text-center">
-                    <!--
-              TODO: Make this an actual <button> with a "click"
-              eventHandler to avoid event bubble-up issues 
-          -->
+
                     <button class="btn btn-secondary btn-block" id="submitButton" role="button">Submit</button>
                 </div>
                 <div class="col-md-4"></div>
@@ -145,6 +142,5 @@
     </script>
     <script src="{% static 'js/notification.js' %}"></script>
     <script src="{% static 'js/feedback.js' %}"></script>
-    {#  <script src="{% static 'js/process.js' %}"></script> #}
 {% endblock %}
 <!-- end content block variable -->
