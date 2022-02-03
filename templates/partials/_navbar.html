@@ -22,20 +22,10 @@
 
                 <li class="nav-item dropdown">
                     <!--DROP DOWN STARTS HERE FOR NAV-->
-                    <a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Resources
-                    </a>
+                    <a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Policies</a>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                         {% for resource in rc.resources %}
-                            {% if resource.file_name|length > 0 %}
-                                <a class="dropdown-item" href="{% url 'resources' resource.file_name %}">{{ resource.name }}</a>
-                            {% elif resource.url_path|length > 0 %}
-                                <a class="dropdown-item" href="{{ resource.url_path }}">{{ resource.name }}</a>
-                            {% else %}
-                                <a class="dropdown-item" href="#">{{ resource.name }}</a>
-                            {% endif %}
-                        {% empty %}
-                            {% for resource in resources %}
+                            {% if resource.policy == True %}
                                 {% if resource.file_name|length > 0 %}
                                     <a class="dropdown-item" href="{% url 'resources' resource.file_name %}">{{ resource.name }}</a>
                                 {% elif resource.url_path|length > 0 %}
@@ -43,13 +33,55 @@
                                 {% else %}
                                     <a class="dropdown-item" href="#">{{ resource.name }}</a>
                                 {% endif %}
+                            {% endif %}
+                        {% empty %}
+                            {% for resource in resources %}
+                                {% if resource.policy == True %}
+                                    {% if resource.file_name|length > 0 %}
+                                        <a class="dropdown-item" href="{% url 'resources' resource.file_name %}">{{ resource.name }}</a>
+                                    {% elif resource.url_path|length > 0 %}
+                                        <a class="dropdown-item" href="{{ resource.url_path }}">{{ resource.name }}</a>
+                                    {% else %}
+                                        <a class="dropdown-item" href="#">{{ resource.name }}</a>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <!--DROP DOWN STARTS HERE FOR NAV-->
+                    <a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Resources</a>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                        {% for resource in rc.resources %}
+                            {% if resource.policy == False %}
+                                {% if resource.file_name|length > 0 %}
+                                    <a class="dropdown-item" href="{% url 'resources' resource.file_name %}">{{ resource.name }}</a>
+                                {% elif resource.url_path|length > 0 %}
+                                    <a class="dropdown-item" href="{{ resource.url_path }}">{{ resource.name }}</a>
+                                {% else %}
+                                    <a class="dropdown-item" href="#">{{ resource.name }}</a>
+                                {% endif %}
+                            {% endif %}
+                        {% empty %}
+                            {% for resource in resources %}
+                                {% if recource.policy == False %}
+                                    {% if resource.file_name|length > 0 %}
+                                        <a class="dropdown-item" href="{% url 'resources' resource.file_name %}">{{ resource.name }}</a>
+                                    {% elif resource.url_path|length > 0 %}
+                                        <a class="dropdown-item" href="{{ resource.url_path }}">{{ resource.name }}</a>
+                                    {% else %}
+                                        <a class="dropdown-item" href="#">{{ resource.name }}</a>
+                                    {% endif %}
+                                {% endif %}
                             {% endfor %}
                         {% endfor %}
                     </div>
                 </li>
 
                 <li class="nav-item">
-                    <a href="{% url 'feedback' %}" class="nav-link">Submit Feedback</a>
+                    <a href="{% url 'feedback' %}" class="nav-link">Feedback</a>
                 </li>
 
                 {% if user.is_authenticated %}

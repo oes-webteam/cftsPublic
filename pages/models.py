@@ -23,6 +23,7 @@ class ResourceLink(models.Model):
         upload_to='resources/', blank=True, null=True)
     url_path = models.CharField(max_length=255, blank=True)
     sort_order = models.IntegerField()
+    policy = models.BooleanField(default=False)
 
     @property
     def file_name(self):
