@@ -10,27 +10,31 @@ import shutil
 from datetime import datetime
 
 from pages.views.auth import superUserCheck, staffCheck
-
-
-# from django.core.files.base import ContentFile
 # ====================================================================
 
-# get all files in folder
+# function called from fileCleanup() to delete files in a directory that are over a number of days old
 def deleteFiles(directory, maxAge):
+    # get all files in directory passed in from args
     with os.scandir(directory) as files:
         for file in files:
+            # don't delete the gitignore
             if file.path.split("\\")[-1] != ".gitignore":
-                # file last modified date
+                # calculate age of file from the files 'last modified' time
                 modTime = datetime.fromtimestamp(file.stat().st_mtime)
                 fileAge = datetime.fromtimestamp(datetime.now().timestamp())-modTime
-                if fileAge.days < maxAge:
+
+                # if file is older that maxAge passed in from args then delete it and any parent folders
+                if fileAge.days > maxAge:
                     print("File %s is %s days old. Deleting..." % (file.path, fileAge.days))
                     # delete upload if older than maxAge variable
-                    if directory == settings.UPLOADS_DIR:
+                    try:
                         shutil.rmtree(file.path)
                     # delete single files
-                    else:
-                        os.remove(file.path)
+                    except:
+                        try:
+                            os.remove(file.path)
+                        except:
+                            pass
 
                 else:
                     daysRemaining = maxAge-fileAge.days
@@ -40,14 +44,16 @@ def deleteFiles(directory, maxAge):
                     print("File %s will be deleted in %s days." % (file.path, daysRemaining))
 
 
+# function to call deleteFiles() from a url, only available to superusers
 @login_required
 @user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)
 def fileCleanup(request):
-    # path to uploads folder
+    # paths to directories you want to nuke
     uploadsPath = settings.UPLOADS_DIR
     pullsPath = settings.PULLS_DIR
     scanPath = os.path.join(settings.BASE_DIR, "cfts\\scan")
 
+    # call deleteFiles() with a path and maximum file age
     try:
         deleteFiles(uploadsPath, 30)
         deleteFiles(pullsPath, 30)
@@ -57,6 +63,10 @@ def fileCleanup(request):
         return HttpResponse(str("Error deleting files:" + repr(e)))
 
 
+# function to update all users update_info field to force them to update their user info.
+# this is meant to by imported into a blank db migration, python manage.py makemigrations --empty appName
+# in the operations list of the migration call RunPython() with resetUpdateInfo() and reverseFunction() as args
+# the migration can be deleted once migrated
 def resetUpdateInfo(apps, schema_editor):
     User = apps.get_model("pages", "User")
     db_alias = schema_editor.connection.alias
@@ -70,6 +80,7 @@ def reverseFunction():
     pass
 
 
+# function to populate an empty database with data, will need to be updated to refect current production environment
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def setupDB(request):
@@ -244,14 +255,18 @@ def setupDB(request):
 
     return render(request, 'pages/setupdb.html')
 
-    # get all file records and update their file_name, file_size, and file_count fields
 
-
+# function to update all File objects file_size, file_count, and file_name from the actual uploaded file
+# this was only used once, in ye olden times none of this information was kept on the File object
+# anytime this info was needed it had to be read from the file itself, but files take up server space
+# this was used to migrate all file information to the File object so that old files could be deleted
 def updateFiles(request):
-    # if the uploaded file is a zip get the info of the contente
+    # get all File objects
     files = File.objects.all()
+
     for f in files:
         try:
+            # file is a zip
             if str(f.file_object).split('.')[-1] == "zip":
                 try:
                     with ZipFile(f.file_object, 'r') as zip:
@@ -276,6 +291,8 @@ def updateFiles(request):
             f.file_name = str(f.file_object).split('/')[-1]
 
             f.save()
+
+        # file probably deleted
         except FileNotFoundError:
             print("couldn not find file: " + str(f.file_object))
             pass

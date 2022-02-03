@@ -1,3 +1,8 @@
+'''
+script now has a dedicated URL pattern: api-fileCleanup, use that instead of this script
+it SHOULD... even work when the servers isn't in maintenance mode
+'''
+
 from cfts import settings
 import os
 import shutil

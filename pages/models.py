@@ -260,9 +260,3 @@ class Feedback(models.Model):
 
     def __str__(self):
         return str(self.date_submitted.strftime("%b %d %H:%M")) + ": " + self.title
-
-#  def pending_by_network( self, netName ):
-#   return self.__class__.objects.filter( network__name=netName, is_submitted=True, date_complete__isnull=True ).order_by( '-date_created' )
-#
-#  def pending_count_by_network( self, netName ):
-#   return self.pending_by_network( netName ).count()
