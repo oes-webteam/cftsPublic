@@ -23,6 +23,7 @@ class ResourceLink(models.Model):
         upload_to='resources/', blank=True, null=True)
     url_path = models.CharField(max_length=255, blank=True)
     sort_order = models.IntegerField()
+    policy = models.BooleanField(default=False)
 
     @property
     def file_name(self):
@@ -108,10 +109,12 @@ class User(models.Model):
     phone = models.CharField(max_length=50, default=None, null=True, blank=True)
     banned = models.BooleanField(default=False)
     strikes = models.IntegerField(default=0)
+    temp_ban_count = models.IntegerField(default=0)
     banned_until = models.DateField(null=True, blank=True)
     update_info = models.BooleanField(default=True)
     org = models.CharField(default=None, null=True, blank=True, max_length=20)
     other_org = models.CharField(default=None, null=True, blank=True, max_length=20)
+    read_policy = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['name_last']
@@ -260,9 +263,3 @@ class Feedback(models.Model):
 
     def __str__(self):
         return str(self.date_submitted.strftime("%b %d %H:%M")) + ": " + self.title
-
-#  def pending_by_network( self, netName ):
-#   return self.__class__.objects.filter( network__name=netName, is_submitted=True, date_complete__isnull=True ).order_by( '-date_created' )
-#
-#  def pending_count_by_network( self, netName ):
-#   return self.pending_by_network( netName ).count()

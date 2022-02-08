@@ -40,17 +40,25 @@ import logging
 
 logger = logging.getLogger('django')
 # ====================================================================
+# I really don't want to comment this file, the is so much hacky shit going on here
 
-
+# function to collect Request objects and serve the transfer queue page, only available to staff users
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 @ensure_csrf_cookie
 @never_cache
 def queue(request):
+    # instansiate the list that will contain all of the dictionaries of Request objects per network
     xfer_queues = []
     ds_networks = Network.objects.all()
+
+    # used to determine which network tab on the queue shuold be selected by default
     activeSelected = False
+
+    # if else statement used to activate the easter egg on the queue page when the queue is completely empty
+    # /queue/cookie will take the user to a cookie card matching game
     if str(request.path) == '/queue/cookie':
+        # list of "cards" for the matching game
         cookieList1 = [
             {'name': "Chocolate Chip", 'path': static('img/cookies/cookie.png')},
             {'name': "Dark Chocolate Chip", 'path': static('img/cookies/darkChoc.png')},
@@ -63,10 +71,15 @@ def queue(request):
             {'name': "Sugar", 'path': static('img/cookies/sugar.png')},
             {'name': "Thin Mint", 'path': static('img/cookies/thinMint.png')},
         ]
+
+        # second list of "cards"
         cookieList2 = random.sample(cookieList1, len(cookieList1))
+
+        # combine and shuffle the cards
         random.shuffle(cookieList1)
         empty = cookieList1+cookieList2
 
+    # sent a message to the empty queue page, kinda like a fortune cookie
     else:
         empty = random.choice([
             'These pipes are clean.',
@@ -89,29 +102,32 @@ def queue(request):
             "Card games are fun too."
         ])
 
-    ########################
-    # FOR EACH NETWORK ... #
-    ########################
+    # for every network
     for net in ds_networks:
-        # get information about the last pull that was done on each network
+        # get information about the last pull that was done on this network
         last_pull = Pull.objects.values(
             'pull_number',
             'date_pulled',
             'user_pulled__username'
         ).filter(network__name=net.name).order_by('-date_pulled')[:1]
 
-        # get all the xfer requests (pending and pulled) submitted for this network
+        # get all the xfer requests (pending and pulled) submitted for this network... in the ugliest way possible
+
+        # get all pending centcom Request objects for this network
         ds_requests_centcom = Request.objects.filter(
             network__name=net.name,
             is_submitted=True,
             pull__isnull=True,
             ready_to_pull=False,
             is_centcom=True,
+            # annotate count of files that need reviewing and count of files the current user is reviewing to each request
         ).annotate(
             needs_review=Count('files', filter=Q(files__user_oneeye=None) | Q(files__user_twoeye=None) & ~Q(files__user_oneeye=request.user)) -
             Count('files', filter=~Q(files__rejection_reason=None) & ~Q(files__user_oneeye=request.user) & ~Q(files__user_twoeye=request.user)),
-            user_reviewing=Count('files', filter=Q(files__user_oneeye=request.user) & Q(files__date_oneeye=None) & Q(files__rejection_reason=None))+Count('files', filter=Q(files__user_twoeye=request.user) & Q(files__date_twoeye=None) & Q(files__rejection_reason=None))).order_by('date_created')
+            user_reviewing=Count('files', filter=Q(files__user_oneeye=request.user) & Q(files__date_oneeye=None) & Q(files__rejection_reason=None)) +
+            Count('files', filter=Q(files__user_twoeye=request.user) & Q(files__date_twoeye=None) & Q(files__rejection_reason=None))).order_by('date_created')
 
+        # get all pending other Request objects for this network
         ds_requests_other = Request.objects.filter(
             network__name=net.name,
             is_submitted=True,
@@ -121,8 +137,10 @@ def queue(request):
         ).annotate(
             needs_review=Count('files', filter=Q(files__user_oneeye=None) | Q(files__user_twoeye=None) & ~Q(files__user_oneeye=request.user)) -
             Count('files', filter=~Q(files__rejection_reason=None) & ~Q(files__user_oneeye=request.user) & ~Q(files__user_twoeye=request.user)),
-            user_reviewing=Count('files', filter=Q(files__user_oneeye=request.user) & Q(files__date_oneeye=None) & Q(files__rejection_reason=None))+Count('files', filter=Q(files__user_twoeye=request.user) & Q(files__date_twoeye=None) & Q(files__rejection_reason=None))).order_by('date_created')
+            user_reviewing=Count('files', filter=Q(files__user_oneeye=request.user) & Q(files__date_oneeye=None) & Q(files__rejection_reason=None)) +
+            Count('files', filter=Q(files__user_twoeye=request.user) & Q(files__date_twoeye=None) & Q(files__rejection_reason=None))).order_by('date_created')
 
+        # get all pullable Request objects for this network
         pullable_requests = Request.objects.filter(
             network__name=net.name,
             is_submitted=True,
@@ -131,6 +149,7 @@ def queue(request):
             pull__date_complete__isnull=True,
         ).order_by('user__str__')
 
+        # get all pulledRequest objects for this network
         pulled_requests = Request.objects.filter(
             network__name=net.name,
             is_submitted=True,
@@ -138,7 +157,7 @@ def queue(request):
             pull__date_complete__isnull=True,
         ).order_by('pull', 'user__str__')
 
-        # count how many total files are in all the requests requests
+        # get File object counts based on which group a Request object falls in
         file_count_centcom = ds_requests_centcom.annotate(
             files_in_request=Count('files__file_id')).aggregate(count=Sum('files_in_request'))['count']
 
@@ -154,10 +173,6 @@ def queue(request):
         file_count_pullable = pullable_requests.annotate(
             files_in_request=Count('files__file_id')).aggregate(count=Sum('files_in_request'))['count']
 
-        hidden_dupes_pullable = pullable_requests.filter(all_rejected=True, rejected_dupe=True).count()
-
-        hidden_dupes_pulled = pulled_requests.filter(all_rejected=True, rejected_dupe=True).count()
-
         if file_count_pullable == None:
             file_count_pullable = 0
 
@@ -167,10 +182,17 @@ def queue(request):
         if file_count_pulled == None:
             file_count_pulled = 0
 
+        # count the number of hidden duplicate requests in the "pullable" and "pulled" groups
+        hidden_dupes_pullable = pullable_requests.filter(all_rejected=True, rejected_dupe=True).count()
+
+        hidden_dupes_pulled = pulled_requests.filter(all_rejected=True, rejected_dupe=True).count()
+
         # smoosh all the info together into one big, beautiful data object ...
         queue = {
             'name': net.name,
             'order_by': net.sort_order,
+
+            # add up all the counts, this is used to know if we need to display a network or not
             'count': ds_requests_centcom.count() + ds_requests_other.count() + pullable_requests.count() + pulled_requests.count(),
             'file_count': file_count_centcom + file_count_other + file_count_pullable,
             'activeNet': False,
@@ -181,14 +203,19 @@ def queue(request):
             'hidden_dupes_pullable': hidden_dupes_pullable,
             'hidden_dupes_pulled': hidden_dupes_pulled,
             'pulled': pulled_requests.count(),
+
+            # the actuall set of Request objects
             'q': ds_requests_centcom,
             'o': ds_requests_other,
             'a': pullable_requests.filter(rejected_dupe=False),
             'p': pulled_requests.filter(rejected_dupe=False),
             'last_pull': last_pull,
+
+            # don't think this is used any more, was used in the old list style queue design, remove and test later
             'orgs': ds_requests_centcom.filter(pull__date_pulled__isnull=True).values_list('org', flat=True)
         }
 
+        # set the first network with files as the active network
         if activeSelected == False and queue['count'] > 0:
             queue['activeNet'] = True
             activeSelected = True
@@ -197,23 +224,29 @@ def queue(request):
         xfer_queues.append(queue)
 
     # sort the list of network queues into network order
-    xfer_queues = sorted(
-        xfer_queues, key=lambda k: k['order_by'], reverse=False)
+    xfer_queues = sorted(xfer_queues, key=lambda k: k['order_by'], reverse=False)
 
     # create the request context
     rc = {'queues': xfer_queues, 'empty': empty, 'easterEgg': activeSelected}
 
     # roll that beautiful bean footage
+    # ^-- I've always wondered what he meant by that, never did ask him
     return render(request, 'pages/queue.html', {'rc': rc})
 
-
+# function to serve the request details page for a single Request object, only available to staff users
 @login_required
+@never_cache
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def transferRequest(request, id):
+    # get the Request object
     rqst = Request.objects.get(request_id=id)
+    # get the User object... for some reason, we already have the Request object, so why not just use that? You even used the Request object to get the User object......
     user = User.objects.get(user_id=rqst.user.user_id)
+
+    # get all the Request objects with a matching request hash as the current Request object, not including the current Request object
     dupes = Request.objects.filter(pull__date_complete=None, request_hash=rqst.request_hash).exclude(request_id=rqst.request_id).order_by('-date_created')
 
+    # check to see if the current Request object is the most recent object submitted with that request hash
     mostRecentDupe = False
 
     if dupes.count() > 0:
@@ -240,27 +273,36 @@ def transferRequest(request, id):
         'target_email': rqst.target_email.all()[0],
         'org': rqst.org,
     }
-    return render(request, 'pages/transfer-request.html', {'rqst': rqst, 'rc': rc, 'dupes': dupes, 'mostRecentDupe': mostRecentDupe, 'rejections': rejections, 'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": user.user_id, 'debug': cftsSettings.DEBUG})
 
+    # wow thats a lot of context!
+    return render(request, 'pages/transfer-request.html', {'rqst': rqst, 'rc': rc, 'dupes': dupes, 'mostRecentDupe': mostRecentDupe, 'rejections': rejections,
+                                                           'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": user.user_id, 'debug': cftsSettings.DEBUG})
 
+# function to save staff added notes to a Request object, only avaliable to staff users
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def requestNotes(request, requestid):
+    # get notes, entered from request details page.
+    # this will be a combination of any previously entered notes and the most recently entered in note
     postData = dict(request.POST.lists())
     notes = postData['notes'][0]
+
+    # update the notes field on the Request object
     Request.objects.filter(request_id=requestid).update(notes=notes)
     rqst = Request.objects.get(request_id=requestid)
     messages.success(request, "Notes Saved")
 
+    # call for a pull zip to be rewritten, Requests objects with notes will generate a _notes.txt in the pull zip
     try:
         pull_number = rqst.pull.pull_id
-        createZip(request, rqst.network.name, rqst.is_centcom, pull_number)
+        createZip(request, rqst.network.name, pull_number)
     except AttributeError:
         print("Request not found in any pull.")
 
     return JsonResponse({'response': "Notes saved"})
 
 
+# function to remeve the is_centcom status from a Request object
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def removeCentcom(request, id):
@@ -270,21 +312,30 @@ def removeCentcom(request, id):
     return redirect('transfer-request', id)
 
 
+# function to ban a user for a length of time, only available to superusers, staff uses can only request a user be banned
 @login_required
-@user_passes_test(superUserCheck, login_url='queue', redirect_field_name=None)
-def banUser(request, userid, requestid, temp=False):
+@user_passes_test(staffCheck, login_url='queue', redirect_field_name=None)
+def banUser(request, userid, requestid, ignore_strikes=False):
+    # get the user to ban, grab the first from the returned filter results
+    # I don't really remember why I chose to get the user this way, user_id is the database index for the object, which is always unique
+    # ... I should have added comments while I was writing all this
     userToBan = User.objects.filter(user_id=userid)[0]
 
-    if userToBan.banned == True:
-        strikes = 3
-    else:
-        strikes = userToBan.strikes
+    # if they aren't banned then just use the strikes from the strikes field
+    strikes = userToBan.strikes
 
+    # used in the success message
     days = 0
 
-    if temp == "True":
-        User.objects.filter(user_id=userid).update(banned=True, banned_until=datetime.date.today() + datetime.timedelta(days=1))
-        days = 1
+    # if the function has a temp arg of "True" then give the user a 1 day ban, 1 day bans do not increase stike count but we do count them
+    if ignore_strikes == "True":
+        # if the user is already banned and we arrived back to this function that means the 'Escalate to Permanent Ban' button was clicked
+        # set the user to 3 strikes, the following if statments will set them to perma ban
+        if userToBan.banned == True:
+            User.objects.filter(user_id=userid).update(banned=True, strikes=4, banned_until=datetime.date.today().replace(year=datetime.date.today().year+1000))
+        else:
+            User.objects.filter(user_id=userid).update(banned=True, temp_ban_count=F('temp_ban_count') + 1, banned_until=datetime.date.today() + datetime.timedelta(days=1))
+            days = 1
     else:
         # users first ban, 3 days
         if strikes == 0:
@@ -298,7 +349,7 @@ def banUser(request, userid, requestid, temp=False):
         elif strikes == 2:
             User.objects.filter(user_id=userid).update(banned=True, strikes=3, banned_until=datetime.date.today() + datetime.timedelta(days=30))
             days = 30
-        # fourth ban, lifetime
+        # fourth ban, lifetime... assuming the user isn't alive 1000 years from now. I sure hope I'm not...
         elif strikes == 3:
             User.objects.filter(user_id=userid).update(banned=True, strikes=4, banned_until=datetime.date.today().replace(year=datetime.date.today().year+1000))
         # just incase any other stike number comes in
@@ -309,6 +360,8 @@ def banUser(request, userid, requestid, temp=False):
         messages.success(request, "User banned for a really long time")
     else:
         messages.success(request, "User banned for " + str(days) + " days")
+
+    # generate a ban email template, but only when DEBUG == False... for my sanity
     eml = banEml(request, requestid)
     if cftsSettings.DEBUG == True:
         return redirect('/transfer-request/' + str(requestid))
@@ -316,19 +369,18 @@ def banUser(request, userid, requestid, temp=False):
         return redirect('/transfer-request/' + str(requestid) + "?eml=" + eml)
 
 
+# function to generate a ban email
 @login_required
 @user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)
 def banEml(request, request_id):
-
     rqst = Request.objects.get(request_id=request_id)
 
     msgBody = "mailto:" + str(rqst.user.source_email) + "?subject=CFTS Ban Notice&body="
-
     msgBody += render_to_string('partials/Queue_partials/banTemplate.html', {'rqst': rqst, }, request)
 
     return msgBody
 
-
+####################################################################################################################
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def createZip(request, network_name, rejectPull):
@@ -336,7 +388,7 @@ def createZip(request, network_name, rejectPull):
 
         # create pull
         try:
-            maxPull = Pull.objects.filter(network=Network.objects.get(name=network_name)).latest('date_pulled')  # .aggregate(Max('pull_number'),Max('date_pulled'))
+            maxPull = Pull.objects.filter(network=Network.objects.get(name=network_name)).latest('date_pulled')
 
             if(datetime.datetime.now().date() > maxPull.date_pulled.date()):
                 pull_number = 1
@@ -435,7 +487,6 @@ def createZip(request, network_name, rejectPull):
             if rqst.notes != None:
                 with zip.open(notes_file_name, 'w') as nfp:
                     notes = rqst.notes
-                    print(notes)
                     nfp.write(notes.encode('utf-8'))
                     nfp.close()
 

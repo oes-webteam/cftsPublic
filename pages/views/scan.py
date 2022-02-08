@@ -275,10 +275,6 @@ def scanOfficeFile(office_file):
 
 
 def scanFile(readablePath, text_file):
-    # result = {
-    #     'file': text_file,
-    #     'findings': []
-    # }
     result = None
 
     reg_lst = []
@@ -299,7 +295,6 @@ def scanFile(readablePath, text_file):
             for compiled_reg in reg_lst:
                 found = re.finditer(compiled_reg, f_content)
                 for match in found:
-                    #result['findings'].append( '%s <br/> %s (%s)' % ( match.string, match.group(), match.start() ) )
                     result['findings'].append(
                         'This file contains the term: %s' % (match.group()))
 

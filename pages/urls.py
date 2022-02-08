@@ -40,12 +40,9 @@ urlpatterns = [
     # queue
     path('queue', views.queue, name='queue'),
     path('queue/cookie', views.queue, name='cookie'),
-    path('transfer-request/<uuid:id>',
-         views.transferRequest, name='transfer-request'),
-    path('create-zip/<str:network_name>/<str:rejectPull>',
-         views.createZip, name='create-zip'),
-    path('getFile/uploads/<str:fileID>/<str:fileName>',
-         views.getFile, name='getFile'),
+    path('transfer-request/<uuid:id>', views.transferRequest, name='transfer-request'),
+    path('create-zip/<str:network_name>/<str:rejectPull>', views.createZip, name='create-zip'),
+    path('getFile/uploads/<str:fileID>/<str:fileName>', views.getFile, name='getFile'),
     path('updateFileReview/<uuid:fileID>/<uuid:rqstID>/', views.updateFileReview, name='reviewFile'),
     path('updateFileReview/<uuid:fileID>/<uuid:rqstID>/<str:quit>', views.updateFileReview, name='reviewFile'),
     path('removeFileReviewer/<int:stage>', views.removeFileReviewer, name='removeReview'),
@@ -74,7 +71,6 @@ urlpatterns = [
     path('submitfeedback', views.submitFeedback, name='submitfeedback'),
 
     # APIs
-    path('api-getuser/<uuid:id>', views.getUser, name='api-getuser'),
     path('api-setreject', views.setReject, name='api-setreject'),
     path('api-setrejectdupes', views.setRejectDupes, name='api-setrejectdupes'),
     path('api-unreject', views.unReject, name='api-unreject'),
@@ -86,7 +82,7 @@ urlpatterns = [
     path('api-removeCentcom/<uuid:id>', views.removeCentcom, name='api-removeCentcom'),
     path('api-requestnotes/<uuid:requestid>', views.requestNotes, name='api-requestnotes'),
     path('api-banuser/<uuid:userid>/<uuid:requestid>/', views.banUser, name='api-banuser'),
-    path('api-banuser/<uuid:userid>/<uuid:requestid>/<str:temp>', views.banUser, name='api-banuser'),
+    path('api-banuser/<uuid:userid>/<uuid:requestid>/<str:ignore_strikes>', views.banUser, name='api-banuser'),
     path('api-fileCleanup', views.fileCleanup, name='api-fileCleanup'),
 
 

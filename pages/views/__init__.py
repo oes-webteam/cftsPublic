@@ -1,3 +1,4 @@
+# any new view file will need to be added here, otherwise urlpatterns can't reach the view.
 from .frontend import *
 from .queue import *
 from .scan import *
