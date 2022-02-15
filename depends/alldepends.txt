@@ -14,7 +14,7 @@ click
 colorama
 cryptography
 distlib
-Django==3.2.12
+Django
 django-crispy-forms
 django-mssql
 django-static-jquery-ui
