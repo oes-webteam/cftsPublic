@@ -380,16 +380,20 @@ def banEml(request, request_id):
 
     return msgBody
 
-####################################################################################################################
+# function to create a zip file containing all pullable File objects for a given network
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def createZip(request, network_name, rejectPull):
-    if rejectPull == 'false':
 
-        # create pull
+    # this variable is a bit misleading, rejectPull is used to determine wheter we are creating a completely new pull or modifying an already existing pull
+    # in this case we are creating a new pull
+    if rejectPull == 'false':
+        # determine what number we should give the pull
         try:
+            # get the last pull number for the current network
             maxPull = Pull.objects.filter(network=Network.objects.get(name=network_name)).latest('date_pulled')
 
+            # reset the pull number everyday
             if(datetime.datetime.now().date() > maxPull.date_pulled.date()):
                 pull_number = 1
             else:
@@ -398,6 +402,7 @@ def createZip(request, network_name, rejectPull):
         except Pull.DoesNotExist:
             pull_number = 1
 
+        # create the Pull object
         new_pull = Pull(
             pull_number=pull_number,
             network=Network.objects.get(name=network_name),
@@ -406,31 +411,39 @@ def createZip(request, network_name, rejectPull):
             user_pulled=request.user,
         )
 
+        # get all pullable requests for the current network
         qs = Request.objects.filter(
             network__name=network_name, pull=None, ready_to_pull=True, is_submitted=True)
         new_pull.save()
 
         pull = new_pull
 
+    # we are modifying an already existing pull zip
     else:
+        # get the pull and all its requests
         qs = Request.objects.filter(pull=rejectPull)
         pull = Pull.objects.filter(pull_id=rejectPull)[0]
         pull_number = pull.pull_number
 
-    # create/overwrite zip file
+    # construct the file path for the pull zip
     zipPath = os.path.join(cftsSettings.PULLS_DIR+"\\") + network_name + "_" + str(pull_number) + " " + str(pull.date_pulled.astimezone().strftime("%d%b %H%M")) + ".zip"
 
     zip = ZipFile(zipPath, "w")
 
-    # for each xfer request ...
-
+    # zip folder structure looks like this, pull/user/request_#/files
+    # list to keep track of which folder paths have been created so we don't overlap
     requestDirs = []
+    # create a zip folder for every Request object
     for rqst in qs:
         zip_folder = str(rqst.user) + "/request_1"
+        # get all non-rejected files in the current request
         theseFiles = rqst.files.filter(rejection_reason=None)
+        # if the is_pii field is True on any of the File objects then encryptRequests will become true
         encryptRequest = False
 
+        # only create a folder for a request if it has non-rejected files, we don't want empty folders because every file got rejected
         if theseFiles.exists():
+            # if a user had multiple Request objects in a pull they will all need their own folder, this loop will create the unique request folder for the user
             i = 2
             while zip_folder in requestDirs:
                 zip_folder = str(rqst.user) + "/request_" + str(i)
@@ -438,7 +451,7 @@ def createZip(request, network_name, rejectPull):
 
             requestDirs.append(zip_folder)
 
-            # add their files to the zip in the folder of their name
+            # write all of the File objects to the folder we just created
             for f in theseFiles:
                 if f.is_pii == True:
                     encryptRequest = True
@@ -446,35 +459,16 @@ def createZip(request, network_name, rejectPull):
                 zip_path = os.path.join(zip_folder, str(f))
                 zip.write(f.file_object.path, zip_path)
 
-            # create and add the target email file
-
+            # create and add the target email file, file name is different when encryptRequest is True
             if encryptRequest == True:
                 email_file_name = '_encrypt.txt'
-
             elif encryptRequest == False:
                 email_file_name = '_email.txt'
 
-            notes_file_name = zip_folder + "/_notes.txt"
-
             email_file_path = zip_folder + "/" + email_file_name
 
-            if email_file_path in zip.namelist():
-                i = 1
-                print("txt file exists")
-                while True:
-                    if encryptRequest == True:
-                        email_file_name = "_encrypt"+str(i)+".txt"
-                    else:
-                        email_file_name = "_email"+str(i)+".txt"
-
-                    email_file_path = zip_folder + "/" + email_file_name
-
-                    print("Trying " + email_file_name)
-                    if email_file_path in zip.namelist():
-                        i = i + 1
-                    else:
-                        break
-
+            # originally a user could submit a request with multiple destination email addresses, that is no longer the case but the target_email field remains a many-to-many field
+            # this loop was used to add all of the email addresses to a single file, but now it only ever loops through 1 Email object
             with zip.open(email_file_path, 'w') as fp:
                 emailString = ""
 
@@ -484,7 +478,10 @@ def createZip(request, network_name, rejectPull):
                 fp.write(emailString.encode('utf-8'))
                 fp.close()
 
+            #######################################################################################################################################
             if rqst.notes != None:
+                notes_file_name = zip_folder + "/_notes.txt"
+
                 with zip.open(notes_file_name, 'w') as nfp:
                     notes = rqst.notes
                     nfp.write(notes.encode('utf-8'))
