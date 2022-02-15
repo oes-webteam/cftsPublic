@@ -6,7 +6,7 @@ from django.core.files.storage import FileSystemStorage
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import F
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.utils.functional import keep_lazy_text
 
 
