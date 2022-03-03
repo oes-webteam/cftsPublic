@@ -76,6 +76,7 @@ urlpatterns = [
     path('api-unreject', views.unReject, name='api-unreject'),
     path('api-setencrypt', views.setEncrypt, name='api-setencrypt'),
     path('api-numbers', views.runNumbers, name='api-numbers'),
+    path('api-numbers/<int:api_call>', views.runNumbers, name='api-numbers'),
     path('api-processrequest', views.process, name='api-processrequest'),
     path('api-setconsentcookie', views.setConsentCookie, name='api-setconsentcookie'),
     #path('api-getclassifications', views.getClassifications, name='api-getclassifications'),
