@@ -21,7 +21,7 @@
                 <div class="btn-group ml-3">
                     {% if centcom == True %}<a class="btn btn-warning" href="{% url 'api-removeCentcom' rqst.request_id %}">Remove Centcom Status</a>{% endif %}
                     {% if not rqst.user.banned%}
-                        <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rqst.request_id "True" %}">Ban User, 1 day</a>
+                        <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rqst.request_id "True" "False" %}">Ban User, 1 day</a>
                         {% if user.is_superuser %}
                             <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rqst.request_id %}">Ban User,
                                 {% if rqst.user.strikes == 0 %} 3 days{% elif rqst.user.strikes == 1 %} 7 days{% elif rqst.user.strikes == 2 %} 30 days{% elif rqst.user.strikes == 3 %} Permanently{% endif %}
@@ -35,7 +35,7 @@
                                         {% if rqst.user.strikes == 0 %} 3 day{% elif rqst.user.strikes == 1 %} 7 day{% elif rqst.user.strikes == 2 %} 30 day{% endif %} Ban
                                     </a>
                                 {% endif %}
-                                <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rqst.request_id "True" %}">Escalate to Permanent Ban</a>
+                                <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rqst.request_id "True" "True" %}">Escalate to Permanent Ban</a>
                             {% else %}
                                 <a class="btn btn-danger" id="banBtn" href="{% url 'ban-request' rqst.request_id %}">Request Ban Escelation</a>
                             {% endif %}
