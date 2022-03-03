@@ -1,7 +1,7 @@
 # ====================================================================
 # core
 import json
-from datetime import datetime
+import datetime
 from zipfile import ZipFile
 from django.http.response import HttpResponse
 from django.contrib import messages
@@ -228,9 +228,7 @@ def setEncrypt(request):
 
 
 # function to collect various metrics for a certain date range, from /reports url path
-@login_required
-@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
-def runNumbers(request):
+def runNumbers(request, api_call=False):
     # initialize all our metrics
     unique_users = []
     banned_users = []
@@ -271,10 +269,14 @@ def runNumbers(request):
     }
     file_size = 0
 
-    start_date = datetime.strptime(
-        request.POST.get('start_date'), "%m/%d/%Y").date()
-    end_date = datetime.strptime(
-        request.POST.get('end_date'), "%m/%d/%Y").date()
+    if api_call == False:
+        start_date = datetime.datetime.strptime(
+            request.POST.get('start_date'), "%m/%d/%Y").date()
+        end_date = datetime.datetime.strptime(
+            request.POST.get('end_date'), "%m/%d/%Y").date()
+    else:
+        start_date = datetime.date.today() - datetime.timedelta(days=7)
+        end_date = datetime.date.today()
 
     # only the completed requests, tyvm
     requests_in_range = Request.objects.filter(
