@@ -29,6 +29,7 @@ from pages.models import *
 import re
 
 import logging
+import traceback
 logger = logging.getLogger('django')
 
 # ====================================================================
@@ -95,10 +96,11 @@ def scan(request, rqst_id):
         shutil.rmtree(scan_folder)
         for file in files:
             if file.scan_results == []:
+                logger.error(traceback.format_exc())
                 results = [{
                     'file': file.file_object.path,
                     'found': [{'file': file.file_object.path,
-                               'findings': [str('Error in scan: ' + repr(e))]}]
+                               'findings': [str('Error in scan: ' + traceback.format_exc())]}]
                 }]
 
                 file.scan_results = results
@@ -139,7 +141,6 @@ def runScan(scan_folder):
                 file_results = None
                 temp, ext = os.path.splitext(filename)
                 ext = ext.lower()
-
                 if(ext in office_filetype_list):
                     file_results = scanOfficeFile(filename)
 
@@ -153,9 +154,11 @@ def runScan(scan_folder):
                                         ext = ext.lower()
 
                                         if ext in office_filetype_list:
-                                            embedOffFilePath = os.path.dirname(filename)+"\\"+result['file'].split('\\')[-1]
-                                            shutil.move(result['file'], embedOffFilePath)
-                                            fileList.append(embedOffFilePath)
+                                            src = os.path.dirname(filename)+"\\office\\"+result['file']
+                                            dest = os.path.dirname(filename)+"\\"+result['file'].split('\\')[-1]
+                                            shutil.move(src, dest)
+                                            fileList.append(dest)
+                                            removeResults.append(result)
                                 else:
                                     imgCount += 1
                                     removeResults.append(result)
@@ -211,9 +214,10 @@ def runScan(scan_folder):
 
             except Exception as e:
                 file_results = []
+                logger.error(traceback.format_exc())
                 result = {
                     'file': readablePath,
-                    'findings': [str('Error in scan: ' + repr(e))]
+                    'findings': [str('Error in scan: ' + traceback.format_exc())]
                 }
                 file_results.append(result)
 
