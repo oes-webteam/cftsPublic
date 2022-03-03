@@ -24,6 +24,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.cache import never_cache
 
 from pages.views.auth import superUserCheck, staffCheck
+from pages.views.dev_tools import fileCleanup
 
 # responses
 from django.shortcuts import redirect, render, reverse
@@ -397,7 +398,10 @@ def createZip(request, network_name, rejectPull):
             if(datetime.datetime.now().date() > maxPull.date_pulled.date()):
                 pull_number = 1
             else:
-                pull_number = 1 if maxPull.pull_number == None else maxPull.pull_number + 1
+                if maxPull.pull_number == None:
+                    pull_number = 1
+                else:
+                    pull_number = maxPull.pull_number + 1
 
         except Pull.DoesNotExist:
             pull_number = 1
@@ -499,6 +503,8 @@ def createZip(request, network_name, rejectPull):
 
     zip.close()
 
+    if pull_number == 2:
+        fileCleanup(request)
     # see if we can't provide something more useful to the analysts - maybe the new pull number?
     if rejectPull == "false":
         messages.success(request, "Pull " + str(new_pull) + " successfully created")
