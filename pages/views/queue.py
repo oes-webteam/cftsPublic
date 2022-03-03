@@ -371,7 +371,7 @@ def banUser(request, userid, requestid, ignore_strikes=False):
 
 # function to generate a ban email
 @login_required
-@user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def banEml(request, request_id):
     rqst = Request.objects.get(request_id=request_id)
 
