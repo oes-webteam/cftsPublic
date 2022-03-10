@@ -227,7 +227,7 @@ class Request(models.Model):
     rejected_dupe = models.BooleanField(default=False)
     destFlag = models.BooleanField(default=False)
     ready_to_pull = models.BooleanField(default=False)
-    #is_rejected = models.BooleanField(default=False)
+    has_encrypted = models.BooleanField(default=False)
     files_scanned = models.BooleanField(default=False)
 
     class Meta:

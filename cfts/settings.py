@@ -7,7 +7,7 @@ you can take over this project once I'm gone.
 
 At the moment this project is kept on my personal github account https://github.com/Alexander-Alvarado/cftsPublic, it may move in the future.
 
-At the time of writing this we are using Django 3.2 and Python 3.9
+At the time of writing this we are using Django 4.0.3 and Python 3.9
 '''
 
 import os
@@ -38,6 +38,8 @@ this is the name of the network the system is being hosted on, ex: SIPR, NIPR, C
 these names should match the Network objects in the database
 '''
 NETWORK = ENV.NETWORK
+
+KEYS_DIR = os.path.join(BASE_DIR, "KEYS")
 
 # setting this to True will dissable all request submission and display a message on the homepage
 DISABLE_SUBMISSIONS = False

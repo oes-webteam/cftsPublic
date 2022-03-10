@@ -1,22 +1,21 @@
 # ====================================================================
 # core
-from email import generator
-import random
 import datetime
-from re import T
 from django.contrib import messages
-from django.db.models.expressions import Subquery, When
-from django.db.models.fields import IntegerField
-import pytz
 from django.templatetags.static import static
-# from io import BytesIO, StringIO
 from zipfile import ZipFile
-from django.conf import settings
-from django.utils.functional import empty
 from django.utils import timezone
 from cfts import settings as cftsSettings
-from django.core.serializers import serialize
 
+# cryptography
+import os
+import string
+import random
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.serialization import load_pem_public_key
 
 # decorators
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -26,10 +25,10 @@ from django.views.decorators.cache import never_cache
 from pages.views.auth import superUserCheck, staffCheck
 
 # responses
-from django.shortcuts import redirect, render, reverse
+from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 
-from django.http import JsonResponse, FileResponse, response, HttpResponse
+from django.http import JsonResponse, FileResponse, HttpResponse
 
 # model/database stuff
 from pages.models import *
@@ -39,8 +38,9 @@ from django.db.models import Case, When
 import logging
 
 logger = logging.getLogger('django')
+
 # ====================================================================
-# I really don't want to comment this file, the is so much hacky shit going on here
+# I really don't want to comment this file, there is so much hacky shit going on here
 
 # function to collect Request objects and serve the transfer queue page, only available to staff users
 @login_required
@@ -367,6 +367,30 @@ def warningEml(request, warningCount, source_email):
 
     return msgBody
 
+def encryptPhrase(byte_phrase, dest_network):
+    keyPath = os.path.join(cftsSettings.KEYS_DIR, dest_network+"_PUB_KEY.pem")
+    with open(keyPath, "rb") as dest_pub_pem:
+        dest_pub_key = load_pem_public_key(dest_pub_pem.read())
+        dest_pub_pem.close()
+
+    return dest_pub_key.encrypt(byte_phrase, padding.OAEP(padding.MGF1(hashes.SHA256()), hashes.SHA256(), None))
+
+
+def encryptFile(salt, nonce, byte_phrase, source_file):
+
+    kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=390000)
+    key = kdf.derive(byte_phrase)
+
+    cipher = Cipher(algorithms.AES(key), modes.CTR(nonce))
+    encryptor = cipher.encryptor()
+
+    with open(source_file, "rb") as inFile:
+        cipherText = encryptor.update(inFile.read()) + encryptor.finalize()
+        inFile.close()
+
+    return cipherText
+
+
 # function to create a zip file containing all pullable File objects for a given network
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
@@ -429,7 +453,6 @@ def createZip(request, network_name, rejectPull):
         # get all non-rejected files in the current request
         theseFiles = rqst.files.filter(rejection_reason=None)
         # if the is_pii field is True on any of the File objects then encryptRequests will become true
-        encryptRequest = False
 
         # only create a folder for a request if it has non-rejected files, we don't want empty folders because every file got rejected
         if theseFiles.exists():
@@ -441,35 +464,42 @@ def createZip(request, network_name, rejectPull):
 
             requestDirs.append(zip_folder)
 
+            crypt_info = {}
+
+            if rqst.has_encrypted == True:
+                phrase = ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits + string.punctuation) for _ in range(32))
+                byte_phrase = str.encode(phrase, 'utf-8')
+                crypt_info = {'salt': os.urandom(16),
+                              'nonce': os.urandom(16),
+                              'encryptedPhrase': encryptPhrase(byte_phrase, rqst.network.name)}
+
             # write all of the File objects to the folder we just created
             for f in theseFiles:
-                if f.is_pii == True:
-                    encryptRequest = True
+                if rqst.has_encrypted == True:
+                    cipherText = encryptFile(crypt_info['salt'], crypt_info['nonce'], byte_phrase, f.file_object.path)
+                    encrypt_file_path = zip_folder + "/" + str(f)
+                    with zip.open(encrypt_file_path, 'w') as outFile:
+                        outFile.write(cipherText)
+                        outFile.close()
+                else:
+                    zip_path = os.path.join(zip_folder, str(f))
+                    zip.write(f.file_object.path, zip_path)
 
-                zip_path = os.path.join(zip_folder, str(f))
-                zip.write(f.file_object.path, zip_path)
-
-            # create and add the target email file, file name is different when encryptRequest is True
-            if encryptRequest == True:
-                email_file_name = '_encrypt.txt'
-            elif encryptRequest == False:
-                email_file_name = '_email.txt'
-
-            email_file_path = zip_folder + "/" + email_file_name
+            rqst_info_file_path = zip_folder + "/_request_info.txt"
 
             # originally a user could submit a request with multiple destination email addresses, that is no longer the case but the target_email field remains a many-to-many field
             # this loop was used to add all of the email addresses to a single file, but now it only ever loops through 1 Email object
-            with zip.open(email_file_path, 'w') as fp:
-                emailString = ""
+            with zip.open(rqst_info_file_path, 'w') as fp:
+                rqst_info = crypt_info
 
-                for this_email in rqst.target_email.all():
-                    emailString = emailString + this_email.address + '\n'
+                rqst_info['email'] = rqst.target_email.all()[0].address
+                rqst_info['user_id'] = rqst.user.user_identifier
 
-                fp.write(emailString.encode('utf-8'))
+                fp.write(str(rqst_info).encode('utf-8'))
                 fp.close()
 
             #######################################################################################################################################
-            if rqst.notes != None:
+            if rqst.notes != "":
                 notes_file_name = zip_folder + "/_notes.txt"
 
                 with zip.open(notes_file_name, 'w') as nfp:
@@ -495,7 +525,6 @@ def createZip(request, network_name, rejectPull):
         return JsonResponse({'pullNumber': new_pull.pull_number, 'datePulled': new_pull.date_pulled.strftime("%d%b %H%M").upper(), 'userPulled': str(new_pull.user_pulled)})
     else:
         return JsonResponse({'pullNumber': pull.pull_number, 'datePulled': pull.date_pulled.strftime("%d%b %H%M").upper(), 'userPulled': str(pull.user_pulled)})
-
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)

@@ -217,6 +217,9 @@ def setEncrypt(request):
 
     # recreate the zip file for the pull
     someRequest = Request.objects.get(request_id=request_id[0])
+    someRequest.has_encrypted = True
+    someRequest.save()
+
     network_name = someRequest.network.name
 
     try:
