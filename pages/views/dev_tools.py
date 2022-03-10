@@ -1,4 +1,5 @@
 # ====================================================================
+from email import message
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from pages.models import *
@@ -8,7 +9,8 @@ from cfts import settings
 import os
 import shutil
 from datetime import datetime
-
+from django.contrib import messages
+import traceback
 from pages.views.auth import superUserCheck, staffCheck
 # ====================================================================
 
@@ -46,7 +48,7 @@ def deleteFiles(directory, maxAge):
 
 # function to call deleteFiles() from a url, only available to superusers
 @login_required
-@user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def fileCleanup(request):
     # paths to directories you want to nuke
     uploadsPath = settings.UPLOADS_DIR
@@ -58,9 +60,8 @@ def fileCleanup(request):
         deleteFiles(uploadsPath, 30)
         deleteFiles(pullsPath, 30)
         deleteFiles(scanPath, 1)
-        return HttpResponse("Old files deleted")
     except Exception as e:
-        return HttpResponse(str("Error deleting files:" + repr(e)))
+        messages.error(request, "Could not perform scheduled file deletion." + str(traceback.format_exc()))
 
 
 # function to update all users update_info field to force them to update their user info.

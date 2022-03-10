@@ -49,6 +49,7 @@ function checkEmail(email, net, direction) {
             //);
             //break;
             check = domainArray.pop();
+            check = check.toLocaleLowerCase()
             return (check == "mil" || check == "gov" || check == "edu" || check == "org") ? true : false;
     }
     // fail by default

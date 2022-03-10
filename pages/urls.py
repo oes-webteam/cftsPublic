@@ -76,13 +76,14 @@ urlpatterns = [
     path('api-unreject', views.unReject, name='api-unreject'),
     path('api-setencrypt', views.setEncrypt, name='api-setencrypt'),
     path('api-numbers', views.runNumbers, name='api-numbers'),
+    path('api-numbers/<int:api_call>', views.runNumbers, name='api-numbers'),
     path('api-processrequest', views.process, name='api-processrequest'),
     path('api-setconsentcookie', views.setConsentCookie, name='api-setconsentcookie'),
     #path('api-getclassifications', views.getClassifications, name='api-getclassifications'),
     path('api-removeCentcom/<uuid:id>', views.removeCentcom, name='api-removeCentcom'),
     path('api-requestnotes/<uuid:requestid>', views.requestNotes, name='api-requestnotes'),
     path('api-banuser/<uuid:userid>/<uuid:requestid>/', views.banUser, name='api-banuser'),
-    path('api-banuser/<uuid:userid>/<uuid:requestid>/<str:ignore_strikes>', views.banUser, name='api-banuser'),
+    path('api-banuser/<uuid:userid>/<uuid:requestid>/<str:ignore_strikes>/<str:perma_ban>', views.banUser, name='api-banuser'),
     path('api-fileCleanup', views.fileCleanup, name='api-fileCleanup'),
 
 
