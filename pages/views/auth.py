@@ -20,6 +20,9 @@ from django.contrib import messages
 from django.contrib.auth.models import User as authUser
 from pages.models import Feedback, Network, User, Email, Feedback, ResourceLink
 from cfts.settings import NETWORK
+import logging
+
+logger = logging.getLogger('django')
 
 # used with the @user_passes_test decorator to restict access to certain functions to only superusers
 def superUserCheck(user):
@@ -29,6 +32,18 @@ def superUserCheck(user):
 def staffCheck(user):
     return user.is_staff
 
+def hashCert(cert):
+    # create hash of cert, this was originally only an MD5 hash and has since been wrapped with SHA512
+    md5Hash = hashlib.md5()
+    md5Hash.update(cert.encode())
+    md5Hash = md5Hash.hexdigest()
+
+    # create a SHA512 hash of the MD5 hash
+    sha512Hash = hashlib.sha512()
+    sha512Hash.update(md5Hash.encode())
+    userHash = sha512Hash.hexdigest()
+    return userHash
+
 # function to get certificate information from a user
 def getCert(request):
     # this is the certificate hash that all external users will have until F5 can resolve the certificate rewrite issue
@@ -37,36 +52,35 @@ def getCert(request):
 
     # get the HTTP CERT_SUBJECT header
     try:
-        cert = request.META['CERT_SUBJECT']
+        cert = request.META['HTTP_SUBJECT']
 
         # empty cert, IIS is set to ignore certs, IIS NEEDS TO REQURE CERTS IN PRODUCTION!!!
         if cert == "":
             return {'status': "empty"}
-
-        # got a cert!
         else:
-            # create hash of cert, this was originally only an MD5 hash and has since been wrapped with SHA512
-
-            md5Hash = hashlib.md5()
-            md5Hash.update(cert.encode())
-            md5Hash = md5Hash.hexdigest()
-
-            # create a SHA512 hash of the MD5 hash
-            sha512Hash = hashlib.sha512()
-            sha512Hash.update(md5Hash.encode())
-            userHash = sha512Hash.hexdigest()
-
-            # external user, their cert info is worthless
+            userHash = hashCert(cert)
             if userHash in buggedPKIs:
                 return {'status': "buggedPKI", 'cert': cert, 'userHash': userHash}
-
-            # and their cert info isn't bugged!
             else:
-                return {'status': "validPKI", 'cert': cert, 'userHash': userHash}
+                return {'status': "externalPKI", 'cert': cert, 'userHash': userHash}
 
     # django dev server doesn't grab certs
     except KeyError:
-        return {'status': "empty"}
+        try:
+            cert = request.META['CERT_SUBJECT']
+            # empty cert, IIS is set to ignore certs, IIS NEEDS TO REQURE CERTS IN PRODUCTION!!!
+            if cert == "":
+                return {'status': "empty"}
+            # got a cert!
+            else:
+                userHash = hashCert(cert)
+                if userHash not in buggedPKIs:
+                    return {'status': "validPKI", 'cert': cert, 'userHash': userHash}
+                else:
+                    return {'status': "buggedPKI", 'cert': cert, 'userHash': userHash}
+
+        except KeyError:
+            return {'status': "empty"}
 
 # function to retrive or create a single Email record
 def getOrCreateEmail(request, address, network):
@@ -112,11 +126,20 @@ def getOrCreateUser(request, certInfo):
     # try and retrive a User record
     try:
         # validPKI users do not need to be logged in so long as they have a pre-existing User reccord
-        if certInfo['status'] == "validPKI":
+        if certInfo['status'] == "validPKI" or certInfo['status'] == "externalPKI":
             userHash = certInfo['userHash']
 
             # get the User object that matches the certificate hash
-            user = User.objects.get(user_identifier=userHash)
+            try:
+                user = User.objects.get(user_identifier=userHash)
+            except User.DoesNotExist:
+                if request.user.is_authenticated:
+                    user = User.objects.get(auth_user=request.user)
+                    if user.user_identifier == None:
+                        user.user_identifier = userHash
+                        user.save()
+                else:
+                    return None
 
             # User object retruned, but they do not have a Django user account linked
             if user.auth_user == None:
@@ -131,6 +154,7 @@ def getOrCreateUser(request, certInfo):
         # the user is external, so we can't user a certificate hash to retrieve a User object, external users MUST BE LOGGED IN
         else:
             # if they are logged in then get the User object that has a one-to-one relationship with the currently logged in Django user account
+            logger.error("External user")
             if request.user.is_authenticated:
                 user = User.objects.get(auth_user=request.user)
 
