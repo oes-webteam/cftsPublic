@@ -19,6 +19,7 @@ from pages.models import *
 from cfts import settings
 
 from pages.views.auth import superUserCheck, staffCheck
+from pages.views.dev_tools import fileCleanup
 # ====================================================================
 
 
@@ -106,6 +107,10 @@ def pullsDone(request, id, cd):
     thisPull.user_complete = request.user
     thisPull.disc_number = cd
     thisPull.save()
+
+    if thisPull.pull_number == 1:
+        fileCleanup(request)
+
     messages.success(request, "Pull completed")
     return JsonResponse({'id': id})
 
