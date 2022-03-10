@@ -10,7 +10,7 @@
         <div class="row">
             {% for r in rc.requests %}
                 <div class="col-3">
-                    <a class="card bg-light{% if r.has_rejected == True %} border-red{% elif r.pull.date_complete != None %} border-green{% endif %}" href="request/{{r.request_id}}">
+                    <a class="card bg-light{% if r.has_rejected == True or r.all_rejected == True %} border-red{% elif r.pull.date_complete != None %} border-green{% endif %}" href="request/{{r.request_id}}">
                         <div class="card-body">
                             <h5 class="card-title">{{ r.user }}</h5>
                             <h6 class="card-subtitle mb-2 text-muted">{{ r.date_created|date:'d M'|upper }} {{ r.date_created|time:'Hi' }}</h6>
@@ -19,16 +19,16 @@
                             <b class="card-text">Request Status:
                                 {% if r.all_rejected == True %}
                                     Rejected
+                                {% elif r.ready_to_pull == True %}
+                                    {% if r.pull.date_complete != None %}
+                                        Transfer Complete
+                                    {% elif r.pull.date_pulled != None %}
+                                        Inbound to Destination Network
+                                    {% else %}
+                                        Review Complete
+                                    {% endif %}
                                 {% elif r.pull.date_pulled == None %}
                                     Submitted
-                                {% elif r.pull.date_oneeye == None %} f
-                                    Initial review
-                                {% elif r.pull.date_twoeye == None %}
-                                    Secondary review
-                                {% elif r.pull.date_complete == None %}
-                                    Awaiting transfer to destination network
-                                {% elif r.pull.date_complete != None %}
-                                    Inbound to destination network
                                 {% endif %}
                             </b>
                             <br><br>
