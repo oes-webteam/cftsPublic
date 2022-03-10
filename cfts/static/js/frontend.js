@@ -153,7 +153,7 @@ const displayFileQueue = () => {
 
             let checkLabel = document.createElement("label");
             checkLabel.setAttribute("for", "encrypt" + i);
-            checkLabel.append(document.createTextNode("Send Encrypted?"));
+            checkLabel.append(document.createTextNode("Send Encrypted/Through DoD SAFE?"));
             checkLabel.classList.add("form-check-label", "col");
             fileInfoDiv.appendChild(toEncrypt);
             fileInfoDiv.appendChild(checkLabel);
