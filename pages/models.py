@@ -209,6 +209,7 @@ class Request(models.Model):
     network = models.ForeignKey(Network, on_delete=models.DO_NOTHING)
     files = models.ManyToManyField(File)
     target_email = models.ManyToManyField(Email)
+    RHR_email = models.CharField(max_length=75, default="")
     comments = models.TextField(null=True, blank=True)
     is_submitted = models.BooleanField(default=False)
     pull = models.ForeignKey(

@@ -20,26 +20,26 @@ function checkEmail(email, net, direction) {
     let domainArray = domain.split(".");
     let check = "";
     switch (net) {
-        case "NIPR":
-            check = domainArray.pop();
-            check = check.toLocaleLowerCase()
-            return domain.indexOf("smil") == -1 && domain.indexOf("cmil") == -1 && (check == "mil" || check == "gov") ? true : false;
-        case "SIPR":
-            return domainArray.slice(-2).join(".") == "smil.mil" ? true : false;
-            //case "BICES":
-            //switch (direction) {
-            //case "from":
-            //return domainArray.slice(-2).join(".") == "bices.org" ? true : false;
-            //case "to":
-            //return domainArray.slice(-3).join(".") == "us.bices.org" ? true : false;
-            //default:
-            //notifyUserWarning(
-            //"ERROR: A system error has occurred. The 'checkEmail' function is being called in an impropper manner ('direction' == " +
-            //direction +
-            //"). Please notify the CFTS administrators of this error by emailing {{ SETTINGS.CFTS_ADMIN_EMAIL }}."
-            //);
-            //break;
-            //}
+        // case "NIPR":
+        //     check = domainArray.pop();
+        //     check = check.toLocaleLowerCase()
+        //     return domain.indexOf("smil") == -1 && domain.indexOf("cmil") == -1 && (check == "mil" || check == "gov") ? true : false;
+        // case "SIPR":
+        //     return domainArray.slice(-2).join(".") == "smil.mil" ? true : false;
+        //case "BICES":
+        //switch (direction) {
+        //case "from":
+        //return domainArray.slice(-2).join(".") == "bices.org" ? true : false;
+        //case "to":
+        //return domainArray.slice(-3).join(".") == "us.bices.org" ? true : false;
+        //default:
+        //notifyUserWarning(
+        //"ERROR: A system error has occurred. The 'checkEmail' function is being called in an impropper manner ('direction' == " +
+        //direction +
+        //"). Please notify the CFTS administrators of this error by emailing {{ SETTINGS.CFTS_ADMIN_EMAIL }}."
+        //);
+        //break;
+        //}
         default:
             //if (net.length)
             //notifyUserWarning(
@@ -137,6 +137,30 @@ function validateForm(form) {
     else {
         console.dir(form.elements.targetEmail);
         console.log(form.elements.targetEmail.length);
+        console.log("WTF happened here?!");
+        return false;
+    }
+
+    if (typeof form.elements.RHREmail.length != 'undefined' && form.elements.RHREmail.length > 1) {
+        /* check all for validity */
+        form.elements.RHREmail.forEach((elem) => {
+            if (!checkEmail(elem.value, form.elements.network.value, "to")) {
+                errors.push(elem);
+                isValid = false;
+            }
+        });
+    }
+    /* form has one email */
+    else if (typeof form.elements.RHREmail != 'undefined') {
+        if (!(form.elements.RHREmail.value.length && checkEmail(form.elements.RHREmail.value, form.elements.network.value, "to"))) {
+            errors.push(form.elements.RHREmail);
+            isValid = false;
+        }
+    }
+    /* uhh... the field doesn't even exist, I guess??? */
+    else {
+        console.dir(form.elements.RHREmail);
+        console.log(form.elements.RHREmail.length);
         console.log("WTF happened here?!");
         return false;
     }

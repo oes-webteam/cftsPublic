@@ -268,6 +268,7 @@ def transferRequest(request, id):
         # 'User': str(user) + " ("+ str(user.auth_user.username) +")",
         'Date Submitted': rqst.date_created,
         'Email': user.source_email,
+        'RHR Email': rqst.RHR_email,
         'Phone': user.phone,
         'Network': Network.objects.get(network_id=rqst.network.network_id),
         'target_email': rqst.target_email.all()[0],
