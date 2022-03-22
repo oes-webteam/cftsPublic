@@ -80,6 +80,7 @@ def frontend(request):
 
     # collect resources to display in resources dropdown in the site nav bar
     resources = ResourceLink.objects.all()
+    announcements = Message.objects.filter(visible=True)
 
     try:
         # if a user is using Internet Explorer server them the template with minimal request context
@@ -111,7 +112,7 @@ def frontend(request):
         if nets == None:
             return redirect('user-info')
 
-        rc = {'networks': nets, 'submission_disabled': Settings.DISABLE_SUBMISSIONS, 'debug': str(Settings.DEBUG), 'resources': resources, 'user': cftsUser, 'browser': browser}
+        rc = {'networks': nets, 'submission_disabled': Settings.DISABLE_SUBMISSIONS, 'debug': str(Settings.DEBUG), 'resources': resources, 'user': cftsUser, 'browser': browser, 'announcements': announcements}
 
         return render(request, 'pages/frontend.html', {'rc': rc})
 

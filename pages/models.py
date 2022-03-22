@@ -262,3 +262,13 @@ class Feedback(models.Model):
 
     def __str__(self):
         return str(self.date_submitted.strftime("%b %d %H:%M")) + ": " + self.title
+
+class Message(models.Model):
+    message_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    message = models.TextField(null=True)
+    visible = models.BooleanField(default=False)
+    colorChoices = [('danger', "red"), ('warning', "yellow"), ('success', "green"), ('info', "blue")]
+    color = models.CharField(choices=colorChoices, default='warning', max_length=20)
+  
+    def __str__(self):
+        return str(self.message)
