@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load util %}
+
+{% block content %}
+    <link rel="stylesheet" href="{% static 'css/scan.css' %}">
+
+    <section class="p-3" id="drop-zone">
+
+        <form action="#" id="dropForm" name="dropForm" method="post" enctype="multipart/form-data" novalidate="true">
+            {% csrf_token %}
+            <input type="file" name="dropZip">
+            <input type="submit" id="dropSubmit">
+        </form>
+
+    </section>
+
+    <script>
+        window.document.title = "Drop Zone";
+        dropForm = document.getElementById("dropForm")
+
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings){
+                xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+            }
+        })
+
+        const submitDrop = function(e){
+            let data = new FormData(dropForm)
+
+            $.ajax({
+                url: '/process-drop',
+                data: data,
+                cache: false,
+                contentType: false,
+                processData: false,
+                method: 'POST',
+                type: 'POST',
+                success: function(resp){
+                    console.log(resp)
+                    //window.location = window.location
+                },
+                error: function(resp){
+                    console.log(resp)
+                    //window.location = window.location
+                }
+            })
+        }
+        dropForm.addEventListener("submit", submitDrop, false)
+    </script>
+{% endblock %}

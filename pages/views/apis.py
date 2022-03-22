@@ -491,8 +491,12 @@ def process(request):
         # get files from request form
         file_info = json.loads(form_data.get('fileInfo'))
 
+        has_encrypted = False
         # create a File object for every file
         for i, f in enumerate(form_files.getlist("files")):
+            if file_info[i]['encrypt'] == 'true':
+                has_encrypted = True
+
             this_file = File(
                 file_object=f,
                 is_pii=file_info[i]['encrypt'] == 'true',
@@ -533,6 +537,7 @@ def process(request):
 
             # add the file to the request and the list of files used in the request hash
             rqst.files.add(this_file)
+            rqst.has_encrypted = has_encrypted
             fileList.append(str(f))
 
         # sort the list of files so the order of files does not affect the duplicate checking

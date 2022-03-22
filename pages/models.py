@@ -9,9 +9,13 @@ from django.db.models import F
 from django.utils.functional import keep_lazy_text
 
 
-def randomize_path(instance, filename):
+def randomize_path_file(instance, filename):
     path = str(uuid.uuid4())
     return os.path.join('uploads/', path, filename)
+
+def randomize_path_drop_file(instance, filename):
+    path = str(uuid.uuid4())
+    return os.path.join('drops/', path, filename)
 
 
 class ResourceLink(models.Model):
@@ -175,7 +179,7 @@ class CustomFileSystemStorage(FileSystemStorage):
 class File(models.Model):
     file_id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False)
-    file_object = models.FileField(upload_to=randomize_path, storage=CustomFileSystemStorage(), max_length=500)
+    file_object = models.FileField(upload_to=randomize_path_file, storage=CustomFileSystemStorage(), max_length=500)
     file_name = models.CharField(max_length=255, null=True, blank=True, default=None)
     file_hash = models.CharField(max_length=40, blank=True, null=True)
     is_pii = models.BooleanField(default=False)
@@ -236,6 +240,43 @@ class Request(models.Model):
     def __str__(self):
         formatted_date_created = self.date_created.strftime("%d%b %H:%M:%S")
         return self.user.__str__() + ' (' + formatted_date_created + ')'
+
+class Drop_File(models.Model):
+    file_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    file_object = models.FileField(upload_to=randomize_path_drop_file, storage=CustomFileSystemStorage(), max_length=500)
+    file_name = models.CharField(max_length=255, null=True, blank=True, default=None)
+    # file_hash = models.CharField(max_length=40, blank=True, null=True)
+    # is_pii = models.BooleanField(default=False)
+    file_count = models.PositiveIntegerField(default=1)
+    file_size = models.PositiveBigIntegerField(default=0)
+
+    class Meta:
+        ordering = [F('file_name').asc(nulls_last=True)]
+
+    def __str__(self):
+        return os.path.basename(self.file_object.name)
+
+
+class Drop_Request(models.Model):
+    request_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date_created = models.DateTimeField(auto_now_add=True)
+    # user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    # network = models.ForeignKey(Network, on_delete=models.DO_NOTHING)
+    files = models.ManyToManyField(Drop_File)
+    target_email = models.ForeignKey(Email, null=True, blank=True, on_delete=models.DO_NOTHING)
+    has_encrypted = models.BooleanField(default=False)
+    request_info = models.CharField(max_length=255, null=True, blank=True)
+    user_retrieved = models.BooleanField(default=False)
+    delete_on = models.DateTimeField()
+    request_code = models.CharField(max_length=50)
+
+
+    class Meta:
+        ordering = ['-date_created']
+
+    def __str__(self):
+        formatted_date_created = self.date_created.strftime("%d%b %H:%M:%S")
+        return self.target_email.address + ' (' + formatted_date_created + ')'
 
 
 class DirtyWord(models.Model):

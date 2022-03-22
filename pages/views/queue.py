@@ -464,12 +464,13 @@ def createZip(request, network_name, rejectPull):
 
             requestDirs.append(zip_folder)
 
-            crypt_info = {}
+            crypt_info = {'encrypted': False,}
 
             if rqst.has_encrypted == True:
                 phrase = ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits + string.punctuation) for _ in range(32))
                 byte_phrase = str.encode(phrase, 'utf-8')
-                crypt_info = {'salt': os.urandom(16),
+                crypt_info = {'encrypted': True,
+                              'salt': os.urandom(16),
                               'nonce': os.urandom(16),
                               'encryptedPhrase': encryptPhrase(byte_phrase, rqst.network.name)}
 
@@ -499,7 +500,7 @@ def createZip(request, network_name, rejectPull):
                 fp.close()
 
             #######################################################################################################################################
-            if rqst.notes != "":
+            if rqst.notes != "" and rqst.notes != None:
                 notes_file_name = zip_folder + "/_notes.txt"
 
                 with zip.open(notes_file_name, 'w') as nfp:
@@ -528,9 +529,9 @@ def createZip(request, network_name, rejectPull):
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
-def getFile(request, fileID, fileName):
+def getFile(request, folder, fileID, fileName):
     response = FileResponse(
-        open(os.path.join("uploads", fileID, fileName), 'rb'))
+        open(os.path.join(folder, fileID, fileName), 'rb'))
     return response
 
 

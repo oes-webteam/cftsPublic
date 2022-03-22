@@ -39,9 +39,16 @@ urlpatterns = [
     path('queue/cookie', views.queue, name='cookie'),
     path('transfer-request/<uuid:id>', views.transferRequest, name='transfer-request'),
     path('create-zip/<str:network_name>/<str:rejectPull>', views.createZip, name='create-zip'),
-    path('getFile/uploads/<str:fileID>/<str:fileName>', views.getFile, name='getFile'),
     path('updateFileReview/<uuid:fileID>/<uuid:rqstID>/<str:quit>/<str:completeReview>', views.updateFileReview, name='reviewFile'),
+    path('getFile/<str:folder>/<str:fileID>/<str:fileName>', views.getFile, name='getFile'),
     path('removeFileReviewer/<int:stage>', views.removeFileReviewer, name='removeReview'),
+
+    # drops
+    path('drop-zone', views.dropZone, name='drop-zone'),
+    path('process-drop', views.processDrop, name='process-drop'),
+    path('drop/<uuid:id>/<str:PIN>', views.dropDetails, name='drop'),
+    path('drop/<uuid:id>', views.dropDetails, name='drop'),
+
 
     # scan
     path('scan/<uuid:rqst_id>', views.scan, name="scan"),
