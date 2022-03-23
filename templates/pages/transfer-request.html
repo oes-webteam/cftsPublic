@@ -23,7 +23,7 @@
                     {% if not rqst.user.banned%}
                         <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rqst.request_id "True" "False" %}">Ban User, 1 day</a>
                         {% if user.is_superuser %}
-                            <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rqst.request_id %}">Ban User,
+                            <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rqst.request_id "False" "False" %}">Ban User,
                                 {% if rqst.user.strikes == 0 %} 3 days{% elif rqst.user.strikes == 1 %} 7 days{% elif rqst.user.strikes == 2 %} 30 days{% elif rqst.user.strikes == 3 %} Permanently{% endif %}
                             </a>
                         {% endif %}
@@ -31,7 +31,7 @@
                         {% if rqst.user.strikes < 4 %}
                             {% if user.is_superuser %}
                                 {% if rqst.user.strikes < 3 %}
-                                    <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rqst.request_id %}">Escalate to
+                                    <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rqst.request_id "False" "False" %}">Escalate to
                                         {% if rqst.user.strikes == 0 %} 3 day{% elif rqst.user.strikes == 1 %} 7 day{% elif rqst.user.strikes == 2 %} 30 day{% endif %} Ban
                                     </a>
                                 {% endif %}
@@ -107,7 +107,7 @@
                                     {% if file.is_pii%}
                                         <span title="PII: {{ file.is_pii }}&#10;">🔒</span>
                                     {% endif %}
-                                    <a class="{% if file.rejection_reason != None %}rejected {% endif %} mr-2" title="{{ file }}" id="{{file.file_id}}" href={% if debug == True %}{% url 'admin:pages_file_change' file.file_id %}{% else %}"/getFile/{{file.file_object}}"{% endif %} download="{{file.file_name}}">{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</a>
+                                    <a class="{% if file.rejection_reason != None %}rejected {% endif %} mr-2" title="{{ file }}" id="{{file.file_id}}" href="/getFile/{{file.file_object}}" download="{{file.file_name}}">{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</a>
                                     {% if user.is_superuser %}{% if file.user_oneeye != None %}<strong><span class="reviewers mr-2 d-none">1 Eye: {{file.user_oneeye}}</span>{% endif %} {% if file.user_twoeye != None %}<span class="reviewers d-none">2 Eye: {{file.user_twoeye}}</span></strong>{% endif %}{% endif %}
                                 </td>
                                 <td class="file-right p-1">

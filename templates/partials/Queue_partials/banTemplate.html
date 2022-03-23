@@ -1,7 +1,7 @@
 {% spaceless %}
     {% load util %}
 
-    {% if rqst.user.strikes == 0 %}
+    {% if ignore_strikes == "True" and perma_ban == "False" %}
         Due to violating the CFTS policy your account has been suspended for 24 hours.<br>It is your responsibility as a user to review and follow the policy that governs the use of the service.<br>Continued violations will result in longer account suspension.
     {% elif rqst.user.strikes == 1 %}
         Due to violating the CFTS policy your account has been suspended for 3 days.<br>It is your responsibility as a user to review and follow the policy that governs the use of the service.<br>Continued violations will result in longer account suspension.

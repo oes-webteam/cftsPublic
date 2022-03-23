@@ -59,7 +59,7 @@ class NewUserForm(UserCreationForm):
             else:
                 matchingUsers = authUser.objects.filter(email=form.get('email'))
                 if matchingUsers.count() != 0:
-                    self.add_error(None, "You email is already tied to an account. If you forgot your password you can request a reset from the login page. If you believe this to be an error please contact us at the link below.")
+                    self.add_error(None, "Your email is already tied to an account. If you forgot your password you can request a reset from the login page. If you believe this to be an error please contact us at the link below.")
 
 
 class userInfoForm(ModelForm):

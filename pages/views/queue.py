@@ -268,6 +268,7 @@ def transferRequest(request, id):
         # 'User': str(user) + " ("+ str(user.auth_user.username) +")",
         'Date Submitted': rqst.date_created,
         'Email': user.source_email,
+        'RHR Email': rqst.RHR_email,
         'Phone': user.phone,
         'Network': Network.objects.get(network_id=rqst.network.network_id),
         'target_email': rqst.target_email.all()[0],
@@ -364,22 +365,22 @@ def banUser(request, userid, requestid, ignore_strikes=False, perma_ban=False):
     else:
         messages.success(request, "User banned for " + str(days) + " days")
 
-    # generate a ban email template, but only when DEBUG == False... for my sanity
-    eml = banEml(request, requestid)
     if cftsSettings.DEBUG == True:
         return redirect('/transfer-request/' + str(requestid))
     else:
+        # generate a ban email template, but only when DEBUG == False... for my sanity
+        eml = banEml(request, requestid, ignore_strikes, perma_ban)
         return redirect('/transfer-request/' + str(requestid) + "?eml=" + eml)
 
 
 # function to generate a ban email
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
-def banEml(request, request_id):
+def banEml(request, request_id, ignore_strikes, perma_ban):
     rqst = Request.objects.get(request_id=request_id)
 
     msgBody = "mailto:" + str(rqst.user.source_email) + "?subject=CFTS Ban Notice&body="
-    msgBody += render_to_string('partials/Queue_partials/banTemplate.html', {'rqst': rqst, }, request)
+    msgBody += render_to_string('partials/Queue_partials/banTemplate.html', {'rqst': rqst, 'ignore_strikes': ignore_strikes, 'perma_ban': perma_ban}, request)
 
     return msgBody
 

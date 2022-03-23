@@ -450,7 +450,8 @@ def process(request):
             network=destinationNet,
             comments=form_data.get('comments'),
             org=org,
-            is_centcom=form_data.get('isCentcom')
+            is_centcom=form_data.get('isCentcom'),
+            RHR_email=form_data.get('RHREmail')
         )
         rqst.save()
 
