@@ -269,7 +269,7 @@ class Drop_Request(models.Model):
     user_retrieved = models.BooleanField(default=False)
     delete_on = models.DateTimeField()
     request_code = models.CharField(max_length=50)
-
+    email_sent = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['-date_created']
@@ -313,6 +313,6 @@ class Message(models.Model):
     visible = models.BooleanField(default=False)
     colorChoices = [('danger', "red"), ('warning', "yellow"), ('success', "green"), ('info', "blue")]
     color = models.CharField(choices=colorChoices, default='warning', max_length=20)
-  
+
     def __str__(self):
         return str(self.message)

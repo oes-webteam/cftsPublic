@@ -4,6 +4,7 @@ import ast
 import datetime
 import shutil
 from django.contrib import messages
+from django.core import paginator
 from django.core.files import File as DjangoFile
 from django.templatetags.static import static
 from zipfile import ZipFile
@@ -42,8 +43,12 @@ logger = logging.getLogger('django')
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def dropZone(request):
-    rc = {}
-    return render(request, 'pages/drop-zone.html', {'rc': rc})
+    dropRequests = Drop_Request.objects.filter(email_sent=False)
+
+    requestPage = paginator.Paginator(dropRequests, 10)
+    pageNum = request.GET.get('page')
+    pageObj = requestPage.get_page(pageNum)
+    return render(request, 'pages/drop-zone.html', context={'dropRequests': pageObj})
 
 def treeScan(requestPaths, path):
     for dir in os.scandir(path):
