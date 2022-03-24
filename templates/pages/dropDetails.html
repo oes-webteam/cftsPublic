@@ -44,14 +44,19 @@
         <script>
             window.location = window.location + "/" + prompt("Enter in request PIN from email:")
         </script>
-    {% elif status == "not authorized" %}
+    {% else %}
         <script>
-            alert("PIN entered is not correct")
+            history.pushState(null, "", location.href.split("/").slice(0,5).join('/'))
         </script>
-    {% elif status == "authorized" %}
-        <script>
-            encrypted = "{{encrypted}}"
-        </script>
+        {% if status == "not authorized" %}
+            <script>
+                alert("PIN entered is not correct")
+            </script>
+        {% elif status == "authorized" %}
+            <script>
+                encrypted = "{{encrypted}}"
+            </script>
+        {% endif %}
     {% endif %}
 
 {% endblock  %}

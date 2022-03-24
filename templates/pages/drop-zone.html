@@ -3,21 +3,23 @@
 {% load util %}
 
 {% block content %}
-    <link rel="stylesheet" href="{% static 'css/scan.css' %}">
+    <link rel="stylesheet" href="{% static 'css/drop-zone.css' %}">
 
-    <section class="p-3" id="drop-zone">
+    <section id="boxes" class="">
 
-        <form action="#" id="dropForm" name="dropForm" method="post" enctype="multipart/form-data" novalidate="true">
-            {% csrf_token %}
-            <input type="file" name="dropZip">
-            <input type="submit" id="dropSubmit">
-        </form>
-
+        <div class="container pt-3">
+            <div class="upload-console-drop empty" id="drop-zone">
+                {% csrf_token %}
+                Drag and drop Pull Zip here, or click to upload <input type="file" class="" name="dropZip" id="uploadButton" style="display: none;">
+            </div>
+        </div>
     </section>
 
     <script>
         window.document.title = "Drop Zone";
         dropForm = document.getElementById("dropForm")
+        dropArea = document.getElementById("drop-zone")
+        filesInput = document.getElementById("uploadButton")
 
         $.ajaxSetup({
             beforeSend: function(xhr, settings){
@@ -26,7 +28,15 @@
         })
 
         const submitDrop = function(e){
-            let data = new FormData(dropForm)
+            var data = new FormData()
+            if ('dataTransfer' in e){
+                file = e.dataTransfer.files[0];
+                data.append('dropZip', file);
+            }
+            else if ('target' in e) {
+                file = e.target.files[0];
+                data.append('dropZip', file);
+            }
 
             $.ajax({
                 url: '/process-drop',
@@ -38,14 +48,33 @@
                 type: 'POST',
                 success: function(resp){
                     console.log(resp)
-                    //window.location = window.location
+                    window.location = window.location
                 },
                 error: function(resp){
                     console.log(resp)
-                    //window.location = window.location
+                    window.location = window.location
                 }
             })
         }
-        dropForm.addEventListener("submit", submitDrop, false)
+        addHighlight = (e) => dropArea.classList.add('highlight-active');
+        removeHighlight = (e) => dropArea.classList.remove('highlight-active');
+
+        // prevent default actions for all these events
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        // add/remove highlighting to/from drop zone
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, addHighlight, false);
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, removeHighlight, false);
+        });
+
+        // the add files handler for the drop zone and file field
+        dropArea.addEventListener('click', function(){$('#uploadButton').click()}, false);
+        dropArea.addEventListener('drop', submitDrop, false);
+        filesInput.addEventListener('change', submitDrop, false);
     </script>
 {% endblock %}
