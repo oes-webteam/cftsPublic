@@ -1,18 +1,19 @@
 {% load util %}
 
 {% block email%}
-As a customer it is your responsibility to follow the policies that govern the use of this service.
-%0D%0A%0D%0A
-Our policy is available on the main page of CFTS.
-%0D%0A%0D%0A
-Failure to follow our policy will result in your account being suspended.
-%0D%0A%0D%0A
------------------------------------------------------------
-%0D%0A
-Request: {{rqst.user.name_last}}, {{firstName}} ({{ rqst.date_created|date:'d M' }} {{ rqst.date_created|time:'H:i:s' }})
-%0D%0A
-To see the details of your request click the following link: {{url}}
-%0D%0A%0D%0A
-Rejection reason: {{rejection.subject}}
-%0D%0A%0D%0A
+    %0D%0A%0D%0A
+    Rejection reason: {{rejection.subject}}
+    %0D%0A%0D%0A
+    As a customer it is your responsibility to follow the policies that govern the use of this service.
+    %0D%0A%0D%0A
+    Our policy is available on the main page of CFTS. We also recommend utilizing the File Review Guide in the Resources.
+    %0D%0A%0D%0A
+    If you have any questions contact the team at DSN: 312-529-3867
+    %0D%0A%0D%0A
+    -----------------------------------------------------------
+    %0D%0A
+    Request: {{rqst.user.name_last}}, {{firstName}} ({{ rqst.date_created|date:'d M' }} {{ rqst.date_created|time:'H:i:s' }})
+    %0D%0A
+    To see the details of your request click the following link: {{url}}
+
 {% endblock %}
