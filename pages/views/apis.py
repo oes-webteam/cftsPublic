@@ -469,7 +469,7 @@ def process(request):
 
         staff_emails = authUser.objects.filter(is_staff=True).values_list('email', flat=True)
 
-        if form_data.get('RHREmail') in staff_emails:
+        if form_data.get('RHREmail') in staff_emails or form_data.get('RHREmail') == source_email.address or form_data.get('RHREmail') in destination_list:
             rqst.destFlag = True
 
         # get files from request form
