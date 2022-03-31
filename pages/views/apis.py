@@ -152,7 +152,7 @@ def createEml(request, request_id, files_list, reject_id):
 
     # render out the email template and append it to the mailto link
     msgBody += render_to_string('partials/Queue_partials/rejectionEmailTemplate.html', {'rqst': rqst, 'rejection': rejection, 'firstName': rqst.user.name_first, 'url': url}, request)
-
+   
     return msgBody
 
 # function to remove a files rejection status/reason, this is almost the exact oposite of setReject()

@@ -44,15 +44,15 @@ const addFiles = (e) => {
         if (validation.msg.length) {
             notifyFileWarning(validation.msg);
         }
-        if (!validation.error) {
+        else if (!validation.error) {
             // add file to the queue
             fileObject = {
                 'object': thisFile,
                 'name': thisFile.name
-            };
+            }
             fileQueue.push(fileObject);
         }
-    }
+    };
 
     updateFileInfo();
     displayFileQueue();
@@ -81,7 +81,17 @@ const validateFile = (thisFile) => {
         msg += "<li>.eml and .msg files must be converted to an accepted file format before submission. Use Outlook to export these files to a PDF, Word Document, or plain text file.</li>";
         errorFlag = true;
     }
-
+    // blocks database access files
+    if (filename.includes(".accdb") || filename.includes(".mdb")) {
+        msg += "<li>Microsoft Access Database files: .accb or .mdb are not accepted.</li>";
+        errorFlag = true;
+    }
+    // blocks .exe files
+    if (filename.includes(".exe")) {
+        msg += "<li>Executable files are not accepted.</li>";
+        errorFlag = true;
+    }
+    
     // you seem to have a little ... something ... in your filename there.  You might want to clean that up.
     if (charWhitelist.test(filename)) {
         msg += "<li>Special characters in filenames can cause the system to reject the files. Please review the filename and ensure it only contains letters, numbers, periods, dashes, parentheses or underscores.</li>";
