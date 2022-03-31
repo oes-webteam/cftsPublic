@@ -73,7 +73,9 @@ def dropEmail(request, id):
         ################################## MAKE NETWORK NOT HARDCODED ##################################
         keyPath = os.path.join(cftsSettings.KEYS_DIR, "NIPR_PRIV_KEY.pem")
         with open(keyPath, "rb") as infile:
-            privKey = load_pem_private_key(infile.read(), None)
+            print(type(cftsSettings.PRIVATE_KEY_PASSWORD))
+            print(cftsSettings.PRIVATE_KEY_PASSWORD)
+            privKey = load_pem_private_key(infile.read(), password=str.encode(cftsSettings.PRIVATE_KEY_PASSWORD, 'utf-8'))
             infile.close()
 
         decryptedPhrase = privKey.decrypt(requestInfo['encryptedPhrase'], padding.OAEP(padding.MGF1(hashes.SHA256()), hashes.SHA256(), None)).decode()
