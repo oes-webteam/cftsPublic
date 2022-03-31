@@ -41,20 +41,6 @@ class ResourceLink(models.Model):
         ordering = ['sort_order']
 
 
-class Classification(models.Model):
-    classification_id = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=settings.DEBUG)
-    full_name = models.CharField(max_length=50)
-    abbrev = models.CharField(max_length=50)
-    sort_order = models.IntegerField()
-
-    class Meta:
-        ordering = ['sort_order']
-
-    def __str__(self):
-        return self.full_name
-
-
 class Rejection(models.Model):
     rejection_id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False)
@@ -75,9 +61,9 @@ class Network(models.Model):
     network_id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=settings.DEBUG)
     name = models.CharField(max_length=50)
-    classifications = models.ManyToManyField(Classification)
     sort_order = models.IntegerField()
     visible = models.BooleanField(default=True)
+    CFTS_deployed = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['sort_order']

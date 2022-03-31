@@ -67,7 +67,7 @@ def dropEmail(request, id):
     requestInfo = ast.literal_eval(dropRequest.request_info)
 
     eml = "mailto:" + str(dropRequest.target_email) + "?subject=CFTS File Drop&body="
-    url = "https://" + str(request.get_host()) + "/drop/" + str(id)
+    url = str(request.get_host()) + "/drop/" + str(id)
 
     if requestInfo['encrypted'] == True:
         ################################## MAKE NETWORK NOT HARDCODED ##################################
@@ -75,7 +75,7 @@ def dropEmail(request, id):
         with open(keyPath, "rb") as infile:
             privKey = load_pem_private_key(infile.read(), None)
             infile.close()
-        
+
         decryptedPhrase = privKey.decrypt(requestInfo['encryptedPhrase'], padding.OAEP(padding.MGF1(hashes.SHA256()), hashes.SHA256(), None)).decode()
 
         eml += render_to_string('partials/Drop_partials/dropEmailTemplate.html', {'url': url, 'PIN': dropRequest.request_code, 'encrypted': requestInfo['encrypted'], 'decryptPhrase': decryptedPhrase}, request)
@@ -84,7 +84,7 @@ def dropEmail(request, id):
 
     dropRequest.email_sent = True
     dropRequest.save()
-    
+
     return redirect("/drop-zone?eml="+eml)
 
 @login_required
@@ -187,7 +187,7 @@ def dropDownload(request, id, phrase=None):
                 inFile.close()
 
             zipMem.writestr(file.file_name, decryptText)
-        
+
         zipMem.close()
         zip_buffer.seek(0)
 

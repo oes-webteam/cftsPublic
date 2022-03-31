@@ -18,7 +18,7 @@ from django.template.loader import render_to_string
 from django.http import JsonResponse, HttpResponse
 
 # cfts settings
-from cfts.settings import NETWORK, DEBUG
+from cfts.settings import NETWORK, DEBUG, SKIP_FILE_REVIEW
 # model/database stuff
 from pages.models import *
 from django.contrib.auth.models import User as authUser
@@ -153,7 +153,7 @@ def createEml(request, request_id, files_list, reject_id):
 
     # render out the email template and append it to the mailto link
     msgBody += render_to_string('partials/Queue_partials/rejectionEmailTemplate.html', {'rqst': rqst, 'rejection': rejection, 'firstName': rqst.user.name_first, 'url': url}, request)
-   
+
     return msgBody
 
 # function to remove a files rejection status/reason, this is almost the exact oposite of setReject()
@@ -468,7 +468,8 @@ def process(request):
             comments=form_data.get('comments'),
             org=org,
             is_centcom=form_data.get('isCentcom'),
-            RHR_email=form_data.get('RHREmail')
+            RHR_email=form_data.get('RHREmail'),
+            ready_to_pull=SKIP_FILE_REVIEW,
         )
         rqst.save()
 

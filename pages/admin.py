@@ -45,7 +45,6 @@ class FileAdmin(admin.ModelAdmin):
 
 
 # Register your models here.
-admin.site.register(Classification)
 admin.site.register(File, FileAdmin)
 admin.site.register(Network)
 admin.site.register(Email, EmailAdmin)

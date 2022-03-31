@@ -1,4 +1,4 @@
 {% spaceless %}
     {% load util %}
-    Request URL: {{url}}<br>Request PIN: {{PIN}}<br>{% if encrypted == True%}Decryption Phrase: {{decryptPhrase}}{% endif %}
+    Request URL: {% if request.is_secure %}https://{% else %}http://{% endif %}{{url}}<br>Request PIN: {{PIN}}<br>{% if encrypted == True%}Decryption Phrase: {{decryptPhrase}}{% endif %}
 {% endspaceless %}

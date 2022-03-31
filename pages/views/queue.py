@@ -351,6 +351,7 @@ def banEml(request, request_id, ignore_strikes, perma_ban):
 
     return msgBody
 
+
 @login_required
 @user_passes_test(staffCheck, login_url='queue', redirect_field_name=None)
 def warnUser(request, userid, requestid, confirmWarn=False):
@@ -371,11 +372,11 @@ def warnUser(request, userid, requestid, confirmWarn=False):
             eml = warningEml(request, userToWarn[0].account_warning_count, userToWarn[0].source_email)
             return redirect('/transfer-request/' + str(requestid) + "?eml=" + eml)
 
+
 # function to generate a warning email
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def warningEml(request, warningCount, source_email):
-
     msgBody = "mailto:" + str(source_email) + "?subject=CFTS User Account Warning&body="
     msgBody += render_to_string('partials/Queue_partials/userWarningTemplate.html', {'warningCount': warningCount}, request)
 
@@ -392,7 +393,6 @@ def encryptPhrase(byte_phrase, dest_network):
 
 
 def encryptFile(salt, nonce, byte_phrase, source_file):
-
     kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=390000)
     key = kdf.derive(byte_phrase)
 
@@ -410,14 +410,14 @@ def encryptFile(salt, nonce, byte_phrase, source_file):
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def createZip(request, network_name, rejectPull):
-
     # this variable is a bit misleading, rejectPull is used to determine wheter we are creating a completely new pull or modifying an already existing pull
     # in this case we are creating a new pull
     if rejectPull == 'false':
         # determine what number we should give the pull
         try:
             # get the last pull number for the current network
-            maxPull = Pull.objects.filter(network=Network.objects.get(name=network_name)).latest('date_pulled')
+            destNetwork = Network.objects.get(name=network_name)
+            maxPull = Pull.objects.filter(network=destNetwork).latest('date_pulled')
 
             # reset the pull number everyday
             if(datetime.datetime.now().date() > maxPull.date_pulled.date()):
@@ -434,7 +434,7 @@ def createZip(request, network_name, rejectPull):
         # create the Pull object
         new_pull = Pull(
             pull_number=pull_number,
-            network=Network.objects.get(name=network_name),
+            network=destNetwork,
             # date_pulled=datetime.datetime.now(),
             date_pulled=timezone.now(),
             user_pulled=request.user,
@@ -479,19 +479,41 @@ def createZip(request, network_name, rejectPull):
 
             requestDirs.append(zip_folder)
 
-            crypt_info = {'encrypted': False, }
-
-            if rqst.has_encrypted == True:
+            if destNetwork.CFTS_deployed == True:
                 phrase = ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(32))
                 byte_phrase = str.encode(phrase, 'utf-8')
                 crypt_info = {'encrypted': True,
                               'salt': os.urandom(16),
                               'nonce': os.urandom(16),
-                              'encryptedPhrase': encryptPhrase(byte_phrase, rqst.network.name)}
+                              'encryptedPhrase': encryptPhrase(byte_phrase, rqst.network.name),
+                              'email': rqst.target_email.all()[0].address,
+                              'user_id': rqst.user.user_identifier}
+
+                rqst_info_file_path = zip_folder + "/_request_info.txt"
+
+                with zip.open(rqst_info_file_path, 'w') as fp:
+                    fp.write(str(crypt_info).encode('utf-8'))
+                    fp.close()
+
+            elif destNetwork.CFTS_deployed == False:
+                if rqst.has_encrypted == True:
+                    email_file_name = '_encrypt.txt'
+                elif rqst.has_encrypted == False:
+                    email_file_name = '_email.txt'
+
+                email_file_path = zip_folder + "/" + email_file_name
+
+                # originally a user could submit a request with multiple destination email addresses, that is no longer the case but the target_email field remains a many-to-many field
+                # this loop was used to add all of the email addresses to a single file, but now it only ever loops through 1 Email object
+                with zip.open(email_file_path, 'w') as fp:
+                    emailString = rqst.target_email.all()[0].address
+
+                    fp.write(emailString.encode('utf-8'))
+                    fp.close()
 
             # write all of the File objects to the folder we just created
             for f in theseFiles:
-                if rqst.has_encrypted == True:
+                if destNetwork.CFTS_deployed == True:
                     cipherText = encryptFile(crypt_info['salt'], crypt_info['nonce'], byte_phrase, f.file_object.path)
                     encrypt_file_path = zip_folder + "/" + str(f)
                     with zip.open(encrypt_file_path, 'w') as outFile:
@@ -500,19 +522,6 @@ def createZip(request, network_name, rejectPull):
                 else:
                     zip_path = os.path.join(zip_folder, str(f))
                     zip.write(f.file_object.path, zip_path)
-
-            rqst_info_file_path = zip_folder + "/_request_info.txt"
-
-            # originally a user could submit a request with multiple destination email addresses, that is no longer the case but the target_email field remains a many-to-many field
-            # this loop was used to add all of the email addresses to a single file, but now it only ever loops through 1 Email object
-            with zip.open(rqst_info_file_path, 'w') as fp:
-                rqst_info = crypt_info
-
-                rqst_info['email'] = rqst.target_email.all()[0].address
-                rqst_info['user_id'] = rqst.user.user_identifier
-
-                fp.write(str(rqst_info).encode('utf-8'))
-                fp.close()
 
             #######################################################################################################################################
             if rqst.notes != "" and rqst.notes != None:
