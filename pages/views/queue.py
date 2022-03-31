@@ -483,9 +483,7 @@ def createZip(request, network_name, rejectPull):
 
             if rqst.has_encrypted == True:
                 phrase = ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(32))
-                logger.error(phrase)
                 byte_phrase = str.encode(phrase, 'utf-8')
-                logger.error(byte_phrase)
                 crypt_info = {'encrypted': True,
                               'salt': os.urandom(16),
                               'nonce': os.urandom(16),
