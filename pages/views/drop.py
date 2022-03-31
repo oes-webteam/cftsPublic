@@ -3,6 +3,7 @@
 import ast
 import datetime
 import shutil
+import io
 from django.contrib import messages
 from django.core import paginator
 from django.core.files import File as DjangoFile
@@ -19,7 +20,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.asymmetric import padding
-from cryptography.hazmat.primitives.serialization import load_pem_public_key
+from cryptography.hazmat.primitives.serialization import load_pem_public_key, load_pem_private_key
 
 # decorators
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -43,7 +44,7 @@ logger = logging.getLogger('django')
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def dropZone(request):
-    dropRequests = Drop_Request.objects.filter(email_sent=False)
+    dropRequests = Drop_Request.objects.filter().order_by('email_sent')
 
     requestPage = paginator.Paginator(dropRequests, 10)
     pageNum = request.GET.get('page')
@@ -57,6 +58,34 @@ def treeScan(requestPaths, path):
         else:
             treeScan(requestPaths, dir)
     return requestPaths
+
+@login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
+def dropEmail(request, id):
+    dropRequest = Drop_Request.objects.get(request_id=id)
+
+    requestInfo = ast.literal_eval(dropRequest.request_info)
+
+    eml = "mailto:" + str(dropRequest.target_email) + "?subject=CFTS File Drop&body="
+    url = "https://" + str(request.get_host()) + "/drop/" + str(id)
+
+    if requestInfo['encrypted'] == True:
+        ################################## MAKE NETWORK NOT HARDCODED ##################################
+        keyPath = os.path.join(cftsSettings.KEYS_DIR, "NIPR_PRIV_KEY.pem")
+        with open(keyPath, "rb") as infile:
+            privKey = load_pem_private_key(infile.read(), None)
+            infile.close()
+        
+        decryptedPhrase = privKey.decrypt(requestInfo['encryptedPhrase'], padding.OAEP(padding.MGF1(hashes.SHA256()), hashes.SHA256(), None)).decode()
+
+        eml += render_to_string('partials/Drop_partials/dropEmailTemplate.html', {'url': url, 'PIN': dropRequest.request_code, 'encrypted': requestInfo['encrypted'], 'decryptPhrase': decryptedPhrase}, request)
+    else:
+        eml += render_to_string('partials/Drop_partials/dropEmailTemplate.html', {'url': url, 'PIN': dropRequest.request_code, 'encrypted': requestInfo['encrypted']}, request)
+
+    dropRequest.email_sent = True
+    dropRequest.save()
+    
+    return redirect("/drop-zone?eml="+eml)
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
@@ -86,7 +115,7 @@ def processDrop(request):
                 request_info = ast.literal_eval(infile.read().decode('utf-8'))
                 infile.close()
 
-            # *******************change the hard coded network******************************
+            ################################## MAKE NETWORK NOT HARDCODED ##################################
             dropRequest = Drop_Request(
                 target_email=getOrCreateEmail(request, request_info['email'], "NIPR"),
                 has_encrypted=request_info['encrypted'],
@@ -108,32 +137,9 @@ def processDrop(request):
 
                         dropFile.save()
 
-                    # if the uploaded file is a zip get the info of the contents
-                    if str(f).split('.')[-1] == "zip":
-                        with ZipFile(f, 'r') as zip:
-                            # get info for all files
-                            info = zip.infolist()
-                            fileCount = 0
-
-                            # only count files, not folders
-                            for entry in info:
-                                if entry.is_dir() == False:
-                                    fileCount += 1
-
-                            # count of all files in zip
-                            dropFile.file_count = fileCount
-
-                            # count the total uncompressed file size for all files in the zip
-                            fileSize = 0
-                            for file in info:
-                                fileSize += file.file_size
-
-                            dropFile.file_size = fileSize
-
                     # save the file, let Django strip illegal characters from the path, and trim the dir path from the filename
 
                     dropFile.file_name = str(dropFile.file_object.name).split("/")[-1]
-                    dropFile.file_size = dropFile.file_object.size
 
                     dropFile.save()
 
@@ -145,6 +151,7 @@ def processDrop(request):
         messages.success(request, "Requests Upload Successful")
 
     except Exception as e:
+        logger.error(e)
         messages.error(request, "Error Creating Requests")
     return HttpResponse(set(requestPaths))
 
@@ -158,3 +165,36 @@ def dropDetails(request, id, PIN=None):
         return render(request, 'pages/dropDetails.html', {'status': "authorized", 'drop': drop, 'encrypted': ast.literal_eval(drop.request_info)['encrypted']})
     else:
         return render(request, 'pages/dropDetails.html', {'status': "not authorized"})
+
+def dropDownload(request, id, phrase=None):
+    dropRequest = Drop_Request.objects.get(request_id=id)
+
+    requestInfo = ast.literal_eval(dropRequest.request_info)
+
+    if requestInfo['encrypted'] == True and phrase != None:
+        kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=requestInfo['salt'], iterations=390000)
+        key = kdf.derive(str.encode(phrase, 'utf-8'))
+
+        zip_buffer = io.BytesIO()
+        zipMem = ZipFile(zip_buffer, 'w')
+
+        for file in dropRequest.files.all():
+            cipher = Cipher(algorithms.AES(key), modes.CTR(requestInfo['nonce']))
+            decryptor = cipher.decryptor()
+
+            with open(file.file_object.path, 'rb') as inFile:
+                decryptText = decryptor.update(inFile.read()) + decryptor.finalize()
+                inFile.close()
+
+            zipMem.writestr(file.file_name, decryptText)
+        
+        zipMem.close()
+        zip_buffer.seek(0)
+
+        dropRequest.user_retrieved = True
+        dropRequest.save()
+
+        return FileResponse(zip_buffer, as_attachment=True, filename='CFTS_Files.zip')
+
+    elif requestInfo['encrypted'] == False:
+        pass

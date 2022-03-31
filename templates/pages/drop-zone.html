@@ -13,15 +13,17 @@
         </div>
         <table class="data-table">
             <tr>
-                <th>Email</th>
-                <th>Completed</th>
-                <th>Generate Request Email</th>
+                <th class="col-7">Email</th>
+                <th >Request PIN</th>
+                <th class="text-center">Completed</th>
+                <th class="text-right">Generate Request Email</th>
             </tr>
             {% for rqst in dropRequests %}
                 <tr class="data-row">
-                    <td class="xfer-Email">{{ rqst.target_email }}</td>
-                    <td class="xfer-Completed">
-                        {% if rqst.completed == True%}
+                    <td class="xfer-Email col-7"><a href="/drop/{{rqst.request_id}}">{{ rqst.target_email }}</a></td>
+                    <td class="xfer-PIN">{{rqst.request_code}}</td>
+                    <td class="xfer-Completed text-center">
+                        {% if rqst.email_sent == True %}
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#28a745" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
                                 <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
                             </svg>
@@ -30,7 +32,7 @@
                                 <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z" />
                             </svg>
                         {% endif %}</td>
-                    <td class="xfer-Generate"><a href="#" class="btn btn-primary generateButton" request={{rqst.request_id}} >Generate Email</a></td>
+                    <td class="xfer-Generate text-right"><a href="/generate-drop-email/{{rqst.request_id}}" class="btn btn-primary generateButton" request={{rqst.request_id}} >Generate Email</a></td>
                 </tr>
             {% endfor %}
             <tr>
@@ -63,11 +65,58 @@
         dropArea = document.getElementById("drop-zone")
         filesInput = document.getElementById("uploadButton")
 
+        if (document.location.search) {
+            const search = document.location.search
+            const params = new URLSearchParams(search);
+            let paramObj = {};
+            for (var value of params.keys()) {
+                paramObj[value] = params.get(value);
+            }
+
+            //console.log(paramObj)
+
+            if (paramObj.eml) {
+
+                let eml = paramObj.eml + "&body=" + paramObj.body
+                let $anchor = $("<a class='banEmailLink' target='_blank' href='" + eml.replace(/<br>/g, "%0D%0A%0D%0A") + "''></a>");
+                $(document.body).append($anchor);
+
+                $('.banEmailLink').each(function() {
+                    $(this)[0].click();
+                });
+
+                history.pushState(null, "", location.href.split("?")[0])
+            }
+        }
+
         $.ajaxSetup({
             beforeSend: function(xhr, settings){
                 xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
             }
         })
+
+        // $('.generateButton').click(e => {
+        //     let csrftoken = getCookie('csrftoken');
+
+        //     let url = '/generate-drop-email/' + $(e.currentTarget).attr('request')
+
+        //     const generateDropEmail = $.post(url, 'json').then(
+        //         // success
+        //         function(resp) {
+        //             // // create mailto anchor
+        //             // let $anchor = $("<a class='emailLink' target='_blank' href='" + resp + "'></a>");
+        //             // $(document.body).append($anchor);
+
+        //             // $('.emailLink').each(function() {
+        //             //     $(this)[0].click();
+        //             // });
+
+        //             // // reload the page from server
+        //             // $("#forceReload").submit();
+
+        //         },
+        //     );
+        // })
 
         const submitDrop = function(e){
             var data = new FormData()

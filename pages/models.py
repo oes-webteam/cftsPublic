@@ -247,8 +247,6 @@ class Drop_File(models.Model):
     file_name = models.CharField(max_length=255, null=True, blank=True, default=None)
     # file_hash = models.CharField(max_length=40, blank=True, null=True)
     # is_pii = models.BooleanField(default=False)
-    file_count = models.PositiveIntegerField(default=1)
-    file_size = models.PositiveBigIntegerField(default=0)
 
     class Meta:
         ordering = [F('file_name').asc(nulls_last=True)]

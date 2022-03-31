@@ -48,6 +48,8 @@ urlpatterns = [
     path('process-drop', views.processDrop, name='process-drop'),
     path('drop/<uuid:id>/<str:PIN>', views.dropDetails, name='drop'),
     path('drop/<uuid:id>', views.dropDetails, name='drop'),
+    path('generate-drop-email/<uuid:id>', views.dropEmail, name='drop-email'),
+    path('download-drop/<uuid:id>/<str:phrase>', views.dropDownload, name='drop-download'),
 
 
     # scan

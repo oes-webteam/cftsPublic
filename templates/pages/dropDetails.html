@@ -11,7 +11,7 @@
             <table class="data-table">
                 <tr class="xfer-status">
                     <!-- <a type="button" class="btn btn-primary btn-back" href="{% url 'userRequests' %}">Back</a> -->
-                    <a type="button" class="btn btn-primary btn-back" href="{% url 'userRequests' %}">Download files</a>
+                    <a type="button" class="btn btn-primary btn-download" onclick="downloadDrop()" download="CFTS_Files.zip">Download files</a>
                 </tr>
 
                 <tr>
@@ -55,6 +55,14 @@
         {% elif status == "authorized" %}
             <script>
                 encrypted = "{{encrypted}}"
+
+                function downloadDrop(){
+                    if (encrypted == "True"){
+                        var decryptionPhrase = prompt("Enter decryption phrase from email:")
+                        window.location = "/download-drop/{{drop.request_id}}/" + decryptionPhrase
+                    }
+                }
+
             </script>
         {% endif %}
     {% endif %}
