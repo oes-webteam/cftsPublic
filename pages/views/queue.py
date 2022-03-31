@@ -379,8 +379,32 @@ def banUser(request, userid, requestid, ignore_strikes=False, perma_ban=False):
 def banEml(request, request_id, ignore_strikes, perma_ban):
     rqst = Request.objects.get(request_id=request_id)
 
-    msgBody = "mailto:" + str(rqst.user.source_email) + "?subject=CFTS Ban Notice&body="
+    msgBody = "mailto:" + str(rqst.user.source_email) + "?subject=CFTS User Account Suspension&body="
     msgBody += render_to_string('partials/Queue_partials/banTemplate.html', {'rqst': rqst, 'ignore_strikes': ignore_strikes, 'perma_ban': perma_ban}, request)
+
+    return msgBody
+
+@login_required
+@user_passes_test(staffCheck, login_url='queue', redirect_field_name=None)
+def warnUser(request, userid, requestid):
+    userToWarn = User.objects.filter(user_id=userid)
+    userToWarn.update(account_warning_count=userToWarn[0].account_warning_count+1, last_warned_on=timezone.now())
+
+    messages.success(request, "User warning issued")
+
+    if cftsSettings.DEBUG == True:
+        return redirect('/transfer-request/' + str(requestid))
+    else:
+        eml = warningEml(request, userToWarn[0].account_warning_count, userToWarn[0].source_email)
+        return redirect('/transfer-request/' + str(requestid) + "?eml=" + eml)
+
+# function to generate a warning email
+@login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
+def warningEml(request, warningCount, source_email):
+
+    msgBody = "mailto:" + str(source_email) + "?subject=CFTS User Account Warning&body="
+    msgBody += render_to_string('partials/Queue_partials/userWarningTemplate.html', {'warningCount': warningCount}, request)
 
     return msgBody
 

@@ -1,15 +1,11 @@
 {% spaceless %}
     {% load util %}
 
-    {% if ignore_strikes == "True" and perma_ban == "False" %}
-        Due to violating the CFTS policy your account has been suspended for 24 hours.<br>It is your responsibility as a user to review and follow the policy that governs the use of the service.<br>Continued violations will result in longer account suspension.
-    {% elif rqst.user.strikes == 1 %}
-        Due to violating the CFTS policy your account has been suspended for 3 days.<br>It is your responsibility as a user to review and follow the policy that governs the use of the service.<br>Continued violations will result in longer account suspension.
-    {% elif rqst.user.strikes == 2 %}
-        Due to violating the CFTS policy your account has been suspended for 7 days.<br>It is your responsibility as a user to review and follow the policy that governs the use of the service.<br>Continued violations will result in longer account suspension.
-    {% elif rqst.user.strikes == 3 %}
-        Due to violating the CFTS policy your account has been suspended for 30 days.<br>It is your responsibility as a user to review and follow the policy that governs the use of the service.<br>Continued violations will result in permanent account suspension.
-    {% elif rqst.user.strikes == 4 %}
-        Due to continued violation of the CFTS policy your account has been permanently suspended.
+    {% if rqst.user.strikes == 4 %}
+        Your account has been suspended indefinatly.<br>Our policies are strictly enforced because the CFTS team accepts the majority of the risk in the cross-domain file transfer process.<br>Any infractions on the CFTS team may result in the loss of service for all users.<br>If you have any questions contact the team at DSN: 312-529-3867
+    {% else %}
+        Your account has been suspended for {% if ignore_strikes == "True" and perma_ban == "False" %}24 hours{% elif rqst.user.strikes == 1 %}3 days{% elif rqst.user.strikes == 2 %}7 days{% elif rqst.user.strikes == 3 %}30 days{% endif %}.<br>Our policies are strictly enforced because the CFTS team accepts the majority of the risk in the cross-domain file transfer process.<br>Any infractions on the CFTS team may result in the loss of service for all users.<br>Please review the CFTS policies, CFTS User Training, and File Review Guide during your account suspension to ensure you remain in compliance with the service governance.<br>If you have any questions contact the team at DSN: 312-529-3867
     {% endif %}
+
+
 {% endspaceless %}

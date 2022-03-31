@@ -84,6 +84,7 @@ urlpatterns = [
     path('api-requestnotes/<uuid:requestid>', views.requestNotes, name='api-requestnotes'),
     # path('api-banuser/<uuid:userid>/<uuid:requestid>/', views.banUser, name='api-banuser'),
     path('api-banuser/<uuid:userid>/<uuid:requestid>/<str:ignore_strikes>/<str:perma_ban>', views.banUser, name='api-banuser'),
+    path('api-warnuser/<uuid:userid>/<uuid:requestid>', views.warnUser, name='api-warnuser'),
     path('api-fileCleanup', views.fileCleanup, name='api-fileCleanup'),
 
 
