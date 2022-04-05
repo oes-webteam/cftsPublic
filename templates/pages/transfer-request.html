@@ -48,6 +48,15 @@
                 <div class="btn-group">
                     <a href="#" class="btn btn-warning request-encrypt">Encrypt Files</a>
                     <a href="#" class="btn btn-danger request-reject">Reject Files</a>
+                    <button class="btn btn-danger dropdown dropdown-toggle" type="button" id="rejectiondropdowntoggle" data-toggle="dropdown" aria-haspopup="ture" aria-expanded="false" style="display: none;">
+                        Rejection Reason
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="rejectiondropdowntoggle">
+                        {% for reason in rejections %}
+                            <button class="dropdown-item selected-reject" rejection_ID="{{reason.rejection_id}}">{{reason.name}}</button>
+                        {% endfor %}
+                    </div>
+
                     <a href="{% url 'scan' rqst.request_id %}" class="btn btn-info">Rescan Files</a>
                 </div>
 

@@ -53,6 +53,7 @@ jQuery(document).ready(function() {
             history.pushState(null, "", location.href.split("?")[0])
         } else if (paramObj.flash == "false") {
             $('.btn-back').attr('href', '/queue')
+            history.pushState(null, "", location.href.split("?")[0])
         } else if (paramObj.file) {
             let row = document.getElementById("row_" + paramObj.file)
 
@@ -123,79 +124,95 @@ jQuery(document).ready(function() {
 
     $('.request-reject').click(e => {
         e.preventDefault();
-        let requests = []
+        console.log("request reject clicked")
+        const checkboxes = Array.from(document.querySelectorAll('input[type="checkbox"]'));
+        checkboxes.forEach(checkbox => {
+            checkbox.removeAttribute("hidden");
+        });
 
-        if ($(e.target).hasClass('selected-reject')) {
-            console.log("selcted reject clicked")
-
-            const $checkedItems = $("[name='fileSelection']:checked[not-rejected]");
-            const $checkedItemsRejected = $("[name='fileSelection']:checked[rejected]");
-
-            // no files selected to reject or un-reject
-            if ($checkedItems.length == 0 && $checkedItemsRejected.length == 0) {
-                alert('Select 1 or more files to change rejection status.');
-            }
-
-            // selected files are a mix of rejected and not rejected files
-            else if ($checkedItems.length > 0 && $checkedItemsRejected.length > 0) {
-                alert('Cannot process a mix of rejected and non-rejected files. Rejection and un-rejection are seperate processes. Please select only files to reject or only files to un-reject.');
-            }
-
-            // files to reject
-            else if ($checkedItems.length > 0) {
-                $checkedItems.each(i => {
-                    if (!requests.includes($($checkedItems[i]).attr('request_id'))) {
-                        requests.push($($checkedItems[i]).attr('request_id'))
-                    }
-
-                });
-
-                console.log(requests)
-
-                if (requests.length > 1) {
-                    alert('You can only reject files from the same request.')
-                    requests = []
-                } else {
-                    let data = [];
-                    $checkedItems.each(i => {
-                        data.push({
-                            'fileID': $checkedItems[i].id.slice(4),
-                            'fileName': $($checkedItems[i]).attr('file_name'),
-                            'requestID': $($checkedItems[i]).attr('request_id'),
-                            'requestEmail': $($checkedItems[i]).attr('request_email')
-                        })
-                    });
-                    rejectDialog.data('data', data).dialog('open');
-                }
-            }
-
-            //files to un-reject
-            else if ($checkedItemsRejected.length > 0) {
-                let data = [];
-                $checkedItemsRejected.each(i => {
-                    data.push({
-                        'fileID': $checkedItemsRejected[i].id.slice(4),
-                        'fileName': $($checkedItemsRejected[i]).attr('file_name'),
-                        'requestID': $($checkedItemsRejected[i]).attr('request_id'),
-                        'requestEmail': $($checkedItemsRejected[i]).attr('request_email'),
-                        'unreject': true
-                    })
-                });
-                sendUnrejectRequest(data)
-            }
-
-        } else {
-            console.log("request reject clicked")
-            const checkboxes = Array.from(document.querySelectorAll('input[type="checkbox"]'));
-            checkboxes.forEach(checkbox => {
-                checkbox.removeAttribute("hidden");
-            });
-
-            $(e.target).text("Reject Selected")
-            $(e.target).addClass('selected-reject')
-        }
+        // $(e.target).text("Reject Selected")
+        // $(e.target).addClass('selected-reject')
+        $(e.target).hide()
+        $('#rejectiondropdowntoggle').show()
 
     });
+
+    $('#rejectiondropdowntoggle').click(e => {
+        let requests = []
+        console.log("selcted reject clicked")
+
+        const $checkedItems = $("[name='fileSelection']:checked[not-rejected]");
+        const $checkedItemsRejected = $("[name='fileSelection']:checked[rejected]");
+
+        // no files selected to reject or un-reject
+        if ($checkedItems.length == 0 && $checkedItemsRejected.length == 0) {
+            alert('Select 1 or more files to change rejection status.');
+            $('#rejectiondropdowntoggle').dropdown('toggle')
+        }
+
+        // selected files are a mix of rejected and not rejected files
+        else if ($checkedItems.length > 0 && $checkedItemsRejected.length > 0) {
+            alert('Cannot process a mix of rejected and non-rejected files. Rejection and un-rejection are seperate processes. Please select only files to reject or only files to un-reject.');
+            $('#rejectiondropdowntoggle').dropdown('toggle')
+
+        }
+
+        // files to reject
+        else if ($checkedItems.length > 0) {
+            $('#rejectiondropdowntoggle').dropdown()
+        }
+
+        //files to un-reject
+        else if ($checkedItemsRejected.length > 0) {
+            let data = [];
+            $checkedItemsRejected.each(i => {
+                data.push({
+                    'fileID': $checkedItemsRejected[i].id.slice(4),
+                    'fileName': $($checkedItemsRejected[i]).attr('file_name'),
+                    'requestID': $($checkedItemsRejected[i]).attr('request_id'),
+                    'requestEmail': $($checkedItemsRejected[i]).attr('request_email'),
+                    'unreject': true
+                })
+            });
+            sendUnrejectRequest(data)
+            $('#rejectiondropdowntoggle').dropdown('toggle')
+        }
+    })
+
+    $('.selected-reject').click(e => {
+        let requests = []
+        console.log("selcted reject clicked")
+
+        const $checkedItems = $("[name='fileSelection']:checked[not-rejected]");
+        const $checkedItemsRejected = $("[name='fileSelection']:checked[rejected]");
+
+        $checkedItems.each(i => {
+            if (!requests.includes($($checkedItems[i]).attr('request_id'))) {
+                requests.push($($checkedItems[i]).attr('request_id'))
+            }
+
+        });
+
+        console.log(requests)
+
+        if (requests.length > 1) {
+            alert('You can only reject files from the same request.')
+            requests = []
+        } else {
+            let data = [];
+            $checkedItems.each(i => {
+                data.push({
+                    'fileID': $checkedItems[i].id.slice(4),
+                    'fileName': $($checkedItems[i]).attr('file_name'),
+                    'requestID': $($checkedItems[i]).attr('request_id'),
+                    'requestEmail': $($checkedItems[i]).attr('request_email')
+                })
+            });
+            // rejectDialog.data('data', data).dialog('open');
+            rejectFormCallback(data, $(e.target).attr('rejection_ID'))
+        }
+    })
+
 
     const sendUnrejectRequest = (data) => {
         console.log(data);
@@ -326,103 +343,62 @@ jQuery(document).ready(function() {
     };
 
     // REJECTION MODAL INPUT VALIDATION AND ACTION
-    const rejectFormCallback = (theDialog) => {
-        // user input validation
-        let isValid = true;
-        isValid = isValid && checkSelection("[name='reason']");
+    const rejectFormCallback = (data, reason) => {
 
-        /* THE REAL WORK GOES HERE */
-        if (isValid) {
-            let data = $(theDialog).data().data;
 
-            let $this = $("[name='reason'] option:selected");
-            let requests = {};
+        let requests = {};
 
-            let csrftoken = getCookie('csrftoken');
+        let csrftoken = getCookie('csrftoken');
 
-            let id_list = [];
-            data.forEach((f) => {
-                id_list.push(f.fileID)
-            });
+        let id_list = [];
+        data.forEach((f) => {
+            id_list.push(f.fileID)
+        });
 
-            const postData = {
-                'reject_id': $this.val(),
-                'request_id': data[0]['requestID'], // doesn't matter which request we grab
-                'id_list': id_list
-            };
+        const postData = {
+            'reject_id': reason,
+            'request_id': data[0]['requestID'], // doesn't matter which request we grab
+            'id_list': id_list
+        };
 
-            const setRejectOnFiles = $.post('/api-setreject', postData, 'json').then(
-                // success
-                function(resp) {
-                    console.log('SUCCESS');
-                    // notifyUserSuccess("File rejection Successful")
-                    // console.log( 'Server response: ' + JSON.stringify(resp, null, 4));
+        const setRejectOnFiles = $.post('/api-setreject', postData, 'json').then(
+            // success
+            function(resp) {
+                console.log('SUCCESS');
+                // notifyUserSuccess("File rejection Successful")
+                console.log('Server response: ' + JSON.stringify(resp, null, 4));
 
-                    if (resp.debug != true) {
-                        // create mailto anchor
-                        let $anchor = $("<a class='emailLink' target='_blank' href='" + resp.eml + "''></a>");
-                        $(document.body).append($anchor);
+                if (resp.debug != true) {
+                    // create mailto anchor
+                    let $anchor = $("<a class='emailLink' target='_blank' href='" + resp.eml + "''></a>");
+                    $(document.body).append($anchor);
 
-                        $('.emailLink').each(function() {
-                            $(this)[0].click();
-                        });
-
-                        // close the dialog
-                        $(theDialog).dialog('close');
-                    }
-                    // reload the page from server
-                    if (resp.flash == false) {
-                        window.location = window.location + '?flash=false'
-                    } else {
-                        window.location = window.location
-                    }
-                },
-                // fail 
-                function(resp, status) {
-                    // close the dialog
-                    $(theDialog).dialog('close');
-                    alert("Failed to reject files, send error message to web team.")
-
-                    console.log('FAIL');
-                    responseText = resp.responseText
-                    errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"))
-
-                    notifyUserError("Error rejecting file, send error message to web team: " + errorInfo)
-                    //console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
-                    // console.log( 'Response status: ' + status );
+                    $('.emailLink').each(function() {
+                        $(this)[0].click();
+                    });
                 }
-            );
+                // reload the page from server
+                if (resp.flash == false) {
+                    window.location = window.location + '?flash=false'
+                } else {
+                    window.location = window.location
+                }
+            },
+            // fail 
+            function(resp, status) {
+                alert("Failed to reject files, send error message to web team.")
 
+                console.log('FAIL');
+                responseText = resp.responseText
+                errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"))
 
-
-        } else {
-            /* bad user, no cookie */
-            console.log("What did you do, Ray?");
-        }
+                notifyUserError("Error rejecting file, send error message to web team: " + errorInfo)
+                //console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
+                // console.log( 'Response status: ' + status );
+            }
+        );
     };
 
-    const rejectDialog = $('#reject-form').dialog({
-        autoOpen: false,
-        height: 200,
-        width: 350,
-        modal: true,
-        buttons: {
-            "Reject Files": function() {
-                let theDialog = this;
-                rejectFormCallback(theDialog);
-            },
-            Cancel: () => rejectDialog.dialog('close')
-        },
-        close: () => {
-            rejectForm[0].reset();
-            $("[name='reason']").removeClass('ui-state-error');
-        }
-    });
-
-    const rejectForm = rejectDialog.find('form').submit(e => {
-        e.preventDefault();
-        rejectFormCallback(rejectDialog);
-    })
 
     // supersuer button to remove users from file review
     $('.request-remove').click(e => {
