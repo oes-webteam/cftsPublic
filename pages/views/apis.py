@@ -21,6 +21,7 @@ from django.http import JsonResponse, HttpResponse
 from cfts.settings import NETWORK, DEBUG
 # model/database stuff
 from pages.models import *
+from django.contrib.auth.models import User as authUser
 
 from pages.views.queue import createZip, updateFileReview
 from pages.views.auth import superUserCheck, staffCheck
@@ -136,7 +137,7 @@ def createEml(request, request_id, files_list, reject_id):
 
     # create a mailto link...
     # yeah, that's how we send out system emails because we aren't allowed to have an email relay server... thanks J6
-    msgBody = "mailto:" + str(rqst.user.source_email) + "?subject=CFTS File Rejection&body=The following files have been rejected from your transfer request:%0D%0A"
+    msgBody = "mailto:" + str(rqst.user.source_email) + "?cc=" + str(rqst.RHR_email) + "&subject=CFTS File Rejection&body=The following files have been rejected from your transfer request:%0D%0A"
 
     # list the names of all the files being rejected in the email
     files = File.objects.filter(file_id__in=files_list)
@@ -151,7 +152,7 @@ def createEml(request, request_id, files_list, reject_id):
 
     # render out the email template and append it to the mailto link
     msgBody += render_to_string('partials/Queue_partials/rejectionEmailTemplate.html', {'rqst': rqst, 'rejection': rejection, 'firstName': rqst.user.name_first, 'url': url}, request)
-
+   
     return msgBody
 
 # function to remove a files rejection status/reason, this is almost the exact oposite of setReject()
@@ -465,6 +466,11 @@ def process(request):
                 rqst.destFlag = True
 
         fileList = []
+
+        staff_emails = authUser.objects.filter(is_staff=True).values_list('email', flat=True)
+
+        if form_data.get('RHREmail') in staff_emails or form_data.get('RHREmail') == source_email.address or form_data.get('RHREmail') in destination_list:
+            rqst.destFlag = True
 
         # get files from request form
         file_info = json.loads(form_data.get('fileInfo'))

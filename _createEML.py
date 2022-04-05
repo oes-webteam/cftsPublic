@@ -72,6 +72,7 @@ for path in requestPaths:
     encrpytEmail = False
     msg = MIMEMultipart()
     body = ""
+
     for f in os.scandir(path):
         filePath = f.path
         if email.match(f.name)!= None:
@@ -83,18 +84,23 @@ for path in requestPaths:
                 _email.close()
 
         elif encrypt.match(f.name)!= None:
-##            msg['Subject'] = 'CFTS File Transfer'
-##            body += '''Attached files transferred across domains from CFTS.<br><p style="color: red;"><b>!!!! Found _encrypt.txt file in request. This email must be sent encrypted. !!!!</b></p>'''
+            msg['Subject'] = 'DoD SAFE Encryption Phrase'
             encrpytEmail = True
-##            
-##            with open(filePath,'r') as _email:
-##                msg['To'] = ";".join(_email.read().splitlines())
-##                _email.close()
+            
+            with open(filePath,'r') as _email:
+                to_email = _email.read()
+                msg['To'] = to_email
+                body += "Use the following passphrase to decrypt your DoD SAFE file drop: "
+                body += to_email
+                _email.close()
                 
-        elif notes.match(f.name) != None:
+    for f in os.scandir(path):
+        filePath = f.path
+                
+        if notes.match(f.name) != None:
             body += '''<p style="color: blue;"><b>!!!! Found _notes.txt file in request. Check notes before sending. !!!!</b></p>'''
             
-        elif encrpytEmail == False:
+        elif encrpytEmail == False and email.match(f.name )== None and encrypt.match(f.name) == None:
             fileMime = mimetypes.guess_type(filePath)
             file = open(filePath.encode('utf-8'),'rb')
             attachment = MIMEBase(fileMime[0],fileMime[1])
@@ -112,22 +118,21 @@ for path in requestPaths:
     if encrpytEmail == False:
         emlFile = emlBase
         msgPath = currentDir + "/" + emlFile
-        
-##    elif encrpytEmail == True:
-##        emlFile = "__ENCRYPTED" + emlBase
-##        msgPath = currentDir + "/" + emlFile
-
-        msg.add_header('X-Unsent', '1')
-        
-        with open(msgPath, 'w') as eml:
-            gen = Generator(eml)
-            gen.flatten(msg)
-
-        print("File created: " + emlFile)
         shutil.rmtree(path)
         if not os.listdir(os.path.dirname(path)):
             shutil.rmtree(os.path.dirname(path))
+        
+    elif encrpytEmail == True:
+        emlFile = "__ENCRYPTED" + emlBase
+        msgPath = currentDir + "/" + emlFile
+
+    msg.add_header('X-Unsent', '1')
+    
+    with open(msgPath, 'w') as eml:
+        gen = Generator(eml)
+        gen.flatten(msg)
+
+    print("File created: " + emlFile)
+    
 
 print("all email files created")
-##if fromZip == True:
-##    shutil.rmtree(zipExtractPath)
