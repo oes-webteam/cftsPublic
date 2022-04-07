@@ -137,7 +137,7 @@
                                             {% if file.user_oneeye == user %}
                                                 File waiting for second review
                                             {% else %}
-                                                <a href="{% url 'reviewFile' file.file_id rqst.request_id %}" class="btn btn-info">Begin Review</a>
+                                                <a href="{% url 'reviewFile' file.file_id rqst.request_id %}" class="btn btn-info" id="btn-review">Begin Review</a>
                                             {% endif %}
                                         {% elif file.user_twoeye != None %}
                                             {% if file.user_twoeye == user and file.date_twoeye == None %}
@@ -211,7 +211,7 @@
     <script>
         let user_id = "{{user_id }}"
     </script>
-    <script src="{% static 'js/transfer-request.js' %}"></script>
+    <script src="{% static 'js/transfer-request.js' defer %}"></script>
     {% include 'partials/_forceReloadForm.html' %}
     <script src="{% static 'js/notification.js' %}"></script>
 {% endblock  %}
