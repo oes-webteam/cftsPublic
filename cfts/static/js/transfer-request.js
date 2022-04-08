@@ -28,23 +28,15 @@ function enableGroupSelection(selector) {
     }));
 }
 
+//Disables begin review button from being clicked twice when loading
 const targetButton = document.getElementById("btn-review");
-const targetButton1 = document.getElementById("btn-review1");
-	
 function disableFunction() {
-	targetButton.style.cursor = "default";
-	targetButton.style.pointerEvents = "none";
-	targetButton.style.color = "grey";
-}
-function disableFunction1() {
-	targetButton1.style.cursor = "default";
-	targetButton1.style.pointerEvents = "none";
-	targetButton1.style.color = "grey";
+    targetButton.style.cursor = "default";
+    targetButton.style.pointerEvents = "none";
+    targetButton.style.color = "grey";
 }
 targetButton.addEventListener("click", disableFunction);
-targetButton1.addEventListener("click", disableFunction1);
 
-    
 jQuery(document).ready(function() {
 
     if (document.location.search) {

@@ -211,7 +211,7 @@
     <script>
         let user_id = "{{user_id }}"
     </script>
-    <script src="{% static 'js/transfer-request.js' defer %}"></script>
     {% include 'partials/_forceReloadForm.html' %}
     <script src="{% static 'js/notification.js' %}"></script>
+    <script async src="{% static 'js/transfer-request.js' %}"></script>
 {% endblock  %}
