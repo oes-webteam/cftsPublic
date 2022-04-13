@@ -78,9 +78,10 @@ def dropEmail(request, id):
 
         decryptedPhrase = privKey.decrypt(requestInfo['encryptedPhrase'], padding.OAEP(padding.MGF1(hashes.SHA256()), hashes.SHA256(), None)).decode()
 
-        eml += render_to_string('partials/Drop_partials/dropEmailTemplate.html', {'url': url, 'PIN': dropRequest.request_code, 'encrypted': requestInfo['encrypted'], 'decryptPhrase': decryptedPhrase}, request)
+        eml += render_to_string('partials/Drop_partials/dropEmailTemplate.html', {'url': url, 'deleteDate': dropRequest.delete_on,
+                                'PIN': dropRequest.request_code, 'encrypted': requestInfo['encrypted'], 'decryptPhrase': decryptedPhrase}, request)
     else:
-        eml += render_to_string('partials/Drop_partials/dropEmailTemplate.html', {'url': url, 'PIN': dropRequest.request_code, 'encrypted': requestInfo['encrypted']}, request)
+        eml += render_to_string('partials/Drop_partials/dropEmailTemplate.html', {'url': url, 'deleteDate': dropRequest.delete_on, 'PIN': dropRequest.request_code, 'encrypted': requestInfo['encrypted']}, request)
 
     dropRequest.email_sent = True
     dropRequest.save()
