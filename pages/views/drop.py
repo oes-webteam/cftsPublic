@@ -73,8 +73,6 @@ def dropEmail(request, id):
         ################################## MAKE NETWORK NOT HARDCODED ##################################
         keyPath = os.path.join(cftsSettings.KEYS_DIR, "NIPR_PRIV_KEY.pem")
         with open(keyPath, "rb") as infile:
-            print(type(cftsSettings.PRIVATE_KEY_PASSWORD))
-            print(cftsSettings.PRIVATE_KEY_PASSWORD)
             privKey = load_pem_private_key(infile.read(), password=str.encode(cftsSettings.PRIVATE_KEY_PASSWORD, 'utf-8'))
             infile.close()
 
@@ -122,7 +120,7 @@ def processDrop(request):
                 target_email=getOrCreateEmail(request, request_info['email'], "NIPR"),
                 has_encrypted=request_info['encrypted'],
                 request_info=request_info,
-                delete_on=timezone.now() + datetime.timedelta(days=3),
+                delete_on=timezone.now() + datetime.timedelta(days=5),
                 request_code=''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(8)),
             )
             dropRequest.save()
