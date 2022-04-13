@@ -95,12 +95,12 @@ def processDrop(request):
         request_files = request.FILES
         i, f = list(enumerate(request_files.getlist("dropZip")))[0]
 
-        drop_folder = cftsSettings.DROPS_DIR+"\\drop_1"
+        drop_folder = cftsSettings.DROPS_TEMPDIR+"\\drop_1"
 
         i = 2
         while True:
             if os.path.isdir(drop_folder):
-                drop_folder = cftsSettings.DROPS_DIR+"\\drop_"+str(i)
+                drop_folder = cftsSettings.DROPS_TEMPDIR+"\\drop_"+str(i)
                 i += 1
             else:
                 break
