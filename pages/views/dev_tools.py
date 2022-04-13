@@ -46,7 +46,6 @@ def deleteFiles(directory, maxAge):
                     print("File %s will be deleted in %s days." % (file.path, daysRemaining))
 
 def deleteDrops():
-    print()
     oldDrops = Drop_Request.objects.filter(delete_on__lte=timezone.now())
 
     for drop in oldDrops:

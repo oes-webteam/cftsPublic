@@ -7,7 +7,6 @@ from cryptography.hazmat.primitives.serialization import Encoding, PrivateFormat
 # generate pub/priv key pair files
 privKey1 = rsa.generate_private_key(public_exponent=65537, key_size=2048)
 passPhrase = ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(32))
-print(passPhrase)
 bytesPhrase = str.encode(passPhrase, 'utf-8')
 privKey1PEM = privKey1.private_bytes(Encoding.PEM, PrivateFormat.PKCS8, BestAvailableEncryption(bytesPhrase))
 with open("keys/_PRIV_KEY.pem", "wb") as privPEM1:
