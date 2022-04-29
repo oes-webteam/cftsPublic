@@ -19,7 +19,7 @@
                 </div>
 
                 <div class="btn-group ml-3">
-                    {% if rqst.user.account_warning_count < 3 %}<a class="btn btn-warning" href="{% url 'api-warnuser' user_id rqst.request_id %}">Issue User Warning</a>{% endif %}
+                    {% if rqst.user.account_warning_count < 3 %}<a class="btn btn-warning" id="userWarning" href="{% url 'api-warnuser' user_id rqst.request_id %}">Issue User Warning</a>{% endif %}
                     {% if not rqst.user.banned%}
                         <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rqst.request_id "True" "False" %}">Ban User, 1 day</a>
                         {% if user.is_superuser %}
@@ -201,20 +201,6 @@
                 </div>
             </form>
         {% endif %}
-
-        <div id="reject-form" title="Reject File(s)">
-            <form>
-                <div class="form-group">
-                    <label for="reason">Rejection Reason: </label>
-                    <select name="reason" class="form-control">
-                        <option value=""></option>
-                        {% for r in rejections %}
-                            <option value="{{ r.rejection_id }}" data-subject="{{ r.subject }}" data-text="{{ r.text }}">{{ r.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </form>
-        </div>
 
     </div> <!-- END container -->
 
