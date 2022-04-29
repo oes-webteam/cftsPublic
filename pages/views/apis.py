@@ -233,6 +233,7 @@ def runNumbers(request, api_call=False):
     # initialize all our metrics
     unique_users = []
     banned_users = []
+    warned_users = []
 
     '''
     ughhhh...
@@ -284,46 +285,50 @@ def runNumbers(request, api_call=False):
         pull__date_complete__date__range=(start_date, end_date))
 
     for rqst in requests_in_range:
-        # if the user doesn't have one of the buggedPKI hashes and hasn't already been accounted for then add them
-        if rqst.user.user_identifier not in skipUsers and rqst.user not in unique_users:
-            unique_users.append(rqst.user)
+        if rqst.rejected_dupe == False:
+            # if the user doesn't have one of the buggedPKI hashes and hasn't already been accounted for then add them
+            if rqst.user.user_identifier not in skipUsers and rqst.user not in unique_users:
+                unique_users.append(rqst.user)
 
-            # if they are banned count add them to the banned users list
-            if rqst.user.banned == True and rqst.user not in banned_users:
-                banned_users.append(rqst.user)
+                # if they are banned count add them to the banned users list
+                if rqst.user.banned == True and rqst.user not in banned_users:
+                    banned_users.append(rqst.user)
 
-        files_in_request = rqst.files.all()
+                if rqst.user.last_warned_on != None and rqst.user.last_warned_on.date() >= start_date and rqst.user.last_warned_on.date() <= end_date and rqst.user not in warned_users:
+                    warned_users.append(rqst.user)
 
-        for f in files_in_request:
-            file_name = f.__str__()
-            # get file extension from the file name, add it to the list of file extensions
-            ext = str(file_name.split('.')[-1]).lower()
-            file_types.append(ext)
+            files_in_request = rqst.files.all()
 
-            # add all files to file count, add combined file size to file size total
-            files_reviewed += f.file_count
-            file_size += f.file_size
+            for f in files_in_request:
+                file_name = f.__str__()
+                # get file extension from the file name, add it to the list of file extensions
+                ext = str(file_name.split('.')[-1]).lower()
+                file_types.append(ext)
 
-            # exclude the rejects from the transfers numbers, they are counted separately
-            if f.rejection_reason == None:
-                files_transfered += f.file_count
+                # add all files to file count, add combined file size to file size total
+                files_reviewed += f.file_count
+                file_size += f.file_size
 
-                # if the file is from a CENTCOM org count it
-                if f.is_centcom == True:
-                    centcom_files += f.file_count
-            else:
-                files_rejected += f.file_count
+                # exclude the rejects from the transfers numbers, they are counted separately
+                if f.rejection_reason == None:
+                    files_transfered += f.file_count
 
-            # count how many files were in zips
-            if ext == "zip":
-                file_type_counts['zipContents'] += f.file_count
+                    # if the file is from a CENTCOM org count it
+                    if f.is_centcom == True:
+                        centcom_files += f.file_count
+                else:
+                    files_rejected += f.file_count
 
-            # file count by organization
-            org = str(f.org)
-            if org != "":
-                if org == "CENTCOM HQ":
-                    org = "HQ"
-                org_counts[org] += f.file_count
+                # count how many files were in zips
+                if ext == "zip":
+                    file_type_counts['zipContents'] += f.file_count
+
+                # file count by organization
+                org = str(f.org)
+                if org != "":
+                    if org == "CENTCOM HQ":
+                        org = "HQ"
+                    org_counts[org] += f.file_count
 
     # add up all file type counts
     pdfCount = file_types.count("pdf")
@@ -360,8 +365,9 @@ def runNumbers(request, api_call=False):
 
     unique_users_count = len(unique_users)
     banned_users_count = len(banned_users)
+    warned_users_count = len(warned_users)
     return JsonResponse({'org_counts': org_counts, 'files_reviewed': files_reviewed, 'files_transfered': files_transfered, 'files_rejected': files_rejected, 'centcom_files': centcom_files,
-                         'file_types': file_type_counts, 'file_sizes': str(round(file_size, 2))+" "+sizeSuffix[i], 'user_count': unique_users_count, 'banned_count': banned_users_count})
+                         'file_types': file_type_counts, 'file_sizes': str(round(file_size, 2))+" "+sizeSuffix[i], 'user_count': unique_users_count, 'banned_count': banned_users_count, 'warned_count': warned_users_count})
 
 
 # function to create Request and File objects from homepage transfer request form
