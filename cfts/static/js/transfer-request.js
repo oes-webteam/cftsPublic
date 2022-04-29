@@ -51,10 +51,19 @@ jQuery(document).ready(function() {
             });
 
             history.pushState(null, "", location.href.split("?")[0])
-        } else if (paramObj.flash == "false") {
+        } 
+        
+        if (paramObj.warning) {
+            $('#userWarning').attr('href', $('#userWarning').attr('href')+"/true")
+            history.pushState(null, "", location.href.split("?")[0])
+        } 
+
+        if (paramObj.flash == "false") {
             $('.btn-back').attr('href', '/queue')
             history.pushState(null, "", location.href.split("?")[0])
-        } else if (paramObj.file) {
+        } 
+        
+        if (paramObj.file) {
             let row = document.getElementById("row_" + paramObj.file)
 
             row.scrollIntoView({

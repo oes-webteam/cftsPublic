@@ -50,10 +50,9 @@ logger = logging.getLogger('django')
 def queue(request):
     # instansiate the list that will contain all of the dictionaries of Request objects per network
     xfer_queues = []
-    ds_networks = Network.objects.all()
 
     # used to determine which network tab on the queue shuold be selected by default
-    activeSelected = False
+    activeTab = True
 
     # if else statement used to activate the easter egg on the queue page when the queue is completely empty
     # /queue/cookie will take the user to a cookie card matching game
@@ -102,6 +101,17 @@ def queue(request):
             "Card games are fun too."
         ])
 
+    # get all requests that are not part of a completed pull, do all filtering based on this cached query set
+    ds_requests = Request.objects.filter(is_submitted=True, pull__date_complete__isnull=True).prefetch_related('files', 'target_email').select_related('user').annotate(
+            files_in_request=Count('files__file_id'),
+            needs_review=Count('files', filter=Q(files__user_oneeye=None) | Q(files__user_twoeye=None) & ~Q(files__user_oneeye=request.user)) -
+            Count('files', filter=~Q(files__rejection_reason=None) & ~Q(files__user_oneeye=request.user) & ~Q(files__user_twoeye=request.user)),
+            user_reviewing=Count('files', filter=Q(files__user_oneeye=request.user) & Q(files__date_oneeye=None) & Q(files__rejection_reason=None)) +
+            Count('files', filter=Q(files__user_twoeye=request.user) & Q(files__date_twoeye=None) & Q(files__rejection_reason=None))).order_by('date_created')
+    
+    pending_nets = ds_requests.values_list('network', flat=True)
+    ds_networks = Network.objects.filter(network_id__in=pending_nets)
+        
     # for every network
     for net in ds_networks:
         # get information about the last pull that was done on this network
@@ -111,123 +121,76 @@ def queue(request):
             'user_pulled__username'
         ).filter(network__name=net.name).order_by('-date_pulled')[:1]
 
-        # get all the xfer requests (pending and pulled) submitted for this network... in the ugliest way possible
-
-        # get all pending centcom Request objects for this network
-        ds_requests_centcom = Request.objects.filter(
-            network__name=net.name,
-            is_submitted=True,
-            pull__isnull=True,
-            ready_to_pull=False,
-            is_centcom=True,
-            # annotate count of files that need reviewing and count of files the current user is reviewing to each request
-        ).annotate(
-            needs_review=Count('files', filter=Q(files__user_oneeye=None) | Q(files__user_twoeye=None) & ~Q(files__user_oneeye=request.user)) -
-            Count('files', filter=~Q(files__rejection_reason=None) & ~Q(files__user_oneeye=request.user) & ~Q(files__user_twoeye=request.user)),
-            user_reviewing=Count('files', filter=Q(files__user_oneeye=request.user) & Q(files__date_oneeye=None) & Q(files__rejection_reason=None)) +
-            Count('files', filter=Q(files__user_twoeye=request.user) & Q(files__date_twoeye=None) & Q(files__rejection_reason=None))).order_by('date_created')
-
-        # get all pending other Request objects for this network
-        ds_requests_other = Request.objects.filter(
-            network__name=net.name,
-            is_submitted=True,
-            pull__isnull=True,
-            ready_to_pull=False,
-            is_centcom=False,
-        ).annotate(
-            needs_review=Count('files', filter=Q(files__user_oneeye=None) | Q(files__user_twoeye=None) & ~Q(files__user_oneeye=request.user)) -
-            Count('files', filter=~Q(files__rejection_reason=None) & ~Q(files__user_oneeye=request.user) & ~Q(files__user_twoeye=request.user)),
-            user_reviewing=Count('files', filter=Q(files__user_oneeye=request.user) & Q(files__date_oneeye=None) & Q(files__rejection_reason=None)) +
-            Count('files', filter=Q(files__user_twoeye=request.user) & Q(files__date_twoeye=None) & Q(files__rejection_reason=None))).order_by('date_created')
-
-        # get all pullable Request objects for this network
-        pullable_requests = Request.objects.filter(
-            network__name=net.name,
-            is_submitted=True,
-            pull__isnull=True,
-            ready_to_pull=True,
-            pull__date_complete__isnull=True,
-        ).order_by('user__str__')
-
-        # get all pulledRequest objects for this network
-        pulled_requests = Request.objects.filter(
-            network__name=net.name,
-            is_submitted=True,
-            pull__isnull=False,
-            pull__date_complete__isnull=True,
-        ).order_by('pull', 'user__str__')
-
-        # get File object counts based on which group a Request object falls in
-        file_count_centcom = ds_requests_centcom.annotate(
-            files_in_request=Count('files__file_id')).aggregate(count=Sum('files_in_request'))['count']
-
-        if file_count_centcom == None:
-            file_count_centcom = 0
-
-        file_count_other = ds_requests_other.annotate(
-            files_in_request=Count('files__file_id')).aggregate(count=Sum('files_in_request'))['count']
-
-        if file_count_other == None:
-            file_count_other = 0
-
-        file_count_pullable = pullable_requests.annotate(
-            files_in_request=Count('files__file_id')).aggregate(count=Sum('files_in_request'))['count']
-
-        if file_count_pullable == None:
-            file_count_pullable = 0
-
-        file_count_pulled = pulled_requests.annotate(
-            files_in_request=Count('files__file_id')).aggregate(count=Sum('files_in_request'))['count']
-
-        if file_count_pulled == None:
-            file_count_pulled = 0
-
-        # count the number of hidden duplicate requests in the "pullable" and "pulled" groups
-        hidden_dupes_pullable = pullable_requests.filter(all_rejected=True, rejected_dupe=True).count()
-
-        hidden_dupes_pulled = pulled_requests.filter(all_rejected=True, rejected_dupe=True).count()
-
-        # smoosh all the info together into one big, beautiful data object ...
         queue = {
             'name': net.name,
             'order_by': net.sort_order,
 
             # add up all the counts, this is used to know if we need to display a network or not
-            'count': ds_requests_centcom.count() + ds_requests_other.count() + pullable_requests.count() + pulled_requests.count(),
-            'file_count': file_count_centcom + file_count_other + file_count_pullable,
-            'activeNet': False,
-            'pending': ds_requests_centcom.count() + ds_requests_other.count() + pullable_requests.count(),
-            'centcom': ds_requests_centcom.count(),
-            'other': ds_requests_other.count(),
-            'pullable': pullable_requests.count(),
-            'hidden_dupes_pullable': hidden_dupes_pullable,
-            'hidden_dupes_pulled': hidden_dupes_pulled,
-            'pulled': pulled_requests.count(),
+            'count': 0,
+            'file_count': 0,
+            'activeNet': activeTab,
+            'pending': 0,
+            'centcom': 0,
+            'other': 0,
+            'pullable': 0,
+            'hidden_dupes_pullable': 0,
+            'hidden_dupes_pulled': 0,
+            'pulled': 0,
 
             # the actuall set of Request objects
-            'q': ds_requests_centcom,
-            'o': ds_requests_other,
-            'a': pullable_requests.filter(rejected_dupe=False),
-            'p': pulled_requests.filter(rejected_dupe=False),
+            'q': [],
+            'o': [],
+            'a': [],
+            'p': [],
             'last_pull': last_pull,
-
-            # don't think this is used any more, was used in the old list style queue design, remove and test later
-            'orgs': ds_requests_centcom.filter(pull__date_pulled__isnull=True).values_list('org', flat=True)
         }
 
-        # set the first network with files as the active network
-        if activeSelected == False and queue['count'] > 0:
-            queue['activeNet'] = True
-            activeSelected = True
+        activeTab = False
 
         # ... and add it to the list
         xfer_queues.append(queue)
+
+    for rqst in ds_requests:
+        for queue in xfer_queues:
+            if queue['name'] == rqst.network.name:
+                match_queue = queue
+                break
+        
+        match_queue['count'] += 1
+
+        if rqst.pull != None:
+            match_queue['pulled'] += 1
+
+            if rqst.rejected_dupe == True:
+                    match_queue['hidden_dupes_pulled'] += 1
+            elif rqst.rejected_dupe == False:
+                match_queue['p'].append(rqst)
+
+        else:
+            match_queue['file_count'] += rqst.files_in_request
+            match_queue['pending'] += 1
+
+            if rqst.ready_to_pull == True:
+                match_queue['pullable'] += 1
+
+                if rqst.rejected_dupe == True:
+                    match_queue['hidden_dupes_pullable'] += 1
+                elif rqst.rejected_dupe == False:
+                    match_queue['a'].append(rqst)
+
+            elif rqst.is_centcom == True:
+                match_queue['centcom'] += 1
+                match_queue['q'].append(rqst)
+
+            elif rqst.is_centcom == False:
+                match_queue['other'] += 1
+                match_queue['o'].append(rqst)
 
     # sort the list of network queues into network order
     xfer_queues = sorted(xfer_queues, key=lambda k: k['order_by'], reverse=False)
 
     # create the request context
-    rc = {'queues': xfer_queues, 'empty': empty, 'easterEgg': activeSelected}
+    rc = {'queues': xfer_queues, 'empty': empty, 'easterEgg': not activeTab}
 
     # roll that beautiful bean footage
     # ^-- I've always wondered what he meant by that, never did ask him
@@ -386,17 +349,23 @@ def banEml(request, request_id, ignore_strikes, perma_ban):
 
 @login_required
 @user_passes_test(staffCheck, login_url='queue', redirect_field_name=None)
-def warnUser(request, userid, requestid):
+def warnUser(request, userid, requestid, confirmWarn=False):
     userToWarn = User.objects.filter(user_id=userid)
-    userToWarn.update(account_warning_count=userToWarn[0].account_warning_count+1, last_warned_on=timezone.now())
 
-    messages.success(request, "User warning issued")
+    if userToWarn[0].last_warned_on != None and userToWarn[0].last_warned_on.date() == timezone.now().date() and confirmWarn == False:
+        messages.warning(request, "User already warned today. Issue second warning? Click the warning button again to confirm.")
 
-    if cftsSettings.DEBUG == True:
-        return redirect('/transfer-request/' + str(requestid))
+        return redirect('/transfer-request/' + str(requestid) + '?warning=true')
     else:
-        eml = warningEml(request, userToWarn[0].account_warning_count, userToWarn[0].source_email)
-        return redirect('/transfer-request/' + str(requestid) + "?eml=" + eml)
+        userToWarn.update(account_warning_count=userToWarn[0].account_warning_count+1, last_warned_on=timezone.now())
+
+        messages.success(request, "User warning issued")
+
+        if cftsSettings.DEBUG == True:
+            return redirect('/transfer-request/' + str(requestid))
+        else:
+            eml = warningEml(request, userToWarn[0].account_warning_count, userToWarn[0].source_email)
+            return redirect('/transfer-request/' + str(requestid) + "?eml=" + eml)
 
 # function to generate a warning email
 @login_required
