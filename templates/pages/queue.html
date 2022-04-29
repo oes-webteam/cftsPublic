@@ -66,10 +66,7 @@
                                     </div>
 
                                     <div class="pull-button-group">
-                                        <!-- <a href="#" class="btn btn-warning request-encrypt">Encrypt Files</a>
-                                <a href="#" class="btn btn-danger request-reject">Reject Files</a> -->
                                         <button class="btn queue-btn btn-primary pull-button{% if network.pullable == 0 %} disabled{% endif %}" id="pull{{network.name}}">Create {{ network.name }} Pull</button>
-                                        <!-- <button class="btn btn-warning pull-button centcom{% if network.centcom.count == 0 %} disabled{% endif %}" id="pull{{network.name}}">Pull only Centcom</button>  -->
 
                                         {% if network.last_pull.count > 0 %}
                                             {% for lp in network.last_pull %}
@@ -86,10 +83,11 @@
                                         <br>
                                         <h4 class="org-header">CENTCOM Requests ({{network.centcom}}):</h4>
                                         <div class="row">
-                                            {% for request in network.q %}
-                                                {% include 'partials/Queue_partials/requestTemplate.html' with request=request %}
-                                                {% comment %} {% if forloop.last %}</div>{% endif %} {% endcomment %}
-                                            {% endfor %}
+                                            {% with q=network.q %}
+                                                {% for request in q %}
+                                                    {% include 'partials/Queue_partials/requestTemplate.html' with request=request %}
+                                                {% endfor %}
+                                            {% endwith %}
                                         </div>
                                     {% endif %}
 
@@ -97,10 +95,11 @@
                                         <br>
                                         <h4 class="org-header">Other Requests ({{network.other}}):</h4>
                                         <div class="row">
-                                            {% for request in network.o %}
-                                                {% include 'partials/Queue_partials/requestTemplate.html' with request=request %}
-                                                {% comment %} {% if forloop.last %}</div>{% endif %} {% endcomment %}
-                                            {% endfor %}
+                                            {% with o=network.o %}
+                                                {% for request in o %}
+                                                    {% include 'partials/Queue_partials/requestTemplate.html' with request=request %}
+                                                {% endfor %}
+                                            {% endwith %}
                                         </div>
                                     {% endif %}
 
@@ -113,10 +112,11 @@
                                         {% endif %}
 
                                         <div class="row">
-                                            {% for request in network.a %}
-                                                {% include 'partials/Queue_partials/requestTemplate.html' with request=request %}
-                                                {% comment %} {% if forloop.last %}</div>{% endif %} {% endcomment %}
-                                            {% endfor %}
+                                            {% with a=network.a %}
+                                                {% for request in a %}
+                                                    {% include 'partials/Queue_partials/requestTemplate.html' with request=request %}
+                                                {% endfor %}
+                                            {% endwith %}
                                         </div>
                                     {% endif %}
 
@@ -129,10 +129,11 @@
                                         {% endif %}
 
                                         <div class="row">
-                                            {% for request in network.p %}
-                                                {% include 'partials/Queue_partials/requestTemplate.html' with request=request %}
-                                                {% comment %} {% if forloop.last %}</div>{% endif %} {% endcomment %}
-                                            {% endfor %}
+                                            {% with p=network.p %}
+                                                {% for request in p %}
+                                                    {% include 'partials/Queue_partials/requestTemplate.html' with request=request %}
+                                                {% endfor %}
+                                            {% endwith %}
                                         </div>
                                     {% endif %}
 

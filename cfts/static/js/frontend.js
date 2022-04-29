@@ -44,7 +44,8 @@ const addFiles = (e) => {
         if (validation.msg.length) {
             notifyFileWarning(validation.msg);
         }
-        else if (!validation.error) {
+        
+        if (!validation.error) {
             // add file to the queue
             fileObject = {
                 'object': thisFile,

@@ -181,6 +181,14 @@ LOGGING = {
             'backupCount': 5,
             'formatter': 'timestamp'
         },
+        'file': {
+            'level': 'DEBUG',
+            'filters': ['require_debug_true'],
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/sql.log'),
+            'maxBytes': 1024*1024*1,
+            'backupCount': 5,
+        },
         'console': {
             'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
@@ -193,6 +201,11 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
+        # 'django.db.backends': {
+        #     'handlers': ['file'],
+        #     'level': 'DEBUG',
+        #     'propagate': True,
+        # },
     },
 }
 
