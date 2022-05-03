@@ -28,15 +28,6 @@ function enableGroupSelection(selector) {
     }));
 }
 
-//Disables begin review button from being clicked twice when loading
-const targetButton = document.getElementById("btn-review");
-function disableFunction() {
-    targetButton.style.cursor = "default";
-    targetButton.style.pointerEvents = "none";
-    targetButton.style.color = "grey";
-}
-targetButton.addEventListener("click", disableFunction);
-
 jQuery(document).ready(function() {
 
     if (document.location.search) {

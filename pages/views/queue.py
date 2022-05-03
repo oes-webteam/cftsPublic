@@ -103,15 +103,15 @@ def queue(request):
 
     # get all requests that are not part of a completed pull, do all filtering based on this cached query set
     ds_requests = Request.objects.filter(is_submitted=True, pull__date_complete__isnull=True).prefetch_related('files', 'target_email').select_related('user').annotate(
-            files_in_request=Count('files__file_id'),
-            needs_review=Count('files', filter=Q(files__user_oneeye=None) | Q(files__user_twoeye=None) & ~Q(files__user_oneeye=request.user)) -
-            Count('files', filter=~Q(files__rejection_reason=None) & ~Q(files__user_oneeye=request.user) & ~Q(files__user_twoeye=request.user)),
-            user_reviewing=Count('files', filter=Q(files__user_oneeye=request.user) & Q(files__date_oneeye=None) & Q(files__rejection_reason=None)) +
-            Count('files', filter=Q(files__user_twoeye=request.user) & Q(files__date_twoeye=None) & Q(files__rejection_reason=None))).order_by('date_created')
-    
+        files_in_request=Count('files__file_id'),
+        needs_review=Count('files', filter=Q(files__user_oneeye=None) | Q(files__user_twoeye=None) & ~Q(files__user_oneeye=request.user)) -
+        Count('files', filter=~Q(files__rejection_reason=None) & ~Q(files__user_oneeye=request.user) & ~Q(files__user_twoeye=request.user)),
+        user_reviewing=Count('files', filter=Q(files__user_oneeye=request.user) & Q(files__date_oneeye=None) & Q(files__rejection_reason=None)) +
+        Count('files', filter=Q(files__user_twoeye=request.user) & Q(files__date_twoeye=None) & Q(files__rejection_reason=None))).order_by('date_created')
+
     pending_nets = ds_requests.values_list('network', flat=True)
     ds_networks = Network.objects.filter(network_id__in=pending_nets)
-        
+
     # for every network
     for net in ds_networks:
         # get information about the last pull that was done on this network
@@ -155,14 +155,14 @@ def queue(request):
             if queue['name'] == rqst.network.name:
                 match_queue = queue
                 break
-        
+
         match_queue['count'] += 1
 
         if rqst.pull != None:
             match_queue['pulled'] += 1
 
             if rqst.rejected_dupe == True:
-                    match_queue['hidden_dupes_pulled'] += 1
+                match_queue['hidden_dupes_pulled'] += 1
             elif rqst.rejected_dupe == False:
                 match_queue['p'].append(rqst)
 
@@ -517,13 +517,13 @@ def getFile(request, fileID, fileName):
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
-def updateFileReview(request, fileID, rqstID, quit="None", skipComplete=False):
+def updateFileReview(request, fileID, rqstID, completeReview="False", quit="None", skipComplete=False):
     rqst = Request.objects.get(request_id=rqstID)
     file = File.objects.get(file_id=fileID)
     open_file = False
     save = True
 
-    if file.user_oneeye == None:
+    if file.user_oneeye == None and quit != "True":
         file.user_oneeye = request.user
         open_file = True
     elif file.user_oneeye == request.user and file.date_oneeye == None:
@@ -536,15 +536,15 @@ def updateFileReview(request, fileID, rqstID, quit="None", skipComplete=False):
             else:
                 file.user_oneeye = None
                 file.date_oneeye = None
-        elif skipComplete == False:
+        elif skipComplete == False and completeReview == "True":
             file.date_oneeye = timezone.now()
-    elif file.user_twoeye == None and file.user_oneeye != request.user:
+    elif file.user_twoeye == None and file.user_oneeye != request.user and quit != "True":
         file.user_twoeye = request.user
         open_file = True
     elif file.user_twoeye == request.user and file.date_twoeye == None:
         if quit == "True":
             file.user_twoeye = None
-        elif skipComplete == False:
+        elif skipComplete == False and completeReview == "True":
             file.date_twoeye = timezone.now()
     else:
         save = False
