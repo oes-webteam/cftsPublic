@@ -103,15 +103,15 @@ def queue(request):
 
     # get all requests that are not part of a completed pull, do all filtering based on this cached query set
     ds_requests = Request.objects.filter(is_submitted=True, pull__date_complete__isnull=True).prefetch_related('files', 'target_email').select_related('user').annotate(
-            files_in_request=Count('files__file_id'),
-            needs_review=Count('files', filter=Q(files__user_oneeye=None) | Q(files__user_twoeye=None) & ~Q(files__user_oneeye=request.user)) -
-            Count('files', filter=~Q(files__rejection_reason=None) & ~Q(files__user_oneeye=request.user) & ~Q(files__user_twoeye=request.user)),
-            user_reviewing=Count('files', filter=Q(files__user_oneeye=request.user) & Q(files__date_oneeye=None) & Q(files__rejection_reason=None)) +
-            Count('files', filter=Q(files__user_twoeye=request.user) & Q(files__date_twoeye=None) & Q(files__rejection_reason=None))).order_by('date_created')
-    
+        files_in_request=Count('files__file_id'),
+        needs_review=Count('files', filter=Q(files__user_oneeye=None) | Q(files__user_twoeye=None) & ~Q(files__user_oneeye=request.user)) -
+        Count('files', filter=~Q(files__rejection_reason=None) & ~Q(files__user_oneeye=request.user) & ~Q(files__user_twoeye=request.user)),
+        user_reviewing=Count('files', filter=Q(files__user_oneeye=request.user) & Q(files__date_oneeye=None) & Q(files__rejection_reason=None)) +
+        Count('files', filter=Q(files__user_twoeye=request.user) & Q(files__date_twoeye=None) & Q(files__rejection_reason=None))).order_by('date_created')
+
     pending_nets = ds_requests.values_list('network', flat=True)
     ds_networks = Network.objects.filter(network_id__in=pending_nets)
-        
+
     # for every network
     for net in ds_networks:
         # get information about the last pull that was done on this network
@@ -155,14 +155,14 @@ def queue(request):
             if queue['name'] == rqst.network.name:
                 match_queue = queue
                 break
-        
+
         match_queue['count'] += 1
 
         if rqst.pull != None:
             match_queue['pulled'] += 1
 
             if rqst.rejected_dupe == True:
-                    match_queue['hidden_dupes_pulled'] += 1
+                match_queue['hidden_dupes_pulled'] += 1
             elif rqst.rejected_dupe == False:
                 match_queue['p'].append(rqst)
 
@@ -264,16 +264,6 @@ def requestNotes(request, requestid):
         print("Request not found in any pull.")
 
     return JsonResponse({'response': "Notes saved"})
-
-
-# function to remeve the is_centcom status from a Request object
-@login_required
-@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
-def removeCentcom(request, id):
-    Request.objects.filter(request_id=id).update(is_centcom=False)
-
-    messages.success(request, "Request moved to Other group")
-    return redirect('transfer-request', id)
 
 
 # function to ban a user for a length of time, only available to superusers, staff uses can only request a user be banned
