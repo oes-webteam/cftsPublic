@@ -43,8 +43,7 @@ urlpatterns = [
     path('transfer-request/<uuid:id>', views.transferRequest, name='transfer-request'),
     path('create-zip/<str:network_name>/<str:rejectPull>', views.createZip, name='create-zip'),
     path('getFile/uploads/<str:fileID>/<str:fileName>', views.getFile, name='getFile'),
-    path('updateFileReview/<uuid:fileID>/<uuid:rqstID>/', views.updateFileReview, name='reviewFile'),
-    path('updateFileReview/<uuid:fileID>/<uuid:rqstID>/<str:quit>', views.updateFileReview, name='reviewFile'),
+    path('updateFileReview/<uuid:fileID>/<uuid:rqstID>/<str:quit>/<str:completeReview>', views.updateFileReview, name='reviewFile'),
     path('removeFileReviewer/<int:stage>', views.removeFileReviewer, name='removeReview'),
 
     # scan
