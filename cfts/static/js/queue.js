@@ -23,8 +23,8 @@ jQuery(document).ready(function() {
         try {
             let newActiveTab = document.querySelector('a.nav-link[href="#tab' + network + '"]')
 
-            newActiveTab.classList.add("active")
             activeTab.classList.remove("active")
+            newActiveTab.classList.add("active")
 
             activeQueue.classList.remove("active")
 
