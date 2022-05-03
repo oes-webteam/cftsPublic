@@ -325,21 +325,6 @@ def banUser(request, userid, requestid, ignore_strikes=False, perma_ban=False):
         eml = banEml(request, requestid, ignore_strikes, perma_ban)
         return redirect('/transfer-request/' + str(requestid) + "?eml=" + eml)
 
-@login_required
-@user_passes_test(staffCheck, login_url='queue', redirect_field_name=None)
-def warnUser(request, userid, requestid):
-    userToWarn = User.objects.filter(user_id=userid)
-    userToWarn.update(account_warning_count=userToWarn[0].account_warning_count+1, last_warned_on=timezone.now())
-
-    messages.success(request, "User warning issued")
-
-    if cftsSettings.DEBUG == True:
-        return redirect('/transfer-request/' + str(requestid))
-    else:
-        eml = warningEml(request, userToWarn[0].account_warning_count, userToWarn[0].source_email)
-        return redirect('/transfer-request/' + str(requestid) + "?eml=" + eml)
-
-
 # function to generate a ban email
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
