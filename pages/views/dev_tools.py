@@ -49,7 +49,9 @@ def deleteDrops():
     oldDrops = Drop_Request.objects.filter(delete_on__lte=timezone.now())
 
     for drop in oldDrops:
+        print("Deleting drop_request %s" % (drop.request_id))
         for file in drop.files.all():
+            print("Deleting drop_file %s" % (file.file_id))
             file.delete()
         drop.delete()
 

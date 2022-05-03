@@ -26,6 +26,7 @@ from cryptography.hazmat.primitives.serialization import load_pem_public_key, lo
 from django.contrib.auth.decorators import login_required, user_passes_test
 
 from pages.views.auth import staffCheck, getOrCreateEmail
+from pages.views.dev_tools import fileCleanup
 
 # responses
 from django.shortcuts import redirect, render
@@ -150,6 +151,7 @@ def processDrop(request):
 
         shutil.rmtree(drop_folder)
         messages.success(request, "Requests Upload Successful")
+        fileCleanup(request)
 
     except Exception as e:
         logger.error(e)
