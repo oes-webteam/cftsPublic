@@ -266,16 +266,6 @@ def requestNotes(request, requestid):
     return JsonResponse({'response': "Notes saved"})
 
 
-# function to remeve the is_centcom status from a Request object
-@login_required
-@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
-def removeCentcom(request, id):
-    Request.objects.filter(request_id=id).update(is_centcom=False)
-
-    messages.success(request, "Request moved to Other group")
-    return redirect('transfer-request', id)
-
-
 # function to ban a user for a length of time, only available to superusers, staff uses can only request a user be banned
 @login_required
 @user_passes_test(staffCheck, login_url='queue', redirect_field_name=None)
