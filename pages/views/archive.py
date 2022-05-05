@@ -13,6 +13,9 @@ from django.shortcuts import render
 from pages.models import *
 from pages.views.auth import superUserCheck, staffCheck
 
+import logging
+
+logger = logging.getLogger('django')
 # ====================================================================
 
 # function to return a pagenated list of all pulled Requests
@@ -20,6 +23,10 @@ from pages.views.auth import superUserCheck, staffCheck
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def archive(request):
     networks = Network.objects.all()
+
+    if request.GET.get('page'):
+        rc = {'requests': pageObj, 'networks': networks}
+        return render(request, 'pages/archive.html', {'rc': rc})
 
     # get all Request objects that have been pulled
     requests = Request.objects.filter(pull__isnull=False)
@@ -65,7 +72,7 @@ def filterArchive(request):
         except IndexError:
             pullNum = ""
 
-    #get all pulled Request objects
+    # get all pulled Request objects
     requests = Request.objects.filter(pull__isnull=False)
 
     # do a lot of conditional filtering, this is really hacky and awful, not to mention very inefficient...
@@ -98,6 +105,9 @@ def filterArchive(request):
     if filters['date'][0] != "":
         requests = requests.filter(date_created__date=filters['date'][0])
 
-    rc = {'requests': requests.distinct(), 'networks': networks}
+    requestPage = paginator.Paginator(requests.distinct(), 50)
+    pageObj = requestPage.get_page(filters['page'][0])
+
+    rc = {'requests': pageObj, 'networks': networks}
 
     return render(request, 'partials/Archive_partials/archiveResults.html', {'rc': rc})
