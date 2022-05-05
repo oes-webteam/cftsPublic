@@ -20,7 +20,7 @@ from django.http import JsonResponse
 
 # pdf parsing
 from io import StringIO
-import PyPDF2
+from pdfminer.high_level import extract_text
 
 # db models
 from pages.models import *
@@ -176,15 +176,17 @@ def runScan(scan_folder):
 
                 elif(ext == '.pdf'):
                     textFile = open(temp+".txt", "w", encoding="utf-8")
-                    with open(filename, 'rb') as pdf:
-                        pdfReader = PyPDF2.PdfFileReader(pdf)
-                        pages = pdfReader.pages
+                    # with open(filename, 'rb') as pdf:
+                    #     pdfReader = PyPDF2.PdfFileReader(pdf)
+                    #     pages = pdfReader.pages
 
-                        for page in pages:
-                            pageText = page.extractText()
-                            textFile.write("".join(pageText.split()))
+                    #     for page in pages:
+                    #         pageText = page.extractText()
+                    #         textFile.write("".join(pageText.split()))
 
-                        pdf.close()
+                    #     pdf.close()
+
+                    textFile.write(extract_text(filename))
 
                     textFile.close()
                     text_path = os.path.join(temp+".txt")

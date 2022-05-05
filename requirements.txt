@@ -39,7 +39,7 @@ pylint-django
 pylint-plugin-utils
 pyodbc
 pyparsing
-PyPDF2
+pdfminer.six
 pytz
 PyYAML
 six
