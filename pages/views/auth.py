@@ -154,7 +154,6 @@ def getOrCreateUser(request, certInfo):
         # the user is external, so we can't user a certificate hash to retrieve a User object, external users MUST BE LOGGED IN
         else:
             # if they are logged in then get the User object that has a one-to-one relationship with the currently logged in Django user account
-            logger.error("External user")
             if request.user.is_authenticated:
                 user = User.objects.get(auth_user=request.user)
 
@@ -195,14 +194,11 @@ def userLogin(request):
     if request.method == "POST":
         # instantiate a login form with data from the POST request
         form = userLogInForm(data=request.POST)
-
         # proceed if form passes initial validity check
         if form.is_valid():
-            username = request.POST['username']
-            password = request.POST['password']
-
+            clean_data = form.clean()
             # attempt to authenticate a user with matching username and password, password is automaticlly hashed by the authenticate() function
-            user = authenticate(request, username=username, password=password)
+            user = authenticate(request, username=clean_data['username'], password=clean_data['password'])
 
             # authenticate() will return a single User object where User.username and User.password match the data from the POST request
             if user is not None:
@@ -223,6 +219,7 @@ def userLogin(request):
 
         # validity check failed, serve the instantiated form back to the user, it will contain helpful error messages for them
         else:
+            print(form.errors)
             return render(request, template_name="authForms/userLogin.html", context={'resources': resources, "login_form": form, })
 
     # all GET requests should be served a blank form
