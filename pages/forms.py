@@ -1,22 +1,46 @@
-from dataclasses import Field
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm
 from django.contrib.auth.models import User as authUser
 from django.forms.widgets import PasswordInput
+from django.utils.translation import gettext_lazy as _
 from pages.models import User, Network, Email
 from django.forms import ModelForm
 from crispy_forms.helper import FormHelper
+from django.contrib.auth import authenticate
 from crispy_forms.layout import Div, Submit, HTML
 from cfts.settings import NETWORK, DEBUG
 
 
 class userLogInForm(AuthenticationForm):
+    error_messages = {
+        "invalid_login": _(
+            "Please enter a correct %(username)s and password. Note that both "
+            "fields are case-sensitive."
+        ),
+        "inactive": _("Your account is inactive."),
+    }
+
     def __init__(self, *args, **kwargs):
         super(userLogInForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper(self)
         self.helper.layout.append(Submit('login', 'Login'))
 
+    def clean(self):
+        username = self.cleaned_data.get("username")
+        password = self.cleaned_data.get("password")
 
+        if username is not None and password:
+            self.user_cache = authenticate(
+                self.request, username=username, password=password
+            )
+            if self.user_cache is None:
+                try:
+                    if self.confirm_login_allowed(authUser.objects.get(username=username)) == None:
+                        raise self.get_invalid_login_error()
+                except authUser.DoesNotExist:
+                    raise self.get_invalid_login_error()
+
+        return self.cleaned_data
 class userPasswordChangeForm(PasswordChangeForm):
     def __init__(self, *args, **kwargs):
         super(userPasswordChangeForm, self).__init__(*args, **kwargs)

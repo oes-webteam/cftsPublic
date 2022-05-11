@@ -67,7 +67,8 @@ jQuery(document).ready(function() {
             'files': "",
             'email': "",
             'pull': "",
-            'org': ""
+            'org': "",
+            'page': ""
         }
         $('.filter').each(function() {
             $thisFilter = $(this);
@@ -126,10 +127,8 @@ jQuery(document).ready(function() {
     } // end applyFilters
 
 
-    function getRequests() {
+    function getRequests(page) {
         data = applyFilters()
-
-        console.log(data)
 
         if ([...new Set(Object.values(data))].length == 1) {
             window.location.href = "/archive"
@@ -141,6 +140,10 @@ jQuery(document).ready(function() {
                 },
             });
 
+            if (page != null){
+                url = data.page = String(page)
+            } 
+            
             $.ajax({
                 type: "POST",
                 url: "/filterArchive",
@@ -154,12 +157,19 @@ jQuery(document).ready(function() {
 
     $("#submit-button").click(function(e) {
         e.preventDefault();
-        getRequests();
+        getRequests(null);
     });
+
+    $("#templateTable").on('click', '.page-btn', function(e) {
+        e.preventDefault();
+        getRequests($(e.currentTarget).attr('page'));
+    });
+
+
 
     $(".filter").keypress(function(e) {
         if (e.which == 13) {
-            getRequests();
+            getRequests(null);
 
         }
     });

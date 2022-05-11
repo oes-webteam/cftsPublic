@@ -43,8 +43,7 @@ urlpatterns = [
     path('transfer-request/<uuid:id>', views.transferRequest, name='transfer-request'),
     path('create-zip/<str:network_name>/<str:rejectPull>', views.createZip, name='create-zip'),
     path('getFile/uploads/<str:fileID>/<str:fileName>', views.getFile, name='getFile'),
-    path('updateFileReview/<uuid:fileID>/<uuid:rqstID>/', views.updateFileReview, name='reviewFile'),
-    path('updateFileReview/<uuid:fileID>/<uuid:rqstID>/<str:quit>', views.updateFileReview, name='reviewFile'),
+    path('updateFileReview/<uuid:fileID>/<uuid:rqstID>/<str:quit>/<str:completeReview>', views.updateFileReview, name='reviewFile'),
     path('removeFileReviewer/<int:stage>', views.removeFileReviewer, name='removeReview'),
 
     # scan
@@ -80,7 +79,6 @@ urlpatterns = [
     path('api-processrequest', views.process, name='api-processrequest'),
     path('api-setconsentcookie', views.setConsentCookie, name='api-setconsentcookie'),
     #path('api-getclassifications', views.getClassifications, name='api-getclassifications'),
-    path('api-removeCentcom/<uuid:id>', views.removeCentcom, name='api-removeCentcom'),
     path('api-requestnotes/<uuid:requestid>', views.requestNotes, name='api-requestnotes'),
     # path('api-banuser/<uuid:userid>/<uuid:requestid>/', views.banUser, name='api-banuser'),
     path('api-banuser/<uuid:userid>/<uuid:requestid>/<str:ignore_strikes>/<str:perma_ban>', views.banUser, name='api-banuser'),
