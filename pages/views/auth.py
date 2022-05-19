@@ -174,7 +174,7 @@ def getOrCreateUser(request, certInfo):
             )
 
             # if they have valid cert information then add their cert hash to the User object
-            if certInfo['status'] == "validPKI":
+            if certInfo['status'] == "validPKI" or certInfo['status'] == "externalPKI":
                 user.user_identifier = certInfo['userHash']
 
             user.save()
