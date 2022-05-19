@@ -24,6 +24,7 @@ from cryptography.hazmat.primitives.serialization import load_pem_public_key, lo
 
 # decorators
 from django.contrib.auth.decorators import login_required, user_passes_test
+import cfts
 
 from pages.views.auth import staffCheck, getOrCreateEmail
 from pages.views.dev_tools import fileCleanup
@@ -71,8 +72,7 @@ def dropEmail(request, id):
     url = str(request.get_host()) + "/drop/" + str(id)
 
     if requestInfo['encrypted'] == True:
-        ################################## MAKE NETWORK NOT HARDCODED ##################################
-        keyPath = os.path.join(cftsSettings.KEYS_DIR, "NIPR_PRIV_KEY.pem")
+        keyPath = os.path.join(cftsSettings.KEYS_DIR, cftsSettings.NETWORK + "_PRIV_KEY.pem")
         with open(keyPath, "rb") as infile:
             privKey = load_pem_private_key(infile.read(), password=str.encode(cftsSettings.PRIVATE_KEY_PASSWORD, 'utf-8'))
             infile.close()
@@ -117,9 +117,8 @@ def processDrop(request):
                 request_info = ast.literal_eval(infile.read().decode('utf-8'))
                 infile.close()
 
-            ################################## MAKE NETWORK NOT HARDCODED ##################################
             dropRequest = Drop_Request(
-                target_email=getOrCreateEmail(request, request_info['email'], "NIPR"),
+                target_email=getOrCreateEmail(request, request_info['email'], cftsSettings.NETWORK),
                 has_encrypted=request_info['encrypted'],
                 request_info=request_info,
                 delete_on=timezone.now() + datetime.timedelta(days=5),
