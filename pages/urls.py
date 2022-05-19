@@ -1,6 +1,5 @@
 from os import name
 from django.urls import path
-from . import static_views
 import pages.views as views
 from django.contrib.auth import views as auth_views
 
@@ -10,8 +9,6 @@ urlpatterns = [
     path('cfts.cfm', views.frontend, name='index'),
     path('', views.frontend, name='index'),
     path('consent', views.consent, name='consent'),
-    path('howTo', static_views.howTo, name='howTo'),
-    path('resources', static_views.resources, name='resources'),
 
     # auth
     path('register', views.register, name='register'),
@@ -78,9 +75,7 @@ urlpatterns = [
     path('api-numbers/<int:api_call>', views.runNumbers, name='api-numbers'),
     path('api-processrequest', views.process, name='api-processrequest'),
     path('api-setconsentcookie', views.setConsentCookie, name='api-setconsentcookie'),
-    #path('api-getclassifications', views.getClassifications, name='api-getclassifications'),
     path('api-requestnotes/<uuid:requestid>', views.requestNotes, name='api-requestnotes'),
-    # path('api-banuser/<uuid:userid>/<uuid:requestid>/', views.banUser, name='api-banuser'),
     path('api-banuser/<uuid:userid>/<uuid:requestid>/<str:ignore_strikes>/<str:perma_ban>', views.banUser, name='api-banuser'),
     path('api-warnuser/<uuid:userid>/<uuid:requestid>/<str:confirmWarn>', views.warnUser, name='api-warnuser'),
     path('api-warnuser/<uuid:userid>/<uuid:requestid>', views.warnUser, name='api-warnuser'),
