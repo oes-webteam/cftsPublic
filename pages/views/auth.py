@@ -218,7 +218,6 @@ def userLogin(request):
 
         # validity check failed, serve the instantiated form back to the user, it will contain helpful error messages for them
         else:
-            print(form.errors)
             return render(request, template_name="authForms/userLogin.html", context={'resources': resources, "login_form": form, })
 
     # all GET requests should be served a blank form
