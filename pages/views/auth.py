@@ -73,10 +73,10 @@ def getCert(request):
             # got a cert!
             else:
                 userHash = hashCert(cert)
-                if userHash not in buggedPKIs:
-                    return {'status': "validPKI", 'cert': cert, 'userHash': userHash}
-                else:
+                if userHash in buggedPKIs:
                     return {'status': "buggedPKI", 'cert': cert, 'userHash': userHash}
+                else:
+                    return {'status': "validPKI", 'cert': cert, 'userHash': userHash}
 
         except KeyError:
             return {'status': "empty"}
