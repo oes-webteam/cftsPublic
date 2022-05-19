@@ -24,6 +24,7 @@ from pdfminer.high_level import extract_text
 
 # db models
 from pages.models import *
+import PyPDF2
 
 # regular expressions
 import re
@@ -176,17 +177,19 @@ def runScan(scan_folder):
 
                 elif(ext == '.pdf'):
                     textFile = open(temp+".txt", "w", encoding="utf-8")
-                    # with open(filename, 'rb') as pdf:
-                    #     pdfReader = PyPDF2.PdfFileReader(pdf)
-                    #     pages = pdfReader.pages
 
-                    #     for page in pages:
-                    #         pageText = page.extractText()
-                    #         textFile.write("".join(pageText.split()))
+                    try:
+                        textFile.write(extract_text(filename))
+                    except:
+                        with open(filename, 'rb') as pdf:
+                            pdfReader = PyPDF2.PdfFileReader(pdf)
+                            pages = pdfReader.pages
 
-                    #     pdf.close()
+                            for page in pages:
+                                pageText = page.extractText()
+                                textFile.write("".join(pageText.split()))
 
-                    textFile.write(extract_text(filename))
+                            pdf.close()
 
                     textFile.close()
                     text_path = os.path.join(temp+".txt")
