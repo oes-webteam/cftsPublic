@@ -14,7 +14,7 @@ class RequestAdmin(admin.ModelAdmin):
     list_filter = ('network', 'org')
     list_display = ('user', 'network', 'pull', 'has_rejected', 'all_rejected')
     #fields = ('user','request_hash','network','org','pull','date_pulled',('files','target_email'),('comments','notes'),('is_centcom','is_dupe','has_rejected','all_rejected','destFlag'),('ready_to_pull','is_submitted'))
-    search_fields = ('user', 'network', 'pull')
+    search_fields = ('user__name_last', 'user__name_first', 'user__auth_user__username', 'network__name')
     sortable_by = ('user', 'network', 'pull', 'has_rejected', 'all_rejected')
 
 
@@ -33,9 +33,9 @@ class EmailAdmin(admin.ModelAdmin):
 
 class PullAdmin(admin.ModelAdmin):
     list_filter = ('network', ('date_pulled', admin.DateFieldListFilter))
-    list_display = (Pull.__str__, 'network', 'date_pulled', 'user_oneeye', 'user_twoeye')
-    search_fields = ('network__name', 'date_pulled', 'user_oneeye__username', 'user_twoeye__username')
-    sortable_by = (Pull.__str__, 'network__name', 'date_pulled', 'user_oneeye__username', 'user_twoeye__username')
+    list_display = (Pull.__str__, 'network', 'date_pulled')
+    search_fields = ('network__name', 'date_pulled')
+    sortable_by = (Pull.__str__, 'network__name', 'date_pulled')
 
 
 class FileAdmin(admin.ModelAdmin):
