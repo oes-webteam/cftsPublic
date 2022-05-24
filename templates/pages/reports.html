@@ -18,6 +18,17 @@
                     <label for="endDate">End Date</label>
                     <input type="text" id="numbersEndDate" class="form-control datepicker xfer-numbers end" placeholder="Enter Date">
                 </div>
+                {% if user.is_superuser %}
+                    <div class="col">
+                        <label for="staffFilter">Staff Filter</label>
+                        <select type="text" id="numbersStaff" class="form-control staff">
+                            <option value="None">--------------------</option>
+                            {% for staff in rc.staff %}
+                                <option value="{{staff.id}}">{{staff}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                {% endif %}
             </div>
         </form>
 

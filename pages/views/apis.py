@@ -22,6 +22,7 @@ from cfts.settings import NETWORK, DEBUG
 # model/database stuff
 from pages.models import *
 from django.contrib.auth.models import User as authUser
+from django.db.models import Q
 
 from pages.views.queue import createZip, updateFileReview
 from pages.views.auth import superUserCheck, staffCheck
@@ -280,12 +281,20 @@ def runNumbers(request, api_call=False):
         start_date = datetime.date.today() - datetime.timedelta(days=7)
         end_date = datetime.date.today()
 
-    # only the completed requests, tyvm
+    staffID = request.POST.get('staffUser')
+
     requests_in_range = Request.objects.filter(
         pull__date_complete__date__range=(start_date, end_date))
 
     for rqst in requests_in_range:
         if rqst.rejected_dupe == False:
+            if staffID != "None":
+                files_in_request = rqst.files.filter(Q(user_oneeye__id=staffID) | Q(user_twoeye__id=staffID))
+                if files_in_request.exists() == False:
+                    continue
+            else:
+                files_in_request = rqst.files.all()
+
             # if the user doesn't have one of the buggedPKI hashes and hasn't already been accounted for then add them
             if rqst.user.user_identifier not in skipUsers and rqst.user not in unique_users:
                 unique_users.append(rqst.user)
@@ -296,8 +305,6 @@ def runNumbers(request, api_call=False):
 
                 if rqst.user.last_warned_on != None and rqst.user.last_warned_on.date() >= start_date and rqst.user.last_warned_on.date() <= end_date and rqst.user not in warned_users:
                     warned_users.append(rqst.user)
-
-            files_in_request = rqst.files.all()
 
             for f in files_in_request:
                 file_name = f.__str__()
@@ -362,7 +369,7 @@ def runNumbers(request, api_call=False):
     while file_size > 1024:
         file_size /= 1024
         i += 1
-
+    
     unique_users_count = len(unique_users)
     banned_users_count = len(banned_users)
     warned_users_count = len(warned_users)
