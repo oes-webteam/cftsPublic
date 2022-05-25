@@ -73,10 +73,10 @@ def getCert(request):
             # got a cert!
             else:
                 userHash = hashCert(cert)
-                if userHash not in buggedPKIs:
-                    return {'status': "validPKI", 'cert': cert, 'userHash': userHash}
-                else:
+                if userHash in buggedPKIs:
                     return {'status': "buggedPKI", 'cert': cert, 'userHash': userHash}
+                else:
+                    return {'status': "validPKI", 'cert': cert, 'userHash': userHash}
 
         except KeyError:
             return {'status': "empty"}
@@ -174,7 +174,7 @@ def getOrCreateUser(request, certInfo):
             )
 
             # if they have valid cert information then add their cert hash to the User object
-            if certInfo['status'] == "validPKI":
+            if certInfo['status'] == "validPKI" or certInfo['status'] == "externalPKI":
                 user.user_identifier = certInfo['userHash']
 
             user.save()
@@ -218,7 +218,6 @@ def userLogin(request):
 
         # validity check failed, serve the instantiated form back to the user, it will contain helpful error messages for them
         else:
-            print(form.errors)
             return render(request, template_name="authForms/userLogin.html", context={'resources': resources, "login_form": form, })
 
     # all GET requests should be served a blank form

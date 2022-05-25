@@ -21,8 +21,11 @@ window.document.title = "CFTS -- Analyst Reports";
 $(document).ready(function() {
 
     const runNumbers = async (e) => {
+        console.log("runNumbers called")
         let start = $("#numbersStartDate").val();
         let end = $("#numbersEndDate").val();
+        let staffUser = $("#numbersStaff option:selected").val();
+
         let isValid = () => {
             if (
                 start.length > 0 &&
@@ -38,7 +41,8 @@ $(document).ready(function() {
             let url = "/api-numbers";
             let data = {
                 'start_date': start,
-                'end_date': end
+                'end_date': end,
+                'staffUser': staffUser
             };
 
             postResult = await Promise.resolve(
@@ -88,6 +92,7 @@ $(document).ready(function() {
     };
     $('input.xfer-numbers').datepicker({
         format: 'mm/dd/yyyy'
-    }).change(runNumbers);
+    });
+    $('.form-control').change(runNumbers);
 
 });
