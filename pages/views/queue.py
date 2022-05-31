@@ -1,21 +1,12 @@
 # ====================================================================
 # core
-from email import generator
 import random
 import datetime
-from re import T
 from django.contrib import messages
-from django.db.models.expressions import Subquery, When
-from django.db.models.fields import IntegerField
-import pytz
 from django.templatetags.static import static
-# from io import BytesIO, StringIO
 from zipfile import ZipFile
-from django.conf import settings
-from django.utils.functional import empty
 from django.utils import timezone
 from cfts import settings as cftsSettings
-from django.core.serializers import serialize
 
 
 # decorators
@@ -26,15 +17,14 @@ from django.views.decorators.cache import never_cache
 from pages.views.auth import superUserCheck, staffCheck
 
 # responses
-from django.shortcuts import redirect, render, reverse
+from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 
-from django.http import JsonResponse, FileResponse, response, HttpResponse
+from django.http import JsonResponse, FileResponse, HttpResponse
 
 # model/database stuff
 from pages.models import *
-from django.db.models import Max, Count, Q, Sum
-from django.db.models import Case, When
+from django.db.models import Count, Q
 
 import logging
 
@@ -42,22 +32,29 @@ logger = logging.getLogger('django')
 # ====================================================================
 # I really don't want to comment this file, the is so much hacky shit going on here
 
-# function to collect Request objects and serve the transfer queue page, only available to staff users
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 @ensure_csrf_cookie
 @never_cache
 def queue(request):
-    # instansiate the list that will contain all of the dictionaries of Request objects per network
+    """
+    It takes a request object, queries the database for all the requests that are not part of a
+    completed pull, and then organizes them into a list of dictionaries that are then passed to the
+    template
+
+    :param request: The request object that was sent to the view
+    :return: The render function is returning a HttpResponse object.
+    """
+    # Instansiate the list that will contain all of the dictionaries of Request objects per network
     xfer_queues = []
 
-    # used to determine which network tab on the queue shuold be selected by default
+    # Used to determine which network tab on the queue shuold be selected by default
     activeTab = True
 
-    # if else statement used to activate the easter egg on the queue page when the queue is completely empty
+    # If else statement used to activate the easter egg on the queue page when the queue is completely empty
     # /queue/cookie will take the user to a cookie card matching game
     if str(request.path) == '/queue/cookie':
-        # list of "cards" for the matching game
+        # List of "cards" for the matching game
         cookieList1 = [
             {'name': "Chocolate Chip", 'path': static('img/cookies/cookie.png')},
             {'name': "Dark Chocolate Chip", 'path': static('img/cookies/darkChoc.png')},
@@ -71,14 +68,14 @@ def queue(request):
             {'name': "Thin Mint", 'path': static('img/cookies/thinMint.png')},
         ]
 
-        # second list of "cards"
+        # Second list of "cards"
         cookieList2 = random.sample(cookieList1, len(cookieList1))
 
-        # combine and shuffle the cards
+        # Combine and shuffle the cards
         random.shuffle(cookieList1)
         empty = cookieList1+cookieList2
 
-    # sent a message to the empty queue page, kinda like a fortune cookie
+    # Send a message to the empty queue page, kinda like a fortune cookie
     else:
         empty = random.choice([
             'These pipes are clean.',
@@ -101,7 +98,10 @@ def queue(request):
             "Card games are fun too."
         ])
 
-    # get all requests that are not part of a completed pull, do all filtering based on this cached query set
+    # Filter for requests that are not part of a completed pull, and then prefetching related files
+    # and target emails. It is also selecting related user. It is then annotating the query with the
+    # number of files in the request, the number of files that need review, and the number of files
+    # that the user is reviewing. It is then ordering the query by date created.
     ds_requests = Request.objects.filter(is_submitted=True, pull__date_complete__isnull=True).prefetch_related('files', 'target_email').select_related('user').annotate(
         files_in_request=Count('files__file_id'),
         needs_review=Count('files', filter=Q(files__user_oneeye=None) | Q(files__user_twoeye=None) & ~Q(files__user_oneeye=request.user)) -
@@ -109,12 +109,14 @@ def queue(request):
         user_reviewing=Count('files', filter=Q(files__user_oneeye=request.user) & Q(files__date_oneeye=None) & Q(files__rejection_reason=None)) +
         Count('files', filter=Q(files__user_twoeye=request.user) & Q(files__date_twoeye=None) & Q(files__rejection_reason=None))).order_by('date_created')
 
+    # Getting all the network_id's from the ds_requests and then filtering the ds_networks based on
+    # the network_id's.
     pending_nets = ds_requests.values_list('network', flat=True)
     ds_networks = Network.objects.filter(network_id__in=pending_nets)
 
-    # for every network
+    # For every network
     for net in ds_networks:
-        # get information about the last pull that was done on this network
+        # Get information about the last pull that was done on this network
         last_pull = Pull.objects.values(
             'pull_number',
             'date_pulled',
@@ -125,7 +127,6 @@ def queue(request):
             'name': net.name,
             'order_by': net.sort_order,
 
-            # add up all the counts, this is used to know if we need to display a network or not
             'count': 0,
             'file_count': 0,
             'activeNet': activeTab,
@@ -137,7 +138,7 @@ def queue(request):
             'hidden_dupes_pulled': 0,
             'pulled': 0,
 
-            # the actuall set of Request objects
+            # The actual set of Request objects
             'q': [],
             'o': [],
             'a': [],
@@ -150,7 +151,9 @@ def queue(request):
         # ... and add it to the list
         xfer_queues.append(queue)
 
+    # Counting the number of requests in each queue group, appending request to the appropreate list.
     for rqst in ds_requests:
+        # Iterating through the list of queues and finding the queue that matches the name of the network.
         for queue in xfer_queues:
             if queue['name'] == rqst.network.name:
                 match_queue = queue
@@ -186,39 +189,42 @@ def queue(request):
                 match_queue['other'] += 1
                 match_queue['o'].append(rqst)
 
-    # sort the list of network queues into network order
+    # Sort the list of network queues into network order
     xfer_queues = sorted(xfer_queues, key=lambda k: k['order_by'], reverse=False)
 
-    # create the request context
+    # Create the request context
     rc = {'queues': xfer_queues, 'empty': empty, 'easterEgg': not activeTab}
 
     # roll that beautiful bean footage
     # ^-- I've always wondered what he meant by that, never did ask him
     return render(request, 'pages/queue.html', {'rc': rc})
 
-# function to serve the request details page for a single Request object, only available to staff users
 @login_required
 @never_cache
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def transferRequest(request, id):
-    # get the Request object
-    rqst = Request.objects.get(request_id=id)
-    # get the User object... for some reason, we already have the Request object, so why not just use that? You even used the Request object to get the User object......
-    user = User.objects.get(user_id=rqst.user.user_id)
+    """
+    It takes a request ID, finds the request, finds any other requests with the same hash, and then
+    renders a template with the request and the other requests
 
-    # get all the Request objects with a matching request hash as the current Request object, not including the current Request object
+    :param request: The request object
+    :param id: the request_id of the request to be transferred
+    :return: a render object.
+    """
+
+    rqst = Request.objects.get(request_id=id)
+
     dupes = Request.objects.filter(pull__date_complete=None, request_hash=rqst.request_hash).exclude(request_id=rqst.request_id).order_by('-date_created')
 
-    # check to see if the current Request object is the most recent object submitted with that request hash
     mostRecentDupe = False
 
     if dupes.count() > 0:
         if rqst.date_created > dupes[0].date_created:
             mostRecentDupe = True
 
-    # get list of Rejections for the "Reject Files" button
     ds_rejections = Rejection.objects.filter(visible=True)
     rejections = []
+
     for row in ds_rejections:
         rejections.append({
             'rejection_id': row.rejection_id,
@@ -228,26 +234,31 @@ def transferRequest(request, id):
         })
 
     rc = {
-        # 'User': str(user) + " ("+ str(user.auth_user.username) +")",
         'Date Submitted': rqst.date_created,
-        'Source Email': user.source_email,
+        'Source Email': rqst.user.source_email,
         'Destination Email': rqst.target_email.all()[0],
         'RHR Email': rqst.RHR_email,
-        'Phone': user.phone,
+        'Phone': rqst.user.phone,
         'Network': Network.objects.get(network_id=rqst.network.network_id),
         'org': rqst.org,
     }
 
-    # wow thats a lot of context!
     return render(request, 'pages/transfer-request.html', {'rqst': rqst, 'rc': rc, 'dupes': dupes, 'mostRecentDupe': mostRecentDupe, 'rejections': rejections,
-                                                           'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": user.user_id, 'debug': cftsSettings.DEBUG})
+                                                           'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": rqst.user.user_id, 'debug': cftsSettings.DEBUG})
 
-# function to save staff added notes to a Request object, only avaliable to staff users
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def requestNotes(request, requestid):
-    # get notes, entered from request details page.
-    # this will be a combination of any previously entered notes and the most recently entered in note
+    """
+    The function takes the notes entered on the request details page, updates the notes field on the
+    Request object, and then calls for a pull zip to be rewritten if needed
+
+    :param request: the request object
+    :param requestid: the request_id of the request that the notes are being saved to
+    :return: The response is a JsonResponse object.
+    """
+    # Get notes entered from request details page.
+    # This will be a combination of any previously entered notes and the most recently entered in note
     postData = dict(request.POST.lists())
     notes = postData['notes'][0]
 
@@ -266,25 +277,29 @@ def requestNotes(request, requestid):
     return JsonResponse({'response': "Notes saved"})
 
 
-# function to ban a user for a length of time, only available to superusers, staff uses can only request a user be banned
 @login_required
 @user_passes_test(staffCheck, login_url='queue', redirect_field_name=None)
 def banUser(request, userid, requestid, ignore_strikes=False, perma_ban=False):
-    # get the user to ban, grab the first from the returned filter results
-    # I don't really remember why I chose to get the user this way, user_id is the database index for the object, which is always unique
-    # ... I should have added comments while I was writing all this
+    """
+    It bans a user based on their strike count, stike count is ignored based on passed in args
+
+    :param request: the request object
+    :param userid: the user id of the user to ban
+    :param requestid: the id of the transfer request that warrented the ban
+    :param ignore_strikes: this will ignore the strike count and just ban them for 1 day if True and perma_ban is False, defaults to False (optional)
+    :param perma_ban: will perma ban user if True and ignore_strikes is also True, defaults to False (optional)
+    :return: The redirect is returning a string, which is the url to redirect to.
+    """
+
     userToBan = User.objects.filter(user_id=userid)[0]
 
-    # if they aren't banned then just use the strikes from the strikes field
     strikes = userToBan.strikes
 
-    # used in the success message
+    # Used in the success message
     days = 0
 
-    # if the function has a temp arg of "True" then give the user a 1 day ban, 1 day bans do not increase stike count but we do count them
+    # Ban a user for 1 day or permanently
     if ignore_strikes == "True":
-        # if the user is already banned and we arrived back to this function that means the 'Escalate to Permanent Ban' button was clicked
-        # set the user to 3 strikes, the following if statments will set them to perma ban
         if perma_ban == "True":
             User.objects.filter(user_id=userid).update(banned=True, strikes=4, banned_until=datetime.date.today().replace(year=datetime.date.today().year+1000))
         elif userToBan.banned == False and perma_ban == "False":
@@ -293,23 +308,24 @@ def banUser(request, userid, requestid, ignore_strikes=False, perma_ban=False):
         else:
             messages.error(request, "User may have already been banned, check user information below.")
             return redirect('/transfer-request/' + str(requestid))
+    # Checking the number of strikes a user has and then banning them for a certain amount of time.
     else:
-        # users first ban, 3 days
+        # Users first ban, 3 days
         if strikes == 0:
             User.objects.filter(user_id=userid).update(banned=True, strikes=1, banned_until=datetime.date.today() + datetime.timedelta(days=3))
             days = 3
-        # second ban, 7 days
+        # Second ban, 7 days
         elif strikes == 1:
             User.objects.filter(user_id=userid).update(banned=True, strikes=2, banned_until=datetime.date.today() + datetime.timedelta(days=7))
             days = 7
-        # third ban, 30 days
+        # Third ban, 30 days
         elif strikes == 2:
             User.objects.filter(user_id=userid).update(banned=True, strikes=3, banned_until=datetime.date.today() + datetime.timedelta(days=30))
             days = 30
-        # fourth ban, lifetime... assuming the user isn't alive 1000 years from now. I sure hope I'm not...
+        # Fourth ban, lifetime... assuming the user isn't alive 1000 years from now. I sure hope I'm not...
         elif strikes == 3:
             User.objects.filter(user_id=userid).update(banned=True, strikes=4, banned_until=datetime.date.today().replace(year=datetime.date.today().year+1000))
-        # just incase any other stike number comes in
+        # Just incase any other stike number comes in
         else:
             pass
 
@@ -321,25 +337,46 @@ def banUser(request, userid, requestid, ignore_strikes=False, perma_ban=False):
     if cftsSettings.DEBUG == True:
         return redirect('/transfer-request/' + str(requestid))
     else:
-        # generate a ban email template, but only when DEBUG == False... for my sanity
+        # Generate a ban email template, but only when DEBUG == False... for my sanity
         eml = banEml(request, requestid, ignore_strikes, perma_ban)
         return redirect('/transfer-request/' + str(requestid) + "?eml=" + eml)
 
 
-# function to generate a ban email
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def banEml(request, request_id, ignore_strikes, perma_ban):
+    """
+    It takes in a request object, a request_id, a boolean for ignoring strikes, and a boolean for
+    perma_ban. It then gets the request object from the database, and creates a mailto link with the
+    user's email address as the recipient, and the subject and body of the email are rendered from a
+    template
+
+    :param request: the request object
+    :param request_id: The ID of the request that the user is being banned for
+    :param ignore_strikes: Will tell the template not to use a users strike count to generate the email body
+    :param perma_ban: Will tell the template to generate the perma ban notification for the email body
+    :return: The return value is a string that is the body of an email.
+    """
     rqst = Request.objects.get(request_id=request_id)
 
     msgBody = "mailto:" + str(rqst.user.source_email) + "?subject=CFTS User Account Suspension&body="
     msgBody += render_to_string('partials/Queue_partials/banTemplate.html', {'rqst': rqst, 'ignore_strikes': ignore_strikes, 'perma_ban': perma_ban}, request)
-
     return msgBody
 
 @login_required
 @user_passes_test(staffCheck, login_url='queue', redirect_field_name=None)
 def warnUser(request, userid, requestid, confirmWarn=False):
+    """
+    If the user has already been warned today, ask for confirmation before issuing a second warning. If
+    the user has not been warned today, issue a warning
+
+    :param request: The request object
+    :param userid: The user's ID
+    :param requestid: The ID of the request that the user is being warned for
+    :param confirmWarn: If the user has already been warned today, this will be set to True to confirm
+    the second warning, defaults to False (optional)
+    :return: The redirect is returning a string.
+    """
     userToWarn = User.objects.filter(user_id=userid)
 
     if userToWarn[0].last_warned_on != None and userToWarn[0].last_warned_on.date() == timezone.now().date() and confirmWarn == False:
@@ -357,30 +394,45 @@ def warnUser(request, userid, requestid, confirmWarn=False):
             eml = warningEml(request, userToWarn[0].account_warning_count, userToWarn[0].source_email)
             return redirect('/transfer-request/' + str(requestid) + "?eml=" + eml)
 
-# function to generate a warning email
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def warningEml(request, warningCount, source_email):
+    """
+    It takes a request, a warning count, and a source email address, and returns a mailto link with the
+    source email address as the recipient, a subject line, and a body that contains the warning count
+    and a template.
+
+    :param request: the request object
+    :param warningCount: The number of warnings the user has received
+    :param source_email: the email address of the user who is being warned
+    :return: The return value is a string.
+    """
 
     msgBody = "mailto:" + str(source_email) + "?subject=CFTS User Account Warning&body="
     msgBody += render_to_string('partials/Queue_partials/userWarningTemplate.html', {'warningCount': warningCount}, request)
-
     return msgBody
 
 # function to create a zip file containing all pullable File objects for a given network
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def createZip(request, network_name, rejectPull):
+    """
+    It creates a zip file containing all of the files in a pull request
 
-    # this variable is a bit misleading, rejectPull is used to determine wheter we are creating a completely new pull or modifying an already existing pull
-    # in this case we are creating a new pull
+    :param request: the request object
+    :param network_name: the name of the network the pull is being created for
+    :param rejectPull: this is the pull_id of the pull we are modifying if a pulled file is rejected, if we are creating a new pull then this will be 'false'
+    :return: The pullNumber, datePulled, and userPulled are being returned.
+    """
+
+    # This variable is a bit misleading, rejectPull is used to determine wheter we are creating a completely new pull or modifying an already existing pull
+    # In this case we are creating a new pull
     if rejectPull == 'false':
-        # determine what number we should give the pull
+        # Getting the last pull number for the current network
         try:
-            # get the last pull number for the current network
             maxPull = Pull.objects.filter(network=Network.objects.get(name=network_name)).latest('date_pulled')
 
-            # reset the pull number everyday
+            # Reset the pull number everyday
             if(datetime.datetime.now().date() > maxPull.date_pulled.date()):
                 pull_number = 1
             else:
@@ -392,48 +444,48 @@ def createZip(request, network_name, rejectPull):
         except Pull.DoesNotExist:
             pull_number = 1
 
-        # create the Pull object
+        # Create the Pull object
         new_pull = Pull(
             pull_number=pull_number,
             network=Network.objects.get(name=network_name),
-            # date_pulled=datetime.datetime.now(),
             date_pulled=timezone.now(),
             user_pulled=request.user,
         )
 
-        # get all pullable requests for the current network
+        # Get all pullable requests for the current network
         qs = Request.objects.filter(
             network__name=network_name, pull=None, ready_to_pull=True, is_submitted=True)
         new_pull.save()
 
         pull = new_pull
 
-    # we are modifying an already existing pull zip
+    # We are modifying an already existing pull zip
     else:
-        # get the pull and all its requests
+        # Get the pull and all its requests
         qs = Request.objects.filter(pull=rejectPull)
         pull = Pull.objects.filter(pull_id=rejectPull)[0]
         pull_number = pull.pull_number
 
-    # construct the file path for the pull zip
+    # Creating a zip file in the PULLS_DIR directory.
     zipPath = os.path.join(cftsSettings.PULLS_DIR+"\\") + network_name + "_" + str(pull_number) + " " + str(pull.date_pulled.astimezone().strftime("%d%b %H%M")) + ".zip"
 
     zip = ZipFile(zipPath, "w")
 
-    # zip folder structure looks like this, pull/user/request_#/files
-    # list to keep track of which folder paths have been created so we don't overlap
+    # Zip folder structure looks like this, pull/user/request_#/files
+    # List to keep track of which folder paths have been created so we don't overlap
     requestDirs = []
-    # create a zip folder for every Request object
+
+    # Create a zip folder for every Request object
     for rqst in qs:
         zip_folder = str(rqst.user) + "/request_1"
-        # get all non-rejected files in the current request
+        # Get all non-rejected files in the current request
         theseFiles = rqst.files.filter(rejection_reason=None)
-        # if the is_pii field is True on any of the File objects then encryptRequests will become true
+        # If the is_pii field is True on any of the File objects then encryptRequest will become true
         encryptRequest = False
 
-        # only create a folder for a request if it has non-rejected files, we don't want empty folders because every file got rejected
+        # Only create a folder for a request if it has non-rejected files, we don't want empty folders because every file got rejected
         if theseFiles.exists():
-            # if a user had multiple Request objects in a pull they will all need their own folder, this loop will create the unique request folder for the user
+            # If a user had multiple Request objects in a pull they will all need their own folder, this loop will create the unique request folder for the user
             i = 2
             while zip_folder in requestDirs:
                 zip_folder = str(rqst.user) + "/request_" + str(i)
@@ -441,7 +493,7 @@ def createZip(request, network_name, rejectPull):
 
             requestDirs.append(zip_folder)
 
-            # write all of the File objects to the folder we just created
+            # Write all of the File objects to the folder we just created
             for f in theseFiles:
                 if f.is_pii == True:
                     encryptRequest = True
@@ -449,7 +501,7 @@ def createZip(request, network_name, rejectPull):
                 zip_path = os.path.join(zip_folder, str(f))
                 zip.write(f.file_object.path, zip_path)
 
-            # create and add the target email file, file name is different when encryptRequest is True
+            # Create and add the target email file, file name is different when encryptRequest is True
             if encryptRequest == True:
                 email_file_name = '_encrypt.txt'
             elif encryptRequest == False:
@@ -457,8 +509,8 @@ def createZip(request, network_name, rejectPull):
 
             email_file_path = zip_folder + "/" + email_file_name
 
-            # originally a user could submit a request with multiple destination email addresses, that is no longer the case but the target_email field remains a many-to-many field
-            # this loop was used to add all of the email addresses to a single file, but now it only ever loops through 1 Email object
+            # Originally a user could submit a request with multiple destination email addresses, that is no longer the case but the target_email field remains a many-to-many field
+            # This loop was used to add all of the email addresses to a single file, but now it only ever loops through 1 Email object
             with zip.open(email_file_path, 'w') as fp:
                 emailString = ""
 
@@ -468,7 +520,7 @@ def createZip(request, network_name, rejectPull):
                 fp.write(emailString.encode('utf-8'))
                 fp.close()
 
-            #######################################################################################################################################
+            # Writing any notes to a file.
             if rqst.notes != None:
                 notes_file_name = zip_folder + "/_notes.txt"
 
@@ -479,7 +531,8 @@ def createZip(request, network_name, rejectPull):
 
         else:
             print("all files in request rejected")
-        # update the record
+
+        # Updating the pull information for the Request and File models if a new pull was created.
         if rejectPull == "false":
             rqst.pull_id = new_pull.pull_id
             rqst.date_pulled = new_pull.date_pulled
@@ -489,7 +542,6 @@ def createZip(request, network_name, rejectPull):
 
     zip.close()
 
-    # see if we can't provide something more useful to the analysts - maybe the new pull number?
     if rejectPull == "false":
         messages.success(request, "Pull " + str(new_pull) + " successfully created")
         return JsonResponse({'pullNumber': new_pull.pull_number, 'datePulled': new_pull.date_pulled.strftime("%d%b %H%M").upper(), 'userPulled': str(new_pull.user_pulled)})
@@ -500,6 +552,14 @@ def createZip(request, network_name, rejectPull):
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def getFile(request, fileID, fileName):
+    """
+    It retrieves the file and returns it as a response
+
+    :param request: The request object
+    :param fileID: The ID of the file you want to download
+    :param fileName: The name of the file to be downloaded
+    :return: The file is being returned.
+    """
     response = FileResponse(
         open(os.path.join("uploads", fileID, fileName), 'rb'))
     return response
@@ -508,11 +568,29 @@ def getFile(request, fileID, fileName):
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def updateFileReview(request, fileID, rqstID, completeReview="False", quit="None", skipComplete=False):
+    """
+    It checks if the user is the first reviewer, if so, it sets the user_oneeye to the current user. If
+    the user is the second reviewer, it sets the user_twoeye to the current user
+
+    :param request: The request object
+    :param fileID: The ID of the file being reviewed
+    :param rqstID: The ID of the request
+    :param completeReview: If the user is completing the review, this is set to "True", defaults to
+    False (optional)
+    :param quit: If the user is quitting the review, this is set to "True", defaults to None (optional)
+    :param skipComplete: If True, the function will return a boolean value instead of redirecting to a
+    page, defaults to False (optional)
+    :return: a redirect to the transfer request page with the appropriate query parameters.
+    """
+
+    # Getting the request and file objects from the database.
     rqst = Request.objects.get(request_id=rqstID)
     file = File.objects.get(file_id=fileID)
     open_file = False
     save = True
 
+    # Checking if the user is the first reviewer, if so, it sets the user_oneeye to the current user.
+    # If the user is the second reviewer, it sets the user_twoeye to the current user.
     if file.user_oneeye == None and quit != "True":
         file.user_oneeye = request.user
         open_file = True
@@ -536,18 +614,23 @@ def updateFileReview(request, fileID, rqstID, completeReview="False", quit="None
             file.user_twoeye = None
         elif skipComplete == False and completeReview == "True":
             file.date_twoeye = timezone.now()
+
+    # All review slots are taken, don't make any File changes
     else:
         save = False
 
     if save == True:
         file.save()
 
+    # Checking if the request is pullable.
     ready_to_pull = checkPullable(rqst)
 
+    # If a File is modified remove the request from the pullable group
     if save == False and ready_to_pull == True and rqst.pull != None:
         rqst.pull = None
         rqst.save()
 
+    # Redirect to the transfer request page with the appropriate query parameters
     if open_file == True and cftsSettings.DEBUG == False:
         return redirect('/transfer-request/' + str(rqstID) + '?file=' + str(fileID))
     elif ready_to_pull == True:
@@ -561,6 +644,17 @@ def updateFileReview(request, fileID, rqstID, completeReview="False", quit="None
 
 
 def checkPullable(rqst):
+    """
+    If all files have a date_twoeye and date_oneeye, then the request is ready to pull.
+    A rejected file is considered complete and will not prevent a request from being
+    ready to pull.
+
+    :param rqst: the request object
+    :return: a boolean value.
+    """
+
+    # Checking if the date_twoeye and date_oneeye are not null and if the rejection_reason is null. If
+    # any of these conditions are true, it sets ready_to_pull to false.
     ready_to_pull = True
     for file in rqst.files.all():
         if file.date_twoeye == None:
@@ -582,6 +676,15 @@ def checkPullable(rqst):
 @login_required
 @user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)
 def removeFileReviewer(request, stage):
+    """
+    It removes a reviewer from a file
+
+    :param request: The request object
+    :param stage: 1 or 2, depending on which reviewer you want removed
+    :return: The response is being returned as a string.
+    """
+
+    # Getting the list of files that are checked in the form.
     post = dict(request.POST.lists())
     rqst = Request.objects.get(request_id=post['rqst_id'][0])
 
@@ -590,6 +693,7 @@ def removeFileReviewer(request, stage):
     files = File.objects.filter(file_id__in=id_list)
 
     try:
+        # Removing the reviewer from the File object.
         if stage == 1:
             for file in files:
                 if file.user_twoeye != None:
@@ -608,6 +712,7 @@ def removeFileReviewer(request, stage):
     except:
         messages.error(request, 'Good job, you broke it. Something went wrong')
 
+    # Checking if the pull request is pullable. If it is not, the request is removed from the pull it is a part of.
     if checkPullable(rqst) == False and rqst.pull != None:
         rqst.pull = None
         rqst.save()
