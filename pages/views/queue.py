@@ -417,7 +417,7 @@ def warningEml(request, warningCount, source_email):
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def createZip(request, network_name, rejectPull):
     """
-    It creates a zip file containing all of the files in a pull request
+    It creates a zip file containing all of the files in a pull
 
     :param request: the request object
     :param network_name: the name of the network the pull is being created for
@@ -712,7 +712,7 @@ def removeFileReviewer(request, stage):
     except:
         messages.error(request, 'Good job, you broke it. Something went wrong')
 
-    # Checking if the pull request is pullable. If it is not, the request is removed from the pull it is a part of.
+    # Checking if the request is pullable. If it is not, the request is removed from the pull it is a part of.
     if checkPullable(rqst) == False and rqst.pull != None:
         rqst.pull = None
         rqst.save()
