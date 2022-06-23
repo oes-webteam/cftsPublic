@@ -464,7 +464,7 @@ def createZip(request, network_name, rejectPull):
 
             requestDirs.append(zip_folder)
 
-            if destNetwork.CFTS_deployed == True:
+            if destNetwork.cfts_deployed == True:
                 phrase = ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(32))
                 byte_phrase = str.encode(phrase, 'utf-8')
                 crypt_info = {'encrypted': True,
@@ -480,7 +480,7 @@ def createZip(request, network_name, rejectPull):
                     fp.write(str(crypt_info).encode('utf-8'))
                     fp.close()
 
-            elif destNetwork.CFTS_deployed == False:
+            elif destNetwork.cfts_deployed == False:
                 if rqst.has_encrypted == True:
                     email_file_name = '_encrypt.txt'
                 elif rqst.has_encrypted == False:
@@ -498,7 +498,7 @@ def createZip(request, network_name, rejectPull):
 
             # write all of the File objects to the folder we just created
             for f in theseFiles:
-                if destNetwork.CFTS_deployed == True:
+                if destNetwork.cfts_deployed == True:
                     cipherText = encryptFile(crypt_info['salt'], crypt_info['nonce'], byte_phrase, f.file_object.path)
                     encrypt_file_path = zip_folder + "/" + str(f)
                     with zip.open(encrypt_file_path, 'w') as outFile:
