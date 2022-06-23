@@ -93,9 +93,6 @@ def dropEmail(request, id):
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def processDrop(request):
     try:
-        request_files = request.FILES
-        i, f = list(enumerate(request_files.getlist("dropZip")))[0]
-
         drop_folder = cftsSettings.DROPS_TEMPDIR+"\\drop_1"
 
         i = 2
@@ -106,7 +103,7 @@ def processDrop(request):
             else:
                 break
 
-        zip = ZipFile(f, 'r')
+        zip = ZipFile(request.FILES.getlist("dropZip")[0], 'r')
         zip.extractall(drop_folder)
 
         requestPaths = set(treeScan([], drop_folder))
@@ -195,6 +192,8 @@ def dropDownload(request, id, phrase=None):
 
         dropRequest.user_retrieved = True
         dropRequest.save()
+
+        # messages.warning(request, "If your files do not open properly, make sure you have entered in the correct Decryption Phrase (Case Senesitve)")
 
         return FileResponse(zip_buffer, as_attachment=True, filename='CFTS_Files.zip')
 

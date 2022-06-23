@@ -19,7 +19,7 @@ if (authStatus == "prompt") {
 } else {
     history.pushState(null, "", location.href.split("/").slice(0, 5).join('/'))
     if (authStatus == "not authorized") {
-        alert("PIN entered is not correct")
+        alert("Request Code entered is not correct")
         window.location = window.location
     } else if (authStatus == "authorized") {
         passphraseSubmit = document.getElementById("passphraseSubmit")

@@ -38,12 +38,12 @@ def deleteFiles(directory, maxAge):
                         except:
                             pass
 
-                else:
-                    daysRemaining = maxAge-fileAge.days
-                    if daysRemaining == 0:
-                        print("File %s will be deleted in 1 day." % file.path)
+                # else:
+                #     daysRemaining = maxAge-fileAge.days
+                #     if daysRemaining == 0:
+                #         print("File %s will be deleted in 1 day." % file.path)
 
-                    print("File %s will be deleted in %s days." % (file.path, daysRemaining))
+                #     print("File %s will be deleted in %s days." % (file.path, daysRemaining))
 
 def deleteDrops():
     oldDrops = Drop_Request.objects.filter(delete_on__lte=timezone.now())
