@@ -59,7 +59,7 @@ def getCert(request):
         else:
             userHash = hashCert(cert)
             if userHash in buggedPKIs:
-                return {'status': "buggedPKI", 'cert': cert, 'userHash': userHash}
+                return {'status': "buggedPKI"}
             else:
                 return {'status': "externalPKI", 'cert': cert, 'userHash': userHash}
 
@@ -78,7 +78,7 @@ def getCert(request):
                     else:
                         userHash = hashCert(cert)
                         if userHash in buggedPKIs:
-                            return {'status': "buggedPKI", 'cert': cert, 'userHash': userHash}
+                            return {'status': "buggedPKI"}
                         else:
                             return {'status': "validPKI", 'cert': cert, 'userHash': userHash}
 
@@ -89,7 +89,7 @@ def getCert(request):
             else:
                 userHash = hashCert(cert)
                 if userHash in buggedPKIs:
-                    return {'status': "buggedPKI", 'cert': cert, 'userHash': userHash}
+                    return {'status': "buggedPKI"}
                 else:
                     return {'status': "validPKI", 'cert': cert, 'userHash': userHash}
 
