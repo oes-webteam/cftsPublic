@@ -245,7 +245,6 @@ class Drop_Request(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
     files = models.ManyToManyField(Drop_File)
     target_email = models.ForeignKey(Email, null=True, blank=True, on_delete=models.DO_NOTHING)
-    has_encrypted = models.BooleanField(default=False)
     request_info = models.CharField(max_length=5000, null=True, blank=True)
     user_retrieved = models.BooleanField(default=False)
     delete_on = models.DateTimeField()

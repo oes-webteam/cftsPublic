@@ -533,8 +533,7 @@ def createZip(request, network_name, rejectPull):
             if destNetwork.cfts_deployed == True:
                 phrase = ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(32))
                 byte_phrase = str.encode(phrase, 'utf-8')
-                crypt_info = {'encrypted': True,
-                              'salt': os.urandom(16),
+                crypt_info = {'salt': os.urandom(16),
                               'nonce': os.urandom(16),
                               'encryptedPhrase': encryptPhrase(byte_phrase, rqst.network.name),
                               'email': rqst.target_email.all()[0].address,

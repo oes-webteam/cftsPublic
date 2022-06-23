@@ -46,7 +46,7 @@ logger = logging.getLogger('django')
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def dropZone(request):
-    dropRequests = Drop_Request.objects.filter().order_by('email_sent')
+    dropRequests = Drop_Request.objects.filter(user_retrieved=False).order_by('email_sent')
 
     requestPage = paginator.Paginator(dropRequests, 10)
     pageNum = request.GET.get('page')
@@ -71,18 +71,15 @@ def dropEmail(request, id):
     eml = "mailto:" + str(dropRequest.target_email) + "?subject=CFTS File Drop&body="
     url = str(request.get_host()) + "/drop/" + str(id)
 
-    if requestInfo['encrypted'] == True:
-        keyPath = os.path.join(cftsSettings.KEYS_DIR, cftsSettings.NETWORK + "_PRIV_KEY.pem")
-        with open(keyPath, "rb") as infile:
-            privKey = load_pem_private_key(infile.read(), password=str.encode(cftsSettings.PRIVATE_KEY_PASSWORD, 'utf-8'))
-            infile.close()
+    keyPath = os.path.join(cftsSettings.KEYS_DIR, cftsSettings.NETWORK + "_PRIV_KEY.pem")
+    with open(keyPath, "rb") as infile:
+        privKey = load_pem_private_key(infile.read(), password=str.encode(cftsSettings.PRIVATE_KEY_PASSWORD, 'utf-8'))
+        infile.close()
 
-        decryptedPhrase = privKey.decrypt(requestInfo['encryptedPhrase'], padding.OAEP(padding.MGF1(hashes.SHA256()), hashes.SHA256(), None)).decode()
+    decryptedPhrase = privKey.decrypt(requestInfo['encryptedPhrase'], padding.OAEP(padding.MGF1(hashes.SHA256()), hashes.SHA256(), None)).decode()
 
-        eml += render_to_string('partials/Drop_partials/dropEmailTemplate.html', {'url': url, 'deleteDate': dropRequest.delete_on,
-                                'PIN': dropRequest.request_code, 'encrypted': requestInfo['encrypted'], 'decryptPhrase': decryptedPhrase}, request)
-    else:
-        eml += render_to_string('partials/Drop_partials/dropEmailTemplate.html', {'url': url, 'deleteDate': dropRequest.delete_on, 'PIN': dropRequest.request_code, 'encrypted': requestInfo['encrypted']}, request)
+    eml += render_to_string('partials/Drop_partials/dropEmailTemplate.html', {'url': url, 'deleteDate': dropRequest.delete_on,
+                            'PIN': dropRequest.request_code, 'decryptPhrase': decryptedPhrase}, request)
 
     dropRequest.email_sent = True
     dropRequest.save()
@@ -116,7 +113,6 @@ def processDrop(request):
 
             dropRequest = Drop_Request(
                 target_email=getOrCreateEmail(request, request_info['email'], cftsSettings.NETWORK),
-                has_encrypted=request_info['encrypted'],
                 request_info=request_info,
                 delete_on=timezone.now() + datetime.timedelta(days=5),
                 request_code=''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(8)),
@@ -161,7 +157,7 @@ def dropDetails(request, id, PIN=None):
     if PIN == None:
         return render(request, 'pages/dropDetails.html', {'status': "prompt"})
     elif PIN == drop.request_code:
-        return render(request, 'pages/dropDetails.html', {'status': "authorized", 'drop': drop, 'encrypted': ast.literal_eval(drop.request_info)['encrypted']})
+        return render(request, 'pages/dropDetails.html', {'status': "authorized", 'drop': drop})
     else:
         return render(request, 'pages/dropDetails.html', {'status': "not authorized"})
 
@@ -170,7 +166,7 @@ def dropDownload(request, id, phrase=None):
 
     requestInfo = ast.literal_eval(dropRequest.request_info)
 
-    if requestInfo['encrypted'] == True and phrase != None:
+    if phrase != None:
         kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=requestInfo['salt'], iterations=390000)
         key = kdf.derive(str.encode(phrase, 'utf-8'))
 
@@ -196,6 +192,3 @@ def dropDownload(request, id, phrase=None):
         # messages.warning(request, "If your files do not open properly, make sure you have entered in the correct Decryption Phrase (Case Senesitve)")
 
         return FileResponse(zip_buffer, as_attachment=True, filename='CFTS_Files.zip')
-
-    elif requestInfo['encrypted'] == False:
-        pass

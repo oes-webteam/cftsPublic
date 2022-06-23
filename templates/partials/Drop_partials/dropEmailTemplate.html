@@ -1,4 +1,4 @@
 {% spaceless %}
     {% load util %}
-    You have received a CFTS file drop. Use the details below to retrieve your files.<br>Your files will be available for download until {{deleteDate}}<br>---------------------------------------------------------------------------------------------------------<br>Request URL: {% if request.is_secure %}https://{% else %}http://{% endif %}{{url}}<br>Request Code: {{PIN}}<br>{% if encrypted == True%}Decryption Phrase: {{decryptPhrase}}{% endif %}
+    You have received a CFTS file drop. Use the details below to retrieve your files.<br>Your files will be available for download until {{deleteDate}}<br>---------------------------------------------------------------------------------------------------------<br>Request URL: {% if request.is_secure %}https://{% else %}http://{% endif %}{{url}}<br>Request Code: {{PIN}}<br>Decryption Phrase: {{decryptPhrase}}
 {% endspaceless %}

@@ -26,7 +26,11 @@ if (authStatus == "prompt") {
         passphraseInput = document.getElementById("passphraseInput")
 
         function submitPassphrase() {
-            window.location = "/download-drop/" + dropID + "/" + passphraseInput.value
+            if (passphraseInput.value != "") {
+                window.location = "/download-drop/" + dropID + "/" + passphraseInput.value
+            } else {
+                alert("Enter Decryption Phrase from email")
+            }
         }
 
         passphraseSubmit.addEventListener('click', function() {
