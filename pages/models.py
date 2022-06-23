@@ -63,7 +63,8 @@ class Network(models.Model):
     name = models.CharField(max_length=50)
     sort_order = models.IntegerField()
     visible = models.BooleanField(default=True)
-    CFTS_deployed = models.BooleanField(default=False)
+    cfts_deployed = models.BooleanField(default=False)
+    skip_file_review = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['sort_order']
@@ -88,12 +89,12 @@ class Email(models.Model):
 class User(models.Model):
     user_id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False)
-    auth_user = models.OneToOneField(User, default=None, null=True, blank=True, on_delete=models.DO_NOTHING)
+    auth_user = models.OneToOneField(User, default=None, null=True, blank=True, on_delete=models.SET_NULL)
     user_identifier = models.CharField(max_length=150, default=None, null=True, blank=True)
     name_first = models.CharField(max_length=50)
     name_last = models.CharField(max_length=50)
     source_email = models.ForeignKey(Email, null=True, blank=True, on_delete=models.DO_NOTHING, related_name="source_email")
-    destination_emails = models.ManyToManyField(Email)
+    destination_emails = models.ManyToManyField(Email, blank=True)
     notes = models.TextField(null=True, blank=True)
     phone = models.CharField(max_length=50, default=None, null=True, blank=True)
     banned = models.BooleanField(default=False)
@@ -231,8 +232,6 @@ class Drop_File(models.Model):
     file_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     file_object = models.FileField(upload_to=randomize_path_drop_file, storage=CustomFileSystemStorage(), max_length=500)
     file_name = models.CharField(max_length=255, null=True, blank=True, default=None)
-    # file_hash = models.CharField(max_length=40, blank=True, null=True)
-    # is_pii = models.BooleanField(default=False)
 
     class Meta:
         ordering = [F('file_name').asc(nulls_last=True)]
@@ -244,8 +243,6 @@ class Drop_File(models.Model):
 class Drop_Request(models.Model):
     request_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_created = models.DateTimeField(auto_now_add=True)
-    # user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
-    # network = models.ForeignKey(Network, on_delete=models.DO_NOTHING)
     files = models.ManyToManyField(Drop_File)
     target_email = models.ForeignKey(Email, null=True, blank=True, on_delete=models.DO_NOTHING)
     has_encrypted = models.BooleanField(default=False)

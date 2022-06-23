@@ -18,7 +18,7 @@ from django.template.loader import render_to_string
 from django.http import JsonResponse, HttpResponse
 
 # cfts settings
-from cfts.settings import NETWORK, DEBUG, SKIP_FILE_REVIEW
+from cfts.settings import NETWORK, DEBUG
 # model/database stuff
 from pages.models import *
 from django.contrib.auth.models import User as authUser
@@ -372,7 +372,7 @@ def runNumbers(request, api_call=False):
     while file_size > 1024:
         file_size /= 1024
         i += 1
-    
+
     unique_users_count = len(unique_users)
     banned_users_count = len(banned_users)
     warned_users_count = len(warned_users)
@@ -469,7 +469,7 @@ def process(request):
             org=org,
             is_centcom=form_data.get('isCentcom'),
             RHR_email=form_data.get('RHREmail'),
-            ready_to_pull=SKIP_FILE_REVIEW,
+            ready_to_pull=destinationNet.skip_file_review,
         )
         rqst.save()
 

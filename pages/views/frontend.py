@@ -98,10 +98,16 @@ def frontend(request):
         cftsUser = getOrCreateUser(request, certInfo)
 
         # redirect user to login page or info edit page
-        if cftsUser == None:
-            return redirect("/login")
-        elif cftsUser.update_info == True:
+        if certInfo['status'] == "empty" and not request.user.is_authenticated:
+            if Settings.DEBUG == True:
+                return redirect("/login")
+            elif Settings.DEBUG == False:
+                return render(request, 'pages/frontend.html', {'rc': {'error': True, 'submission_disabled': Settings.DISABLE_SUBMISSIONS, 'debug': str(Settings.DEBUG), 'resources': resources, 'browser': browser}})
+        elif cftsUser == None or cftsUser.update_info == True:
+            # return redirect("/login")
             return redirect("/user-info")
+        # elif cftsUser.update_info == True:
+        #     return redirect("/user-info")
 
         # check if the user is currntly banned
         checkBan(cftsUser)
@@ -140,7 +146,7 @@ def userRequests(request):
         pageNum = request.GET.get('page')
         pageObj = requestPage.get_page(pageNum)
 
-    rc = {'requests': pageObj, 'resources': resources, 'firstName': cftsUser.name_first, 'lastName': cftsUser.name_last}
+    rc = {'requests': pageObj, 'resources': resources, 'user': cftsUser}
 
     return render(request, 'pages/userRequests.html', {'rc': rc})
 
@@ -152,6 +158,6 @@ def requestDetails(request, id):
     # get the Request object the user clicked on from the request history page
     userRequest = Request.objects.get(request_id=id)
 
-    rc = {'request': userRequest, 'resources': resources, 'firstName': userRequest.user.name_first.split("_buggedPKI")[0], 'lastName': userRequest.user.name_last}
+    rc = {'request': userRequest, 'resources': resources, 'user': userRequest.user, 'firstName': userRequest.user.name_first.split("_buggedPKI")[0], 'lastName': userRequest.user.name_last}
 
     return render(request, 'pages/requestDetails.html', {'rc': rc})

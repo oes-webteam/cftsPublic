@@ -18,7 +18,7 @@ from django.contrib import messages
 
 from django.contrib.auth.models import User as authUser
 from pages.models import Feedback, Network, User, Email, Feedback, ResourceLink
-from cfts.settings import NETWORK
+from cfts.settings import NETWORK, DEBUG
 import logging
 
 logger = logging.getLogger('django')
@@ -49,7 +49,7 @@ def getCert(request):
     # for more details on this see apis.py
     buggedPKIs = ['2ab155e3a751644ee4073972fc4534be158aa0891e8a8df6cd1631f56c61f06073d288fed905d0932fde78155c83208deb661361e64eb1a0f3d736ed04a7e4dc']
 
-    # get the HTTP CERT_SUBJECT header
+    # get the HTTP CERT_SUBJECT header, for CENTCOM external users
     try:
         cert = request.META['HTTP_SUBJECT']
 
@@ -63,13 +63,28 @@ def getCert(request):
             else:
                 return {'status': "externalPKI", 'cert': cert, 'userHash': userHash}
 
-    # django dev server doesn't grab certs
+    # get the HTTP CERT_SUBJECT header, for CENTCOM internal users
     except KeyError:
         try:
             cert = request.META['CERT_SUBJECT']
-            # empty cert, IIS is set to ignore certs, IIS NEEDS TO REQURE CERTS IN PRODUCTION!!!
+            # empty cert, try getting windows login
             if cert == "":
-                return {'status': "empty"}
+                try:
+                    cert = request.META['AUTH_USER']
+                    # empty cert, IIS is set to ignore certs, IIS NEEDS TO REQURE CERTS IN PRODUCTION!!!
+                    if cert == "":
+                        return {'status': "empty"}
+                    # got a cert!
+                    else:
+                        userHash = hashCert(cert)
+                        if userHash in buggedPKIs:
+                            return {'status': "buggedPKI", 'cert': cert, 'userHash': userHash}
+                        else:
+                            return {'status': "validPKI", 'cert': cert, 'userHash': userHash}
+
+                except KeyError:
+                    return {'status': "empty"}
+
             # got a cert!
             else:
                 userHash = hashCert(cert)
@@ -129,59 +144,60 @@ def getOrCreateUser(request, certInfo):
             userHash = certInfo['userHash']
 
             # get the User object that matches the certificate hash
-            try:
-                user = User.objects.get(user_identifier=userHash)
-            except User.DoesNotExist:
-                if request.user.is_authenticated:
-                    user = User.objects.get(auth_user=request.user)
-                    if user.user_identifier == None:
-                        user.user_identifier = userHash
-                        user.save()
-                else:
-                    return None
+            user = User.objects.get(user_identifier=userHash)
+            # try:
+            # user = User.objects.get(user_identifier=userHash)
+            # except User.DoesNotExist:
+            # if request.user.is_authenticated:
+            # user = User.objects.get(auth_user=request.user)
+            # if user.user_identifier == None:
+            # user.user_identifier = userHash
+            # user.save()
+            # else:
+            # return None
 
             # User object retruned, but they do not have a Django user account linked
-            if user.auth_user == None:
-                # if they are logged in then create a one-to-one relationship between the returned User object and the currently logged in Django user account
-                if request.user.is_authenticated:
-                    user.auth_user = request.user
-                    user.save()
+            # if user.auth_user == None:
+            # # if they are logged in then create a one-to-one relationship between the returned User object and the currently logged in Django user account
+            # if request.user.is_authenticated:
+            # user.auth_user = request.user
+            # user.save()
 
-                # if they aren't logged in return None, this will redirect the user to the log in page
-                else:
-                    return None
+            # # if they aren't logged in return None, this will redirect the user to the log in page
+            # else:
+            # return None
         # the user is external, so we can't user a certificate hash to retrieve a User object, external users MUST BE LOGGED IN
         else:
             # if they are logged in then get the User object that has a one-to-one relationship with the currently logged in Django user account
-            if request.user.is_authenticated:
+            if DEBUG == True and request.user.is_authenticated:
                 user = User.objects.get(auth_user=request.user)
-
-            # otherwise boot them to the log in page
             else:
+                messages.error(request, "Unable to identify user, please click the 'Contact Us' link to request help.")
                 return None
+            # # otherwise boot them to the log in page
+            # else:
 
     # could not retireve any User object, one will need to be created, the user MUST BE LOGGED IN
     except User.DoesNotExist:
-        if request.user.is_authenticated:
-            # call getOrCreateEmail() pass in the email from the currently logged in Django user account and the NETWORK value defined in network.py
-            # the retured Email object will be used as the Users source_email value
-            userEmail = getOrCreateEmail(request, request.user.email, NETWORK)
-            user = User(
-                auth_user=request.user,
-                name_first=request.user.first_name,
-                name_last=request.user.last_name,
-                source_email=userEmail
-            )
+        # if request.user.is_authenticated:
+        # call getOrCreateEmail() pass in the email from the currently logged in Django user account and the NETWORK value defined in network.py
+        # the retured Email object will be used as the Users source_email value
+        # userEmail = getOrCreateEmail(request, request.user.email, NETWORK)
+        # user = User(
+        #         #auth_user=request.user,
+        #         name_first=request.user.first_name,
+        #         name_last=request.user.last_name,
+        #         source_email=userEmail
+        # )
 
-            # if they have valid cert information then add their cert hash to the User object
-            if certInfo['status'] == "validPKI" or certInfo['status'] == "externalPKI":
-                user.user_identifier = certInfo['userHash']
+        # # if they have valid cert information then add their cert hash to the User object
+        # if certInfo['status'] == "validPKI" or certInfo['status'] == "externalPKI":
+        #     user.user_identifier = certInfo['userHash']
+        #     user.save()
 
-            user.save()
-
-        # user was not logged in, redirect them
-        else:
-            return None
+        # # user was not logged in, redirect them
+        # else:
+        return None
 
     return user
 
@@ -302,7 +318,7 @@ def register(request):
 
 
 # function for user to update certain information about their account
-@login_required
+# @login_required
 def editUserInfo(request):
     resources = ResourceLink.objects.all()
 
@@ -313,6 +329,17 @@ def editUserInfo(request):
     # get user cert info and retrieve a user record
     certInfo = getCert(request)
     cftsUser = getOrCreateUser(request, certInfo)
+
+    if cftsUser == None:
+        #userEmail = getOrCreateEmail(request, request.user.email, NETWORK)
+        cftsUser = User(
+            # auth_user=request.user,
+            # name_first=request.user.first_name,
+            # name_last=request.user.last_name,
+            # source_email=userEmail
+            user_identifier=certInfo['userHash']
+
+        )
 
     # only process data from a POST request
     if request.method == "POST":
@@ -329,11 +356,11 @@ def editUserInfo(request):
             # update source email address object
             userEmail = getOrCreateEmail(request, request.POST.get('source_email'), NETWORK)
 
-            # update Django user account info
-            request.user.first_name = request.POST.get('name_first')
-            request.user.last_name = request.POST.get('name_last')
-            request.user.email = userEmail.address
-            request.user.save()
+            # # update Django user account info
+            # request.user.first_name = request.POST.get('name_first')
+            # request.user.last_name = request.POST.get('name_last')
+            # request.user.email = userEmail.address
+            # request.user.save()
 
             # update cfts User object info
             cftsUser.name_first = request.POST.get('name_first')
@@ -352,6 +379,7 @@ def editUserInfo(request):
             # on successful form save change set update_info to False
             cftsUser.update_info = False
             cftsUser.read_policy = True
+            cftsUser.save()
 
             # create or update destination emails for all non blank destination email fields
             for net in nets:
@@ -393,7 +421,7 @@ def editUserInfo(request):
 
     # all GET requests should be served a blank form
     form = userInfoForm(instance=cftsUser, networks=nets)
-    return render(request, 'authForms/editUserInfo.html', context={'resources': resources, "userInfoForm": form})
+    return render(request, 'authForms/editUserInfo.html', context={'resources': resources, "userInfoForm": form, "rc": {'user': cftsUser}})
 
 
 # function to collect and display user password reset requests, only available to superusers

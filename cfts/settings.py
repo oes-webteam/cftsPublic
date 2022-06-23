@@ -44,8 +44,6 @@ KEYS_DIR = os.path.join(BASE_DIR, "KEYS")
 # setting this to True will dissable all request submission and display a message on the homepage
 DISABLE_SUBMISSIONS = ENV.DISABLE_SUBMISSIONS
 
-SKIP_FILE_REVIEW = ENV.SKIP_FILE_REVIEW
-
 PRIVATE_KEY_PASSWORD = ENV.PRIVATE_KEY_PASSWORD
 
 # Application definition
