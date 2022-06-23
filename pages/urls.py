@@ -1,4 +1,3 @@
-from os import name
 from django.urls import path
 import pages.views as views
 from django.contrib.auth import views as auth_views

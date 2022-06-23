@@ -46,6 +46,7 @@ DISABLE_SUBMISSIONS = ENV.DISABLE_SUBMISSIONS
 
 PRIVATE_KEY_PASSWORD = ENV.PRIVATE_KEY_PASSWORD
 
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -57,7 +58,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # used to determine a users browser, we don't like Internet Explore around here
+    # used to determine a users browser, we don't like Internet Explorer around here
     'django_user_agents',
     # used to easily add bootstrap styling to Django generated html forms
     'crispy_forms',
