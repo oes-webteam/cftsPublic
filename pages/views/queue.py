@@ -470,7 +470,6 @@ def createZip(request, network_name, rejectPull):
             destNetwork = Network.objects.get(name=network_name)
             maxPull = Pull.objects.filter(network=destNetwork).latest('date_pulled')
 
-
             # Reset the pull number everyday
             if(datetime.datetime.now().date() > maxPull.date_pulled.date()):
                 pull_number = 1
@@ -543,7 +542,6 @@ def createZip(request, network_name, rejectPull):
 
                 rqst_info_file_path = zip_folder + "/_request_info.txt"
 
-
                 with zip.open(rqst_info_file_path, 'w') as fp:
                     fp.write(str(crypt_info).encode('utf-8'))
                     fp.close()
@@ -553,7 +551,6 @@ def createZip(request, network_name, rejectPull):
                     email_file_name = '_encrypt.txt'
                 elif rqst.has_encrypted == False:
                     email_file_name = '_email.txt'
-
 
                 email_file_path = zip_folder + "/" + email_file_name
 
@@ -609,6 +606,16 @@ def createZip(request, network_name, rejectPull):
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def getFile(request, folder, fileID, fileName):
+    """
+    It takes a request, a folder, a fileID, and a fileName, and returns a response that contains the
+    file
+
+    :param request: The request object
+    :param folder: the folder where the file is located, uploads dir or drops dir
+    :param fileID: the name of the folder that contains the file, uuid folder
+    :param fileName: The name of the file to be downloaded
+    :return: A file response object.
+    """
 
     response = FileResponse(
         open(os.path.join(folder, fileID, fileName), 'rb'))
