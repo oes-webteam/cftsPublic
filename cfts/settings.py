@@ -40,7 +40,7 @@ these names should match the Network objects in the database
 NETWORK = ENV.NETWORK
 
 # setting this to True will dissable all request submission and display a message on the homepage
-DISABLE_SUBMISSIONS = False
+DISABLE_SUBMISSIONS = ENV.DISABLE_SUBMISSIONS
 
 # Application definition
 
@@ -53,7 +53,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # used to determine a users browser, we don't like Internet Explore around here
+    # used to determine a users browser, we don't like Internet Explorer around here
     'django_user_agents',
     # used to easily add bootstrap styling to Django generated html forms
     'crispy_forms',
