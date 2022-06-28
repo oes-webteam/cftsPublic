@@ -34,6 +34,8 @@ from django.http import JsonResponse, FileResponse, HttpResponse
 # model/database stuff
 from pages.models import *
 from django.db.models import Count, Q
+from django.contrib.auth.models import User as authUser
+
 
 import logging
 
@@ -243,17 +245,49 @@ def transferRequest(request, id):
             'text': row.text
         })
 
-    rc = {
-        'Date Submitted': rqst.date_created,
-        'Source Email': rqst.user.source_email,
-        'Destination Email': rqst.target_email.all()[0],
-        'RHR Email': rqst.RHR_email,
-        'Phone': rqst.user.phone,
-        'Network': Network.objects.get(network_id=rqst.network.network_id),
-        'org': rqst.org,
-    }
+    emailFlags = {
+        'sourceDestFlag': False,
+        'RHRFlag': False,
+        'RHRStaffFlag': False,
+        'RHRSourceFlag': False,
+        'RHRDestFlag': False,
+        }
 
-    return render(request, 'pages/transfer-request.html', {'rqst': rqst, 'rc': rc, 'dupes': dupes, 'mostRecentDupe': mostRecentDupe, 'rejections': rejections,
+    destSplit = rqst.target_email.all()[0].address.split("@")[0]
+
+    if rqst.destFlag == True:
+        if rqst.user.source_email.address.split("@")[0] != destSplit:
+            emailFlags['sourceDestFlag'] = True
+
+    # Getting all the staff emails from the database
+    staff_emails = authUser.objects.filter(is_staff=True).values_list('email', flat=True)
+
+    # Checking if the RHR email address in the form is in the staff_emails list, or if it is the same as the
+    # source or destination email address. If any of those are true, then it sets the destFlag to True.
+
+    if rqst.RHR_email == rqst.user.source_email.address:
+        emailFlags['RHRSourceFlag'] = True
+        emailFlags['RHRFlag'] = True
+
+    if rqst.RHR_email == rqst.target_email.all()[0].address:
+        emailFlags['RHRDestFlag'] = True
+        emailFlags['RHRFlag'] = True
+    
+    if rqst.RHR_email in staff_emails:
+        emailFlags['RHRStaffFlag'] = True
+        emailFlags['RHRFlag'] = True
+    
+    # rc = {
+    #     'Date Submitted': rqst.date_created,
+    #     'Source Email': rqst.user.source_email,
+    #     'Destination Email': rqst.target_email.all()[0],
+    #     'RHR Email': rqst.RHR_email,
+    #     'Phone': rqst.user.phone,
+    #     'Network': rqst.network.name
+    #     'org': rqst.org,
+    # }
+
+    return render(request, 'pages/transfer-request.html', {'rqst': rqst, 'emailFlags': emailFlags, 'dupes': dupes, 'mostRecentDupe': mostRecentDupe, 'rejections': rejections,
                                                            'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": rqst.user.user_id, 'debug': cftsSettings.DEBUG})
 
 @login_required

@@ -546,7 +546,7 @@ def process(request):
 
         # Add destination email to request object and raise email mismatch flag if needed
         rqst.target_email.add(*target_list)
-        if form_data.get('network') == "NIPR":
+        if form_data.get('network') == "NIPR" or form_data.get('network') == "SIPR":
             if form_data.get('userEmail').split("@")[0] not in destSplit_list:
                 rqst.destFlag = True
 
