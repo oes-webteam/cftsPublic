@@ -5,13 +5,13 @@
     {% load crispy_forms_tags %}
     <link rel="stylesheet" href="{% static 'css/authForms.css' %}" />
 
-    <div class="container pt-2">
+    <div class="container pt-4">
 
         <h1 class="mb-3">Update Account Info</h1>
         <form class="needs-validation" method="post" novalidate>
             {% crispy userInfoForm %}
         </form>
-        <p class="text-center">Need to change your password? <a href="/password-change">Click here</a></p>
+        <!-- <p class="text-center">Need to change your password? <a href="/password-change">Click here</a></p> -->
     </div>
 
     <script>

@@ -63,15 +63,15 @@ def submitFeedback(request):
         # no User object retruned, format and add user submitted information to the beginning of the body of the Feedback object
         else:
             buggedUserInfo = '''
-            User Name: {uname}
             First Name: {fname}
             Last Name: {lname}
             Email: {email}
             Phone: {phone}
+            Message: {msg}
+            '''.format(msg=form_data.get('feedback'), fname=form_data.get('firstName'), lname=form_data.get('lastName'), email=form_data.get('userEmail'), phone=form_data.get('userPhone'))
 
-            '''.format(uname=form_data.get('userName'), fname=form_data.get('firstName'), lname=form_data.get('lastName'), email=form_data.get('userEmail'), phone=form_data.get('userPhone'))
-
-            feedback.body = buggedUserInfo + form_data.get('feedback')
+            feedback.title = form_data.get('lastName') + ", " + form_data.get('firstName')
+            feedback.body = buggedUserInfo
 
             # bugged PKI user, try and return a User object based on Django account username
             try:

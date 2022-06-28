@@ -12,6 +12,7 @@ from datetime import datetime
 from django.contrib import messages
 import traceback
 from pages.views.auth import superUserCheck, staffCheck
+from django.utils import timezone
 # ====================================================================
 
 # function called from fileCleanup() to delete files in a directory that are over a number of days old
@@ -24,7 +25,6 @@ def deleteFiles(directory, maxAge):
                 # calculate age of file from the files 'last modified' time
                 modTime = datetime.fromtimestamp(file.stat().st_mtime)
                 fileAge = datetime.fromtimestamp(datetime.now().timestamp())-modTime
-
                 # if file is older that maxAge passed in from args then delete it and any parent folders
                 if fileAge.days > maxAge:
                     print("File %s is %s days old. Deleting..." % (file.path, fileAge.days))
@@ -38,13 +38,22 @@ def deleteFiles(directory, maxAge):
                         except:
                             pass
 
-                else:
-                    daysRemaining = maxAge-fileAge.days
-                    if daysRemaining == 0:
-                        print("File %s will be deleted in 1 day." % file.path)
+                # else:
+                #     daysRemaining = maxAge-fileAge.days
+                #     if daysRemaining == 0:
+                #         print("File %s will be deleted in 1 day." % file.path)
 
-                    print("File %s will be deleted in %s days." % (file.path, daysRemaining))
+                #     print("File %s will be deleted in %s days." % (file.path, daysRemaining))
 
+def deleteDrops():
+    oldDrops = Drop_Request.objects.filter(delete_on__lte=timezone.now())
+
+    for drop in oldDrops:
+        print("Deleting drop_request %s" % (drop.request_id))
+        for file in drop.files.all():
+            print("Deleting drop_file %s" % (file.file_id))
+            file.delete()
+        drop.delete()
 
 # function to call deleteFiles() from a url, only available to superusers
 @login_required
@@ -54,12 +63,15 @@ def fileCleanup(request):
     uploadsPath = settings.UPLOADS_DIR
     pullsPath = settings.PULLS_DIR
     scanPath = os.path.join(settings.BASE_DIR, "cfts\\scan")
+    dropsPath = settings.DROPS_DIR
 
     # call deleteFiles() with a path and maximum file age
     try:
         deleteFiles(uploadsPath, 30)
         deleteFiles(pullsPath, 30)
         deleteFiles(scanPath, 1)
+        deleteFiles(dropsPath, 5)
+        deleteDrops()
     except Exception as e:
         messages.error(request, "Could not perform scheduled file deletion." + str(traceback.format_exc()))
 

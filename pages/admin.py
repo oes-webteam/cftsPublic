@@ -45,7 +45,6 @@ class FileAdmin(admin.ModelAdmin):
 
 
 # Register your models here.
-admin.site.register(Classification)
 admin.site.register(File, FileAdmin)
 admin.site.register(Network)
 admin.site.register(Email, EmailAdmin)
@@ -57,3 +56,5 @@ admin.site.register(ResourceLink)
 admin.site.register(DirtyWord)
 admin.site.register(Feedback, FeedbackAdmin)
 admin.site.register(Message)
+admin.site.register(Drop_File)
+admin.site.register(Drop_Request)
