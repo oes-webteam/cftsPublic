@@ -87,6 +87,16 @@ def queue(request):
         random.shuffle(cookieList1)
         empty = cookieList1+cookieList2
 
+        # Sort the list of network queues into network order
+        xfer_queues = sorted(xfer_queues, key=lambda k: k['order_by'], reverse=False)
+
+        # Create the request context
+        rc = {'queues': xfer_queues, 'empty': empty, 'easterEgg': activeTab}
+
+        # roll that beautiful bean footage
+        # ^-- I've always wondered what he meant by that, never did ask him
+        return render(request, 'pages/queue.html', {'rc': rc})
+
     # Send a message to the empty queue page, kinda like a fortune cookie
     else:
         empty = random.choice([
@@ -110,102 +120,102 @@ def queue(request):
             "Card games are fun too."
         ])
 
-    # Filter for requests that are not part of a completed pull, and then prefetching related files
-    # and target emails. It is also selecting related user. It is then annotating the query with the
-    # number of files in the request, the number of files that need review, and the number of files
-    # that the user is reviewing. It is then ordering the query by date created.
-    ds_requests = Request.objects.filter(is_submitted=True, pull__date_complete__isnull=True).prefetch_related('files', 'target_email').select_related('user').annotate(
-        files_in_request=Count('files__file_id'),
-        needs_review=Count('files', filter=Q(files__user_oneeye=None) | Q(files__user_twoeye=None) & ~Q(files__user_oneeye=request.user)) -
-        Count('files', filter=~Q(files__rejection_reason=None) & ~Q(files__user_oneeye=request.user) & ~Q(files__user_twoeye=request.user)),
-        user_reviewing=Count('files', filter=Q(files__user_oneeye=request.user) & Q(files__date_oneeye=None) & Q(files__rejection_reason=None)) +
-        Count('files', filter=Q(files__user_twoeye=request.user) & Q(files__date_twoeye=None) & Q(files__rejection_reason=None))).order_by('date_created')
+        # Filter for requests that are not part of a completed pull, and then prefetching related files
+        # and target emails. It is also selecting related user. It is then annotating the query with the
+        # number of files in the request, the number of files that need review, and the number of files
+        # that the user is reviewing. It is then ordering the query by date created.
+        ds_requests = Request.objects.filter(is_submitted=True, pull__date_complete__isnull=True).prefetch_related('files', 'target_email').select_related('user').annotate(
+            files_in_request=Count('files__file_id'),
+            needs_review=Count('files', filter=Q(files__user_oneeye=None) | Q(files__user_twoeye=None) & ~Q(files__user_oneeye=request.user)) -
+            Count('files', filter=~Q(files__rejection_reason=None) & ~Q(files__user_oneeye=request.user) & ~Q(files__user_twoeye=request.user)),
+            user_reviewing=Count('files', filter=Q(files__user_oneeye=request.user) & Q(files__date_oneeye=None) & Q(files__rejection_reason=None)) +
+            Count('files', filter=Q(files__user_twoeye=request.user) & Q(files__date_twoeye=None) & Q(files__rejection_reason=None))).order_by('date_created')
 
-    # Getting all the network_id's from the ds_requests and then filtering the ds_networks based on
-    # the network_id's.
-    pending_nets = ds_requests.values_list('network', flat=True)
-    ds_networks = Network.objects.filter(network_id__in=pending_nets)
+        # Getting all the network_id's from the ds_requests and then filtering the ds_networks based on
+        # the network_id's.
+        pending_nets = ds_requests.values_list('network', flat=True)
+        ds_networks = Network.objects.filter(network_id__in=pending_nets)
 
-    # For every network
-    for net in ds_networks:
-        # Get information about the last pull that was done on this network
-        last_pull = Pull.objects.values(
-            'pull_number',
-            'date_pulled',
-            'user_pulled__username'
-        ).filter(network__name=net.name).order_by('-date_pulled')[:1]
+        # For every network
+        for net in ds_networks:
+            # Get information about the last pull that was done on this network
+            last_pull = Pull.objects.values(
+                'pull_number',
+                'date_pulled',
+                'user_pulled__username'
+            ).filter(network__name=net.name).order_by('-date_pulled')[:1]
 
-        queue = {
-            'name': net.name,
-            'order_by': net.sort_order,
+            queue = {
+                'name': net.name,
+                'order_by': net.sort_order,
 
-            'count': 0,
-            'file_count': 0,
-            'activeNet': activeTab,
-            'pending': 0,
-            'centcom': 0,
-            'other': 0,
-            'pullable': 0,
-            'hidden_dupes_pullable': 0,
-            'hidden_dupes_pulled': 0,
-            'pulled': 0,
+                'count': 0,
+                'file_count': 0,
+                'activeNet': activeTab,
+                'pending': 0,
+                'centcom': 0,
+                'other': 0,
+                'pullable': 0,
+                'hidden_dupes_pullable': 0,
+                'hidden_dupes_pulled': 0,
+                'pulled': 0,
 
-            # The actual set of Request objects
-            'q': [],
-            'o': [],
-            'a': [],
-            'p': [],
-            'last_pull': last_pull,
-        }
+                # The actual set of Request objects
+                'q': [],
+                'o': [],
+                'a': [],
+                'p': [],
+                'last_pull': last_pull,
+            }
 
-        activeTab = False
+            activeTab = False
 
-        # ... and add it to the list
-        xfer_queues.append(queue)
+            # ... and add it to the list
+            xfer_queues.append(queue)
 
-    # Counting the number of requests in each queue group, appending request to the appropreate list.
-    for rqst in ds_requests:
-        # Iterating through the list of queues and finding the queue that matches the name of the network.
-        for queue in xfer_queues:
-            if queue['name'] == rqst.network.name:
-                match_queue = queue
-                break
+        # Counting the number of requests in each queue group, appending request to the appropreate list.
+        for rqst in ds_requests:
+            # Iterating through the list of queues and finding the queue that matches the name of the network.
+            for queue in xfer_queues:
+                if queue['name'] == rqst.network.name:
+                    match_queue = queue
+                    break
 
-        match_queue['count'] += 1
+            match_queue['count'] += 1
 
-        if rqst.pull != None:
-            match_queue['pulled'] += 1
-
-            if rqst.rejected_dupe == True:
-                match_queue['hidden_dupes_pulled'] += 1
-            elif rqst.rejected_dupe == False:
-                match_queue['p'].append(rqst)
-
-        else:
-            match_queue['file_count'] += rqst.files_in_request
-            match_queue['pending'] += 1
-
-            if rqst.ready_to_pull == True:
-                match_queue['pullable'] += 1
+            if rqst.pull != None:
+                match_queue['pulled'] += 1
 
                 if rqst.rejected_dupe == True:
-                    match_queue['hidden_dupes_pullable'] += 1
+                    match_queue['hidden_dupes_pulled'] += 1
                 elif rqst.rejected_dupe == False:
-                    match_queue['a'].append(rqst)
+                    match_queue['p'].append(rqst)
 
-            elif rqst.is_centcom == True:
-                match_queue['centcom'] += 1
-                match_queue['q'].append(rqst)
+            else:
+                match_queue['file_count'] += rqst.files_in_request
+                match_queue['pending'] += 1
 
-            elif rqst.is_centcom == False:
-                match_queue['other'] += 1
-                match_queue['o'].append(rqst)
+                if rqst.ready_to_pull == True:
+                    match_queue['pullable'] += 1
 
-    # Sort the list of network queues into network order
-    xfer_queues = sorted(xfer_queues, key=lambda k: k['order_by'], reverse=False)
+                    if rqst.rejected_dupe == True:
+                        match_queue['hidden_dupes_pullable'] += 1
+                    elif rqst.rejected_dupe == False:
+                        match_queue['a'].append(rqst)
 
-    # Create the request context
-    rc = {'queues': xfer_queues, 'empty': empty, 'easterEgg': not activeTab}
+                elif rqst.is_centcom == True:
+                    match_queue['centcom'] += 1
+                    match_queue['q'].append(rqst)
+
+                elif rqst.is_centcom == False:
+                    match_queue['other'] += 1
+                    match_queue['o'].append(rqst)
+
+        # Sort the list of network queues into network order
+        xfer_queues = sorted(xfer_queues, key=lambda k: k['order_by'], reverse=False)
+
+        # Create the request context
+        rc = {'queues': xfer_queues, 'empty': empty, 'easterEgg': not activeTab}
 
     # roll that beautiful bean footage
     # ^-- I've always wondered what he meant by that, never did ask him
@@ -251,7 +261,7 @@ def transferRequest(request, id):
         'RHRStaffFlag': False,
         'RHRSourceFlag': False,
         'RHRDestFlag': False,
-        }
+    }
 
     destSplit = rqst.target_email.all()[0].address.split("@")[0]
 
@@ -272,11 +282,11 @@ def transferRequest(request, id):
     if rqst.RHR_email == rqst.target_email.all()[0].address:
         emailFlags['RHRDestFlag'] = True
         emailFlags['RHRFlag'] = True
-    
+
     if rqst.RHR_email in staff_emails:
         emailFlags['RHRStaffFlag'] = True
         emailFlags['RHRFlag'] = True
-    
+
     # rc = {
     #     'Date Submitted': rqst.date_created,
     #     'Source Email': rqst.user.source_email,

@@ -1,22 +1,15 @@
 # ====================================================================
 # core
 from datetime import date
-from django.conf import Settings
 from django.core import paginator
 from django.contrib import messages
 
-# crypto
-import hashlib
-from django import http
-from django.db.models import fields
-from django.http import request, JsonResponse, HttpResponse
 # responses
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.cache import never_cache
-from django.core import serializers
 
-from cfts import settings as Settings
+from cfts.settings import DEBUG, DISABLE_SUBMISSIONS
 # db/model stuff
 from pages.models import *
 
@@ -99,10 +92,10 @@ def frontend(request):
 
         # redirect user to login page or info edit page
         if certInfo['status'] == "empty" and not request.user.is_authenticated:
-            if Settings.DEBUG == True:
+            if DEBUG == True:
                 return redirect("/login")
-            elif Settings.DEBUG == False:
-                return render(request, 'pages/frontend.html', {'rc': {'error': True, 'submission_disabled': Settings.DISABLE_SUBMISSIONS, 'debug': str(Settings.DEBUG), 'resources': resources, 'browser': browser}})
+            elif DEBUG == False:
+                return render(request, 'pages/frontend.html', {'rc': {'error': True, 'submission_disabled': DISABLE_SUBMISSIONS, 'debug': str(DEBUG), 'resources': resources, 'browser': browser}})
         elif cftsUser == None or cftsUser.update_info == True:
             # return redirect("/login")
             return redirect("/user-info")
@@ -118,7 +111,7 @@ def frontend(request):
         if nets == None:
             return redirect('user-info')
 
-        rc = {'networks': nets, 'submission_disabled': Settings.DISABLE_SUBMISSIONS, 'debug': str(Settings.DEBUG), 'resources': resources, 'user': cftsUser, 'browser': browser, 'announcements': announcements}
+        rc = {'networks': nets, 'submission_disabled': DISABLE_SUBMISSIONS, 'debug': str(DEBUG), 'resources': resources, 'user': cftsUser, 'browser': browser, 'announcements': announcements}
 
         return render(request, 'pages/frontend.html', {'rc': rc})
 

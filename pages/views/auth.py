@@ -169,8 +169,17 @@ def getOrCreateUser(request, certInfo):
         # the user is external, so we can't user a certificate hash to retrieve a User object, external users MUST BE LOGGED IN
         else:
             # if they are logged in then get the User object that has a one-to-one relationship with the currently logged in Django user account
-            if DEBUG == True and request.user.is_authenticated:
-                user = User.objects.get(auth_user=request.user)
+            if DEBUG == True and certInfo['status'] == "empty":
+                if request.user.is_authenticated:
+                    user = User.objects.get(auth_user=request.user)
+                    if user.user_identifier == None or user.user_identifier == "":
+                        try:
+                            user.user_identifier = certInfo['userHash']
+                            user.save()
+                        except:
+                            pass
+                else:
+                    return None
             else:
                 messages.error(request, "Unable to identify user, please click the 'Contact Us' link to request help.")
                 return None
