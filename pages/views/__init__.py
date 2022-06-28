@@ -10,4 +10,3 @@ from .reports import *
 from .resources import *
 from .feedback import *
 from .auth import *
-from .drop import *

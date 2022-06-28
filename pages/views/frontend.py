@@ -1,15 +1,22 @@
 # ====================================================================
 # core
 from datetime import date
+from django.conf import Settings
 from django.core import paginator
 from django.contrib import messages
 
+# crypto
+import hashlib
+from django import http
+from django.db.models import fields
+from django.http import request, JsonResponse, HttpResponse
 # responses
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.cache import never_cache
+from django.core import serializers
 
-from cfts.settings import DEBUG, DISABLE_SUBMISSIONS
+from cfts import settings as Settings
 # db/model stuff
 from pages.models import *
 
@@ -91,16 +98,10 @@ def frontend(request):
         cftsUser = getOrCreateUser(request, certInfo)
 
         # redirect user to login page or info edit page
-        if certInfo['status'] == "empty" and not request.user.is_authenticated:
-            if DEBUG == True:
-                return redirect("/login")
-            elif DEBUG == False:
-                return render(request, 'pages/frontend.html', {'rc': {'error': True, 'submission_disabled': DISABLE_SUBMISSIONS, 'debug': str(DEBUG), 'resources': resources, 'browser': browser}})
-        elif cftsUser == None or cftsUser.update_info == True:
-            # return redirect("/login")
+        if cftsUser == None:
+            return redirect("/login")
+        elif cftsUser.update_info == True:
             return redirect("/user-info")
-        # elif cftsUser.update_info == True:
-        #     return redirect("/user-info")
 
         # check if the user is currntly banned
         checkBan(cftsUser)
@@ -111,7 +112,7 @@ def frontend(request):
         if nets == None:
             return redirect('user-info')
 
-        rc = {'networks': nets, 'submission_disabled': DISABLE_SUBMISSIONS, 'debug': str(DEBUG), 'resources': resources, 'user': cftsUser, 'browser': browser, 'announcements': announcements}
+        rc = {'networks': nets, 'submission_disabled': Settings.DISABLE_SUBMISSIONS, 'debug': str(Settings.DEBUG), 'resources': resources, 'user': cftsUser, 'browser': browser, 'announcements': announcements}
 
         return render(request, 'pages/frontend.html', {'rc': rc})
 
@@ -139,7 +140,7 @@ def userRequests(request):
         pageNum = request.GET.get('page')
         pageObj = requestPage.get_page(pageNum)
 
-    rc = {'requests': pageObj, 'resources': resources, 'user': cftsUser}
+    rc = {'requests': pageObj, 'resources': resources, 'firstName': cftsUser.name_first, 'lastName': cftsUser.name_last}
 
     return render(request, 'pages/userRequests.html', {'rc': rc})
 
@@ -151,6 +152,6 @@ def requestDetails(request, id):
     # get the Request object the user clicked on from the request history page
     userRequest = Request.objects.get(request_id=id)
 
-    rc = {'request': userRequest, 'resources': resources, 'user': userRequest.user, 'firstName': userRequest.user.name_first.split("_buggedPKI")[0], 'lastName': userRequest.user.name_last}
+    rc = {'request': userRequest, 'resources': resources, 'firstName': userRequest.user.name_first.split("_buggedPKI")[0], 'lastName': userRequest.user.name_last}
 
     return render(request, 'pages/requestDetails.html', {'rc': rc})

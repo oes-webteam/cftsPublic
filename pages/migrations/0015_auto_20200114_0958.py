@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='file',
             name='file_object',
-            field=models.FileField(default=None, upload_to=pages.models.randomize_path_file),
+            field=models.FileField(default=None, upload_to=pages.models.randomize_path),
         ),
         migrations.AddField(
             model_name='request',

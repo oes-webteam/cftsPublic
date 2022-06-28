@@ -17,10 +17,9 @@
                 {% else %}
                     <div class="alert alert-danger banned-notif" role="alert">Repeated policy violations have resulted in you losing access to the Combined File Transfer Service permanently.</div>
                 {% endif %}
+
             {% elif rc.submission_disabled == True %}
                 <div class="alert alert-info" role="alert">The Combined File Transfer Service is currently undergoing maintenance, file submissions have been temporarily disabled.</div>
-            {% elif rc.error == True %}
-                {% comment %} <div class="alert alert-info" role="alert">The Combined File Transfer Service is currently undergoing maintenance, file submissions have been temporarily disabled.</div> {% endcomment %}
             {% else %}
 
                 {% for announcement in rc.announcements %}

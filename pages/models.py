@@ -9,13 +9,9 @@ from django.db.models import F
 from django.utils.functional import keep_lazy_text
 
 
-def randomize_path_file(instance, filename):
+def randomize_path(instance, filename):
     path = str(uuid.uuid4())
     return os.path.join('uploads/', path, filename)
-
-def randomize_path_drop_file(instance, filename):
-    path = str(uuid.uuid4())
-    return os.path.join('drops/', path, filename)
 
 
 class ResourceLink(models.Model):
@@ -41,6 +37,20 @@ class ResourceLink(models.Model):
         ordering = ['sort_order']
 
 
+class Classification(models.Model):
+    classification_id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=settings.DEBUG)
+    full_name = models.CharField(max_length=50)
+    abbrev = models.CharField(max_length=50)
+    sort_order = models.IntegerField()
+
+    class Meta:
+        ordering = ['sort_order']
+
+    def __str__(self):
+        return self.full_name
+
+
 class Rejection(models.Model):
     rejection_id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False)
@@ -61,10 +71,9 @@ class Network(models.Model):
     network_id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=settings.DEBUG)
     name = models.CharField(max_length=50)
+    classifications = models.ManyToManyField(Classification)
     sort_order = models.IntegerField()
     visible = models.BooleanField(default=True)
-    cfts_deployed = models.BooleanField(default=False)
-    skip_file_review = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['sort_order']
@@ -89,12 +98,12 @@ class Email(models.Model):
 class User(models.Model):
     user_id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False)
-    auth_user = models.OneToOneField(User, default=None, null=True, blank=True, on_delete=models.SET_NULL)
+    auth_user = models.OneToOneField(User, default=None, null=True, blank=True, on_delete=models.DO_NOTHING)
     user_identifier = models.CharField(max_length=150, default=None, null=True, blank=True)
     name_first = models.CharField(max_length=50)
     name_last = models.CharField(max_length=50)
     source_email = models.ForeignKey(Email, null=True, blank=True, on_delete=models.DO_NOTHING, related_name="source_email")
-    destination_emails = models.ManyToManyField(Email, blank=True)
+    destination_emails = models.ManyToManyField(Email)
     notes = models.TextField(null=True, blank=True)
     phone = models.CharField(max_length=50, default=None, null=True, blank=True)
     banned = models.BooleanField(default=False)
@@ -166,7 +175,7 @@ class CustomFileSystemStorage(FileSystemStorage):
 class File(models.Model):
     file_id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False)
-    file_object = models.FileField(upload_to=randomize_path_file, storage=CustomFileSystemStorage(), max_length=500)
+    file_object = models.FileField(upload_to=randomize_path, storage=CustomFileSystemStorage(), max_length=500)
     file_name = models.CharField(max_length=255, null=True, blank=True, default=None)
     file_hash = models.CharField(max_length=40, blank=True, null=True)
     is_pii = models.BooleanField(default=False)
@@ -198,7 +207,7 @@ class Request(models.Model):
     request_id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False)
     date_created = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     network = models.ForeignKey(Network, on_delete=models.DO_NOTHING)
     files = models.ManyToManyField(File)
     target_email = models.ManyToManyField(Email)
@@ -218,7 +227,7 @@ class Request(models.Model):
     rejected_dupe = models.BooleanField(default=False)
     destFlag = models.BooleanField(default=False)
     ready_to_pull = models.BooleanField(default=False)
-    has_encrypted = models.BooleanField(default=False)
+    #is_rejected = models.BooleanField(default=False)
     files_scanned = models.BooleanField(default=False)
 
     class Meta:
@@ -227,36 +236,6 @@ class Request(models.Model):
     def __str__(self):
         formatted_date_created = self.date_created.strftime("%d%b %H:%M:%S")
         return self.user.__str__() + ' (' + formatted_date_created + ')'
-
-class Drop_File(models.Model):
-    file_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    file_object = models.FileField(upload_to=randomize_path_drop_file, storage=CustomFileSystemStorage(), max_length=500)
-    file_name = models.CharField(max_length=255, null=True, blank=True, default=None)
-
-    class Meta:
-        ordering = [F('file_name').asc(nulls_last=True)]
-
-    def __str__(self):
-        return os.path.basename(self.file_object.name)
-
-
-class Drop_Request(models.Model):
-    request_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    date_created = models.DateTimeField(auto_now_add=True)
-    files = models.ManyToManyField(Drop_File)
-    target_email = models.ForeignKey(Email, null=True, blank=True, on_delete=models.DO_NOTHING)
-    request_info = models.CharField(max_length=5000, null=True, blank=True)
-    user_retrieved = models.BooleanField(default=False)
-    delete_on = models.DateTimeField()
-    request_code = models.CharField(max_length=50)
-    email_sent = models.BooleanField(default=False)
-
-    class Meta:
-        ordering = ['-date_created']
-
-    def __str__(self):
-        formatted_date_created = self.date_created.strftime("%d%b %H:%M:%S")
-        return self.target_email.address + ' (' + formatted_date_created + ')'
 
 
 class DirtyWord(models.Model):
@@ -275,7 +254,7 @@ class Feedback(models.Model):
     feedback_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=150, default="")
     body = models.TextField(default="")
-    user = models.ForeignKey(User, default=None, null=True, blank=True, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, default=None, null=True, blank=True, on_delete=models.DO_NOTHING)
     category = models.CharField(max_length=50, default="")
     admin_feedback = models.BooleanField(default=False)
     date_submitted = models.DateTimeField(auto_now_add=True)
@@ -293,6 +272,6 @@ class Message(models.Model):
     visible = models.BooleanField(default=False)
     colorChoices = [('danger', "red"), ('warning', "yellow"), ('success', "green"), ('info', "blue")]
     color = models.CharField(choices=colorChoices, default='warning', max_length=20)
-
+  
     def __str__(self):
         return str(self.message)

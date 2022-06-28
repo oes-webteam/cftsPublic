@@ -78,29 +78,21 @@
 
                         <ul>
                             <li>User: <a href="{% url 'admin:pages_user_change' rqst.user.user_id %}">{{rqst.user}} ({{rqst.user.auth_user}})</a></li>
-                            <!-- {% for col, val in rc.items %}
+                            {% for col, val in rc.items %}
                                 <li>{{ col }}: {{ val }}</li>
-                            {% endfor %} -->
-                            <li>Date Submitted: {{rqst.date_created}}</li>
-                            <li>Source Email: <span class="{% if emailFlags.RHRSourceFlag == True %}text-red{% elif emailFlags.sourceDestFlag == True %}text-yellow{% endif %}">{{rqst.user.source_email}}</span></li>
-                            <li>Destination Email: <span class="{% if emailFlags.RHRDestFlag == True %}text-red{% elif emailFlags.sourceDestFlag == True %}text-yellow{% endif %}">{{rqst.target_email.all.0}}</span></li>
-                            <li>RHR Email: <span class="{% if emailFlags.RHRFlag == True %}text-red{% endif %}">{{rqst.RHR_email}} {% if emailFlags.RHRStaffFlag == True%}(Staff Email){% endif %}</span></li>
-                            <li>Phone: {{rqst.user.phone}}</li>
-                            <li>Network: {{rqst.network.name}}</li>
-                            <li>org: {{rqst.org}}</li>
-
+                            {% endfor %}
                             {% if rqst.user.banned == True %}
                                 {% if rqst.user.strikes == 4 %}
-                                    <li class="text-red">This user is banned until the end of time</li>
+                                    <li style="color: red;">This user is banned until the end of time</li>
                                 {% else %}
-                                    <li class="text-red">This user is currently banned until {{rqst.user.banned_until}}</li>
+                                    <li style="color: red;">This user is currently banned until {{rqst.user.banned_until}}</li>
                                 {% endif %}
                             {% else %}
                                 <li>This user is not currently banned</li>
                             {% endif %}
-                            <li class="{% if rqst.user.account_warning_count == 3 %}text-red{% elif rqst.user.account_warning_count > 0 %}text-yellow{% endif %}">They have {{rqst.user.account_warning_count}} account warning{{rqst.user.account_warning_count|pluralize}}</li>
+                            <li {% if rqst.user.account_warning_count == 3 %}style="color: red;"{% elif rqst.user.account_warning_count > 0 %}style="color: #ffae00;"{% endif %}>They have {{rqst.user.account_warning_count}} account warning{{rqst.user.account_warning_count|pluralize}}</li>
                             {% now "F d, Y" as today %}
-                            {% if rqst.user.account_warning_count >= 1 %}<li {% if rqst.user.last_warned_on|date == today %}class="text-red"{% endif %}>Last warning issued on {{rqst.user.last_warned_on}}</li>{% endif %}
+                            {% if rqst.user.account_warning_count >= 1 %}<li {% if rqst.user.last_warned_on|date == today %}style="color: red;"{% endif %}>Last warning issued on {{rqst.user.last_warned_on}}</li>{% endif %}
                             <li>They currently have {{rqst.user.strikes}} account strike{{rqst.user.strikes|pluralize}}</li>
                             <li>They have been temporarily banned {{rqst.user.temp_ban_count}} time{{rqst.user.temp_ban_count|pluralize}}</li>
                             <li>Notes:</li>

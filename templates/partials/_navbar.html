@@ -80,66 +80,36 @@
                     </div>
                 </li>
 
-                <!-- <li class="nav-item">
+                <li class="nav-item">
                     <a href="{% url 'feedback' %}" class="nav-link">Feedback</a>
-                </li> -->
+                </li>
 
                 {% if user.is_authenticated %}
+
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ user }}</a>
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                             {% if user.is_staff %}
                                 <a class="dropdown-item" href="{% url 'queue' %}">Transfer Queue</a>
+                                {% comment %} <a class="dropdown-item" href="{% url 'scan' 'none' %}">Scan Tool</a> {% endcomment %}
                                 <a class="dropdown-item" href="{% url 'pulls' %}">Pulls History</a>
-                                <a class="dropdown-item" href="{% url 'drop-zone' %}">Drop Zone</a>
                                 <a class="dropdown-item" href="{% url 'archive' %}">Transfers Archive</a>
                                 <a class="dropdown-item" href="{% url 'reports' %}">Reporting</a>
                                 <a class="dropdown-item" href="{% url 'admin:index' %}">Admin Page</a>
-                                {% comment %} {% if user.is_superuser%}
+                                {% if user.is_superuser%}
                                     <a class="dropdown-item" href="{% url 'password-reset-admin' %}">Password Reset Admin</a>
-                                {% endif %} {% endcomment %}
+                                {% endif %}
                                 <hr class="mt-2 mb-2" style="border-top-width: 3px; border-top-color: rgba(0, 0, 0, 0.2);" />
                             {% endif %}
                             <a class="dropdown-item" href="{% url 'userRequests' %}">My Requests</a>
                             <a class="dropdown-item" href="{% url 'user-info' %}">Edit Account Info</a>
-                            <a class="dropdown-item" href="{% url 'feedback' %}">Feedback</a>
-                            {% comment %} <a class="dropdown-item" href="{% url 'password-change' %}">Change Password</a> {% endcomment %}
+                            <a class="dropdown-item" href="{% url 'password-change' %}">Change Password</a>
                             <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
-                        </div>
-                    </li>
-                {% elif rc.user.auth_user.is_staff %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ rc.user.auth_user.username }}</a>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                            {% if rc.user.auth_user.is_staff %}
-                                <a class="dropdown-item" href="{% url 'queue' %}">Transfer Queue</a>
-                                <a class="dropdown-item" href="{% url 'pulls' %}">Pulls History</a>
-                                <a class="dropdown-item" href="{% url 'drop-zone' %}">Drop Zone</a>
-                                <a class="dropdown-item" href="{% url 'archive' %}">Transfers Archive</a>
-                                <a class="dropdown-item" href="{% url 'reports' %}">Reporting</a>
-                                <a class="dropdown-item" href="{% url 'admin:index' %}">Admin Page</a>
-                                {% comment %} {% if rc.user.auth_user.is_superuser %}
-                                    <a class="dropdown-item" href="{% url 'password-reset-admin' %}">Password Reset Admin</a>
-                                {% endif %} {% endcomment %}
-                                <hr class="mt-2 mb-2" style="border-top-width: 3px; border-top-color: rgba(0, 0, 0, 0.2);" />
-                            {% endif %}
-                            <a class="dropdown-item" href="{% url 'userRequests' %}">My Requests</a>
-                            <a class="dropdown-item" href="{% url 'user-info' %}">Edit Account Info</a>
-                            <a class="dropdown-item" href="{% url 'feedback' %}">Feedback</a>
-                        </div>
-                    </li>
-                {% elif rc.user.name_first %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{rc.user.name_first }}</a>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                            <a class="dropdown-item" href="{% url 'userRequests' %}">My Requests</a>
-                            <a class="dropdown-item" href="{% url 'user-info' %}">Edit Account Info</a>
-                            <a class="dropdown-item" href="{% url 'feedback' %}">Feedback</a>
                         </div>
                     </li>
                 {% else %}
                     <li class="nav-item">
-                        <a href="{% url 'feedback' %}" class="nav-link">Feedback</a>
+                        <a href="{% url 'login' %}" class="nav-link">Login</a>
                     </li>
                 {% endif %}
             </ul>

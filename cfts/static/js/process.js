@@ -11,50 +11,47 @@ xferForm.addEventListener("submit", process, false);
 /* **************** */
 /* EMAIL VALIDATION */
 /* **************** */
-function checkEmail(email) {
+function checkEmail(email, net, direction) {
     // look -- if it's not even a real email address, just kick it the eff out
-    // var emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-    // if (!email.match(emailRegex)) return false;
+    var emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    if (!email.match(emailRegex)) return false;
 
     let domain = email.split("@").pop();
     let domainArray = domain.split(".");
     let check = "";
-    // switch (net) {
-    //     case "NIPR":
-    //         check = domainArray.pop();
-    //         check = check.toLocaleLowerCase()
-    //         return domain.indexOf("smil") == -1 && domain.indexOf("cmil") == -1 && (check == "mil" || check == "gov") ? true : false;
-    //     case "SIPR":
-    //         return domainArray.slice(-2).join(".") == "smil.mil" ? true : false;
-    //     case "BICES":
-    //     switch (direction) {
-    //     case "from":
-    //     return domainArray.slice(-2).join(".") == "bices.org" ? true : false;
-    //     case "to":
-    //     return domainArray.slice(-3).join(".") == "us.bices.org" ? true : false;
-    //     default:
-    //     notifyUserWarning(
-    //     "ERROR: A system error has occurred. The 'checkEmail' function is being called in an impropper manner ('direction' == " +
-    //     direction +
-    //     "). Please notify the CFTS administrators of this error by emailing {{ SETTINGS.CFTS_ADMIN_EMAIL }}."
-    //     );
-    //     break;
-    //     }
-    //     default:
-    //         if (net.length)
-    //         notifyUserWarning(
-    //         "ERROR: A system error has occurred. The network " +
-    //         net +
-    //         " is not recognized by the 'checkEmail' function. Please notify the CFTS administrators of this error by emailing {{ SETTINGS.CFTS_ADMIN_EMAIL }}."
-    //         );
-    //         break;
-    //         check = domainArray.pop();
-    //         check = check.toLocaleLowerCase()
-    //         return (check == "mil" || check == "gov" || check == "edu" || check == "org") ? true : false;
-    // }
-    check = domainArray.pop();
-    check = check.toLocaleLowerCase()
-    return (check == "mil" || check == "gov" || check == "edu" || check == "org") ? true : false;
+    switch (net) {
+        // case "NIPR":
+        //     check = domainArray.pop();
+        //     check = check.toLocaleLowerCase()
+        //     return domain.indexOf("smil") == -1 && domain.indexOf("cmil") == -1 && (check == "mil" || check == "gov") ? true : false;
+        // case "SIPR":
+        //     return domainArray.slice(-2).join(".") == "smil.mil" ? true : false;
+        //case "BICES":
+        //switch (direction) {
+        //case "from":
+        //return domainArray.slice(-2).join(".") == "bices.org" ? true : false;
+        //case "to":
+        //return domainArray.slice(-3).join(".") == "us.bices.org" ? true : false;
+        //default:
+        //notifyUserWarning(
+        //"ERROR: A system error has occurred. The 'checkEmail' function is being called in an impropper manner ('direction' == " +
+        //direction +
+        //"). Please notify the CFTS administrators of this error by emailing {{ SETTINGS.CFTS_ADMIN_EMAIL }}."
+        //);
+        //break;
+        //}
+        default:
+            //if (net.length)
+            //notifyUserWarning(
+            //"ERROR: A system error has occurred. The network " +
+            //net +
+            //" is not recognized by the 'checkEmail' function. Please notify the CFTS administrators of this error by emailing {{ SETTINGS.CFTS_ADMIN_EMAIL }}."
+            //);
+            //break;
+            check = domainArray.pop();
+            check = check.toLocaleLowerCase()
+            return (check == "mil" || check == "gov" || check == "edu" || check == "org") ? true : false;
+    }
     // fail by default
     return false;
 }
@@ -63,6 +60,7 @@ function checkEmail(email) {
 /* FORM VALIDATION */
 /* *************** */
 function validateForm(form) {
+    let thisNet = "SIPR";
     let isValid = true;
     let errors = [];
 
@@ -80,7 +78,7 @@ function validateForm(form) {
     }
 
     // source email
-    if (!(form.elements.userEmail.value.length && checkEmail(form.elements.userEmail.value))) {
+    if (!(form.elements.userEmail.value.length && checkEmail(form.elements.userEmail.value, thisNet, "from"))) {
         errors.push(form.elements.userEmail);
         isValid = false;
     }

@@ -261,9 +261,6 @@ def setEncrypt(request):
 
     # Recreate the zip file for the pull
     someRequest = Request.objects.get(request_id=request_id[0])
-    someRequest.has_encrypted = True
-    someRequest.save()
-
     network_name = someRequest.network.name
 
     try:
@@ -536,8 +533,7 @@ def process(request):
             comments=form_data.get('comments'),
             org=org,
             is_centcom=form_data.get('isCentcom'),
-            RHR_email=form_data.get('RHREmail'),
-            ready_to_pull=destinationNet.skip_file_review,
+            RHR_email=form_data.get('RHREmail')
         )
         rqst.save()
 
@@ -546,7 +542,7 @@ def process(request):
 
         # Add destination email to request object and raise email mismatch flag if needed
         rqst.target_email.add(*target_list)
-        if form_data.get('network') == "NIPR" or form_data.get('network') == "SIPR":
+        if form_data.get('network') == "NIPR":
             if form_data.get('userEmail').split("@")[0] not in destSplit_list:
                 rqst.destFlag = True
 
@@ -563,13 +559,8 @@ def process(request):
         # Loading the fileInfo from the form_data.
         file_info = json.loads(form_data.get('fileInfo'))
 
-        has_encrypted = False
-
         # Create a File object for every file in the request
         for i, f in enumerate(form_files.getlist("files")):
-            if file_info[i]['encrypt'] == 'true':
-                has_encrypted = True
-
             this_file = File(
                 file_object=f,
                 is_pii=file_info[i]['encrypt'] == 'true',
@@ -610,7 +601,6 @@ def process(request):
 
             # Add the file to the request and the list of files used in the request hash
             rqst.files.add(this_file)
-            rqst.has_encrypted = has_encrypted
             fileList.append(str(f))
 
         # Sort the list of files so the order of files does not affect the duplicate checking

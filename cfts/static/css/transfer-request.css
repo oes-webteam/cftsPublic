@@ -65,14 +65,6 @@ tr:nth-of-type(odd) {
     margin-bottom: -7rem;
 }
 
-.text-red{
-    color: red;;
-}
-
-.text-yellow{
-    color: #ffae00;;
-}
-
 @media(max-width: 1575px) {
     .btn-group {
         margin-left: 0% !important;
