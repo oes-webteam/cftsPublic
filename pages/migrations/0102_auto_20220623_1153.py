@@ -16,7 +16,7 @@ def userCleanup(apps, schema_editor):
     delAuthUsers = authUser.objects.using(db_alias).filter(is_staff=False)
     delAuthUsers.delete()
 
-def reverseFunction():
+def reverseFunction(apps, schema_editor):
     pass
 
 class Migration(migrations.Migration):
