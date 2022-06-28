@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='file',
             name='file_object',
-            field=models.FileField(max_length=500, upload_to=pages.models.randomize_path),
+            field=models.FileField(max_length=500, upload_to=pages.models.randomize_path_file),
         ),
     ]

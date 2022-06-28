@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='file',
             name='file_object',
-            field=models.FileField(max_length=500, storage=pages.models.CustomFileSystemStorage(), upload_to=pages.models.randomize_path),
+            field=models.FileField(max_length=500, storage=pages.models.CustomFileSystemStorage(), upload_to=pages.models.randomize_path_file),
         ),
         migrations.AlterField(
             model_name='network',

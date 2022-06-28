@@ -7,7 +7,7 @@ you can take over this project once I'm gone.
 
 At the moment this project is kept on my personal github account https://github.com/Alexander-Alvarado/cftsPublic, it may move in the future.
 
-At the time of writing this we are using Django 3.2 and Python 3.9
+At the time of writing this we are using Django 4.0.3 and Python 3.9
 '''
 
 import os
@@ -39,8 +39,13 @@ these names should match the Network objects in the database
 '''
 NETWORK = ENV.NETWORK
 
+KEYS_DIR = os.path.join(BASE_DIR, "KEYS")
+
 # setting this to True will dissable all request submission and display a message on the homepage
-DISABLE_SUBMISSIONS = False
+DISABLE_SUBMISSIONS = ENV.DISABLE_SUBMISSIONS
+
+PRIVATE_KEY_PASSWORD = ENV.PRIVATE_KEY_PASSWORD
+
 
 # Application definition
 
@@ -53,7 +58,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # used to determine a users browser, we don't like Internet Explore around here
+    # used to determine a users browser, we don't like Internet Explorer around here
     'django_user_agents',
     # used to easily add bootstrap styling to Django generated html forms
     'crispy_forms',
@@ -234,3 +239,5 @@ PULLS_DIR = os.path.join(BASE_DIR, 'pulls')
 TEMP_FILES_DIR = os.path.join(BASE_DIR, 'tempFiles')
 SCANTOOL_DIR = os.path.join(BASE_DIR, 'cfts\scan')
 SCANTOOL_TEMPDIR = os.path.join(SCANTOOL_DIR, 'temp')
+DROPS_TEMPDIR = os.path.join(BASE_DIR, 'cfts\drop')
+DROPS_DIR = os.path.join(BASE_DIR, 'drops')

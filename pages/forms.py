@@ -108,14 +108,17 @@ class userInfoForm(ModelForm):
     def __init__(self, *args, **kwargs):
         networks = kwargs.pop('networks')
         user = kwargs.get('instance')
-        email = Email.objects.get(email_id=user.source_email.email_id)
+        try:
+            email = Email.objects.get(email_id=user.source_email.email_id).address
+        except:
+            email = ""
 
         super(userInfoForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper(self)
 
         self.fields['name_first'].label = 'First Name'
         self.fields['name_last'].label = 'Last Name'
-        self.fields['source_email'].initial = email.address
+        self.fields['source_email'].initial = email
         self.fields['source_email'].label = NETWORK + ' Email'
         self.fields['phone'].initial = user.phone
         self.fields['org'].initial = user.org

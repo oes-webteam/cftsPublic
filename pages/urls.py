@@ -1,4 +1,3 @@
-from os import name
 from django.urls import path
 import pages.views as views
 from django.contrib.auth import views as auth_views
@@ -11,18 +10,18 @@ urlpatterns = [
     path('consent', views.consent, name='consent'),
 
     # auth
-    path('register', views.register, name='register'),
+    #path('register', views.register, name='register'),
     path('login', views.userLogin, name='login'),
     path('logout', auth_views.LogoutView.as_view(), name='logout'),
     path('user-info', views.editUserInfo, name='user-info'),
-    path('password-change', views.changeUserPassword, name='password-change'),
-    path('password-reset', views.passwordResetRequest, name='password-reset'),
-    path('password-reset/done', auth_views.PasswordResetDoneView.as_view(template_name='authForms/passwordResetForms/passwordResetDone.html'), name='password-reset-done'),
-    path('password-reset/<uidb64>/<token>', auth_views.PasswordResetConfirmView.as_view(template_name='authForms/passwordResetForms/passwordResetConfirm.html'), name='password-reset-confirm'),
-    path('password-reset/complete', auth_views.PasswordResetCompleteView.as_view(template_name='authForms/passwordResetForms/passwordResetComplete.html'), name='password_reset_complete'),
-    path('password-reset-admin', views.passwordResetAdmin, name='password-reset-admin'),
-    path('password-reset-email/<int:id>/<uuid:feedback>', views.passwordResetEmail, name='password-reset-email'),
-    path('username-lookup', views.usernameLookup, name='username-lookup'),
+    # path('password-change', views.changeUserPassword, name='password-change'),
+    # path('password-reset', views.passwordResetRequest, name='password-reset'),
+    # path('password-reset/done', auth_views.PasswordResetDoneView.as_view(template_name='authForms/passwordResetForms/passwordResetDone.html'), name='password-reset-done'),
+    # path('password-reset/<uidb64>/<token>', auth_views.PasswordResetConfirmView.as_view(template_name='authForms/passwordResetForms/passwordResetConfirm.html'), name='password-reset-confirm'),
+    # path('password-reset/complete', auth_views.PasswordResetCompleteView.as_view(template_name='authForms/passwordResetForms/passwordResetComplete.html'), name='password_reset_complete'),
+    # path('password-reset-admin', views.passwordResetAdmin, name='password-reset-admin'),
+    # path('password-reset-email/<int:id>/<uuid:feedback>', views.passwordResetEmail, name='password-reset-email'),
+    # path('username-lookup', views.usernameLookup, name='username-lookup'),
 
     # resources
     path('resources/<str:file>', views.resources, name='resources'),
@@ -39,9 +38,18 @@ urlpatterns = [
     path('queue/cookie', views.queue, name='cookie'),
     path('transfer-request/<uuid:id>', views.transferRequest, name='transfer-request'),
     path('create-zip/<str:network_name>/<str:rejectPull>', views.createZip, name='create-zip'),
-    path('getFile/uploads/<str:fileID>/<str:fileName>', views.getFile, name='getFile'),
     path('updateFileReview/<uuid:fileID>/<uuid:rqstID>/<str:quit>/<str:completeReview>', views.updateFileReview, name='reviewFile'),
+    path('getFile/<str:folder>/<str:fileID>/<str:fileName>', views.getFile, name='getFile'),
     path('removeFileReviewer/<int:stage>', views.removeFileReviewer, name='removeReview'),
+
+    # drops
+    path('drop-zone', views.dropZone, name='drop-zone'),
+    path('process-drop', views.processDrop, name='process-drop'),
+    path('drop/<uuid:id>/<str:PIN>', views.dropDetails, name='drop'),
+    path('drop/<uuid:id>', views.dropDetails, name='drop'),
+    path('generate-drop-email/<uuid:id>', views.dropEmail, name='drop-email'),
+    path('download-drop/<uuid:id>/<str:phrase>', views.dropDownload, name='drop-download'),
+
 
     # scan
     path('scan/<uuid:rqst_id>', views.scan, name="scan"),
