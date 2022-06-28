@@ -8,6 +8,15 @@ from zipfile import ZipFile
 from django.utils import timezone
 from cfts import settings as cftsSettings
 
+# cryptography
+import os
+import string
+import random
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.serialization import load_pem_public_key
 
 # decorators
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -25,12 +34,15 @@ from django.http import JsonResponse, FileResponse, HttpResponse
 # model/database stuff
 from pages.models import *
 from django.db.models import Count, Q
+from django.contrib.auth.models import User as authUser
+
 
 import logging
 
 logger = logging.getLogger('django')
+
 # ====================================================================
-# I really don't want to comment this file, the is so much hacky shit going on here
+# I really don't want to comment this file, there is so much hacky shit going on here
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
@@ -75,6 +87,16 @@ def queue(request):
         random.shuffle(cookieList1)
         empty = cookieList1+cookieList2
 
+        # Sort the list of network queues into network order
+        xfer_queues = sorted(xfer_queues, key=lambda k: k['order_by'], reverse=False)
+
+        # Create the request context
+        rc = {'queues': xfer_queues, 'empty': empty, 'easterEgg': activeTab}
+
+        # roll that beautiful bean footage
+        # ^-- I've always wondered what he meant by that, never did ask him
+        return render(request, 'pages/queue.html', {'rc': rc})
+
     # Send a message to the empty queue page, kinda like a fortune cookie
     else:
         empty = random.choice([
@@ -98,102 +120,102 @@ def queue(request):
             "Card games are fun too."
         ])
 
-    # Filter for requests that are not part of a completed pull, and then prefetching related files
-    # and target emails. It is also selecting related user. It is then annotating the query with the
-    # number of files in the request, the number of files that need review, and the number of files
-    # that the user is reviewing. It is then ordering the query by date created.
-    ds_requests = Request.objects.filter(is_submitted=True, pull__date_complete__isnull=True).prefetch_related('files', 'target_email').select_related('user').annotate(
-        files_in_request=Count('files__file_id'),
-        needs_review=Count('files', filter=Q(files__user_oneeye=None) | Q(files__user_twoeye=None) & ~Q(files__user_oneeye=request.user)) -
-        Count('files', filter=~Q(files__rejection_reason=None) & ~Q(files__user_oneeye=request.user) & ~Q(files__user_twoeye=request.user)),
-        user_reviewing=Count('files', filter=Q(files__user_oneeye=request.user) & Q(files__date_oneeye=None) & Q(files__rejection_reason=None)) +
-        Count('files', filter=Q(files__user_twoeye=request.user) & Q(files__date_twoeye=None) & Q(files__rejection_reason=None))).order_by('date_created')
+        # Filter for requests that are not part of a completed pull, and then prefetching related files
+        # and target emails. It is also selecting related user. It is then annotating the query with the
+        # number of files in the request, the number of files that need review, and the number of files
+        # that the user is reviewing. It is then ordering the query by date created.
+        ds_requests = Request.objects.filter(is_submitted=True, pull__date_complete__isnull=True).prefetch_related('files', 'target_email').select_related('user').annotate(
+            files_in_request=Count('files__file_id'),
+            needs_review=Count('files', filter=Q(files__user_oneeye=None) | Q(files__user_twoeye=None) & ~Q(files__user_oneeye=request.user)) -
+            Count('files', filter=~Q(files__rejection_reason=None) & ~Q(files__user_oneeye=request.user) & ~Q(files__user_twoeye=request.user)),
+            user_reviewing=Count('files', filter=Q(files__user_oneeye=request.user) & Q(files__date_oneeye=None) & Q(files__rejection_reason=None)) +
+            Count('files', filter=Q(files__user_twoeye=request.user) & Q(files__date_twoeye=None) & Q(files__rejection_reason=None))).order_by('date_created')
 
-    # Getting all the network_id's from the ds_requests and then filtering the ds_networks based on
-    # the network_id's.
-    pending_nets = ds_requests.values_list('network', flat=True)
-    ds_networks = Network.objects.filter(network_id__in=pending_nets)
+        # Getting all the network_id's from the ds_requests and then filtering the ds_networks based on
+        # the network_id's.
+        pending_nets = ds_requests.values_list('network', flat=True)
+        ds_networks = Network.objects.filter(network_id__in=pending_nets)
 
-    # For every network
-    for net in ds_networks:
-        # Get information about the last pull that was done on this network
-        last_pull = Pull.objects.values(
-            'pull_number',
-            'date_pulled',
-            'user_pulled__username'
-        ).filter(network__name=net.name).order_by('-date_pulled')[:1]
+        # For every network
+        for net in ds_networks:
+            # Get information about the last pull that was done on this network
+            last_pull = Pull.objects.values(
+                'pull_number',
+                'date_pulled',
+                'user_pulled__username'
+            ).filter(network__name=net.name).order_by('-date_pulled')[:1]
 
-        queue = {
-            'name': net.name,
-            'order_by': net.sort_order,
+            queue = {
+                'name': net.name,
+                'order_by': net.sort_order,
 
-            'count': 0,
-            'file_count': 0,
-            'activeNet': activeTab,
-            'pending': 0,
-            'centcom': 0,
-            'other': 0,
-            'pullable': 0,
-            'hidden_dupes_pullable': 0,
-            'hidden_dupes_pulled': 0,
-            'pulled': 0,
+                'count': 0,
+                'file_count': 0,
+                'activeNet': activeTab,
+                'pending': 0,
+                'centcom': 0,
+                'other': 0,
+                'pullable': 0,
+                'hidden_dupes_pullable': 0,
+                'hidden_dupes_pulled': 0,
+                'pulled': 0,
 
-            # The actual set of Request objects
-            'q': [],
-            'o': [],
-            'a': [],
-            'p': [],
-            'last_pull': last_pull,
-        }
+                # The actual set of Request objects
+                'q': [],
+                'o': [],
+                'a': [],
+                'p': [],
+                'last_pull': last_pull,
+            }
 
-        activeTab = False
+            activeTab = False
 
-        # ... and add it to the list
-        xfer_queues.append(queue)
+            # ... and add it to the list
+            xfer_queues.append(queue)
 
-    # Counting the number of requests in each queue group, appending request to the appropreate list.
-    for rqst in ds_requests:
-        # Iterating through the list of queues and finding the queue that matches the name of the network.
-        for queue in xfer_queues:
-            if queue['name'] == rqst.network.name:
-                match_queue = queue
-                break
+        # Counting the number of requests in each queue group, appending request to the appropreate list.
+        for rqst in ds_requests:
+            # Iterating through the list of queues and finding the queue that matches the name of the network.
+            for queue in xfer_queues:
+                if queue['name'] == rqst.network.name:
+                    match_queue = queue
+                    break
 
-        match_queue['count'] += 1
+            match_queue['count'] += 1
 
-        if rqst.pull != None:
-            match_queue['pulled'] += 1
-
-            if rqst.rejected_dupe == True:
-                match_queue['hidden_dupes_pulled'] += 1
-            elif rqst.rejected_dupe == False:
-                match_queue['p'].append(rqst)
-
-        else:
-            match_queue['file_count'] += rqst.files_in_request
-            match_queue['pending'] += 1
-
-            if rqst.ready_to_pull == True:
-                match_queue['pullable'] += 1
+            if rqst.pull != None:
+                match_queue['pulled'] += 1
 
                 if rqst.rejected_dupe == True:
-                    match_queue['hidden_dupes_pullable'] += 1
+                    match_queue['hidden_dupes_pulled'] += 1
                 elif rqst.rejected_dupe == False:
-                    match_queue['a'].append(rqst)
+                    match_queue['p'].append(rqst)
 
-            elif rqst.is_centcom == True:
-                match_queue['centcom'] += 1
-                match_queue['q'].append(rqst)
+            else:
+                match_queue['file_count'] += rqst.files_in_request
+                match_queue['pending'] += 1
 
-            elif rqst.is_centcom == False:
-                match_queue['other'] += 1
-                match_queue['o'].append(rqst)
+                if rqst.ready_to_pull == True:
+                    match_queue['pullable'] += 1
 
-    # Sort the list of network queues into network order
-    xfer_queues = sorted(xfer_queues, key=lambda k: k['order_by'], reverse=False)
+                    if rqst.rejected_dupe == True:
+                        match_queue['hidden_dupes_pullable'] += 1
+                    elif rqst.rejected_dupe == False:
+                        match_queue['a'].append(rqst)
 
-    # Create the request context
-    rc = {'queues': xfer_queues, 'empty': empty, 'easterEgg': not activeTab}
+                elif rqst.is_centcom == True:
+                    match_queue['centcom'] += 1
+                    match_queue['q'].append(rqst)
+
+                elif rqst.is_centcom == False:
+                    match_queue['other'] += 1
+                    match_queue['o'].append(rqst)
+
+        # Sort the list of network queues into network order
+        xfer_queues = sorted(xfer_queues, key=lambda k: k['order_by'], reverse=False)
+
+        # Create the request context
+        rc = {'queues': xfer_queues, 'empty': empty, 'easterEgg': not activeTab}
 
     # roll that beautiful bean footage
     # ^-- I've always wondered what he meant by that, never did ask him
@@ -233,17 +255,49 @@ def transferRequest(request, id):
             'text': row.text
         })
 
-    rc = {
-        'Date Submitted': rqst.date_created,
-        'Source Email': rqst.user.source_email,
-        'Destination Email': rqst.target_email.all()[0],
-        'RHR Email': rqst.RHR_email,
-        'Phone': rqst.user.phone,
-        'Network': Network.objects.get(network_id=rqst.network.network_id),
-        'org': rqst.org,
+    emailFlags = {
+        'sourceDestFlag': False,
+        'RHRFlag': False,
+        'RHRStaffFlag': False,
+        'RHRSourceFlag': False,
+        'RHRDestFlag': False,
     }
 
-    return render(request, 'pages/transfer-request.html', {'rqst': rqst, 'rc': rc, 'dupes': dupes, 'mostRecentDupe': mostRecentDupe, 'rejections': rejections,
+    destSplit = rqst.target_email.all()[0].address.split("@")[0]
+
+    if rqst.destFlag == True:
+        if rqst.user.source_email.address.split("@")[0] != destSplit:
+            emailFlags['sourceDestFlag'] = True
+
+    # Getting all the staff emails from the database
+    staff_emails = authUser.objects.filter(is_staff=True).values_list('email', flat=True)
+
+    # Checking if the RHR email address in the form is in the staff_emails list, or if it is the same as the
+    # source or destination email address. If any of those are true, then it sets the destFlag to True.
+
+    if rqst.RHR_email == rqst.user.source_email.address:
+        emailFlags['RHRSourceFlag'] = True
+        emailFlags['RHRFlag'] = True
+
+    if rqst.RHR_email == rqst.target_email.all()[0].address:
+        emailFlags['RHRDestFlag'] = True
+        emailFlags['RHRFlag'] = True
+
+    if rqst.RHR_email in staff_emails:
+        emailFlags['RHRStaffFlag'] = True
+        emailFlags['RHRFlag'] = True
+
+    # rc = {
+    #     'Date Submitted': rqst.date_created,
+    #     'Source Email': rqst.user.source_email,
+    #     'Destination Email': rqst.target_email.all()[0],
+    #     'RHR Email': rqst.RHR_email,
+    #     'Phone': rqst.user.phone,
+    #     'Network': rqst.network.name
+    #     'org': rqst.org,
+    # }
+
+    return render(request, 'pages/transfer-request.html', {'rqst': rqst, 'emailFlags': emailFlags, 'dupes': dupes, 'mostRecentDupe': mostRecentDupe, 'rejections': rejections,
                                                            'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": rqst.user.user_id, 'debug': cftsSettings.DEBUG})
 
 @login_required
@@ -363,6 +417,7 @@ def banEml(request, request_id, ignore_strikes, perma_ban):
     msgBody += render_to_string('partials/Queue_partials/banTemplate.html', {'rqst': rqst, 'ignore_strikes': ignore_strikes, 'perma_ban': perma_ban}, request)
     return msgBody
 
+
 @login_required
 @user_passes_test(staffCheck, login_url='queue', redirect_field_name=None)
 def warnUser(request, userid, requestid, confirmWarn=False):
@@ -394,6 +449,7 @@ def warnUser(request, userid, requestid, confirmWarn=False):
             eml = warningEml(request, userToWarn[0].account_warning_count, userToWarn[0].source_email)
             return redirect('/transfer-request/' + str(requestid) + "?eml=" + eml)
 
+
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def warningEml(request, warningCount, source_email):
@@ -411,6 +467,30 @@ def warningEml(request, warningCount, source_email):
     msgBody = "mailto:" + str(source_email) + "?subject=CFTS User Account Warning&body="
     msgBody += render_to_string('partials/Queue_partials/userWarningTemplate.html', {'warningCount': warningCount}, request)
     return msgBody
+
+
+def encryptPhrase(byte_phrase, dest_network):
+    keyPath = os.path.join(cftsSettings.KEYS_DIR, dest_network+"_PUB_KEY.pem")
+    with open(keyPath, "rb") as dest_pub_pem:
+        dest_pub_key = load_pem_public_key(dest_pub_pem.read())
+        dest_pub_pem.close()
+
+    return dest_pub_key.encrypt(byte_phrase, padding.OAEP(padding.MGF1(hashes.SHA256()), hashes.SHA256(), None))
+
+
+def encryptFile(salt, nonce, byte_phrase, source_file):
+    kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=390000)
+    key = kdf.derive(byte_phrase)
+
+    cipher = Cipher(algorithms.AES(key), modes.CTR(nonce))
+    encryptor = cipher.encryptor()
+
+    with open(source_file, "rb") as inFile:
+        cipherText = encryptor.update(inFile.read()) + encryptor.finalize()
+        inFile.close()
+
+    return cipherText
+
 
 # function to create a zip file containing all pullable File objects for a given network
 @login_required
@@ -430,7 +510,9 @@ def createZip(request, network_name, rejectPull):
     if rejectPull == 'false':
         # Getting the last pull number for the current network
         try:
-            maxPull = Pull.objects.filter(network=Network.objects.get(name=network_name)).latest('date_pulled')
+            # get the last pull number for the current network
+            destNetwork = Network.objects.get(name=network_name)
+            maxPull = Pull.objects.filter(network=destNetwork).latest('date_pulled')
 
             # Reset the pull number everyday
             if(datetime.datetime.now().date() > maxPull.date_pulled.date()):
@@ -447,7 +529,8 @@ def createZip(request, network_name, rejectPull):
         # Create the Pull object
         new_pull = Pull(
             pull_number=pull_number,
-            network=Network.objects.get(name=network_name),
+            network=destNetwork,
+            # date_pulled=datetime.datetime.now(),
             date_pulled=timezone.now(),
             user_pulled=request.user,
         )
@@ -480,9 +563,7 @@ def createZip(request, network_name, rejectPull):
         zip_folder = str(rqst.user) + "/request_1"
         # Get all non-rejected files in the current request
         theseFiles = rqst.files.filter(rejection_reason=None)
-        # If the is_pii field is True on any of the File objects then encryptRequest will become true
-        encryptRequest = False
-
+        # if the is_pii field is True on any of the File objects then encryptRequests will become true
         # Only create a folder for a request if it has non-rejected files, we don't want empty folders because every file got rejected
         if theseFiles.exists():
             # If a user had multiple Request objects in a pull they will all need their own folder, this loop will create the unique request folder for the user
@@ -493,35 +574,52 @@ def createZip(request, network_name, rejectPull):
 
             requestDirs.append(zip_folder)
 
-            # Write all of the File objects to the folder we just created
+            if destNetwork.cfts_deployed == True:
+                phrase = ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(32))
+                byte_phrase = str.encode(phrase, 'utf-8')
+                crypt_info = {'salt': os.urandom(16),
+                              'nonce': os.urandom(16),
+                              'encryptedPhrase': encryptPhrase(byte_phrase, rqst.network.name),
+                              'email': rqst.target_email.all()[0].address,
+                              'user_id': rqst.user.user_identifier}
+
+                rqst_info_file_path = zip_folder + "/_request_info.txt"
+
+                with zip.open(rqst_info_file_path, 'w') as fp:
+                    fp.write(str(crypt_info).encode('utf-8'))
+                    fp.close()
+
+            elif destNetwork.cfts_deployed == False:
+                if rqst.has_encrypted == True:
+                    email_file_name = '_encrypt.txt'
+                elif rqst.has_encrypted == False:
+                    email_file_name = '_email.txt'
+
+                email_file_path = zip_folder + "/" + email_file_name
+
+                # originally a user could submit a request with multiple destination email addresses, that is no longer the case but the target_email field remains a many-to-many field
+                # this loop was used to add all of the email addresses to a single file, but now it only ever loops through 1 Email object
+                with zip.open(email_file_path, 'w') as fp:
+                    emailString = rqst.target_email.all()[0].address
+
+                    fp.write(emailString.encode('utf-8'))
+                    fp.close()
+
+            # write all of the File objects to the folder we just created
             for f in theseFiles:
-                if f.is_pii == True:
-                    encryptRequest = True
+                if destNetwork.cfts_deployed == True:
+                    cipherText = encryptFile(crypt_info['salt'], crypt_info['nonce'], byte_phrase, f.file_object.path)
+                    encrypt_file_path = zip_folder + "/" + str(f)
+                    with zip.open(encrypt_file_path, 'w') as outFile:
+                        outFile.write(cipherText)
+                        outFile.close()
+                else:
+                    zip_path = os.path.join(zip_folder, str(f))
+                    zip.write(f.file_object.path, zip_path)
 
-                zip_path = os.path.join(zip_folder, str(f))
-                zip.write(f.file_object.path, zip_path)
+            #######################################################################################################################################
+            if rqst.notes != "" and rqst.notes != None:
 
-            # Create and add the target email file, file name is different when encryptRequest is True
-            if encryptRequest == True:
-                email_file_name = '_encrypt.txt'
-            elif encryptRequest == False:
-                email_file_name = '_email.txt'
-
-            email_file_path = zip_folder + "/" + email_file_name
-
-            # Originally a user could submit a request with multiple destination email addresses, that is no longer the case but the target_email field remains a many-to-many field
-            # This loop was used to add all of the email addresses to a single file, but now it only ever loops through 1 Email object
-            with zip.open(email_file_path, 'w') as fp:
-                emailString = ""
-
-                for this_email in rqst.target_email.all():
-                    emailString = emailString + this_email.address + '\n'
-
-                fp.write(emailString.encode('utf-8'))
-                fp.close()
-
-            # Writing any notes to a file.
-            if rqst.notes != None:
                 notes_file_name = zip_folder + "/_notes.txt"
 
                 with zip.open(notes_file_name, 'w') as nfp:
@@ -548,21 +646,23 @@ def createZip(request, network_name, rejectPull):
     else:
         return JsonResponse({'pullNumber': pull.pull_number, 'datePulled': pull.date_pulled.strftime("%d%b %H%M").upper(), 'userPulled': str(pull.user_pulled)})
 
-
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
-def getFile(request, fileID, fileName):
+def getFile(request, folder, fileID, fileName):
     """
-    It retrieves the file and returns it as a response
+    It takes a request, a folder, a fileID, and a fileName, and returns a response that contains the
+    file
 
     :param request: The request object
-    :param fileID: The ID of the file you want to download
+    :param folder: the folder where the file is located, uploads dir or drops dir
+    :param fileID: the name of the folder that contains the file, uuid folder
     :param fileName: The name of the file to be downloaded
-    :return: The file is being returned.
+    :return: A file response object.
     """
-    response = FileResponse(
-        open(os.path.join("uploads", fileID, fileName), 'rb'))
-    return response
+    if folder == "uploads" or folder == "drops":
+        response = FileResponse(
+            open(os.path.join(folder, fileID, fileName), 'rb'))
+        return response
 
 
 @login_required
