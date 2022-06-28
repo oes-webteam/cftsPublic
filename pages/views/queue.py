@@ -659,10 +659,10 @@ def getFile(request, folder, fileID, fileName):
     :param fileName: The name of the file to be downloaded
     :return: A file response object.
     """
-
-    response = FileResponse(
-        open(os.path.join(folder, fileID, fileName), 'rb'))
-    return response
+    if folder == "uploads" or folder == "drops":
+        response = FileResponse(
+            open(os.path.join(folder, fileID, fileName), 'rb'))
+        return response
 
 
 @login_required
