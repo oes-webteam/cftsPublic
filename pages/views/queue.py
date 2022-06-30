@@ -287,16 +287,6 @@ def transferRequest(request, id):
         emailFlags['RHRStaffFlag'] = True
         emailFlags['RHRFlag'] = True
 
-    # rc = {
-    #     'Date Submitted': rqst.date_created,
-    #     'Source Email': rqst.user.source_email,
-    #     'Destination Email': rqst.target_email.all()[0],
-    #     'RHR Email': rqst.RHR_email,
-    #     'Phone': rqst.user.phone,
-    #     'Network': rqst.network.name
-    #     'org': rqst.org,
-    # }
-
     return render(request, 'pages/transfer-request.html', {'rqst': rqst, 'emailFlags': emailFlags, 'dupes': dupes, 'mostRecentDupe': mostRecentDupe, 'rejections': rejections,
                                                            'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": rqst.user.user_id, 'debug': cftsSettings.DEBUG})
 
@@ -530,7 +520,6 @@ def createZip(request, network_name, rejectPull):
         new_pull = Pull(
             pull_number=pull_number,
             network=destNetwork,
-            # date_pulled=datetime.datetime.now(),
             date_pulled=timezone.now(),
             user_pulled=request.user,
         )

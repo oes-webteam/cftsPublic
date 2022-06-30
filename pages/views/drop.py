@@ -7,7 +7,6 @@ import io
 from django.contrib import messages
 from django.core import paginator
 from django.core.files import File as DjangoFile
-from django.templatetags.static import static
 from zipfile import ZipFile
 from django.utils import timezone
 from cfts import settings as cftsSettings
@@ -20,7 +19,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.asymmetric import padding
-from cryptography.hazmat.primitives.serialization import load_pem_public_key, load_pem_private_key
+from cryptography.hazmat.primitives.serialization import load_pem_private_key
 
 # decorators
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -33,7 +32,7 @@ from pages.views.dev_tools import fileCleanup
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 
-from django.http import JsonResponse, FileResponse, HttpResponse
+from django.http import FileResponse, HttpResponse
 
 # model/database stuff
 from pages.models import *

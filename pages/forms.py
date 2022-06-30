@@ -1,14 +1,13 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User as authUser
-from django.forms.widgets import PasswordInput
 from django.utils.translation import gettext_lazy as _
 from pages.models import User, Network, Email
 from django.forms import ModelForm
 from crispy_forms.helper import FormHelper
 from django.contrib.auth import authenticate
 from crispy_forms.layout import Div, Submit, HTML
-from cfts.settings import NETWORK, DEBUG
+from cfts.settings import NETWORK
 
 
 class userLogInForm(AuthenticationForm):
@@ -41,49 +40,6 @@ class userLogInForm(AuthenticationForm):
                     raise self.get_invalid_login_error()
 
         return self.cleaned_data
-class userPasswordChangeForm(PasswordChangeForm):
-    def __init__(self, *args, **kwargs):
-        super(userPasswordChangeForm, self).__init__(*args, **kwargs)
-        self.helper = FormHelper(self)
-        self.helper.layout.append(Submit('save', 'Save'))
-        self.helper.layout.append(HTML('<a class="btn btn-danger" href="/frontend">Cancel</a>'))
-
-
-class NewUserForm(UserCreationForm):
-    email = forms.EmailField(required=True)
-    first_name = forms.CharField(max_length=50, required=True)
-    last_name = forms.CharField(max_length=50, required=True)
-    phone = forms.CharField(max_length=25, required=True)
-
-    class Meta:
-        model = authUser
-        fields = ("username", 'first_name', 'last_name', "email", "phone", "password1", "password2")
-
-    def save(self, commit=True):
-        user = super(NewUserForm, self).save(commit=False)
-        user.email = self.cleaned_data['email']
-        user.first_name = self.cleaned_data['first_name']
-        user.last_name = self.cleaned_data['last_name']
-        if commit:
-            user.save()
-        return user
-
-    def check_duplicate(self, form, certInfo):
-        if DEBUG == False:
-            if certInfo['status'] == "validPKI":
-                matchingUsers = User.objects.filter(user_identifier=certInfo['userHash'])
-                if matchingUsers.count() != 0:
-                    dupe = False
-                    for user in matchingUsers:
-                        if user.auth_user != None:
-                            dupe = True
-
-                    if dupe == True:
-                        self.add_error(None, "Your " + NETWORK + " token is already tied to an account. If you forgot your password you can request a reset from the login page. If you believe this to be an error please contact us at the link below.")
-            else:
-                matchingUsers = authUser.objects.filter(email=form.get('email'))
-                if matchingUsers.count() != 0:
-                    self.add_error(None, "Your email is already tied to an account. If you forgot your password you can request a reset from the login page. If you believe this to be an error please contact us at the link below.")
 
 
 class userInfoForm(ModelForm):
@@ -160,20 +116,3 @@ class userInfoForm(ModelForm):
 
         if form.get('org') == "OTHER" and form.get('other_org') == "":
             self.add_error('other_org', "List your organization")
-
-
-class UsernameLookupForm(ModelForm):
-    email = forms.EmailField(max_length=75, required=True)
-    password = forms.CharField(widget=PasswordInput(), required=True)
-
-    class Meta:
-        model = authUser
-        fields = ('email', 'password')
-
-    def __init__(self, *args, **kwargs):
-        super(UsernameLookupForm, self).__init__(*args, **kwargs)
-        self.helper = FormHelper(self)
-        self.fields['email'].label = NETWORK + ' Email'
-        self.fields['password'].label = 'Account Password'
-        self.helper.layout.append(Submit('save', 'Search'))
-        self.helper.layout.append(HTML('<a class="btn btn-danger" href="/frontend">Cancel</a>'))

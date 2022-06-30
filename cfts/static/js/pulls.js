@@ -29,32 +29,6 @@ jQuery(document).ready(function() {
         $('.pull-menu').fadeOut('fast');
     });
 
-    //$( '.pull-menu' ).mouseleave( e => { $( '.pull-menu' ).fadeOut( 'fast' ); });
-
-    $('.oneeye').click(e => {
-        e.preventDefault();
-        $this = $(e.target);
-
-        url = '/pulls-oneeye/' + $this.attr('href');
-        success = (resp) => {
-            alert("Pull id " + resp.id + " marked as 'One Eye Complete'.");
-            location.reload();
-        };
-        $.get(url, {}, success, 'json');
-    });
-
-    $('.twoeye').click(e => {
-        e.preventDefault();
-        $this = $(e.target);
-
-        url = '/pulls-twoeye/' + $this.attr('href');
-        success = (resp) => {
-            alert("Pull id " + resp.id + " marked as 'Two Eye Complete'.");
-            location.reload();
-        };
-        $.get(url, {}, success, 'json');
-    });
-
     $('.done').click(e => {
         e.preventDefault();
         $this = $(e.target);
