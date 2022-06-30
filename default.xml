@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<django-objects version="1.0"><object model="pages.network" pk="168d94ce-fbca-4ead-8cdc-ad487a706470"><field name="name" type="CharField">SIPR</field><field name="sort_order" type="IntegerField">2</field><field name="visible" type="BooleanField">False</field><field name="cfts_deployed" type="BooleanField">False</field><field name="skip_file_review" type="BooleanField">False</field></object><object model="pages.network" pk="20c87ade-9349-487b-a9f6-7b358f470add"><field name="name" type="CharField">CPN-X</field><field name="sort_order" type="IntegerField">98</field><field name="visible" type="BooleanField">True</field><field name="cfts_deployed" type="BooleanField">False</field><field name="skip_file_review" type="BooleanField">False</field></object><object model="pages.network" pk="568b6f90-02d3-4530-ada0-cdae631807c3"><field name="name" type="CharField">CX-SWA</field><field name="sort_order" type="IntegerField">100</field><field name="visible" type="BooleanField">False</field><field name="cfts_deployed" type="BooleanField">False</field><field name="skip_file_review" type="BooleanField">False</field></object><object model="pages.network" pk="56ea084e-d72c-47ca-b3ee-48371afdb504"><field name="name" type="CharField">CPN-ARE</field><field name="sort_order" type="IntegerField">98</field><field name="visible" type="BooleanField">True</field><field name="cfts_deployed" type="BooleanField">False</field><field name="skip_file_review" type="BooleanField">False</field></object><object model="pages.network" pk="5fde10fa-2e42-4b57-95ce-76f5ece5305a"><field name="name" type="CharField">CPN-KWT</field><field name="sort_order" type="IntegerField">98</field><field name="visible" type="BooleanField">True</field><field name="cfts_deployed" type="BooleanField">False</field><field name="skip_file_review" type="BooleanField">False</field></object><object model="pages.network" pk="6caad0cf-9f0a-4160-b290-c2c6407aa04d"><field name="name" type="CharField">CPN-JOR</field><field name="sort_order" type="IntegerField">98</field><field name="visible" type="BooleanField">True</field><field name="cfts_deployed" type="BooleanField">False</field><field name="skip_file_review" type="BooleanField">False</field></object><object model="pages.network" pk="7cc549ab-a306-4d5b-9cb8-fa8ec846f252"><field name="name" type="CharField">BICES</field><field name="sort_order" type="IntegerField">3</field><field name="visible" type="BooleanField">True</field><field name="cfts_deployed" type="BooleanField">False</field><field name="skip_file_review" type="BooleanField">False</field></object><object model="pages.network" pk="a4051cb3-c50d-48e3-ac81-76dd04e800e3"><field name="name" type="CharField">Partner_Network_1</field><field name="sort_order" type="IntegerField">99</field><field name="visible" type="BooleanField">True</field><field name="cfts_deployed" type="BooleanField">False</field><field name="skip_file_review" type="BooleanField">False</field></object><object model="pages.network" pk="be27f19f-d421-47eb-abc0-98da6d8bb35c"><field name="name" type="CharField">CPN-SAU</field><field name="sort_order" type="IntegerField">98</field><field name="visible" type="BooleanField">True</field><field name="cfts_deployed" type="BooleanField">False</field><field name="skip_file_review" type="BooleanField">False</field></object><object model="pages.network" pk="c8628ca8-85d7-436e-96f6-64e8d6c1f2d9"><field name="name" type="CharField">CPN-QAT</field><field name="sort_order" type="IntegerField">98</field><field name="visible" type="BooleanField">True</field><field name="cfts_deployed" type="BooleanField">False</field><field name="skip_file_review" type="BooleanField">False</field></object><object model="pages.network" pk="d451005a-8b50-43e9-b613-94ea99b961d2"><field name="name" type="CharField">CPN-BHR</field><field name="sort_order" type="IntegerField">98</field><field name="visible" type="BooleanField">True</field><field name="cfts_deployed" type="BooleanField">False</field><field name="skip_file_review" type="BooleanField">False</field></object><object model="pages.network" pk="dabcf4d2-6dcf-4752-8635-1de3ac7f0c49"><field name="name" type="CharField">NIPR</field><field name="sort_order" type="IntegerField">1</field><field name="visible" type="BooleanField">True</field><field name="cfts_deployed" type="BooleanField">False</field><field name="skip_file_review" type="BooleanField">False</field></object><object model="pages.message" pk="b637d3b7-278c-408c-bfac-54cab6628e45"><field name="message" type="TextField">The File Transfer Process is a highly regulated process by DIA and it is imperative that customers utilizing the Combined File Transfer Service understand their roles and responsibilities. Please ensure you have read the policies that govern the use of this service.
+
+
+
+Information regarding the USBICES Cross Domain Centers is available in the Resource drop down.</field><field name="visible" type="BooleanField">True</field><field name="color" type="CharField">success</field></object><object model="pages.message" pk="e4a99f54-7f61-4fc0-a2c3-9e7baf3bbc46"><field name="message" type="TextField">Reliable Human Reviewer is a subject matter expert in your unit who reviewed your file prior to upload to CFTS and cannot be the requester. This is not a CFTS team member.
+
+
+
+Provide your RHR's SIPR email address.</field><field name="visible" type="BooleanField">True</field><field name="color" type="CharField">danger</field></object><object model="pages.rejection" pk="110c994f-83cc-436a-a4e1-45df9752227c"><field name="name" type="CharField">CONFIDENTIAL markings</field><field name="subject" type="CharField">CFTS File Rejected - Confidential markings</field><field name="text" type="TextField">The file submitted for transfer contains CONFIDENTIAL classification markings and cannot be transferred to NIPR. Please correct the issues, have your SSO review and resubmit through CFTS.
+
+
+
+The CENTCOM IM Transfer team cannot transfer files to the NIPRnet that contain classified markings anywhere in the file (i.e., PowerPoint Master Slides, Layout, Document Properties, etc.). 
+
+
+
+We also recommend that you utilize IC Clear to review your files prior to submitting them through CFTS for transfer: https://icclears01.oni.nmci.navy.smil.mil/Clear/
+
+
+
+As a customer it is your responsibility to follow the policies that govern the use of this service. Our policy and user guide are available on the main page of CFTS.
+
+
+
+Please be aware that we have provided a file review guide under the
+
+resources tab in the Combined File Transfer Service to assist in your RHR
+
+process.</field><field name="visible" type="BooleanField">True</field><field name="sort_order" type="IntegerField">99</field></object><object model="pages.rejection" pk="17dc1d09-7d3d-4968-a348-d5e14b72d129"><field name="name" type="CharField">RHR</field><field name="subject" type="CharField">Incorrect RHR</field><field name="text" type="TextField">RHR is the individual who reviewed your file prior to upload to CFTS and cannot be the requester.</field><field name="visible" type="BooleanField">True</field><field name="sort_order" type="IntegerField">99</field></object><object model="pages.rejection" pk="2207f339-c6cd-43a7-8b83-ba9225d906b2"><field name="name" type="CharField">Test Msg</field><field name="subject" type="CharField">CFTS Request Rejected  Test Message</field><field name="text" type="TextField">We do not transfer test messages.
+
+
+
+We are in the process of reviewing and moving files. The Combined File Transfer Service is not automated, it relies upon reliable human review. We do our best to ensure all transfers are completed within four hours of submission during our normal hours. 
+
+
+
+Our normal business hours are 0600-1700 EST Monday - Friday. On Saturday and Sunday our desk is manned 0700-1500 EST.
+
+
+
+As a customer it is your responsibility to follow the policies that govern the use of this service. Our policy and user guide are available on the main page of CFTS.</field><field name="visible" type="BooleanField">True</field><field name="sort_order" type="IntegerField">13</field></object><object model="pages.rejection" pk="241a3603-465e-4b72-834a-50450b8c073a"><field name="name" type="CharField">Duplicate - No Email</field><field name="subject" type="CharField">[N/T]</field><field name="text" type="TextField">Delete. Do not send.</field><field name="visible" type="BooleanField">True</field><field name="sort_order" type="IntegerField">15</field></object><object model="pages.rejection" pk="298cab7d-2565-4bbd-9db2-635133f6de0c"><field name="name" type="CharField">Other</field><field name="subject" type="CharField">CFTS Request Rejected</field><field name="text" type="TextField">-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Please be aware that we have provided a file review guide under the
+
+resources tab in the Combined File Transfer Service to assist in your RHR
+
+process.</field><field name="visible" type="BooleanField">True</field><field name="sort_order" type="IntegerField">14</field></object><object model="pages.rejection" pk="50523e46-2dfc-4c81-9d4e-942dc4c61744"><field name="name" type="CharField">CPN not marked</field><field name="subject" type="CharField">CFTS File Rejected - File Not Marked</field><field name="text" type="TextField">The file submitted for transfer to CPN- does not contain classification markings. Documents being transferred must be marked, please ensure file contains classification markings on each page/slide/sheet and resubmit through CFTS for transfer.
+
+
+
+The IM team does not retain files that have been rejected.</field><field name="visible" type="BooleanField">True</field><field name="sort_order" type="IntegerField">10</field></object><object model="pages.rejection" pk="721b1edc-e316-466d-b3a6-ece6917355d8"><field name="name" type="CharField">Missing Markings page/slide/sheet</field><field name="subject" type="CharField">CFTS Request Rejected Missing Markings page/slide/sheet</field><field name="text" type="TextField">Documents being transferred from SIPR must be marked on each page/slide/sheet. Correct the issues and resubmit through CFTS for transfer.
+
+
+
+As a customer it is your responsibility to follow the policies that govern the use of this service. Our policy and user guide are available on the main page of CFTS.
+
+
+
+Please be aware that we have provided a file review guide under the
+
+resources tab in the Combined File Transfer Service to assist in your RHR
+
+process.</field><field name="visible" type="BooleanField">True</field><field name="sort_order" type="IntegerField">3</field></object><object model="pages.rejection" pk="790ea743-bda4-4a5d-b2de-f4cad35d09d0"><field name="name" type="CharField">Missing Classification Markings</field><field name="subject" type="CharField">CFTS Transfer Request Rejected Missing Classification Markings</field><field name="text" type="TextField">Every document that is on a classified network is required to have the appropriate classification markings per CAPCO guidance. It does not matter whether the documents contain information or not. 
+
+
+
+Classification in the file name is not sufficient.
+
+
+
+As a customer it is your responsibility to follow the policies that govern the use of this service. Our policy and user guide are available on the main page of CFTS.
+
+
+
+Please be aware that we have provided a file review guide under the
+
+resources tab in the Combined File Transfer Service to assist in your RHR
+
+process.</field><field name="visible" type="BooleanField">True</field><field name="sort_order" type="IntegerField">1</field></object><object model="pages.rejection" pk="893a3f51-82f5-4223-9bea-61072f8e0015"><field name="name" type="CharField">CPN Tetragraph Issue</field><field name="subject" type="CharField">CFTS Request Rejected</field><field name="text" type="TextField">The file submitted for transfer to CPN- does not contain an appropriate tetragraph classification markings. 
+
+
+
+The IM team does not retain files that have been rejected.
+
+
+
+Please be aware that we have provided a file review guide under the
+
+resources tab in the Combined File Transfer Service to assist in your RHR
+
+process.</field><field name="visible" type="BooleanField">True</field><field name="sort_order" type="IntegerField">99</field></object><object model="pages.rejection" pk="8aad3579-eda3-4207-a254-c90129ae0755"><field name="name" type="CharField">SECRET markings</field><field name="subject" type="CharField">CFTS Request Rejected  SECRET markings</field><field name="text" type="TextField">The file submitted for transfer contains SECRET classification markings and cannot be transferred to NIPR. Please correct the issues, have your SSO review and resubmit through CFTS.
+
+
+
+The CENTCOM IM Transfer team cannot transfer files to the NIPRnet that contain classified markings anywhere in the file (i.e., PowerPoint Master Slides, Layout, Document Properties, etc.).
+
+
+
+We also recommend that you utilize IC Clear to review your files prior to submitting them through CFTS for transfer: https://icclears01.oni.nmci.navy.smil.mil/Clear/
+
+
+
+As a customer it is your responsibility to follow the policies that govern the use of this service. Our policy and user guide are available on the main page of CFTS.
+
+
+
+Please be aware that we have provided a file review guide under the
+
+resources tab in the Combined File Transfer Service to assist in your RHR
+
+process.</field><field name="visible" type="BooleanField">True</field><field name="sort_order" type="IntegerField">4</field></object><object model="pages.rejection" pk="8bb87d9b-d9e9-4c6b-916f-db93e81205e2"><field name="name" type="CharField">redacted document/no oca letter</field><field name="subject" type="CharField">CFTS Transfer Request Rejected Redaction</field><field name="text" type="TextField">Per DoD Regulation 5200 01 (pg 66 para (2); a redacted document requires a memo from the current Original Classification Authority (OCA) stating the document has been redacted and is authorized for the target network.</field><field name="visible" type="BooleanField">True</field><field name="sort_order" type="IntegerField">11</field></object><object model="pages.rejection" pk="a653db4a-bbd1-40e3-892c-20676113b44e"><field name="name" type="CharField">file too large</field><field name="subject" type="CharField">CFTS File Rejected - Over Size Limit</field><field name="text" type="TextField">The file submitted for transfer exceeds the maximum size limit for transfer. There is a 10MB size limit for file transfers.</field><field name="visible" type="BooleanField">True</field><field name="sort_order" type="IntegerField">9</field></object><object model="pages.rejection" pk="aa4520d2-44e7-4fd1-9caf-8aea4a480672"><field name="name" type="CharField">JOPES</field><field name="subject" type="CharField">CFTS Request Rejected  JOPES Data</field><field name="text" type="TextField">Due to several incidents of data compromise via NIPR, we are awaiting HQ USAF A-3 promulgate policy to subordinate USAF units regarding process and procedure to ensure OPSEC is not violated, placing our personnel, equipment, and mission at risk. Per our SSO we cannot transfer information with any future troop movement dates or past movement rosters that have locations on them, or ones with RLD, ALD, or RDD codes. USCENTCOM will not pass JOPES/DCAPES type data to include PRF and LVY files from SIPR to NIPR.
+
+
+
+The issue is with RDD, RLD, ALD etc columns showing future force movement, according to CENTCOM classification guidance any indication of future movement makes this secret. We were recently told that in order for it to be UNCLASS it must be 21 days after these dates. 
+
+
+
+As a customer it is your responsibility to follow the policies that govern the use of this service. Our policy and user guide are available on the main page of CFTS.</field><field name="visible" type="BooleanField">True</field><field name="sort_order" type="IntegerField">8</field></object><object model="pages.rejection" pk="acd680c4-4fef-4bb5-820b-b1696b9e2db9"><field name="name" type="CharField">Missing Classification Markings - multi</field><field name="subject" type="CharField">CFTS Transfer Request Rejected  Missing Classification Markings</field><field name="text" type="TextField">The files submitted for transfer to NIPR do not contain classification markings.  Documents being transferred from SIPR to NIPR must be marked, please ensure each file contains classification markings on each page/slide/sheet and resubmit through CFTS for transfer.
+
+
+
+Every document that is on a classified network is required to have the appropriate classification markings per CAPCO guidance. It does not matter whether the documents contain information or not.
+
+
+
+Classification in the file name is not sufficient.
+
+
+
+As a customer it is your responsibility to follow the policies that govern the use of this service. Our policy and user guide are available on the main page of CFTS.</field><field name="visible" type="BooleanField">False</field><field name="sort_order" type="IntegerField">2</field></object><object model="pages.rejection" pk="bc3825a8-d0fd-441d-a52d-517ab167617e"><field name="name" type="CharField">SECRET Markings  multi</field><field name="subject" type="CharField">CFTS Request Rejected  SECRET Markings in File</field><field name="text" type="TextField">The files submitted for transfer contain SECRET classification markings and cannot be transferred to NIPR. Please correct the issues, have your SSO review and resubmit through CFTS.
+
+
+
+The CENTCOM IM Transfer team cannot transfer files to the NIPRnet that contain classified markings anywhere in the file (i.e., PowerPoint Master Slides, Document Properties, etc.). 
+
+
+
+We also recommend that you utilize IC Clear to review your files prior to submitting them through CFTS for transfer: https://icclears01.oni.nmci.navy.smil.mil/Clear/
+
+
+
+As a customer it is your responsibility to follow the policies that govern the use of this service. Our policy and user guide is available on the main page of CFTS.</field><field name="visible" type="BooleanField">False</field><field name="sort_order" type="IntegerField">5</field></object><object model="pages.rejection" pk="c125694e-ae7c-43af-804e-b1ac129a4f51"><field name="name" type="CharField">Unable to open file</field><field name="subject" type="CharField">CFTS Request Rejected -- Unable to Open File</field><field name="text" type="TextField">The file submitted for transfer is not a format we are unable to open, and therefore cannot be transferred to NIPR.  If there is a way you can convert this file to a format we are able to open such as .ppt, .xlsx, .doc or .pdf and the file contains proper classification markings we will transfer it.</field><field name="visible" type="BooleanField">True</field><field name="sort_order" type="IntegerField">7</field></object><object model="pages.rejection" pk="ca1e0440-3db1-407d-828e-4fa111e0fc79"><field name="name" type="CharField">Hidden/Comments/Tracked changes</field><field name="subject" type="CharField">CFTS Request Rejected  Hidden/Comments/Tracked changes</field><field name="text" type="TextField">Due to several incidents of data compromise, files with hidden data will not be transferred.  Please ensure all data is readily visible for the review process. 
+
+
+
+Files with tracked changes, hidden data, hidden worksheets, hidden names, active filters or comments will not be transferred.  Please ensure documents submitted for transfer do not contain any of these items. 
+
+
+
+As a customer it is your responsibility to follow the policies that govern the use of this service. Our policy and user guide are available on the main page of CFTS.
+
+
+
+Please be aware that we have provided a file review guide under the
+
+resources tab in the Combined File Transfer Service to assist in your RHR
+
+process.</field><field name="visible" type="BooleanField">True</field><field name="sort_order" type="IntegerField">6</field></object><object model="pages.rejection" pk="d2662eaa-e467-4f7b-9622-3e11c5ed904f"><field name="name" type="CharField">failure to follow policy</field><field name="subject" type="CharField">CFTS Rejection - Policy</field><field name="text" type="TextField">As a customer it is your responsibility to follow the policies that govern the use of this service.
+
+
+
+Our policy and user guide are available on the main page of CFTS.
+
+
+
+Continued failure to follow our policy will result in you to no longer be able to use our service.</field><field name="visible" type="BooleanField">True</field><field name="sort_order" type="IntegerField">12</field></object><object model="pages.dirtyword" pk="0024e046-6841-4939-b14b-e9f7c8408737"><field name="word" type="CharField">PRF</field><field name="case_sensitive" type="BooleanField">True</field></object><object model="pages.dirtyword" pk="0b315c64-1f1d-47f1-b210-1a9ac6041474"><field name="word" type="CharField">S//</field><field name="case_sensitive" type="BooleanField">False</field></object><object model="pages.dirtyword" pk="0e7b980f-3c6c-423c-849b-02eba9092508"><field name="word" type="CharField">CONFIDENTIAL</field><field name="case_sensitive" type="BooleanField">False</field></object><object model="pages.dirtyword" pk="20673f55-3798-4fec-8aec-aaa58d55899f"><field name="word" type="CharField">\(S/</field><field name="case_sensitive" type="BooleanField">False</field></object><object model="pages.dirtyword" pk="2511225e-f7d3-4a79-8e0d-0e577acfe353"><field name="word" type="CharField">SECRET</field><field name="case_sensitive" type="BooleanField">False</field></object><object model="pages.dirtyword" pk="2a40c61d-c006-4dae-9185-4178b4bd40bb"><field name="word" type="CharField">C//</field><field name="case_sensitive" type="BooleanField">False</field></object><object model="pages.dirtyword" pk="2e2e70b9-3230-498b-8961-3204f03d3c65"><field name="word" type="CharField">_NF</field><field name="case_sensitive" type="BooleanField">False</field></object><object model="pages.dirtyword" pk="33d8e7ac-f3ac-468b-a697-630fb2bdc5bd"><field name="word" type="CharField">RDD</field><field name="case_sensitive" type="BooleanField">True</field></object><object model="pages.dirtyword" pk="3b68b98f-e4b9-4173-9339-b4aaabf2800e"><field name="word" type="CharField">NOFORN</field><field name="case_sensitive" type="BooleanField">False</field></object><object model="pages.dirtyword" pk="7d2850d4-8111-4fc6-a83b-87b11c6c0fc6"><field name="word" type="CharField">RLD</field><field name="case_sensitive" type="BooleanField">True</field></object><object model="pages.dirtyword" pk="9cf02a79-6185-4078-a371-8e15edb666b4"><field name="word" type="CharField">S__NF</field><field name="case_sensitive" type="BooleanField">False</field></object><object model="pages.dirtyword" pk="d3f553bb-d8da-4b27-80e6-dae80cc12820"><field name="word" type="CharField">LVY</field><field name="case_sensitive" type="BooleanField">True</field></object><object model="pages.dirtyword" pk="e3337c34-8abc-49a9-af1d-5f767cb4e36c"><field name="word" type="CharField">ALD</field><field name="case_sensitive" type="BooleanField">True</field></object></django-objects>
