@@ -5,21 +5,17 @@ import shutil
 # core
 from zipfile import ZipFile, BadZipFile
 from django.conf import settings
-import shutil
 from django.db.models import Sum, Count, Q, IntegerField
 
 # decorators
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.views.decorators.cache import never_cache
 
 from pages.views.auth import superUserCheck, staffCheck
 
 # responses
 from django.shortcuts import redirect, render
-from django.http import JsonResponse
 
 # pdf parsing
-from io import StringIO
 from pdfminer.high_level import extract_text
 
 # db models
@@ -126,10 +122,8 @@ def runScan(scan_folder):
     # \cfts\scan should contain all the user folders from the zip file
     printBin = re.compile('printerSettings(\d+).bin')
     imgFiles = re.compile('(jpe?g|png|gif|bmp|emf)', re.IGNORECASE)
-    # scanSkip = ["_email.txt", "_encrypt.txt", "_notes.txt"]
 
     imgCount = 0
-    # if filename.split("\\")[-1] not in scanSkip:
     for filename in fileList:
         readablePath = filename.split(scan_folder+"\\")[1]
         try:
@@ -200,7 +194,6 @@ def runScan(scan_folder):
                         file_results = None
 
                 elif(ext == '.zip'):
-                    isZip = True
                     fileZip = ZipFile(filename)
                     extractDir = os.path.dirname(filename)+"\\extracted_files\\"+filename.split("\\")[-1]
                     fileZip.extractall(extractDir)
@@ -233,7 +226,6 @@ def runScan(scan_folder):
                 if imgCount > 0:
                     result['imgCount'] = imgCount
                     imgCount = 0
-                    # result['image']=True
                 scan_results.append(result)
 
     return scan_results

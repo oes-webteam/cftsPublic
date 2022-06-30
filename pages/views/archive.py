@@ -3,8 +3,6 @@
 from django.core import paginator
 # decorators
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.http.response import JsonResponse
-from django.template.loader import render_to_string
 
 # responses
 from django.shortcuts import render

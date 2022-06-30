@@ -97,10 +97,7 @@ def frontend(request):
             elif DEBUG == False:
                 return render(request, 'pages/frontend.html', {'rc': {'error': True, 'submission_disabled': DISABLE_SUBMISSIONS, 'debug': str(DEBUG), 'resources': resources, 'browser': browser}})
         elif cftsUser == None or cftsUser.update_info == True:
-            # return redirect("/login")
             return redirect("/user-info")
-        # elif cftsUser.update_info == True:
-        #     return redirect("/user-info")
 
         # check if the user is currntly banned
         checkBan(cftsUser)

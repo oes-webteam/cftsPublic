@@ -21,9 +21,6 @@ function enableGroupSelection(selector) {
                 .forEach(checkbox => checkbox.checked = lastChecked.checked);
         }
 
-        // match reject buttons to checkboxes on each click
-        //checkboxes.forEach( checkbox => checkbox.nextElementSibling.style.display = ( checkbox.checked ) ? 'inline-block' : 'none' );
-
         lastChecked = checkbox;
     }));
 }
@@ -51,18 +48,18 @@ jQuery(document).ready(function() {
             });
 
             history.pushState(null, "", location.href.split("?")[0])
-        } 
-        
+        }
+
         if (paramObj.warning) {
-            $('#userWarning').attr('href', $('#userWarning').attr('href')+"/true")
+            $('#userWarning').attr('href', $('#userWarning').attr('href') + "/true")
             history.pushState(null, "", location.href.split("?")[0])
-        } 
+        }
 
         if (paramObj.flash == "false") {
             $('.btn-back').attr('href', '/queue')
             history.pushState(null, "", location.href.split("?")[0])
-        } 
-        
+        }
+
         if (paramObj.file) {
             let row = document.getElementById("row_" + paramObj.file)
 
@@ -79,7 +76,6 @@ jQuery(document).ready(function() {
             history.pushState(null, "", location.href.split("?")[0])
 
             fileLink.click()
-            // window.open(fileLink.href, '_blank');
         }
     }
 
@@ -139,8 +135,6 @@ jQuery(document).ready(function() {
             checkbox.removeAttribute("hidden");
         });
 
-        // $(e.target).text("Reject Selected")
-        // $(e.target).addClass('selected-reject')
         $(e.target).hide()
         $('#rejectiondropdowntoggle').show()
 
@@ -217,7 +211,6 @@ jQuery(document).ready(function() {
                     'requestEmail': $($checkedItems[i]).attr('request_email')
                 })
             });
-            // rejectDialog.data('data', data).dialog('open');
             rejectFormCallback(data, $(e.target).attr('rejection_ID'))
         }
     })
@@ -254,8 +247,6 @@ jQuery(document).ready(function() {
                 errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"))
 
                 notifyUserError("Error unrejecting file, send error message to web team: " + errorInfo)
-                //console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
-                // console.log( 'Response status: ' + status );
             }
         );
 
@@ -321,7 +312,6 @@ jQuery(document).ready(function() {
             // success
             function(resp, status) {
                 console.log('SUCCESS');
-                // notifyUserSuccess("File Encryption Successful")
                 $("#forceReload").submit();
             },
             // fail 
@@ -333,8 +323,6 @@ jQuery(document).ready(function() {
                 errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"))
 
                 notifyUserError("Error encrypting file, send error message to web team: " + errorInfo)
-                //console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
-                // console.log( 'Response status: ' + status );
             }
         );
 
@@ -353,8 +341,6 @@ jQuery(document).ready(function() {
 
     // REJECTION MODAL INPUT VALIDATION AND ACTION
     const rejectFormCallback = (data, reason) => {
-
-
         let requests = {};
 
         let csrftoken = getCookie('csrftoken');
@@ -374,7 +360,6 @@ jQuery(document).ready(function() {
             // success
             function(resp) {
                 console.log('SUCCESS');
-                // notifyUserSuccess("File rejection Successful")
                 console.log('Server response: ' + JSON.stringify(resp, null, 4));
 
                 if (resp.debug != true) {
@@ -402,8 +387,6 @@ jQuery(document).ready(function() {
                 errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"))
 
                 notifyUserError("Error rejecting file, send error message to web team: " + errorInfo)
-                //console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
-                // console.log( 'Response status: ' + status );
             }
         );
     };
@@ -474,7 +457,6 @@ jQuery(document).ready(function() {
             // success
             function(resp, status) {
                 console.log('SUCCESS');
-                // notifyUserSuccess("Reviewer removed Sccessfully")
                 $("#forceReload").submit();
             },
             // fail 
@@ -486,8 +468,6 @@ jQuery(document).ready(function() {
                 errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"))
 
                 notifyUserError("Error removing reviewer, send error message to web team: " + errorInfo)
-                //console.log( 'Server response: ' + JSON.stringify(resp,null, 4));
-                // console.log( 'Response status: ' + status );
             }
         );
 
