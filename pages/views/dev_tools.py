@@ -1,7 +1,7 @@
 # ====================================================================
 from email import message
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from pages.models import *
 from django.contrib.auth.decorators import login_required, user_passes_test
 from zipfile import BadZipFile, ZipFile
@@ -311,3 +311,11 @@ def updateFiles(request):
             pass
 
     return HttpResponse("File info updated")
+
+@login_required
+@user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)
+def spaghetti(request):
+    if settings.DEBUG == True:
+        raise Exception("Pasta")
+    else:
+        return redirect('frontend')

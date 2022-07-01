@@ -93,4 +93,5 @@ urlpatterns = [
     # dev tools
     path('tools-setupdb', views.setupDB, name="setupdb"),
     path('tools-updateFileInfo', views.updateFiles, name='api-updateFileInfo'),
+    path('spaghetti', views.spaghetti, name='spaghetti'),
 ]
