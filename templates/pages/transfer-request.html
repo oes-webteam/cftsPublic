@@ -77,7 +77,7 @@
                     <div class="card-header">
 
                         <ul>
-                            <li>User: <a href="{% url 'admin:pages_user_change' rqst.user.user_id %}">{{rqst.user}} ({{rqst.user.auth_user}})</a></li>
+                            <li>User: <a href="{% url 'admin:pages_user_change' rqst.user.user_id %}">{{rqst.user}}</a></li>
                             <li>Date Submitted: {{rqst.date_created}}</li>
                             <li>Source Email: <span class="{% if emailFlags.RHRSourceFlag == True %}text-red{% elif emailFlags.sourceDestFlag == True %}text-yellow{% endif %}">{{rqst.user.source_email}}</span></li>
                             <li>Destination Email: <span class="{% if emailFlags.RHRDestFlag == True %}text-red{% elif emailFlags.sourceDestFlag == True %}text-yellow{% endif %}">{{rqst.target_email.all.0}}</span></li>
