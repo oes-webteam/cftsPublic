@@ -1,23 +1,12 @@
 import hashlib
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.core import paginator
-from django.contrib.auth.hashers import check_password
-
 from django.shortcuts import render, redirect
-from django.http.response import HttpResponse
 
-from pages.forms import NewUserForm, userInfoForm, userLogInForm, userPasswordChangeForm, UsernameLookupForm
-from django.contrib.auth.forms import PasswordResetForm
-from django.template.loader import render_to_string
-from django.utils.http import urlsafe_base64_encode
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.encoding import force_bytes
+from pages.forms import userInfoForm, userLogInForm
 
 from django.contrib.auth import login, authenticate
 from django.contrib import messages
 
-from django.contrib.auth.models import User as authUser
-from pages.models import Feedback, Network, User, Email, Feedback, ResourceLink
+from pages.models import Network, User, Email, ResourceLink
 from cfts.settings import NETWORK, DEBUG
 import logging
 
@@ -145,27 +134,7 @@ def getOrCreateUser(request, certInfo):
 
             # get the User object that matches the certificate hash
             user = User.objects.get(user_identifier=userHash)
-            # try:
-            # user = User.objects.get(user_identifier=userHash)
-            # except User.DoesNotExist:
-            # if request.user.is_authenticated:
-            # user = User.objects.get(auth_user=request.user)
-            # if user.user_identifier == None:
-            # user.user_identifier = userHash
-            # user.save()
-            # else:
-            # return None
 
-            # User object retruned, but they do not have a Django user account linked
-            # if user.auth_user == None:
-            # # if they are logged in then create a one-to-one relationship between the returned User object and the currently logged in Django user account
-            # if request.user.is_authenticated:
-            # user.auth_user = request.user
-            # user.save()
-
-            # # if they aren't logged in return None, this will redirect the user to the log in page
-            # else:
-            # return None
         # the user is external, so we can't user a certificate hash to retrieve a User object, external users MUST BE LOGGED IN
         else:
             # if they are logged in then get the User object that has a one-to-one relationship with the currently logged in Django user account
@@ -188,24 +157,6 @@ def getOrCreateUser(request, certInfo):
 
     # could not retireve any User object, one will need to be created, the user MUST BE LOGGED IN
     except User.DoesNotExist:
-        # if request.user.is_authenticated:
-        # call getOrCreateEmail() pass in the email from the currently logged in Django user account and the NETWORK value defined in network.py
-        # the retured Email object will be used as the Users source_email value
-        # userEmail = getOrCreateEmail(request, request.user.email, NETWORK)
-        # user = User(
-        #         #auth_user=request.user,
-        #         name_first=request.user.first_name,
-        #         name_last=request.user.last_name,
-        #         source_email=userEmail
-        # )
-
-        # # if they have valid cert information then add their cert hash to the User object
-        # if certInfo['status'] == "validPKI" or certInfo['status'] == "externalPKI":
-        #     user.user_identifier = certInfo['userHash']
-        #     user.save()
-
-        # # user was not logged in, redirect them
-        # else:
         return None
 
     return user
@@ -249,82 +200,6 @@ def userLogin(request):
     form = userLogInForm()
     return render(request, template_name="authForms/userLogin.html", context={'resources': resources, "login_form": form})
 
-# function for users to change their account password, users MUST BE LOGGED IN
-@login_required
-def changeUserPassword(request):
-    resources = ResourceLink.objects.all()
-
-    # only process data from a POST request
-    if request.method == "POST":
-        # instantiate a change password form with data from the POST request and the currently logged in user
-        form = userPasswordChangeForm(request.user, request.POST)
-
-        # proceed if form passes initial validity check
-        if form.is_valid():
-            # save is a method of the userPasswordChangeForm class that will save the password changes to the currently logged in user
-            form.save()
-
-            # changing a users password automatically logs them out and I get the reasoning beind it, but I just log them back in anyways
-            login(request, request.user)
-            messages.success(request, "Password changed successfully")
-
-            # changes to the Django user account create a new session
-            # need to reset the consent cookie or the user will be redirected back to the consent page even if they already consented
-            from pages.views.apis import setConsentCookie
-            setConsentCookie(request)
-
-            return redirect("/frontend")
-
-        # validity check failed, serve the instantiated form back to the user, it will contain helpful error messages for them
-        else:
-            return render(request, template_name="authForms/userPassChange.html", context={'resources': resources, "pass_change_form": form, })
-
-    # all GET requests should be served a blank form
-    form = userPasswordChangeForm(request.user)
-    return render(request, template_name="authForms/userPassChange.html", context={'resources': resources, "pass_change_form": form})
-
-# function to create Django user account and create one-to-one relationship with new or existing CFTS User object
-def register(request):
-    resources = ResourceLink.objects.all()
-
-    # only process data from a POST request
-    if request.method == "POST":
-        # instantiate a register form with data from the POST request
-        form = NewUserForm(request.POST)
-        # get user certificate information
-        certInfo = getCert(request)
-        # validate that a user is not attempting to create a duplicate/second account, failed validation will serve the instantiated form back to the user, it will contain helpful error messages for them
-        form.check_duplicate(request.POST, certInfo)
-        # proceed if form passes duplicate check and form validity check
-        if form.is_valid():
-            # save is a method of the NewUserForm class that will create a Django user account based on the POST data, immediately log the user in
-            user = form.save()
-            login(request, user)
-
-            # call getOrCreateUser() passing in user certificate info, this will usally create a user since this is the user registration form
-            cftsUser = getOrCreateUser(request, certInfo)
-
-            # create one-to-one relationship between the newly created Django user account and CFTS User object
-            cftsUser.auth_user = authUser.objects.get(id=request.user.id)
-            cftsUser.phone = request.POST.get('phone')
-            cftsUser.save()
-            messages.success(request, "Account creation successful, please enter required account information")
-
-            # need to reset the consent cookie or the user will be redirected back to the consent page even if they already consented
-            from pages.views.apis import setConsentCookie
-            setConsentCookie(request)
-
-            # redirect the user to the account info edit page to complete their registration
-            return redirect("/user-info")
-
-        # validity check failed, serve the instantiated form back to the user, it will contain helpful error messages for them
-        else:
-            return render(request, template_name="authForms/register.html", context={'resources': resources, "register_form": form, })
-
-    # all GET requests should be served a blank form
-    form = NewUserForm()
-    return render(request, template_name="authForms/register.html", context={'resources': resources, "register_form": form})
-
 
 # function for user to update certain information about their account
 # @login_required
@@ -340,14 +215,8 @@ def editUserInfo(request):
     cftsUser = getOrCreateUser(request, certInfo)
 
     if cftsUser == None:
-        #userEmail = getOrCreateEmail(request, request.user.email, NETWORK)
         cftsUser = User(
-            # auth_user=request.user,
-            # name_first=request.user.first_name,
-            # name_last=request.user.last_name,
-            # source_email=userEmail
             user_identifier=certInfo['userHash']
-
         )
 
     # only process data from a POST request
@@ -364,12 +233,6 @@ def editUserInfo(request):
         if form.is_valid():
             # update source email address object
             userEmail = getOrCreateEmail(request, request.POST.get('source_email'), NETWORK)
-
-            # # update Django user account info
-            # request.user.first_name = request.POST.get('name_first')
-            # request.user.last_name = request.POST.get('name_last')
-            # request.user.email = userEmail.address
-            # request.user.save()
 
             # update cfts User object info
             cftsUser.name_first = request.POST.get('name_first')
@@ -431,113 +294,3 @@ def editUserInfo(request):
     # all GET requests should be served a blank form
     form = userInfoForm(instance=cftsUser, networks=nets)
     return render(request, 'authForms/editUserInfo.html', context={'resources': resources, "userInfoForm": form, "rc": {'user': cftsUser}})
-
-
-# function to collect and display user password reset requests, only available to superusers
-@login_required
-@user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)
-def passwordResetAdmin(request):
-    # get all Feedback objects with the "password reset" category, sort by most recent uncompleted objects
-    resetRequests = Feedback.objects.filter(category="Password Reset").order_by('completed', '-date_submitted')
-
-    # paginate results, 10 per page
-    requestPage = paginator.Paginator(resetRequests, 10)
-    pageNum = request.GET.get('page')
-    pageObj = requestPage.get_page(pageNum)
-
-    return render(request, "pages/passwordResetAdmin.html", context={'resetRequests': pageObj})
-
-# function for users to submit password reset requests based on email
-def passwordResetRequest(request):
-    resources = ResourceLink.objects.all()
-
-    # only process data from a POST request
-    if request.method == "POST":
-        # instantiate a password reset form with data from the POST request
-        form = PasswordResetForm(request.POST)
-
-        # proceed if form passes validity checks
-        if form.is_valid():
-            formEmail = form.cleaned_data['email']
-            # get all Django user accounts with the entered email
-            userMatchingEmail = authUser.objects.filter(email=formEmail)
-
-            if userMatchingEmail.exists():
-                # create a Feedback object for every Django user account returned
-                for user in userMatchingEmail:
-                    cftsUser = User.objects.get(auth_user=user)
-                    pendingResets = Feedback.objects.filter(user=cftsUser, category="Password Reset", completed=False).count()
-
-                    # only create a Feedback object if the user has no pending password reset requests
-                    if pendingResets == 0:
-                        passwordResetFeedback = Feedback(title="Password reset: " + str(user.last_name) + ", " + str(user.first_name) + "(" + str(user.username) + ")", user=cftsUser, category="Password Reset")
-                        passwordResetFeedback.save()
-
-            # redirect user to the password reset confirmation page, even if the email they entered in returned no Django users
-            return redirect('/password-reset/done')
-
-        # validity check failed, serve the instantiated form back to the user, it will contain helpful error messages for them
-        else:
-            return render(request, template_name="authForms/passwordResetForms/passwordReset.html", context={'resources': resources, "password_reset_form": form, "envNet": NETWORK})
-
-    # all GET requests should be served a blank form
-    form = PasswordResetForm()
-    return render(request, template_name="authForms/passwordResetForms/passwordReset.html", context={'resources': resources, "password_reset_form": form, "envNet": NETWORK})
-
-
-# function to generate email with a unique password reset link for a user, only available to superusers
-@login_required
-@user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)
-def passwordResetEmail(request, id, feedback):
-    # get the Django user account we are generating the link for, as well as the password reset request
-    auth_user = authUser.objects.get(id=id)
-    passwordResetFeedback = Feedback.objects.get(feedback_id=feedback)
-
-    rc = {
-        'user': auth_user,
-        'email': auth_user.email,
-        # generate the uid and token to create a unique one-time password reset link for the user
-        'uid': urlsafe_base64_encode(force_bytes(auth_user.pk)),
-        'token': default_token_generator.make_token(auth_user),
-        'urlPrefix': "https://"+str(request.get_host())
-    }
-
-    # create mailto link from password reset email template
-    msgBody = "mailto:" + str(auth_user.email) + "?subject=CFTS Password Reset&body="
-
-    msgBody += render_to_string('authForms/passwordResetForms/passwordResetEmail.html', rc, request)
-
-    # set the password reset Feedback object to completed
-    passwordResetFeedback.completed = True
-    passwordResetFeedback.save()
-
-    return HttpResponse(str(msgBody))
-
-# function for users to lookup their own username, because users can't remember anything
-def usernameLookup(request):
-    resources = ResourceLink.objects.all()
-
-    if request.method == "POST":
-        form = UsernameLookupForm(request.POST)
-
-        if form.is_valid():
-            formEmail = form.cleaned_data['email']
-            userMatchingEmail = authUser.objects.filter(email=formEmail)
-
-            if userMatchingEmail.exists:
-                for user in userMatchingEmail:
-                    if check_password(form.cleaned_data['password'], user.password):
-                        messages.success(request, "Username: " + user.username)
-                        return render(request, template_name="authForms/usernameLookup.html", context={'resources': resources, "UsernameLookupForm": UsernameLookupForm})
-
-                # password failed for all filtered users
-                messages.error(request, "No user found for that email address or incorrect password")
-                return render(request, "authForms/usernameLookup.html", context={'resources': resources, "UsernameLookupForm": UsernameLookupForm})
-
-            # no user with that email
-            else:
-                messages.error(request, "No user found for that email address or incorrect password")
-                return render(request, "authForms/usernameLookup.html", context={'resources': resources, "UsernameLookupForm": UsernameLookupForm})
-    # GET request
-    else:
-        return render(request, "authForms/usernameLookup.html", context={'resources': resources, "UsernameLookupForm": UsernameLookupForm})
