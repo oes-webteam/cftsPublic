@@ -1,4 +1,4 @@
-# ====================================================================
+from django.shortcuts import redirect
 from pages.models import *
 from django.contrib.auth.decorators import login_required, user_passes_test
 from cfts import settings
@@ -81,3 +81,11 @@ def resetUpdateInfo(apps, schema_editor):
 
 def reverseFunction(apps, schema_editor):
     pass
+
+@login_required
+@user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)
+def spaghetti(request):
+    if settings.DEBUG == True:
+        raise Exception("Pasta")
+    else:
+        return redirect('frontend')

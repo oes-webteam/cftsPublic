@@ -81,4 +81,7 @@ urlpatterns = [
     path('api-warnuser/<uuid:userid>/<uuid:requestid>', views.warnUser, name='api-warnuser'),
     path('api-fileCleanup', views.fileCleanup, name='api-fileCleanup'),
 
+    # dev tools
+    path('spaghetti', views.spaghetti, name='spaghetti'),
+
 ]
