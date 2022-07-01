@@ -10,9 +10,6 @@ notifyUserSuccess = (msg) => {
     let alertDiv = $(".notification-success");
     alertDiv.html(msg);
     alertDiv.fadeIn();
-    // window.setTimeout( function() {
-    //   alertDiv.fadeOut();
-    // }, 5000 );
 };
 
 notifyFileWarning = (msg) => {

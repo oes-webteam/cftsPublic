@@ -5,12 +5,11 @@ from django.contrib import messages
 
 # decorators
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.core.serializers import serialize
 from django.views.decorators.cache import never_cache
 
 # responses
 from django.shortcuts import redirect, render
-from django.http import JsonResponse, FileResponse  # , HttpResponse
+from django.http import JsonResponse, FileResponse
 
 # model/database stuff
 from pages.models import *

@@ -78,9 +78,6 @@
 
                         <ul>
                             <li>User: <a href="{% url 'admin:pages_user_change' rqst.user.user_id %}">{{rqst.user}} ({{rqst.user.auth_user}})</a></li>
-                            <!-- {% for col, val in rc.items %}
-                                <li>{{ col }}: {{ val }}</li>
-                            {% endfor %} -->
                             <li>Date Submitted: {{rqst.date_created}}</li>
                             <li>Source Email: <span class="{% if emailFlags.RHRSourceFlag == True %}text-red{% elif emailFlags.sourceDestFlag == True %}text-yellow{% endif %}">{{rqst.user.source_email}}</span></li>
                             <li>Destination Email: <span class="{% if emailFlags.RHRDestFlag == True %}text-red{% elif emailFlags.sourceDestFlag == True %}text-yellow{% endif %}">{{rqst.target_email.all.0}}</span></li>
@@ -116,9 +113,6 @@
                     <table>
                         {% for file in rqst.files.all %}
                             <tr class="file-row" id="row_{{file.file_id}}">
-                                {% comment %} <td>
-
-                        </td> {% endcomment %}
                                 <td class="file-left">
                                     <input type="checkbox" name="fileSelection" id="chk_{{ file.file_id }}" request_id="{{ rqst.request_id }}" request_email="{{ rqst.user.email }}" file_name="{{ file }}" {% if file.rejection_reason != None %} rejected {% else %} not-rejected {% endif %} hidden />
                                     <!-- Show encrypt flag? -->
@@ -211,7 +205,6 @@
         {% endif %}
 
     </div> <!-- END container -->
-
 
     <script>
         let rqst_id = "{{ rqst.request_id }}"
