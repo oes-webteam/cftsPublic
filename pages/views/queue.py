@@ -270,20 +270,21 @@ def transferRequest(request, id):
             emailFlags['sourceDestFlag'] = True
 
     # Getting all the staff emails from the database
-    staff_emails = authUser.objects.filter(is_staff=True).values_list('email', flat=True)
+    staff_emails = [x.lower() for x in authUser.objects.filter(is_staff=True).values_list('email', flat=True)]
+    rhr = rqst.RHR_email.lower()
 
     # Checking if the RHR email address in the form is in the staff_emails list, or if it is the same as the
     # source or destination email address. If any of those are true, then it sets the destFlag to True.
 
-    if rqst.RHR_email == rqst.user.source_email.address:
+    if rhr == rqst.user.source_email.address.lower():
         emailFlags['RHRSourceFlag'] = True
         emailFlags['RHRFlag'] = True
 
-    if rqst.RHR_email == rqst.target_email.all()[0].address:
+    if rhr == rqst.target_email.all()[0].address.lower():
         emailFlags['RHRDestFlag'] = True
         emailFlags['RHRFlag'] = True
 
-    if rqst.RHR_email in staff_emails:
+    if rhr in staff_emails:
         emailFlags['RHRStaffFlag'] = True
         emailFlags['RHRFlag'] = True
 
