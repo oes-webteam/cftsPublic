@@ -756,15 +756,16 @@ def checkPullable(rqst):
     # Checking if the date_twoeye and date_oneeye are not null and if the rejection_reason is null. If
     # any of these conditions are true, it sets ready_to_pull to false.
     ready_to_pull = True
-    for file in rqst.files.all():
-        if file.date_twoeye == None:
-            if file.rejection_reason == None:
-                ready_to_pull = False
-                break
-        elif file.date_oneeye == None:
-            if file.rejection_reason == None:
-                ready_to_pull = False
-                break
+    if rqst.network.skip_file_review == False:
+        for file in rqst.files.all():
+            if file.date_twoeye == None:
+                if file.rejection_reason == None:
+                    ready_to_pull = False
+                    break
+            elif file.date_oneeye == None:
+                if file.rejection_reason == None:
+                    ready_to_pull = False
+                    break
 
     if rqst.ready_to_pull != ready_to_pull:
         rqst.ready_to_pull = ready_to_pull
