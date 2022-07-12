@@ -7,7 +7,7 @@ import shutil
 from datetime import datetime
 from django.contrib import messages
 import traceback
-from pages.views.auth import superUserCheck, staffCheck
+from pages.views.auth import superUserCheck, staffCheck, getCert, getOrCreateUser
 from django.utils import timezone
 # ====================================================================
 
@@ -86,6 +86,8 @@ def reverseFunction(apps, schema_editor):
 @user_passes_test(superUserCheck, login_url='frontend', redirect_field_name=None)
 def spaghetti(request):
     if settings.DEBUG == True:
+        certInfo = getCert(request)
+        cftsUser = getOrCreateUser(request, certInfo)
         raise Exception("Pasta")
     else:
         return redirect('frontend')
