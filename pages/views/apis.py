@@ -134,12 +134,14 @@ def setReject(request):
     # If DEBUG==False then we call createEml() and return the email generated with a JSON response
     if DEBUG == True:
         if ready_to_pull == True:
+            messages.success(request, "All files in request have been fully reviewed. Request ready to pull")
             return JsonResponse({'debug': True, 'flash': False})
         else:
             return JsonResponse({'debug': True})
     else:
         eml = createEml(request, request_id, id_list, reject_id)
         if ready_to_pull == True:
+            messages.success(request, "All files in request have been fully reviewed. Request ready to pull")
             return JsonResponse({'eml': str(eml), 'flash': False})
         else:
             return JsonResponse({'eml': str(eml)})
