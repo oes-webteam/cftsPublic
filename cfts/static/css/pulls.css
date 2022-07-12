@@ -2,6 +2,7 @@
     display: grid;
     justify-content: space-around;
     padding-top: 2rem;
+    margin-bottom: auto;
 }
 
 .grid-column {
