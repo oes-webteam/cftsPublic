@@ -724,10 +724,10 @@ def updateFileReview(request, fileID, rqstID, completeReview="False", quit="None
     if open_file == True and cftsSettings.DEBUG == False:
         return redirect('/transfer-request/' + str(rqstID) + '?file=' + str(fileID))
     elif ready_to_pull == True:
-        messages.success(request, "All files in request have been fully reviewed. Request ready to pull")
         if skipComplete == True:
             return ready_to_pull
         else:
+            messages.success(request, "All files in request have been fully reviewed. Request ready to pull")
             return redirect('/transfer-request/' + str(rqstID) + '?flash=false')
     else:
         return redirect('/transfer-request/' + str(rqstID))
