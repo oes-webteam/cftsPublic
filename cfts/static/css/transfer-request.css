@@ -5,7 +5,7 @@
 }
 
 .details {
-    margin-top: 130px;
+    margin-bottom: auto;
     min-width: 87%;
 }
 
@@ -56,14 +56,14 @@ tr:nth-of-type(odd) {
     justify-content: space-between;
 }
 
-.button-row {
+/* .button-row {
     top: 130px;
-}
+} */
 
-.alert {
+/* .alert {
     margin-top: 8rem;
     margin-bottom: -7rem;
-}
+} */
 
 .text-red{
     color: red;;

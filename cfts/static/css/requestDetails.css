@@ -1,4 +1,3 @@
-/* archive.css */
 table {
     border-collapse: separate;
     border-spacing: 0.3vw;
@@ -87,4 +86,12 @@ th {
 .rejected {
     color: #DD0000;
     text-decoration: line-through;
+}
+
+.container{
+    margin-bottom: auto;
+}
+
+#passphraseModal{
+    z-index: 8000;
 }

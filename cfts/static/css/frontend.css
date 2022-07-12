@@ -1,9 +1,9 @@
 ﻿/* frontend.css */
 
 /* layout overrides */
-.navbar.py-4 {
+/* .navbar.py-4 {
     padding: 1rem 1.5rem !important
-}
+} */
 
 #boxes.py-5 {
     padding: 1.5rem 0 !important
@@ -14,7 +14,7 @@
 }
 
 #boxes {
-    margin-bottom: 100px;
+    margin-bottom: auto;
 }
 
 .card-body h3 {

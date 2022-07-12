@@ -1,20 +1,14 @@
 ﻿/* frontend.css */
 
 /* layout overrides */
-.navbar.py-4 {
-    padding: 1rem 1.5rem !important
-}
 
-#boxes.py-5 {
-    padding: 1.5rem 0 !important
-}
 
 .card-body {
     min-height: 500px;
 }
 
 #boxes {
-    margin-bottom: 100px;
+    margin-bottom: auto;
 }
 
 .card-body h3 {
@@ -30,14 +24,14 @@
 }
 
 .row {
-    display: flex;
-    flex-wrap: wrap;
-    margin-right: -15px;
-    margin-left: -15px;
-    justify-content: center;
+    /* display: flex;
+    flex-wrap: wrap; */
+    margin-right: 0;
+    margin-left: 0;
+    /* justify-content: center;
     align-items: center;
     flex-direction: row;
-    align-content: center;
+    align-content: center; */
 }
 
 textarea.form-control {
