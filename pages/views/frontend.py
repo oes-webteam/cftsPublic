@@ -91,7 +91,7 @@ def frontend(request):
         cftsUser = getOrCreateUser(request, certInfo)
 
         # redirect user to login page or info edit page
-        if certInfo['status'] == "empty" and not request.user.is_authenticated:
+        if certInfo['status'] == "empty" or certInfo['status'] == "buggedPKI" and not request.user.is_authenticated:
             if DEBUG == True:
                 return redirect("/login")
             elif DEBUG == False:
