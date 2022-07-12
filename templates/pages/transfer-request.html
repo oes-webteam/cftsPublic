@@ -46,7 +46,9 @@
             </div>
             <div class="col-6">
                 <div class="btn-group">
-                    <a href="#" class="btn btn-warning request-encrypt">Encrypt Files</a>
+                    {% if rqst.network.cfts_deployed == False %}
+                        <a href="#" class="btn btn-warning request-encrypt">Encrypt Files</a>
+                    {% endif %}
                     <a href="#" class="btn btn-danger request-reject">Reject Files</a>
                     <button class="btn btn-danger dropdown dropdown-toggle" type="button" id="rejectiondropdowntoggle" data-toggle="dropdown" aria-haspopup="ture" aria-expanded="false" style="display: none;">
                         Rejection Reason
@@ -116,7 +118,7 @@
                                 <td class="file-left">
                                     <input type="checkbox" name="fileSelection" id="chk_{{ file.file_id }}" request_id="{{ rqst.request_id }}" request_email="{{ rqst.user.email }}" file_name="{{ file }}" {% if file.rejection_reason != None %} rejected {% else %} not-rejected {% endif %} hidden />
                                     <!-- Show encrypt flag? -->
-                                    {% if file.is_pii%}
+                                    {% if file.is_pii or rqst.network.cfts_deployed %}
                                         <span title="PII: {{ file.is_pii }}&#10;">🔒</span>
                                     {% endif %}
                                     <a class="{% if file.rejection_reason != None %}rejected {% endif %} mr-2" title="{{ file }}" id="{{file.file_id}}" href="/getFile/{{file.file_object}}" download="{{file.file_name}}">{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</a>

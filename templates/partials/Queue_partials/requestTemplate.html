@@ -8,12 +8,6 @@
                 <h5 class="card-title" style="width: 75%;">{%if request.is_centcom%}{%endif%}{{ request.user }}{%if request.is_centcom%}{%endif%}</h5>
                 <p class="request-submitted card-subtitle mb-2 text-muted">Submitted: {{ request.date_created|date:'db'|upper }} @ {{ request.date_created|time:'Hi' }}</p>
 
-                {% comment %} {% if request.comments != "" %}
-            <p class="card-text" style="color: blue;">
-                Comments: {{ request.comments|linebreaksbr|truncatechars:83 }}
-            </p>
-            {% endif %} {% endcomment %}
-
                 {% if request.destFlag %}
                     <p class="card-text" style="color: red;">
                         {% if request.destFlag %}Email conflict, check source/destination/RHR emails{% endif %}
@@ -42,8 +36,8 @@
                     {% for file in request.files.all|slice:":4" %}
                         <li class="m-2">
                             <p class="card-text {% if file.rejection_reason != None %} rejected {% else %} not-rejected {% endif %}" title="{{ file }}">
-                                {% if file.is_pii or file.is_centcom_info %}
-                                    <span title="PII: {{ file.is_pii }}&#10;CENTCOM Info: {{ file.is_centcom_info }}">🔒</span>
+                                {% if file.is_pii or request.network.cfts_deployed %}
+                                    <span title="PII: {{ file.is_pii }}">🔒</span>
                                 {% endif %}
                                 {{ file|truncatechars:25 }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</p>
                         </li>
