@@ -67,7 +67,7 @@ class Network(models.Model):
     skip_file_review = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ['sort_order']
+        ordering = ['sort_order', 'name']
 
     def __str__(self):
         return self.name
@@ -122,16 +122,16 @@ class Pull(models.Model):
     network = models.ForeignKey(Network, on_delete=models.DO_NOTHING)
     date_pulled = models.DateTimeField(null=True, blank=True)
     user_pulled = models.ForeignKey(
-        settings.AUTH_USER_MODEL, related_name='request_user_pulled', on_delete=models.DO_NOTHING, null=True, blank=True)
+        settings.AUTH_USER_MODEL, related_name='request_user_pulled', on_delete=models.SET_NULL, null=True, blank=True)
     date_oneeye = models.DateTimeField(null=True, blank=True)
     user_oneeye = models.ForeignKey(
-        settings.AUTH_USER_MODEL, related_name='request_user_oneeye', on_delete=models.DO_NOTHING, null=True, blank=True)
+        settings.AUTH_USER_MODEL, related_name='request_user_oneeye', on_delete=models.SET_NULL, null=True, blank=True)
     date_twoeye = models.DateTimeField(null=True, blank=True)
     user_twoeye = models.ForeignKey(
-        settings.AUTH_USER_MODEL, related_name='request_user_twoeye', on_delete=models.DO_NOTHING, null=True, blank=True)
+        settings.AUTH_USER_MODEL, related_name='request_user_twoeye', on_delete=models.SET_NULL, null=True, blank=True)
     date_complete = models.DateTimeField(null=True, blank=True)
     user_complete = models.ForeignKey(
-        settings.AUTH_USER_MODEL, related_name='request_user_complete', on_delete=models.DO_NOTHING, null=True, blank=True)
+        settings.AUTH_USER_MODEL, related_name='request_user_complete', on_delete=models.SET_NULL, null=True, blank=True)
     disc_number = models.IntegerField(null=True, blank=True)
     centcom_pull = models.BooleanField(default=False)
 
@@ -180,10 +180,10 @@ class File(models.Model):
     file_size = models.PositiveBigIntegerField(default=0)
     date_oneeye = models.DateTimeField(null=True, blank=True)
     user_oneeye = models.ForeignKey(
-        settings.AUTH_USER_MODEL, related_name='file_user_oneeye', on_delete=models.DO_NOTHING, null=True, blank=True)
+        settings.AUTH_USER_MODEL, related_name='file_user_oneeye', on_delete=models.SET_NULL, null=True, blank=True)
     date_twoeye = models.DateTimeField(null=True, blank=True)
     user_twoeye = models.ForeignKey(
-        settings.AUTH_USER_MODEL, related_name='file_user_twoeye', on_delete=models.DO_NOTHING, null=True, blank=True)
+        settings.AUTH_USER_MODEL, related_name='file_user_twoeye', on_delete=models.SET_NULL, null=True, blank=True)
     pull = models.ForeignKey(Pull, on_delete=models.DO_NOTHING, default=None, blank=True, null=True)
     scan_results = models.JSONField(null=True, blank=True)
 

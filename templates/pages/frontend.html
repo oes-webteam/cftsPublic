@@ -6,7 +6,7 @@
 
 
     <!--Cards Start Here -->
-    <section id="boxes" class="">
+    <section id="boxes">
 
         <div class="container">
             {% if rc.browser == "IE"%}
@@ -20,7 +20,7 @@
             {% elif rc.submission_disabled == True %}
                 <div class="alert alert-info" role="alert">The Combined File Transfer Service is currently undergoing maintenance, file submissions have been temporarily disabled.</div>
             {% elif rc.error == True %}
-                {% comment %} <div class="alert alert-info" role="alert">The Combined File Transfer Service is currently undergoing maintenance, file submissions have been temporarily disabled.</div> {% endcomment %}
+                {% comment %} intentionally empty elif {% endcomment %}
             {% else %}
 
                 {% for announcement in rc.announcements %}
@@ -154,11 +154,6 @@
                                         <small id="RHREmailHelp" class="form-text text-muted">on this network</small>
                                     </div>
 
-                                    {% comment %} <h3 class="text-gray-dark">Comments</h3>
-                            <div class="form-group">
-                                <textarea class="form-control" name="comments" id="comments" placeholder="250 characters or less"></textarea>
-                                <textarea class="form-control" name="PKIinfo" id="PKIinfo" placeholder="PKI debug information" hidden>{{rc.cert}}</textarea>
-                            </div> {% endcomment %}
                                 </div>
                             </div>
                         </div>

@@ -156,11 +156,11 @@
 
 .networks {
     background-color: #F7F7F7;
-    top: 110px
+    /* top: 110px */
 }
 
 .network-header {
-    top: 152px;
+    top: 42px;
     background-color: #fff;
     opacity: 1;
 }
@@ -191,12 +191,12 @@
 
 .queue-container {
     max-width: 87%;
-    margin-bottom: 6rem;
+    margin-bottom: auto;
 }
 
 .card,
 .card:hover {
-    margin-bottom: 1rem;
+    /* margin-bottom: 1rem; */
     border-width: 0.3rem;
     height: 95%;
     text-decoration: none;

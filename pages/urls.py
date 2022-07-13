@@ -14,14 +14,6 @@ urlpatterns = [
     path('login', views.userLogin, name='login'),
     path('logout', auth_views.LogoutView.as_view(), name='logout'),
     path('user-info', views.editUserInfo, name='user-info'),
-    # path('password-change', views.changeUserPassword, name='password-change'),
-    # path('password-reset', views.passwordResetRequest, name='password-reset'),
-    # path('password-reset/done', auth_views.PasswordResetDoneView.as_view(template_name='authForms/passwordResetForms/passwordResetDone.html'), name='password-reset-done'),
-    # path('password-reset/<uidb64>/<token>', auth_views.PasswordResetConfirmView.as_view(template_name='authForms/passwordResetForms/passwordResetConfirm.html'), name='password-reset-confirm'),
-    # path('password-reset/complete', auth_views.PasswordResetCompleteView.as_view(template_name='authForms/passwordResetForms/passwordResetComplete.html'), name='password_reset_complete'),
-    # path('password-reset-admin', views.passwordResetAdmin, name='password-reset-admin'),
-    # path('password-reset-email/<int:id>/<uuid:feedback>', views.passwordResetEmail, name='password-reset-email'),
-    # path('username-lookup', views.usernameLookup, name='username-lookup'),
 
     # resources
     path('resources/<str:file>', views.resources, name='resources'),
@@ -89,8 +81,7 @@ urlpatterns = [
     path('api-warnuser/<uuid:userid>/<uuid:requestid>', views.warnUser, name='api-warnuser'),
     path('api-fileCleanup', views.fileCleanup, name='api-fileCleanup'),
 
-
     # dev tools
-    path('tools-setupdb', views.setupDB, name="setupdb"),
-    path('tools-updateFileInfo', views.updateFiles, name='api-updateFileInfo'),
+    path('spaghetti', views.spaghetti, name='spaghetti'),
+
 ]

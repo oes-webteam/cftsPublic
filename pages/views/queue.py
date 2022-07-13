@@ -270,32 +270,23 @@ def transferRequest(request, id):
             emailFlags['sourceDestFlag'] = True
 
     # Getting all the staff emails from the database
-    staff_emails = authUser.objects.filter(is_staff=True).values_list('email', flat=True)
+    staff_emails = [x.lower() for x in authUser.objects.filter(is_staff=True).values_list('email', flat=True)]
+    rhr = rqst.RHR_email.lower()
 
     # Checking if the RHR email address in the form is in the staff_emails list, or if it is the same as the
     # source or destination email address. If any of those are true, then it sets the destFlag to True.
 
-    if rqst.RHR_email == rqst.user.source_email.address:
+    if rhr == rqst.user.source_email.address.lower():
         emailFlags['RHRSourceFlag'] = True
         emailFlags['RHRFlag'] = True
 
-    if rqst.RHR_email == rqst.target_email.all()[0].address:
+    if rhr == rqst.target_email.all()[0].address.lower():
         emailFlags['RHRDestFlag'] = True
         emailFlags['RHRFlag'] = True
 
-    if rqst.RHR_email in staff_emails:
+    if rhr in staff_emails:
         emailFlags['RHRStaffFlag'] = True
         emailFlags['RHRFlag'] = True
-
-    # rc = {
-    #     'Date Submitted': rqst.date_created,
-    #     'Source Email': rqst.user.source_email,
-    #     'Destination Email': rqst.target_email.all()[0],
-    #     'RHR Email': rqst.RHR_email,
-    #     'Phone': rqst.user.phone,
-    #     'Network': rqst.network.name
-    #     'org': rqst.org,
-    # }
 
     return render(request, 'pages/transfer-request.html', {'rqst': rqst, 'emailFlags': emailFlags, 'dupes': dupes, 'mostRecentDupe': mostRecentDupe, 'rejections': rejections,
                                                            'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": rqst.user.user_id, 'debug': cftsSettings.DEBUG})
@@ -530,7 +521,6 @@ def createZip(request, network_name, rejectPull):
         new_pull = Pull(
             pull_number=pull_number,
             network=destNetwork,
-            # date_pulled=datetime.datetime.now(),
             date_pulled=timezone.now(),
             user_pulled=request.user,
         )
@@ -734,10 +724,10 @@ def updateFileReview(request, fileID, rqstID, completeReview="False", quit="None
     if open_file == True and cftsSettings.DEBUG == False:
         return redirect('/transfer-request/' + str(rqstID) + '?file=' + str(fileID))
     elif ready_to_pull == True:
-        messages.success(request, "All files in request have been fully reviewed. Request ready to pull")
         if skipComplete == True:
             return ready_to_pull
         else:
+            messages.success(request, "All files in request have been fully reviewed. Request ready to pull")
             return redirect('/transfer-request/' + str(rqstID) + '?flash=false')
     else:
         return redirect('/transfer-request/' + str(rqstID))
@@ -756,15 +746,16 @@ def checkPullable(rqst):
     # Checking if the date_twoeye and date_oneeye are not null and if the rejection_reason is null. If
     # any of these conditions are true, it sets ready_to_pull to false.
     ready_to_pull = True
-    for file in rqst.files.all():
-        if file.date_twoeye == None:
-            if file.rejection_reason == None:
-                ready_to_pull = False
-                break
-        elif file.date_oneeye == None:
-            if file.rejection_reason == None:
-                ready_to_pull = False
-                break
+    if rqst.network.skip_file_review == False:
+        for file in rqst.files.all():
+            if file.date_twoeye == None:
+                if file.rejection_reason == None:
+                    ready_to_pull = False
+                    break
+            elif file.date_oneeye == None:
+                if file.rejection_reason == None:
+                    ready_to_pull = False
+                    break
 
     if rqst.ready_to_pull != ready_to_pull:
         rqst.ready_to_pull = ready_to_pull

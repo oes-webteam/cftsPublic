@@ -91,16 +91,13 @@ def frontend(request):
         cftsUser = getOrCreateUser(request, certInfo)
 
         # redirect user to login page or info edit page
-        if certInfo['status'] == "empty" and not request.user.is_authenticated:
+        if request.user.is_authenticated == False and certInfo['status'] == "empty" or certInfo['status'] == "buggedPKI":
             if DEBUG == True:
                 return redirect("/login")
             elif DEBUG == False:
                 return render(request, 'pages/frontend.html', {'rc': {'error': True, 'submission_disabled': DISABLE_SUBMISSIONS, 'debug': str(DEBUG), 'resources': resources, 'browser': browser}})
         elif cftsUser == None or cftsUser.update_info == True:
-            # return redirect("/login")
             return redirect("/user-info")
-        # elif cftsUser.update_info == True:
-        #     return redirect("/user-info")
 
         # check if the user is currntly banned
         checkBan(cftsUser)

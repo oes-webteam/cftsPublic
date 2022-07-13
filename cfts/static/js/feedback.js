@@ -32,28 +32,13 @@ $('#category').change(function() {
 /* EMAIL VALIDATION */
 /* **************** */
 function checkEmail(email) {
-    // look -- if it's not even a real email address, just kick it the eff out
-    // var emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-    // if (!email.match(emailRegex)) return false;
-
     let domain = email.split("@").pop();
     let domainArray = domain.split(".");
     let check = "";
-    // switch (net) {
-    //     case "NIPR":
-    //         check = domainArray.pop();
-    //         return domain.indexOf("smil") == -1 && domain.indexOf("cmil") == -1 && (check == "mil" || check == "gov") ? true : false;
-    //     case "SIPR":
-    //         return domainArray.slice(-2).join(".") == "smil.mil" ? true : false;
-    //     default:
-    //         check = domainArray.pop();
-    //         return (check == "mil" || check == "gov" || check == "edu" || check == "org") ? true : false;
-    // }
+
     check = domainArray.pop();
     check = check.toLocaleLowerCase()
     return (check == "mil" || check == "gov" || check == "edu" || check == "org") ? true : false;
-    // fail by default
-    return false;
 }
 
 /* *************** */
@@ -96,12 +81,6 @@ function validateForm(form) {
             isValid = false;
         }
     }
-
-    // title
-    // if (!(form.elements.title.value.length )) {
-    //   errors.push(form.elements.title);
-    //   isValid = false;
-    // }
 
     // category
     if (!(form.elements.category.value.length)) {
@@ -154,8 +133,7 @@ function successHandler(r) {
     }
 
     document.getElementById("transfer-request-form").reset();
-    //resetFileQueue();
-    //resetAdditionalEmails();
+
     autoFillUserInfo(email);
 
     // re-enable the submit button
@@ -208,9 +186,6 @@ function process(e) {
         notifyUserSuccess(
             "Submitting the feedback now. Please stand by ... "
         );
-
-        // give it a quick refresh
-        //updateFileInfo();
 
         let prepData = new FormData(xferForm);
 

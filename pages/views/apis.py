@@ -134,12 +134,14 @@ def setReject(request):
     # If DEBUG==False then we call createEml() and return the email generated with a JSON response
     if DEBUG == True:
         if ready_to_pull == True:
+            messages.success(request, "All files in request have been fully reviewed. Request ready to pull")
             return JsonResponse({'debug': True, 'flash': False})
         else:
             return JsonResponse({'debug': True})
     else:
         eml = createEml(request, request_id, id_list, reject_id)
         if ready_to_pull == True:
+            messages.success(request, "All files in request have been fully reviewed. Request ready to pull")
             return JsonResponse({'eml': str(eml), 'flash': False})
         else:
             return JsonResponse({'eml': str(eml)})
@@ -553,11 +555,12 @@ def process(request):
         fileList = []
 
         # Getting all the staff emails from the database
-        staff_emails = authUser.objects.filter(is_staff=True).values_list('email', flat=True)
+        staff_emails = [x.lower() for x in authUser.objects.filter(is_staff=True).values_list('email', flat=True)]
+        rhr = form_data.get('RHREmail').lower()
 
         # Checking if the RHR email address in the form is in the staff_emails list, or if it is the same as the
         # source or destination email address. If any of those are true, then it sets the destFlag to True.
-        if form_data.get('RHREmail') in staff_emails or form_data.get('RHREmail') == source_email.address or form_data.get('RHREmail') in destination_list:
+        if rhr in staff_emails or rhr == source_email.address.lower() or rhr in [x.lower() for x in destination_list]:
             rqst.destFlag = True
 
         # Loading the fileInfo from the form_data.
