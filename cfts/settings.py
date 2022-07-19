@@ -62,9 +62,12 @@ INSTALLED_APPS = [
     'django_user_agents',
     # used to easily add bootstrap styling to Django generated html forms
     'crispy_forms',
+    'crispy_bootstrap5',
 ]
 
-CRISPY_TEMPLATE_PACK = 'bootstrap4'
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+
+CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # defining what bootstrap classes to add to different levels of the Django messages framework
 MESSAGE_TAGS = {
