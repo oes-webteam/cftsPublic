@@ -9,6 +9,9 @@ from django.contrib import messages
 import traceback
 from pages.views.auth import superUserCheck, staffCheck, getCert, getOrCreateUser
 from django.utils import timezone
+import logging
+
+logger = logging.getLogger('django')
 # ====================================================================
 
 # function called from fileCleanup() to delete files in a directory that are over a number of days old
@@ -50,15 +53,25 @@ def deleteDrops():
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def fileCleanup(request):
     # paths to directories you want to nuke
-    uploadsPath = settings.UPLOADS_DIR
-    pullsPath = settings.PULLS_DIR
+    queuedPulls = Pull.objects.filter(queue_for_delete=True, pull_deleted=False)
     scanPath = os.path.join(settings.BASE_DIR, "cfts\\scan")
     dropsPath = settings.DROPS_DIR
 
     # call deleteFiles() with a path and maximum file age
     try:
-        deleteFiles(uploadsPath, 30)
-        deleteFiles(pullsPath, 30)
+        for pull in queuedPulls:
+            pullAge = datetime.fromtimestamp(datetime.now().timestamp())-datetime.fromtimestamp(pull.date_complete.timestamp())
+
+            if pullAge.days >= 1:
+                for file in File.objects.filter(pull=pull).values_list('file_object'):
+                    shutil.rmtree(os.path.join(settings.BASE_DIR, os.path.dirname(file[0])))
+
+                zipPath = os.path.join(settings.PULLS_DIR+"\\") + pull.network.name + "_" + str(pull.pull_number) + " " + str(pull.date_pulled.astimezone().strftime("%d%b %H%M")) + ".zip"
+                os.remove(zipPath)
+
+                pull.pull_deleted = True
+                pull.save()
+
         deleteFiles(scanPath, 1)
         deleteFiles(dropsPath, 5)
         deleteDrops()
