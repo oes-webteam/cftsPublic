@@ -190,8 +190,10 @@
 }
 
 .queue-container {
-    max-width: 87%;
     margin-bottom: auto;
+}
+.queue-container, .messages {
+    max-width: 87%;
 }
 
 .card,

@@ -8,7 +8,7 @@ notifyUserSuccess = (msg) => {
     $(".danger-error").hide()
     $(".file-error").hide().text("")
     let alertDiv = $(".notification-success");
-    alertDiv.html(msg);
+    alertDiv.html(msg + "<button class='btn-close p-3' type='button' data-bs-dismiss='alert'></button>")
     alertDiv.fadeIn();
 };
 
@@ -27,7 +27,7 @@ notifyUserWarning = (msg) => {
     $(".notification-success").hide()
     $(".server-error").hide()
     let alertDiv = $(".danger-error");
-    alertDiv.text(msg);
+    alertDiv.html(msg + "<button class='btn-close p-3' type='button' data-bs-dismiss='alert'></button>");
     alertDiv.fadeIn();
 };
 
@@ -36,6 +36,6 @@ notifyUserError = (msg) => {
     $(".notification-success").hide()
     $(".danger-error").hide()
     let alertDiv = $(".server-error");
-    alertDiv.text(msg);
+    alertDiv.html(msg + "<button class='btn-close p-3' type='button' data-bs-dismiss='alert'></button>");
     alertDiv.fadeIn();
 };

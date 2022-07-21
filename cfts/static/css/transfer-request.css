@@ -6,6 +6,9 @@
 
 .details {
     margin-bottom: auto;
+}
+
+.details, .messages {
     min-width: 87%;
 }
 
@@ -49,8 +52,11 @@ tr:nth-of-type(odd) {
 
 .card-header {
     height: 100%;
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 0;
+    background-color: rgba(0, 0, 0, 0.03);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
 }
-
 .dupe-header {
     display: flex;
     justify-content: space-between;
@@ -72,6 +78,11 @@ tr:nth-of-type(odd) {
 .text-yellow{
     color: #ffae00;;
 }
+
+.btn-info, .btn-info:hover, .btn-info:disabled, .btn-info:active{
+    color: #fff
+}
+
 
 @media(max-width: 1575px) {
     .btn-group {

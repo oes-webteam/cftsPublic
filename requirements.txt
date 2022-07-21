@@ -12,6 +12,7 @@ cffi
 cfgv
 click
 colorama
+crispy-bootstrap5
 cryptography
 distlib
 Django

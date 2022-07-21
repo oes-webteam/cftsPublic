@@ -18,7 +18,7 @@
                     <a class="btn btn-info" id="noteBtn" href="#">Save Notes</a>
                 </div>
 
-                <div class="btn-group ml-3">
+                <div class="btn-group ms-3">
                     {% if rqst.user.account_warning_count < 3 %}<a class="btn btn-warning" id="userWarning" href="{% url 'api-warnuser' user_id rqst.request_id %}">Issue User Warning</a>{% endif %}
                     {% if not rqst.user.banned%}
                         <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rqst.request_id "True" "False" %}">Ban User, 1 day</a>
@@ -63,7 +63,7 @@
                 </div>
 
                 {% if user.is_superuser %}
-                    <div class="btn-group ml-3">
+                    <div class="btn-group ms-3">
                         <a href="#" class="btn btn-info request-remove one-eye" rqst_id="{{rqst.request_id}}">Remove One Eyer</a>
                         <a href="#" class="btn btn-primary request-remove two-eye" rqst_id="{{rqst.request_id}}">Remove Two Eyer</a>
                     </div>

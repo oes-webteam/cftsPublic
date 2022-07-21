@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="{% static 'css/drop-zone.css' %}">
     <link rel="stylesheet" href="{% static 'css/passwordResetAdmin.css' %}">
 
-    <div class="container pt-3">
+    <div class="container drop-container pt-3">
         <div class="upload-console-drop empty" id="drop-zone">
             {% csrf_token %}
             Drag and drop Pull Zip here, or click to upload <input type="file" class="" name="dropZip" id="uploadButton" style="display: none;">

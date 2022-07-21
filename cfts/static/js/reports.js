@@ -93,6 +93,7 @@ $(document).ready(function() {
     $('input.xfer-numbers').datepicker({
         format: 'mm/dd/yyyy'
     });
-    $('.form-control').change(runNumbers);
+    $('.datepicker').change(runNumbers);
+    $('.staff').change(runNumbers);
 
 });

@@ -5,7 +5,7 @@
     flex-wrap: wrap;
 }
 
-.form-group {
+.inline-fields > .mb-3 {
     width: 48%;
 }
 

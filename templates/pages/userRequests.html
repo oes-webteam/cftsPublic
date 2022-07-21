@@ -35,7 +35,7 @@
                             {% if r.has_rejected == True %}
                                 <p class="card-text" style="color: red;">Request has rejected files!</p>
                             {% endif %}
-                            <ul class="file-list">
+                            <ul class="file-list ms-3">
                                 {%  for f in r.files.all|slice:":3" %}
                                     {% with f.file_object.name|split:"/" as name %}
                                         <li x-file-name="{{ name.2 }}">{{ name.2|truncatechars:50 }}</li>
@@ -44,7 +44,7 @@
                                 {% if r.files.count > 3 %}...{% endif %}
                             </ul>
 
-                            <ul class="email-list">
+                            <ul class="email-list ms-3">
                                 {%  for e in r.target_email.all|slice:":2" %}
                                     <li>{{e}}</li>
                                 {% endfor %}
