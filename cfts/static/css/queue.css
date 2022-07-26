@@ -142,6 +142,10 @@
     border-color: #5bc2f9 !important;
 }
 
+.btn-info, .btn-info:hover, .btn-info:disabled, .btn-info:active{
+    color: #fff
+}
+
 .reviewing {
     border-color: #ecc047;
 }

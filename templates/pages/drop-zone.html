@@ -16,7 +16,9 @@
                 <th >Email</th>
                 <th >Date</th>
                 <th class="pl-4">Files</th>
-                <th >Request PIN</th>
+                {% if debug %}
+                    <th >Request PIN</th>
+                {% endif %}
                 <th >Email Sent</th>
                 <th >User Retrieved</th>
                 <th >Generate Request Email</th>
@@ -32,7 +34,9 @@
                             {% endfor %}
                         </ul>
                     </td>
-                    <td class="xfer-PIN">{{rqst.request_code}}</td>
+                    {% if debug %}
+                        <td class="xfer-PIN">{{rqst.request_code}}</td>
+                    {% endif %}
                     <td class="xfer-Completed text-center">
                         {% if rqst.email_sent == True %}
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#28a745" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
