@@ -25,30 +25,22 @@
                             <div class="card-body">
                                 <h3 class="text-gray-dark">User Information</h3>
                                 <div class="form-group input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text" id="firstNameRequired">*</span>
-                                    </div>
+                                    <span class="input-group-text required" id="firstNameRequired">*</span>
                                     <input type="text" class="form-control" name="firstName" id="firstName" placeholder="First Name" {% if rc.user != None %}readonly{% endif %} />
                                 </div>
                                 <div class="form-group input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text" id="lastNameRequired">*</span>
-                                    </div>
+                                    <span class="input-group-text required" id="lastNameRequired">*</span>
                                     <input type="text" class="form-control" name="lastName" id="lastName" placeholder="Last Name" {% if rc.user != None %}readonly{% endif %} />
                                 </div>
                                 <div class="form-group input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text" id="userEmailRequired">*</span>
-                                    </div>
+                                    <span class="input-group-text required" id="userEmailRequired">*</span>
                                     <input type="email" class="form-control" name="userEmail" id="userEmail" aria-describedby="userEmailHelp userEmailRequired" placeholder="Email Address" required {% if rc.user != None %}readonly{% endif %} />
                                     <span class="w-100"></span>
                                 </div>
 
                                 {% if rc.user == None %}
                                     <div class="form-group input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text" id="userPhoneRequired">*</span>
-                                        </div>
+                                        <span class="input-group-text required" id="userPhoneRequired">*</span>
                                         <input type="phone" class="form-control" name="userPhone" id="userPhone" aria-describedby="userPhoneHelp userPhoneRequired" placeholder="Phone Number" required />
                                         <span class="w-100"></span>
                                     </div>
@@ -64,9 +56,7 @@
                                 <div style="display: none;">
                                     <h3 id="title">Title</h3>
                                     <div class="form-group input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text" id="categoryRequired">*</span>
-                                        </div>
+                                        <span class="input-group-text required" id="categoryRequired">*</span>
                                         <input class="form-control" name="title" id="title" value="{% if rc.rqst %}Ban Request: {{rc.rqst.user}}{% elif rc.user != None %}{{rc.user}}{% endif %}"></input>
                                     </div>
                                 </div>
@@ -74,9 +64,7 @@
                                 <h3>Category</h3>
                                 <div class="form-group input-group">
 
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text" id="categoryRequired">*</span>
-                                    </div>
+                                    <span class="input-group-text required" id="categoryRequired">*</span>
                                     <select class="form-control category" name="category" id="category">
                                         {% if rc.user.auth_user.is_staff %}
                                             {% if rc.rqst %}
@@ -106,13 +94,11 @@
                     </div>
                 </div>
             </div>
-            <!-- end #form-row -->
 
             <div class="row" id="button-row">
                 <div class="col-md-4"></div>
-                <div class="col-md-4 mt-3 text-center">
-
-                    <button class="btn btn-secondary btn-block" id="submitButton" role="button">Submit</button>
+                <div class="col-md-4 mt-3 text-center d-grid gap-2">
+                    <button class="btn btn-secondary" id="submitButton" role="button">Submit</button>
                 </div>
                 <div class="col-md-4"></div>
             </div>

@@ -30,7 +30,12 @@ jQuery(document).ready(function() {
 
             activeQueue = document.getElementById("tab" + network)
             activeQueue.classList.add("active")
+        } catch (TypeError) {
+            console.log("Network not active in queue")
+            history.pushState(null, "", location.href.split("?")[0])
+        }
 
+        try {
             var scrollID = paramObj.rqst
             history.pushState(null, "", location.href.split("?")[0])
             let scrollElm = document.getElementById(scrollID)
@@ -41,8 +46,8 @@ jQuery(document).ready(function() {
             setTimeout(function() {
                 $('#' + scrollID).fadeOut(400).fadeIn(400).fadeOut(400).fadeIn(400)
             }, 500)
-        } catch (TypeError) {
-            console.log("Network not active in queue")
+        } catch (error) {
+            console.log("Request not present in active queue")
             history.pushState(null, "", location.href.split("?")[0])
         }
     }
@@ -81,7 +86,8 @@ jQuery(document).ready(function() {
                     $('.last-pull-info .date-pulled').text(resp.datePulled);
                     $('.last-pull-info .user-pulled').text(resp.userPulled);
 
-                    $("#forceReload").submit();
+                    // $("#forceReload").submit();
+                    window.location = window.location + "?network=" + netName
 
                 },
 

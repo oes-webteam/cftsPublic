@@ -128,6 +128,7 @@ def getPull(request, fileName):
 def cancelPull(request, id):
     # get the Pull object to cancel and all objects that have a relationship to the Pull object
     thisPull = Pull.objects.get(pull_id=id)
+    network = thisPull.network.name
     files = File.objects.filter(pull=id)
     requests = Request.objects.filter(pull=id)
 
@@ -141,4 +142,4 @@ def cancelPull(request, id):
     os.remove(zipPath)
     thisPull.delete()
     messages.success(request, "Pull canceled, requests returned to pending queue")
-    return redirect('pulls')
+    return redirect('/queue?network=' + network)

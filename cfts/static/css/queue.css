@@ -142,6 +142,10 @@
     border-color: #5bc2f9 !important;
 }
 
+.btn-info, .btn-info:hover, .btn-info:disabled, .btn-info:active{
+    color: #fff
+}
+
 .reviewing {
     border-color: #ecc047;
 }
@@ -190,8 +194,10 @@
 }
 
 .queue-container {
-    max-width: 87%;
     margin-bottom: auto;
+}
+.queue-container, .messages {
+    max-width: 87%;
 }
 
 .card,

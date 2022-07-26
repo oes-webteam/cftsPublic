@@ -33,14 +33,13 @@ label.custom-control-label {
     line-height: 1.67em;
 }
 
-.input-group-prepend .input-group-text,
-.input-group-append .input-group-text {
+.input-group-text {
     color: red !important;
     font-weight: bold;
 }
 
 input[type="checkbox"] {
-    margin-top: 0.5rem;
+    /* margin-top: 0.5rem; */
     transform: scale(2) !important;
 }
 
@@ -65,19 +64,19 @@ input[type="checkbox"] {
 
 /* Drag & drop styles (from ddGlobal) */
 .upload-console-drop {
-    border: 2px dashed #ccc;
-    color: #ccc;
+    border: 2px dashed #b5adad;
+    color: #b5adad;
     height: auto;
     margin-top: 15px;
-    margin-bottom: 20px;
+    /* margin-bottom: 10px; */
     min-height: 100px;
-    text-align: left;
 }
 
 .upload-console-drop.empty {
-    height: 100px;
-    line-height: 100px;
+    height: 192px;
+    font-size: medium;
     text-align: center;
+    line-height: 175px;
 }
 
 /* end ddGlobal */
@@ -85,6 +84,7 @@ input[type="checkbox"] {
 .highlight-active {
     border-color: #07F !important;
     box-shadow: 0 0 3px 0 #07F;
+    color: #07F;
 }
 
 .file-list.init {
@@ -122,12 +122,11 @@ input[type="checkbox"] {
     width: 50%;
 }
 
-.file-list input[ type=checkbox] {
-    /* position: relative; */
+/* .file-list input[ type=checkbox] {
     width: auto;
     margin-right: -3rem;
     margin-left: 16.5rem;
-}
+} */
 
 .file-list label {
     white-space: nowrap;
@@ -149,4 +148,8 @@ h6.isCentcom {
 
 .organization {
     width: 12rem;
+}
+
+.form-switch{
+    margin-left: 2.5rem;
 }

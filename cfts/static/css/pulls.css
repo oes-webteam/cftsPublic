@@ -5,9 +5,13 @@
     margin-bottom: auto;
 }
 
+.grid-container, .messages {
+    max-width: 87%;
+}
+
 .grid-column {
     list-style: none;
-    padding: 0 1rem;
+    padding: 0;
 }
 
 .grid-column-header {
@@ -19,7 +23,6 @@
     background-color: rgb(245, 245, 240);
     border: 2px solid rgb(205, 51, 51);
     border-radius: 1rem;
-    margin: 1rem 0;
     padding: 15px;
     position: relative;
 }

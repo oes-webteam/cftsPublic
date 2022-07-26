@@ -23,7 +23,6 @@ from cryptography.hazmat.primitives.serialization import load_pem_private_key
 
 # decorators
 from django.contrib.auth.decorators import login_required, user_passes_test
-import cfts
 
 from pages.views.auth import staffCheck, getOrCreateEmail
 from pages.views.dev_tools import fileCleanup
@@ -50,7 +49,7 @@ def dropZone(request):
     requestPage = paginator.Paginator(dropRequests, 10)
     pageNum = request.GET.get('page')
     pageObj = requestPage.get_page(pageNum)
-    return render(request, 'pages/drop-zone.html', context={'dropRequests': pageObj})
+    return render(request, 'pages/drop-zone.html', context={'dropRequests': pageObj, 'debug': cftsSettings.DEBUG})
 
 def treeScan(requestPaths, path):
     for dir in os.scandir(path):
@@ -105,6 +104,7 @@ def processDrop(request):
         requestPaths = set(treeScan([], drop_folder))
 
         request_info_re = re.compile('_request_info.txt')
+        notes_re = re.compile('_notes.txt')
         for path in requestPaths:
             with open(path+"\\_request_info.txt", 'rb') as infile:
                 request_info = ast.literal_eval(infile.read().decode('utf-8'))
@@ -121,7 +121,7 @@ def processDrop(request):
             for f in os.scandir(path):
                 filePath = f.path
 
-                if request_info_re.match(filePath.split("\\")[-1]) == None:
+                if request_info_re.match(filePath.split("\\")[-1]) == None and notes_re.match(filePath.split("\\")[-1]) == None:
                     with open(filePath, mode='rb') as inFile:
                         fileObj = DjangoFile(inFile, name=f.name)
                         dropFile = Drop_File(

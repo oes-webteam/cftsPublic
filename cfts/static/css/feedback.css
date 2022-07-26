@@ -42,8 +42,7 @@ label.custom-control-label {
     line-height: 1.67em;
 }
 
-.input-group-prepend .input-group-text,
-.input-group-append .input-group-text {
+.required {
     color: red !important;
     font-weight: bold;
 }
@@ -61,4 +60,8 @@ input[type="checkbox"] {
     color: red !important;
     font-weight: bold;
     font-size: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
 }

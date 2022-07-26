@@ -35,11 +35,13 @@ if (authStatus == "prompt") {
 
         passphraseSubmit.addEventListener('click', function() {
             submitPassphrase()
-        }, false);
+        }, true);
+
 
         passphraseInput.addEventListener('keypress', function(e) {
             if (e.keyCode == 13) {
                 submitPassphrase()
+                $("#passphraseModal").modal('hide')
             }
         }, false);
     }
