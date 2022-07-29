@@ -4,10 +4,10 @@ from pages.models import *
 
 class UserAdmin(admin.ModelAdmin):
     list_filter = ('banned',)
-    list_display = ('name_last', 'name_first', 'auth_user', 'source_email', 'phone', 'banned', 'strikes', 'banned_until')
+    list_display = ('name_last', 'name_first', 'source_email', 'banned', 'strikes', 'banned_until', 'user_identifier')
     #fields = ('name_first','name_last', 'auth_user','user_identifier', 'source_email','destination_emails','phone',('banned','strikes','banned_until'),'update_info','notes')
-    search_fields = ('name_last', 'name_first', 'auth_user__username', 'source_email__address', 'banned', 'strikes', 'banned_until', 'phone')
-    sortable_by = ('name_last', 'name_first', 'auth_user', 'source_email', 'banned', 'strikes', 'banned_until')
+    search_fields = ('name_last', 'name_first', 'auth_user__username', 'source_email__address', 'banned', 'strikes', 'banned_until', 'phone', 'user_identifier')
+    sortable_by = ('name_last', 'name_first', 'source_email', 'banned', 'strikes', 'banned_until')
 
 
 class RequestAdmin(admin.ModelAdmin):
