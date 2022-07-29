@@ -1,30 +1,6 @@
 /* transfer-request.js */
 window.document.title = "Request Info";
 
-// ADD SHIFT-CLICK SELECTION
-function enableGroupSelection(selector) {
-    let lastChecked = null;
-    const checkboxes = Array.from(document.querySelectorAll(selector));
-
-    checkboxes.forEach(checkbox => checkbox.addEventListener('click', event => {
-        if (!lastChecked) {
-            lastChecked = checkbox;
-            checkbox.nextElementSibling.style.display = 'inline-block';
-            return;
-        }
-
-        if (event.shiftKey) {
-            const start = checkboxes.indexOf(checkbox);
-            const end = checkboxes.indexOf(lastChecked);
-            checkboxes
-                .slice(Math.min(start, end), Math.max(start, end) + 1)
-                .forEach(checkbox => checkbox.checked = lastChecked.checked);
-        }
-
-        lastChecked = checkbox;
-    }));
-}
-
 jQuery(document).ready(function() {
 
     if (document.location.search) {
@@ -127,18 +103,25 @@ jQuery(document).ready(function() {
 
     });
 
-    $('.request-reject').click(e => {
-        e.preventDefault();
-        console.log("request reject clicked")
-        const checkboxes = Array.from(document.querySelectorAll('input[type="checkbox"]'));
-        checkboxes.forEach(checkbox => {
-            checkbox.removeAttribute("hidden");
-        });
+    // $('.request-reject').click(e => {
+    //     e.preventDefault();
+    //     console.log("request reject clicked")
+    //     const checkboxes = Array.from(document.querySelectorAll('input[type="checkbox"]'));
+    //     checkboxes.forEach(checkbox => {
+    //         checkbox.removeAttribute("hidden");
+    //     });
 
-        $(e.target).hide()
-        $('#rejectiondropdowntoggle').show()
+    //     $(e.target).hide()
+    //     $('#rejectiondropdowntoggle').show()
 
-    });
+    // });
+
+    // $('.btn-rejection').on('mousedown', function(e){
+    //     console.log("reject button clicked")
+    //     e.stopImmediatePropagation()
+    //     e.preventDefault()
+    //     $('.modal-dialog').click()
+    // })
 
     $('#rejectiondropdowntoggle').click(e => {
         let requests = []
@@ -472,7 +455,4 @@ jQuery(document).ready(function() {
         );
 
     };
-    // RUN THIS STUFF NOW THAT THE PAGE IS LOADED
-    enableGroupSelection('input[type="checkbox"]')
-
 });

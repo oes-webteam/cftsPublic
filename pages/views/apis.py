@@ -60,8 +60,10 @@ def setRejectDupes(request):
     # loop through all duplicate requests and reject all of their files, mark the rejector as a file reviewer for all files
     for rqst in dupeRequests:
         files = rqst.files.all()
-        files.update(rejection_reason=dupeReason)
+        # files.update(rejection_reason=dupeReason)
         for file in files:
+            file.rejection_reason.add(dupeReason)
+            file.save()
             updateFileReview(request, file.file_id, rqst.request_id)
 
     # update flags on the duplicate requests, "rejected_dupe" will hide the requests from the queue

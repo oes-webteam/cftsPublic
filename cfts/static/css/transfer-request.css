@@ -1,6 +1,6 @@
 .rejected,
 .rejected:hover {
-    color: #DD0000 !important;
+    color: #dd0000 !important;
     text-decoration: line-through;
 }
 
@@ -8,7 +8,8 @@
     margin-bottom: auto;
 }
 
-.details, .messages {
+.details,
+.messages {
     min-width: 87%;
 }
 
@@ -57,6 +58,7 @@ tr:nth-of-type(odd) {
     background-color: rgba(0, 0, 0, 0.03);
     border-bottom: 1px solid rgba(0, 0, 0, 0.125);
 }
+
 .dupe-header {
     display: flex;
     justify-content: space-between;
@@ -71,23 +73,24 @@ tr:nth-of-type(odd) {
     margin-bottom: -7rem;
 } */
 
-.text-red{
-    color: red;;
+.text-red {
+    color: red;
 }
 
-.text-yellow{
-    color: #ffae00;;
+.text-yellow {
+    color: #ffae00;
 }
 
 /* .btn-info, .btn-info:hover, .btn-info:disabled, .btn-info:active{
     color: #fff
 } */
 
+
 .btn-review {
     --bs-btn-color: var(--bs-white);
     --bs-btn-bg: var(--bs-purple);
     --bs-btn-border-color: var(--bs-purple);
-    --bs-btn-border-radius: .5rem;
+    --bs-btn-border-radius: 0.5rem;
     --bs-btn-hover-color: var(--bs-white);
     --bs-btn-focus-shadow-rgb: var(--bs-purple-rgb);
     --bs-btn-active-color: var(--bs-btn-hover-color);
@@ -99,16 +102,32 @@ tr:nth-of-type(odd) {
     --bs-btn-disabled-color: #000;
     --bs-btn-disabled-bg: var(--bs-purple);
     --bs-btn-disabled-border-color: var(--bs-purple);
-  }
+}
 
+.btn-rejection-input:focus, .btn-rejection-label:focus, .btn-check:focus + .btn{
+    outline: none;
+    box-shadow: none;
+}
 
-@media(max-width: 1575px) {
+.btn-rejection-label:focus, .btn-check:focus + .btn{
+    color: var(--bs-btn-color);
+    background-color: var(--bs-btn-bg);
+    border-color: var(--bs-btn-border-color);
+}
+
+.btn-check:checked + .btn, .btn-check:active + .btn, .btn:active, .btn.active, .btn.show {
+	color: var(--bs-btn-active-color) !important;
+	background-color: var(--bs-btn-active-bg) !important;
+	border-color: var(--bs-btn-active-border-color) !important;
+}
+
+@media (max-width: 1575px) {
     .btn-group {
         margin-left: 0% !important;
     }
 }
 
-@media(max-width: 1160px) {
+@media (max-width: 1160px) {
     .btn {
         padding: 0.25rem 0.5rem !important;
         font-size: 0.875rem !important;
