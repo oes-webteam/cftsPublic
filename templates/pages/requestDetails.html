@@ -85,7 +85,7 @@
                     <ul class="file-list">
                         {%  for f in rc.request.files.all %}
                             {% with f.file_object.name|split:"/" as name %}
-                                <li class="{% if f.rejection_reason != Null %}rejected{% endif %}" x-file-name="{{ name.2 }}">{{ name.2|truncatechars:50 }}</li>
+                                <li class="{% if f.rejection_reasons != Null %}rejected{% endif %}" x-file-name="{{ name.2 }}">{{ name.2|truncatechars:50 }}</li>
                             {% endwith %}
                         {% endfor %}
                     </ul>
@@ -109,7 +109,7 @@
                     <th>Explanation</th>
                 </tr>
                 {%  for f in rc.request.files.all %}
-                    {% if f.rejection_reason != Null %}
+                    {% if f.rejection_reasons != Null %}
                         <tr class="data-row">
                             <td class="xfer-files">
                                 {% with f.file_object.name|split:"/" as name %}
@@ -117,10 +117,10 @@
                                 {% endwith %}
                             </td>
                             <td>
-                                <p>{{f.rejection_reason}}</p>
+                                <p>{{f.rejection_reasons}}</p>
                             </td>
                             <td>
-                                {{f.rejection_reason.text|linebreaks}}
+                                {{f.rejection_reasons.text|linebreaks}}
                             </td>
                         </tr>
                     {% endif %}

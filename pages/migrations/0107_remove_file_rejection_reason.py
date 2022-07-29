@@ -14,9 +14,4 @@ class Migration(migrations.Migration):
             model_name='file',
             name='rejection_reason',
         ),
-        migrations.RenameField(
-            model_name='file',
-            old_name='rejection_reasons',
-            new_name='rejection_reason',
-        ),
     ]

@@ -127,9 +127,9 @@ def queue(request):
         ds_requests = Request.objects.filter(is_submitted=True, pull__date_complete__isnull=True).prefetch_related('files', 'target_email').select_related('user').annotate(
             files_in_request=Count('files__file_id'),
             needs_review=Count('files', filter=Q(files__user_oneeye=None) | Q(files__user_twoeye=None) & ~Q(files__user_oneeye=request.user)) -
-            Count('files', filter=~Q(files__rejection_reason=None) & ~Q(files__user_oneeye=request.user) & ~Q(files__user_twoeye=request.user)),
-            user_reviewing=Count('files', filter=Q(files__user_oneeye=request.user) & Q(files__date_oneeye=None) & Q(files__rejection_reason=None)) +
-            Count('files', filter=Q(files__user_twoeye=request.user) & Q(files__date_twoeye=None) & Q(files__rejection_reason=None))).order_by('date_created')
+            Count('files', filter=~Q(files__rejection_reasons=None) & ~Q(files__user_oneeye=request.user) & ~Q(files__user_twoeye=request.user)),
+            user_reviewing=Count('files', filter=Q(files__user_oneeye=request.user) & Q(files__date_oneeye=None) & Q(files__rejection_reasons=None)) +
+            Count('files', filter=Q(files__user_twoeye=request.user) & Q(files__date_twoeye=None) & Q(files__rejection_reasons=None))).order_by('date_created')
 
         # Getting all the network_id's from the ds_requests and then filtering the ds_networks based on
         # the network_id's.
@@ -552,7 +552,7 @@ def createZip(request, network_name, rejectPull):
     for rqst in qs:
         zip_folder = str(rqst.user) + "/request_1"
         # Get all non-rejected files in the current request
-        theseFiles = rqst.files.filter(rejection_reason=None)
+        theseFiles = rqst.files.filter(rejection_reasons=None)
         # if the is_pii field is True on any of the File objects then encryptRequests will become true
         # Only create a folder for a request if it has non-rejected files, we don't want empty folders because every file got rejected
         if theseFiles.exists():
@@ -749,11 +749,11 @@ def checkPullable(rqst):
     if rqst.network.skip_file_review == False:
         for file in rqst.files.all():
             if file.date_twoeye == None:
-                if file.rejection_reason == None:
+                if not file.rejection_reasons.all():
                     ready_to_pull = False
                     break
             elif file.date_oneeye == None:
-                if file.rejection_reason == None:
+                if not file.rejection_reasons.all():
                     ready_to_pull = False
                     break
 
