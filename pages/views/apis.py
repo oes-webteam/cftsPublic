@@ -62,8 +62,7 @@ def setRejectDupes(request):
         files = rqst.files.all()
         # files.update(rejection_reason=dupeReason)
         for file in files:
-            file.rejection_reason.add(dupeReason)
-            file.save()
+            file.rejection_reasons.add(dupeReason)
             updateFileReview(request, file.file_id, rqst.request_id)
 
     # update flags on the duplicate requests, "rejected_dupe" will hide the requests from the queue
@@ -90,13 +89,14 @@ def setReject(request):
 
     postData = dict(request.POST.lists())
 
-    reject_id = postData['reject_id']
+    reject_ids = postData['reject_id[]']
+    reasons = Rejection.objects.filter(rejection_id__in=reject_ids)
+
     request_id = postData['request_id']
     id_list = postData['id_list[]']
 
     # Update the files to set the rejection
     files = File.objects.filter(file_id__in=id_list)
-    files.update(rejection_reason_id=reject_id[0])
 
     # update request with the has_rejected flag
     rqst = Request.objects.filter(request_id=request_id[0])
@@ -105,6 +105,7 @@ def setReject(request):
     # Update files review status because a rejected file counts as fully reviewed
     # skipComplete will prevent a files review status from progressing forward when calling updateFileReview()
     for file in files:
+        file.rejection_reasons.add(*reasons)
         ready_to_pull = updateFileReview(request, file.file_id, request_id[0], skipComplete=True)
 
     # Check if all files in the request are rejected
@@ -112,7 +113,7 @@ def setReject(request):
     all_rejected = True
 
     for file in files:
-        if file.rejection_reason_id == None:
+        if not file.rejection_reasons.all():
             all_rejected = False
 
     if all_rejected == True:
@@ -134,23 +135,24 @@ def setReject(request):
 
     # Normally rejecting a file would also generate an email to go along with it, but that gets really annoying when doing dev work so emails are disabled when DEBUG==True
     # If DEBUG==False then we call createEml() and return the email generated with a JSON response
-    if DEBUG == True:
-        if ready_to_pull == True:
-            messages.success(request, "All files in request have been fully reviewed. Request ready to pull")
-            return JsonResponse({'debug': True, 'flash': False})
-        else:
-            return JsonResponse({'debug': True})
+
+    # if DEBUG == True:
+    #     if ready_to_pull == True:
+    #         messages.success(request, "All files in request have been fully reviewed. Request ready to pull")
+    #         return JsonResponse({'debug': True, 'flash': False})
+    #     else:
+    #         return JsonResponse({'debug': True})
+    # else:
+    eml = createEml(request, request_id, id_list, reasons)
+    if ready_to_pull == True:
+        messages.success(request, "All files in request have been fully reviewed. Request ready to pull")
+        return JsonResponse({'eml': str(eml), 'flash': False})
     else:
-        eml = createEml(request, request_id, id_list, reject_id)
-        if ready_to_pull == True:
-            messages.success(request, "All files in request have been fully reviewed. Request ready to pull")
-            return JsonResponse({'eml': str(eml), 'flash': False})
-        else:
-            return JsonResponse({'eml': str(eml)})
+        return JsonResponse({'eml': str(eml)})
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
-def createEml(request, request_id, files_list, reject_id):
+def createEml(request, request_id, files_list, reasons):
     """
     It takes in a request object, a request id, a list of file ids, and a rejection id. It then gets the
     Request and Rejection objects from the database, creates a mailto link, lists the names of all the
@@ -166,7 +168,7 @@ def createEml(request, request_id, files_list, reject_id):
 
     # Get the Request and Rejection objects
     rqst = Request.objects.get(request_id=request_id[0])
-    rejection = Rejection.objects.get(rejection_id=reject_id[0])
+    rejectionComments = None
 
     # Create a mailto link...
     # Yeah, that's how we send out system emails because we aren't allowed to have an email relay server... thanks J6
@@ -175,16 +177,26 @@ def createEml(request, request_id, files_list, reject_id):
     # List the names of all the files being rejected in the email
     files = File.objects.filter(file_id__in=files_list)
     for file in files:
+        if rejectionComments == None and file.rejection_text != None and file.rejection_text != "":
+            rejectionComments = file.rejection_text
+
         if file == files.last():
             msgBody += str(file.file_object).split("/")[-1] + " "
         else:
             msgBody += str(file.file_object).split("/")[-1] + ", "
 
+    msgBody += "%0D%0A%0D%0AReasons for file rejection:%0D%0A"
+
+    for reason in reasons:
+        if reason == reasons.last():
+            msgBody += reason.name + " "
+        else:
+            msgBody += reason.name + ", "
     # This is the url that users can use to get more details about their request
     url = "https://" + str(request.get_host()) + "/request/" + str(rqst.request_id)
 
     # Render out the email template and append it to the mailto link
-    msgBody += render_to_string('partials/Queue_partials/rejectionEmailTemplate.html', {'rqst': rqst, 'rejection': rejection, 'firstName': rqst.user.name_first, 'url': url}, request)
+    msgBody += render_to_string('partials/Queue_partials/rejectionEmailTemplate.html', {'rqst': rqst, 'reasons': reasons, 'firstName': rqst.user.name_first, 'url': url, 'comments': rejectionComments}, request)
 
     return msgBody
 
@@ -205,11 +217,11 @@ def unReject(request):
 
     # Updating the rejection_reason_id to None for all the files in the list.
     files = File.objects.filter(file_id__in=id_list)
-    files.update(rejection_reason_id=None)
 
     # Updating the file review status for each file in the list
     # For safety any unrejected file is no longer considered reviewed
     for file in files:
+        file.rejection_reasons.clear()
         updateFileReview(request, file.file_id, request_id[0], skipComplete=True)
 
     # Checking if any of the files in the request has a rejection reason. If it does, it sets the
@@ -218,7 +230,7 @@ def unReject(request):
     has_rejected = False
 
     for file in files:
-        if file.rejection_reason_id != None:
+        if not file.rejection_reasons.all():
             has_rejected = True
 
     if has_rejected == False:
@@ -388,7 +400,7 @@ def runNumbers(request, api_call=False):
                 file_size += f.file_size
 
                 # Exclude the rejects from the transfers numbers, they are counted separately
-                if f.rejection_reason == None:
+                if not f.rejection_reasons.all():
                     files_transfered += f.file_count
 
                     # If the file is from a CENTCOM org count it

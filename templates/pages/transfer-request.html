@@ -21,8 +21,8 @@
 
                     <div class="modal-body">
                         {% for file in rqst.files.all %}
-                            <input type="checkbox" class="btn-check" id="file-{{forloop.counter}}" autocomplete="off" file_id="{{file.file_id}}">
-                            <label class="btn btn-outline-primary btn-rejection my-1 {% if file.rejection_reason.all %}rejected {% endif %}" for="file-{{forloop.counter}}">{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</label>
+                            <input type="checkbox" class="btn-check file-check {% if file.rejection_reasons.all %}rejected {% else %}not-rejected {% endif %}" id="{{file.file_id}}" autocomplete="off">
+                            <label class="btn btn-outline-primary btn-rejection my-1 {% if file.rejection_reasons.all %}rejected {% else %}not-rejected {% endif %}" for="{{file.file_id}}">{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</label>
                         {% endfor %}
                     </div>
 
@@ -32,8 +32,8 @@
 
                     <div class="modal-body">
                         {% for reason in rejections %}
-                            <input type="checkbox" class="btn-check btn-rejection-input" id="reject-{{forloop.counter}}" rejection_ID="{{reason.rejection_id}}">
-                            <label class="btn btn-outline-danger btn-rejection-label my-1" for="reject-{{forloop.counter}}">{{reason.name}}</label>
+                            <input type="checkbox" class="btn-check reason-check" id="{{reason.rejection_id}}">
+                            <label class="btn btn-outline-danger btn-rejection-label my-1" for="{{reason.rejection_id}}">{{reason.name}}</label>
                         {% endfor %}
                     </div>
 
@@ -152,16 +152,15 @@
                         {% for file in rqst.files.all %}
                             <tr class="file-row" id="row_{{file.file_id}}">
                                 <td class="file-left">
-                                    <input type="checkbox" name="fileSelection" id="chk_{{ file.file_id }}" request_id="{{ rqst.request_id }}" request_email="{{ rqst.user.email }}" file_name="{{ file }}" {% if file.rejection_reason != None %} rejected {% else %} not-rejected {% endif %} hidden />
                                     <!-- Show encrypt flag? -->
                                     {% if file.is_pii or rqst.network.cfts_deployed %}
                                         <span title="PII: {{ file.is_pii }}&#10;">🔒</span>
                                     {% endif %}
-                                    <a class="{% if file.rejection_reason.all %}rejected {% endif %} mr-2" title="{{ file }}" id="{{file.file_id}}" href="/getFile/{{file.file_object}}" download="{{file.file_name}}">{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</a>
+                                    <a class="{% if file.rejection_reasons.all %}rejected {% endif %} mr-2" title="{{ file }}" id="{{file.file_id}}" href="/getFile/{{file.file_object}}" download="{{file.file_name}}">{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</a>
                                     {% if user.is_superuser %}{% if file.user_oneeye != None %}<strong><span class="reviewers mr-2 d-none">1 Eye: {{file.user_oneeye}}</span>{% endif %} {% if file.user_twoeye != None %}<span class="reviewers d-none">2 Eye: {{file.user_twoeye}}</span></strong>{% endif %}{% endif %}
                                 </td>
                                 <td class="file-right p-1">
-                                    {% if file.rejection_reason.all %}
+                                    {% if file.rejection_reasons.all %}
                                         </td>
                                         </tr>
 
@@ -170,7 +169,7 @@
                                                 <ul class="rejected-list">
                                                     <li>File rejected for:</li>
                                                     <ul>
-                                                        {% for rejection in file.rejection_reason.all %}
+                                                        {% for rejection in file.rejection_reasons.all %}
                                                             <li>{{rejection.name}}</li>
                                                         {% endfor %}
                                                     </ul>
@@ -218,7 +217,7 @@
                                     {% endif %}
                                 </td>
                             </tr>
-                            {% if not file.rejection_reason.all %}
+                            {% if not file.rejection_reasons.all %}
                                 {% if file.user_oneeye == user and file.date_oneeye == None or file.user_twoeye == user and file.date_twoeye == None%}
                                     {% if file.scan_results == None %}
                                         {% include 'partials/Scan_partials/scanResults.html' with empty=True %}
