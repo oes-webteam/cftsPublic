@@ -16,6 +16,9 @@ from pages.models import *
 from pages.views.auth import getCert, getOrCreateUser
 from pages.views.apis import setConsentCookie
 
+import logging
+
+logger = logging.getLogger('django')
 # ====================================================================
 
 # function to return a dictionary of Network and Email objects from a User objects destination_emails field
@@ -90,8 +93,11 @@ def frontend(request):
         certInfo = getCert(request)
         cftsUser = getOrCreateUser(request, certInfo)
 
+
         # redirect user to login page or info edit page
-        if request.user.is_authenticated == False and certInfo['status'] == "empty" or certInfo['status'] == "buggedPKI":
+        if cftsUser == False:
+            return render(request, 'pages/frontend.html', {'rc': {'error': True, 'submission_disabled': DISABLE_SUBMISSIONS, 'debug': str(DEBUG), 'resources': resources, 'browser': browser}})
+        elif request.user.is_authenticated == False and certInfo['status'] == "empty" or certInfo['status'] == "buggedPKI":
             if DEBUG == True:
                 return redirect("/login")
             elif DEBUG == False:
