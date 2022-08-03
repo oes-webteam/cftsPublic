@@ -105,10 +105,10 @@ def pullsDone(request, id, cd):
     thisPull.date_complete = datetime.datetime.now()
     thisPull.user_complete = request.user
     thisPull.disc_number = cd
+    thisPull.queue_for_delete = True
     thisPull.save()
 
-    if thisPull.pull_number == 1:
-        fileCleanup(request)
+    fileCleanup(request)
 
     messages.success(request, "Pull completed")
     return JsonResponse({'id': id})
@@ -128,6 +128,7 @@ def getPull(request, fileName):
 def cancelPull(request, id):
     # get the Pull object to cancel and all objects that have a relationship to the Pull object
     thisPull = Pull.objects.get(pull_id=id)
+    network = thisPull.network.name
     files = File.objects.filter(pull=id)
     requests = Request.objects.filter(pull=id)
 
@@ -137,6 +138,8 @@ def cancelPull(request, id):
     requests.update(pull=None)
 
     # once the pull is deleted all request will move back to the "Pullable" section of the queue
+    zipPath = os.path.join(settings.PULLS_DIR+"\\") + thisPull.network.name + "_" + str(thisPull.pull_number) + " " + str(thisPull.date_pulled.astimezone().strftime("%d%b %H%M")) + ".zip"
+    os.remove(zipPath)
     thisPull.delete()
     messages.success(request, "Pull canceled, requests returned to pending queue")
-    return redirect('pulls')
+    return redirect('/queue?network=' + network)

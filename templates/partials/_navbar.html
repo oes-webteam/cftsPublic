@@ -10,11 +10,11 @@
             <img src="{% static 'img/logo_temp.png' %}" width="50" height="50" alt="" />
             <h3 class="d-inline align-middle">Combined File Transfer Service</h3>
         </a>
-        <button class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
+        <button class="navbar-toggler" data-bs-toggle="collapse" data-target="#navbarCollapse">
             <!-- COLLAPSE NAV LINKS INTO HAMBURGER ICON -->
             <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarCollapse">
+        <div class="collapse navbar-collapse justify-content-end" id="navbarCollapse">
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
                     <a href="{% url 'index' %}" class="nav-link">Home</a>
@@ -22,109 +22,109 @@
 
                 <li class="nav-item dropdown">
                     <!--DROP DOWN STARTS HERE FOR NAV-->
-                    <a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Policies</a>
-                    <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Policies</a>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                         {% for resource in rc.resources %}
                             {% if resource.policy == True %}
                                 {% if resource.file_name|length > 0 %}
-                                    <a class="dropdown-item" href="{% url 'resources' resource.file_name %}">{{ resource.name }}</a>
+                                    <li><a class="dropdown-item" href="{% url 'resources' resource.file_name %}">{{ resource.name }}</a></li>
                                 {% elif resource.url_path|length > 0 %}
-                                    <a class="dropdown-item" href="{{ resource.url_path }}">{{ resource.name }}</a>
+                                    <li><a class="dropdown-item" href="{{ resource.url_path }}">{{ resource.name }}</a></li>
                                 {% else %}
-                                    <a class="dropdown-item" href="#">{{ resource.name }}</a>
+                                    <li><a class="dropdown-item" href="#">{{ resource.name }}</a></li>
                                 {% endif %}
                             {% endif %}
                         {% empty %}
                             {% for resource in resources %}
                                 {% if resource.policy == True %}
                                     {% if resource.file_name|length > 0 %}
-                                        <a class="dropdown-item" href="{% url 'resources' resource.file_name %}">{{ resource.name }}</a>
+                                        <li><a class="dropdown-item" href="{% url 'resources' resource.file_name %}">{{ resource.name }}</a></li>
                                     {% elif resource.url_path|length > 0 %}
-                                        <a class="dropdown-item" href="{{ resource.url_path }}">{{ resource.name }}</a>
+                                        <li><a class="dropdown-item" href="{{ resource.url_path }}">{{ resource.name }}</a></li>
                                     {% else %}
-                                        <a class="dropdown-item" href="#">{{ resource.name }}</a>
+                                        <li><a class="dropdown-item" href="#">{{ resource.name }}</a></li>
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}
                         {% endfor %}
-                    </div>
+                    </ul>
                 </li>
 
                 <li class="nav-item dropdown">
                     <!--DROP DOWN STARTS HERE FOR NAV-->
-                    <a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Resources</a>
-                    <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Resources</a>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                         {% for resource in rc.resources %}
                             {% if resource.policy == False %}
                                 {% if resource.file_name|length > 0 %}
-                                    <a class="dropdown-item" href="{% url 'resources' resource.file_name %}">{{ resource.name }}</a>
+                                    <li><a class="dropdown-item" href="{% url 'resources' resource.file_name %}">{{ resource.name }}</a></li>
                                 {% elif resource.url_path|length > 0 %}
-                                    <a class="dropdown-item" href="{{ resource.url_path }}">{{ resource.name }}</a>
+                                    <li><a class="dropdown-item" href="{{ resource.url_path }}">{{ resource.name }}</a></li>
                                 {% else %}
-                                    <a class="dropdown-item" href="#">{{ resource.name }}</a>
+                                    <li><a class="dropdown-item" href="#">{{ resource.name }}</a></li>
                                 {% endif %}
                             {% endif %}
                         {% empty %}
                             {% for resource in resources %}
                                 {% if recource.policy == False %}
                                     {% if resource.file_name|length > 0 %}
-                                        <a class="dropdown-item" href="{% url 'resources' resource.file_name %}">{{ resource.name }}</a>
+                                        <li><a class="dropdown-item" href="{% url 'resources' resource.file_name %}">{{ resource.name }}</a></li>
                                     {% elif resource.url_path|length > 0 %}
-                                        <a class="dropdown-item" href="{{ resource.url_path }}">{{ resource.name }}</a>
+                                        <li><a class="dropdown-item" href="{{ resource.url_path }}">{{ resource.name }}</a></li>
                                     {% else %}
-                                        <a class="dropdown-item" href="#">{{ resource.name }}</a>
+                                        <li><a class="dropdown-item" href="#">{{ resource.name }}</a></li>
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}
                         {% endfor %}
-                    </div>
+                    </ul>
                 </li>
 
                 {% if user.is_authenticated %}
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ user }}</a>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ user }}</a>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                             {% if user.is_staff %}
-                                <a class="dropdown-item" href="{% url 'queue' %}">Transfer Queue</a>
-                                <a class="dropdown-item" href="{% url 'pulls' %}">Pulls History</a>
-                                <a class="dropdown-item" href="{% url 'drop-zone' %}">Drop Zone</a>
-                                <a class="dropdown-item" href="{% url 'archive' %}">Transfers Archive</a>
-                                <a class="dropdown-item" href="{% url 'reports' %}">Reporting</a>
-                                <a class="dropdown-item" href="{% url 'admin:index' %}">Admin Page</a>
-                                <hr class="mt-2 mb-2" style="border-top-width: 3px; border-top-color: rgba(0, 0, 0, 0.2);" />
+                                <li><a class="dropdown-item" href="{% url 'queue' %}">Transfer Queue</a></li>
+                                <li><a class="dropdown-item" href="{% url 'pulls' %}">Pulls History</a></li>
+                                <li><a class="dropdown-item" href="{% url 'drop-zone' %}">Drop Zone</a></li>
+                                <li><a class="dropdown-item" href="{% url 'archive' %}">Transfers Archive</a></li>
+                                <li><a class="dropdown-item" href="{% url 'reports' %}">Reporting</a></li>
+                                <li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin Page</a></li>
+                                <li><hr class="dropdown-divider mt-2 mb-2" style="border-top-width: 3px; border-top-color: rgba(0, 0, 0, 0.2);" /></li>
                             {% endif %}
-                            <a class="dropdown-item" href="{% url 'userRequests' %}">My Requests</a>
-                            <a class="dropdown-item" href="{% url 'user-info' %}">Edit Account Info</a>
-                            <a class="dropdown-item" href="{% url 'feedback' %}">Feedback</a>
-                            <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
-                        </div>
+                            <li><a class="dropdown-item" href="{% url 'userRequests' %}">My Requests</a></li>
+                            <li><a class="dropdown-item" href="{% url 'user-info' %}">Edit Account Info</a></li>
+                            <li><a class="dropdown-item" href="{% url 'feedback' %}">Feedback</a></li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                        </ul>
                     </li>
                 {% elif rc.user.auth_user.is_staff %}
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ rc.user.auth_user.username }}</a>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ rc.user.auth_user.username }}</a>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                             {% if rc.user.auth_user.is_staff %}
-                                <a class="dropdown-item" href="{% url 'queue' %}">Transfer Queue</a>
-                                <a class="dropdown-item" href="{% url 'pulls' %}">Pulls History</a>
-                                <a class="dropdown-item" href="{% url 'drop-zone' %}">Drop Zone</a>
-                                <a class="dropdown-item" href="{% url 'archive' %}">Transfers Archive</a>
-                                <a class="dropdown-item" href="{% url 'reports' %}">Reporting</a>
-                                <a class="dropdown-item" href="{% url 'admin:index' %}">Admin Page</a>
-                                <hr class="mt-2 mb-2" style="border-top-width: 3px; border-top-color: rgba(0, 0, 0, 0.2);" />
+                                <li><a class="dropdown-item" href="{% url 'queue' %}">Transfer Queue</a></li>
+                                <li><a class="dropdown-item" href="{% url 'pulls' %}">Pulls History</a></li>
+                                <li><a class="dropdown-item" href="{% url 'drop-zone' %}">Drop Zone</a></li>
+                                <li><a class="dropdown-item" href="{% url 'archive' %}">Transfers Archive</a></li>
+                                <li><a class="dropdown-item" href="{% url 'reports' %}">Reporting</a></li>
+                                <li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin Page</a></li>
+                                <li><hr class="dropdown-divider mt-2 mb-2 " style="border-top-width: 3px; border-top-color: rgba(0, 0, 0, 0.2);" /></li>
                             {% endif %}
-                            <a class="dropdown-item" href="{% url 'userRequests' %}">My Requests</a>
-                            <a class="dropdown-item" href="{% url 'user-info' %}">Edit Account Info</a>
-                            <a class="dropdown-item" href="{% url 'feedback' %}">Feedback</a>
-                        </div>
+                            <li><a class="dropdown-item" href="{% url 'userRequests' %}">My Requests</a></li>
+                            <li><a class="dropdown-item" href="{% url 'user-info' %}">Edit Account Info</a></li>
+                            <li><a class="dropdown-item" href="{% url 'feedback' %}">Feedback</a></li>
+                        </ul>
                     </li>
                 {% elif rc.user.name_first %}
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{rc.user.name_first }}</a>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                            <a class="dropdown-item" href="{% url 'userRequests' %}">My Requests</a>
-                            <a class="dropdown-item" href="{% url 'user-info' %}">Edit Account Info</a>
-                            <a class="dropdown-item" href="{% url 'feedback' %}">Feedback</a>
-                        </div>
+                        <a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{rc.user.name_first }}</a>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                            <li><a class="dropdown-item" href="{% url 'userRequests' %}">My Requests</a></li>
+                            <li><a class="dropdown-item" href="{% url 'user-info' %}">Edit Account Info</a></li>
+                            <li><a class="dropdown-item" href="{% url 'feedback' %}">Feedback</a></li>
+                        </ul>
                     </li>
                 {% else %}
                     <li class="nav-item">

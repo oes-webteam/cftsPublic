@@ -5,8 +5,8 @@
 {% block content %}
     <link rel="stylesheet" href="{% static 'css/reports.css' %}">
 
-    <div class="container">
-        <form>
+    <div class="container report-container">
+        <form class="mb-3">
             <!-- date pickers for start/end dates -->
             <!-- default to week prior to current date -->
             <div class="row">
@@ -21,7 +21,7 @@
                 {% if user.is_superuser %}
                     <div class="col">
                         <label for="staffFilter">Staff Filter</label>
-                        <select type="text" id="numbersStaff" class="form-control staff">
+                        <select type="text" id="numbersStaff" class="form-select staff">
                             <option value="None">--------------------</option>
                             {% for staff in rc.staff %}
                                 <option value="{{staff.id}}">{{staff}}</option>

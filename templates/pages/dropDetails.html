@@ -7,9 +7,9 @@
     <link rel="stylesheet" href="{% static 'css/requestDetails.css' %}">
 
     {% if status == "authorized" %}
-        <div class="container mt-3">
+        <div class="container details-container mt-3">
             <table class="data-table">
-                <a type="button" class="btn btn-primary btn-download mb-3 text-white"  data-toggle="modal" data-target="#passphraseModal"  download="CFTS_Files.zip">Download files</a>
+                <a type="button" class="btn btn-primary btn-download mb-3 text-white"  data-bs-toggle="modal" data-bs-target="#passphraseModal"  download="CFTS_Files.zip">Download files</a>
 
                 <!-- Modal -->
                 <div class="modal fade" id="passphraseModal" tabindex="-1" role="dialog" aria-labelledby="passphraseModalLabel" aria-hidden="true">
@@ -17,16 +17,14 @@
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="passphraseModalLabel">Enter Decryption Phrase From Email</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 <input type="text"  class="form-control" name="passphraseInput" id="passphraseInput" placeholder="Decryption Phrase">
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                <button type="button" id="passphraseSubmit" class="btn btn-primary" data-dismiss="modal">Submit</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" id="passphraseSubmit" class="btn btn-primary" data-bs-dismiss="modal">Submit</button>
                             </div>
                         </div>
                     </div>
@@ -50,13 +48,11 @@
             </table>
         </div> <!-- END container -->
     {% elif status == "prompt" %}
-        <div class="container" style="margin-top: 15rem;" >
+        <div class="container details-container" style="margin-top: 15rem;" >
             <h3>Enter Request Code From Email</h3>
             <div class="input-group mb-3">
                 <input type="text" class="form-control" id="codeInput" placeholder="Request Code" aria-label="Recipient's username" aria-describedby="basic-addon2">
-                <div class="input-group-append">
-                    <button class="btn btn-success" type="button" id="codeSubmit">Submit</button>
-                </div>
+                <button class="btn btn-success" type="button" id="codeSubmit">Submit</button>
             </div>
         </div> <!-- END container -->
     {% endif %}

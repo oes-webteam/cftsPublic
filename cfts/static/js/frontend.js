@@ -44,7 +44,7 @@ const addFiles = (e) => {
         if (validation.msg.length) {
             notifyFileWarning(validation.msg);
         }
-        
+
         if (!validation.error) {
             // add file to the queue
             fileObject = {
@@ -92,7 +92,7 @@ const validateFile = (thisFile) => {
         msg += "<li>Executable files are not accepted.</li>";
         errorFlag = true;
     }
-    
+
     // you seem to have a little ... something ... in your filename there.  You might want to clean that up.
     if (charWhitelist.test(filename)) {
         msg += "<li>Special characters in filenames can cause the system to reject the files. Please review the filename and ensure it only contains letters, numbers, periods, dashes, parentheses or underscores.</li>";
@@ -152,7 +152,7 @@ const displayFileQueue = () => {
             listItem.appendChild(document.createTextNode(fileQueue[i].name));
 
             let fileInfoDiv = document.createElement("div");
-            fileInfoDiv.classList.add("form-row");
+            fileInfoDiv.classList.add("form-check", "p-2");
 
             let toEncrypt = document.createElement("input");
             toEncrypt.setAttribute("type", "checkbox");
@@ -160,12 +160,12 @@ const displayFileQueue = () => {
             toEncrypt.setAttribute("id", "encrypt" + i)
             toEncrypt.setAttribute("value", "true");
             if (fileQueue[i] && fileQueue[i].encrypt) toEncrypt.checked = true;
-            toEncrypt.classList.add("form-check-input", "col");
+            toEncrypt.classList.add("form-check-input", "mx-3");
 
             let checkLabel = document.createElement("label");
             checkLabel.setAttribute("for", "encrypt" + i);
             checkLabel.append(document.createTextNode("Send Encrypted/Through DoD SAFE?"));
-            checkLabel.classList.add("form-check-label", "col");
+            checkLabel.classList.add("form-check-label");
             fileInfoDiv.appendChild(toEncrypt);
             fileInfoDiv.appendChild(checkLabel);
 
@@ -196,21 +196,32 @@ const removeFileFromQueue = (e) => {
 /* ***************************************** */
 /* ADD/REMOVE HIGHLIGHTING TO/FROM DROP ZONE */
 /* ***************************************** */
-addHighlight = (e) => dropArea.classList.add('highlight-active');
-removeHighlight = (e) => dropArea.classList.remove('highlight-active');
-
-
-/* ******************* */
-/* REMOVE EXTRA EMAILS */
-/* ******************* */
-const deleteEmailField = (e) => {
-    preventDefaults(e);
-    console.log(e.parentNode)
-};
+// addHighlight = (e) => dropArea.classList.add('highlight-active');
+// removeHighlight = (e) => dropArea.classList.remove('highlight-active');
 
 /* *************** */
 /* EVENT LISTENERS */
 /* *************** */
+// prevent default actions for all these events
+// ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+//     dropArea.addEventListener(eventName, preventDefaults, false);
+// });
+
+// // add/remove highlighting to/from drop zone
+// ['dragenter', 'dragover'].forEach(eventName => {
+//     dropArea.addEventListener(eventName, addHighlight, false);
+// });
+// ['dragleave', 'drop'].forEach(eventName => {
+//     dropArea.addEventListener(eventName, removeHighlight, false);
+// });
+
+// // the add files handler for the drop zone and file field
+// dropArea.addEventListener('drop', addFiles, false);
+// filesInput.addEventListener('change', addFiles, false);
+
+addHighlight = (e) => dropArea.classList.add('highlight-active');
+removeHighlight = (e) => dropArea.classList.remove('highlight-active');
+
 // prevent default actions for all these events
 ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
     dropArea.addEventListener(eventName, preventDefaults, false);
@@ -225,5 +236,8 @@ const deleteEmailField = (e) => {
 });
 
 // the add files handler for the drop zone and file field
+dropArea.addEventListener('click', function() {
+    $('#standard-upload-files').click()
+}, false);
 dropArea.addEventListener('drop', addFiles, false);
 filesInput.addEventListener('change', addFiles, false);

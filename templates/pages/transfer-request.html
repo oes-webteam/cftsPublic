@@ -18,7 +18,7 @@
                     <a class="btn btn-info" id="noteBtn" href="#">Save Notes</a>
                 </div>
 
-                <div class="btn-group ml-3">
+                <div class="btn-group ms-3">
                     {% if rqst.user.account_warning_count < 3 %}<a class="btn btn-warning" id="userWarning" href="{% url 'api-warnuser' user_id rqst.request_id %}">Issue User Warning</a>{% endif %}
                     {% if not rqst.user.banned%}
                         <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rqst.request_id "True" "False" %}">Ban User, 1 day</a>
@@ -63,7 +63,7 @@
                 </div>
 
                 {% if user.is_superuser %}
-                    <div class="btn-group ml-3">
+                    <div class="btn-group ms-3">
                         <a href="#" class="btn btn-info request-remove one-eye" rqst_id="{{rqst.request_id}}">Remove One Eyer</a>
                         <a href="#" class="btn btn-primary request-remove two-eye" rqst_id="{{rqst.request_id}}">Remove Two Eyer</a>
                     </div>
@@ -131,7 +131,7 @@
                                         {% if file.date_oneeye != None and file.date_twoeye != None %}
                                             File reviewed by {{file.user_oneeye}} and {{file.user_twoeye}}
                                         {% elif file.user_oneeye == None %}
-                                            <a href="{% url 'reviewFile' file.file_id rqst.request_id "False" "False" %}" class="btn btn-info" id="btn-review">Begin Review</a>
+                                            <a href="{% url 'reviewFile' file.file_id rqst.request_id "False" "False" %}" class="btn btn-info btn-review" id="btn-review">Begin Review</a>
                                         {% elif file.user_oneeye != None and file.user_oneeye == user and file.date_oneeye == None %}
                                             <div class="btn-group">
                                                 <a href="{% url 'reviewFile' file.file_id rqst.request_id "False" "True" %}" class="btn btn-success">Complete Review</a>
@@ -141,7 +141,7 @@
                                             {% if file.user_oneeye == user %}
                                                 File waiting for second review
                                             {% else %}
-                                                <a href="{% url 'reviewFile' file.file_id rqst.request_id "False" "False" %}" class="btn btn-info" id="btn-review">Begin Review</a>
+                                                <a href="{% url 'reviewFile' file.file_id rqst.request_id "False" "False" %}" class="btn btn- btn-review" id="btn-review">Begin Review</a>
                                             {% endif %}
                                         {% elif file.user_twoeye != None %}
                                             {% if file.user_twoeye == user and file.date_twoeye == None %}

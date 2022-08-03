@@ -5,15 +5,12 @@
 {% block content %}
     <link rel="stylesheet" href="{% static 'css/pulls.css' %}">
 
-    <div class="grid-container" style="grid-template-columns: 5% repeat( {{ rc.pull_history|length }}, 1fr [col-start]) 5%;">
-        <div>
-            <!-- spacer -->
-        </div>
+    <div class="container grid-container" style="grid-template-columns: repeat( {{ rc.pull_history|length }}, 1fr [col-start]);">
         {% for net in rc.pull_history %}
-            <ul class="grid-column" style="grid-column: {{ forloop.counter|add:1 }}">
+            <ul class="grid-column" style="grid-column: {{ forloop.counter}};">
                 {% for pull in net %}
                     {% if forloop.counter0 == 0 %}<h3 class="grid-column-header">{{ pull.pull_network }}</h3>{% endif %}
-                    <li class="pull-card {% if pull.date_complete != None %}is-done{% elif pull.date_twoeye != None %}to-complete{% elif pull.date_oneeye != None %}to-twoeye{% endif %}" pull_id="{{pull.pull_id}}">
+                    <li class="pull-card me-2 {% if pull.date_complete != None %}is-done{% elif pull.date_twoeye != None %}to-complete{% elif pull.date_oneeye != None %}to-twoeye{% endif %}" pull_id="{{pull.pull_id}}">
 
                         <ul>
                             <li class="title-line"><strong>{{ pull.pull_network }}_{{ pull.pull_number }}</strong></li>
@@ -49,9 +46,6 @@
                 {% endfor %}
             </ul>
         {% endfor %}
-        <div>
-            <!-- spacer -->
-        </div>
     </div>
 
     <script src="{% static 'js/pulls.js' %}"></script>
