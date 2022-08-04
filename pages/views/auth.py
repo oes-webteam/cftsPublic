@@ -133,16 +133,8 @@ def getOrCreateUser(request, certInfo):
             userHash = certInfo['userHash']
 
             # get the User object that matches the certificate hash
-            try:
-                user = User.objects.get(user_identifier=userHash)
-            except User.MultipleObjectsReturned:
-                messages.error(request, "An error occured while trying to identify user, please click the 'Contact Us' link to request help.")
-                users = User.objects.filter(user_identifier=userHash).values_list('user_id', flat=True)
-                logger.error("------------ User Identifier Collision ------------")
-                logger.error(userHash)
-                logger.error(users)
-                return False
-        
+            user = User.objects.get(user_identifier=userHash)
+
         # the user is external, so we can't user a certificate hash to retrieve a User object, external users MUST BE LOGGED IN
         else:
             # if they are logged in then get the User object that has a one-to-one relationship with the currently logged in Django user account

@@ -148,24 +148,24 @@
 
             <div class="col-6">
                 <div class="details-card">
-                    <table>
+                    <div class="container file-container">
                         {% for file in rqst.files.all %}
-                            <tr class="file-row" id="row_{{file.file_id}}">
-                                <td class="file-left">
+                            <div class="file-row row p-2" id="row_{{file.file_id}}">
+                                <div class="file-left pt-2 col">
                                     <!-- Show encrypt flag? -->
                                     {% if file.is_pii or rqst.network.cfts_deployed %}
                                         <span title="PII: {{ file.is_pii }}&#10;">🔒</span>
                                     {% endif %}
                                     <a class="{% if file.rejection_reasons.all %}rejected {% endif %} mr-2" title="{{ file }}" id="{{file.file_id}}" href="/getFile/{{file.file_object}}" download="{{file.file_name}}">{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</a>
-                                    {% if user.is_superuser %}{% if file.user_oneeye != None %}<strong><span class="reviewers mr-2 d-none">1 Eye: {{file.user_oneeye}}</span>{% endif %} {% if file.user_twoeye != None %}<span class="reviewers d-none">2 Eye: {{file.user_twoeye}}</span></strong>{% endif %}{% endif %}
-                                </td>
-                                <td class="file-right p-1">
+                                    {% if user.is_superuser %}<strong>{% if file.user_oneeye != None %}<span class="reviewers mr-2 d-none">1 Eye: {{file.user_oneeye}}</span>{% endif %} {% if file.user_twoeye != None %}<span class="reviewers d-none">2 Eye: {{file.user_twoeye}}</span>{% endif %}</strong>{% endif %}
+                                </div>
+                                <div class="file-right col p-1">
                                     {% if file.rejection_reasons.all %}
-                                        </td>
-                                        </tr>
+                                        <button class="btn btn-danger" type="button" data-bs-toggle="popover" data-bs-container="body" data-bs-placement="bottom" data-bs-content="test">File rejected for {{file.rejection_reasons.all|length}} reason{{file.rejection_reasons.all|length|pluralize}}</button>
+                                        </div>
 
-                                        <tr class="rejections-row">
-                                            <td colspan="2">
+                                        <div class="rejections-row row collapse" id="reasons_{{file.file_id}}">
+                                            <div class="col" colspan="2">
                                                 <ul class="rejected-list">
                                                     <li>File rejected for:</li>
                                                     <ul>
@@ -180,15 +180,18 @@
                                                         </ul>
                                                     {% endif %}
                                                 </ul>
-                                            </td>
-                                        </tr>
+                                            </div>
+
+
                                     {% else %}
                                         {% if file.date_oneeye != None and file.date_twoeye != None %}
                                             File reviewed by {{file.user_oneeye}} and {{file.user_twoeye}}
                                         {% elif file.user_oneeye == None %}
-                                            <a href="{% url 'reviewFile' file.file_id rqst.request_id "False" "False" %}" class="btn btn-info btn-review" id="btn-review">Begin Review</a>
+                                            <div class="btn-group col">
+                                                <a href="{% url 'reviewFile' file.file_id rqst.request_id "False" "False" %}" class="btn btn-info btn-review" id="btn-review">Begin Review</a>
+                                            </div>
                                         {% elif file.user_oneeye != None and file.user_oneeye == user and file.date_oneeye == None %}
-                                            <div class="btn-group">
+                                            <div class="btn-group col">
                                                 <a href="{% url 'reviewFile' file.file_id rqst.request_id "False" "True" %}" class="btn btn-success">Complete Review</a>
                                                 <a href="{% url 'reviewFile' file.file_id rqst.request_id "True" "False" %}" class="btn btn-warning">Quit Review</a>
                                             </div>
@@ -196,11 +199,13 @@
                                             {% if file.user_oneeye == user %}
                                                 File waiting for second review
                                             {% else %}
-                                                <a href="{% url 'reviewFile' file.file_id rqst.request_id "False" "False" %}" class="btn btn- btn-review" id="btn-review">Begin Review</a>
+                                                <div class="btn-group col">
+                                                    <a href="{% url 'reviewFile' file.file_id rqst.request_id "False" "False" %}" class="btn btn- btn-review" id="btn-review">Begin Review</a>
+                                                </div>
                                             {% endif %}
                                         {% elif file.user_twoeye != None %}
                                             {% if file.user_twoeye == user and file.date_twoeye == None %}
-                                                <div class="btn-group">
+                                                <div class="btn-group col">
                                                     <a href="{% url 'reviewFile' file.file_id rqst.request_id "False" "True" %}" class="btn btn-success">Complete Review</a>
                                                     <a href="{% url 'reviewFile' file.file_id rqst.request_id "True" "False" %}" class="btn btn-warning">Quit Review</a>
                                                 </div>
@@ -215,8 +220,8 @@
                                             {% endif %}
                                         {% endif %}
                                     {% endif %}
-                                </td>
-                            </tr>
+                                </div>
+                            </div>
                             {% if not file.rejection_reasons.all %}
                                 {% if file.user_oneeye == user and file.date_oneeye == None or file.user_twoeye == user and file.date_twoeye == None%}
                                     {% if file.scan_results == None %}
@@ -228,7 +233,7 @@
                             {% endif %}
 
                         {% endfor %}
-                    </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -262,6 +267,19 @@
         {% endif %}
 
     </div> <!-- END container -->
+    <!-- <script type="importmap">
+        {
+            "imports": {
+                "bootstrap": "{% static '/js/bootstrap.bundle.min.js' %}"
+            }
+        }
+    </script> -->
+    <script type="module">
+        import { Popover } from "{% static '/js/bootstrap.bundle.min.js' %}"
+
+        const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
+        const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new Popover(popoverTriggerEl))
+    </script>
 
     <script>
         let rqst_id = "{{ rqst.request_id }}"
