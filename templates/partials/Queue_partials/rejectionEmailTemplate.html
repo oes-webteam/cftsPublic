@@ -1,25 +1,26 @@
 {% load util %}
 
 {% block email%}
-    %0D%0A%0D%0A
-    As a customer it is your responsibility to follow the policies that govern the use of this service.
-    %0D%0A%0D%0A
-    Our policy is available on the main page of CFTS. We also recommend utilizing the File Review Guide in the Resources.
-    %0D%0A%0D%0A
-    If you have any questions contact the team at DSN: 312-529-3867
-    %0D%0A%0D%0A
-    -----------------------------------------------------------
-    %0D%0A
-    Request: {{rqst.user.name_last}}, {{firstName}} ({{ rqst.date_created|date:'d M' }} {{ rqst.date_created|time:'H:i:s' }})
-    %0D%0A
-    To see the details of your request click the following link: {{url}}
-
-    {% if comments != None %}
-        -----------------------------------------------------------
-        %0D%0A
-        Analyst Comments: {{comments}}
-        %0D%0A
-        To see the details of your request click the following link: {{url}}
-    {% endif %}
-
+    {# fmt:off #}
+%0D%0A%0D%0A
+As a customer it is your responsibility to follow the policies that govern the use of this service.
+%0D%0A%0D%0A
+Our policy is available on the main page of CFTS. We also recommend utilizing the File Review Guide in the Resources.
+%0D%0A%0D%0A
+If you have any questions contact the team at DSN: 312-529-3867
+%0D%0A%0D%0A
+---------------------------------------------------------------------------------
+%0D%0A%0D%0A
+Request: {{rqst.user.name_last}}, {{firstName}} ({{ rqst.date_created|date:'d M' }} {{ rqst.date_created|time:'H:i:s' }})
+{% if comments != None %}
+%0D%0A%0D%0A
+Analyst Comments:%0D%0A
+    {{comments}}
+{% endif %}
+%0D%0A%0D%0A
+To see the details of your request click the following link: {{url}}
+%0D%0A%0D%0A
+---------------------------------------------------------------------------------
+%0D%0A%0D%0A
+    {# fmt:on #}
 {% endblock %}

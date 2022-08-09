@@ -55,6 +55,8 @@ jQuery(document).ready(function () {
         }
     }
 
+    let reloadLocaiton = window.location;
+
 
     $.ajaxSetup({
         beforeSend: function (xhr, settings) {
@@ -103,76 +105,89 @@ jQuery(document).ready(function () {
 
     });
 
+    $(document).on('click', '#modifyRejectionSubmit', function (e) {
+        console.log("rejection modify submit clicked");
+        $('#modifyRejectionSubmit').attr('disabled', 'true');
 
-    $('#rejectionSubmit').click(e => {
-        console.log("rejection submit clicked");
+        const checkedItemsRejected = $(".file-check.rejected:checked[modify]");
+        const checkedReasons = $(".reason-check:checked[modify]");
 
-        const checkedItems = $(".file-check.not-rejected:checked");
-        const checkedItemsRejected = $(".file-check.rejected:checked");
-        const checkedReasons = $(".reason-check:checked");
+        let file_ids = [];
+        let rejectionReasons = [];
+        let reject_text = $("#mod-reject-comments[modify]").val();
 
-        // no files selected to reject or un-reject
-        if (checkedItems.length == 0 && checkedItemsRejected.length == 0) {
-            alert('Select 1 or more files to change rejection status.');
-        }
+        console.log(checkedItemsRejected);
 
-        // selected files are a mix of rejected and not rejected files
-        else if (checkedItems.length > 0 && checkedItemsRejected.length > 0) {
-            alert('Cannot process a mix of rejected and non-rejected files. Rejection and un-rejection are seperate processes. Please select only files to reject or only files to un-reject.');
+        checkedItemsRejected.each(i => {
+            console.log(checkedItemsRejected[i].id.split("_")[1]);
+            file_ids.push(checkedItemsRejected[i].id.split("_")[1]);
+        });
 
-        }
+        console.log(checkedReasons);
 
-        // files to reject
-        else if (checkedItems.length > 0) {
+        checkedReasons.each(i => {
+            rejectionReasons.push(checkedReasons[i].id.split("_")[1]);
+        });
 
-            let file_ids = [];
-            let rejectionReasons = [];
+        rejectFormCallback(file_ids, rejectionReasons, rqst_id, reject_text);
 
-            console.log(checkedItems);
-
-            checkedItems.each(i => {
-                file_ids.push(checkedItems[i].id);
-            });
-
-            console.log(checkedReasons);
-
-            checkedReasons.each(i => {
-                rejectionReasons.push(checkedReasons[i].id);
-            });
-
-            rejectFormCallback(file_ids, rejectionReasons, rqst_id);
-        }
-
-        //files to un-reject
-        else if (checkedItemsRejected.length > 0) {
-            let file_ids = [];
-
-            console.log(checkedItemsRejected);
-
-            checkedItemsRejected.each(i => {
-                file_ids.push(checkedItemsRejected[i].id);
-            });
-            sendUnrejectRequest(file_ids, rqst_id);
-        }
     });
 
 
-    const sendUnrejectRequest = (file_ids, request_id) => {
+    $(document).on('click', '#rejectionSubmit', function (e) {
+        console.log("rejection submit clicked");
+        $('#rejectionSubmit').attr('disabled', 'true');
+
+        const checkedItems = $(".file-check.not-rejected:checked[original]");
+        const checkedReasons = $(".reason-check:checked[original]");
+        let file_ids = [];
+        let rejectionReasons = [];
+        let reject_text = $("#reject-comments").val();
+
+        console.log(checkedItems);
+
+        checkedItems.each(i => {
+            file_ids.push(checkedItems[i].id);
+        });
+
+        console.log(checkedReasons);
+
+        checkedReasons.each(i => {
+            rejectionReasons.push(checkedReasons[i].id);
+        });
+
+        rejectFormCallback(file_ids, rejectionReasons, rqst_id, reject_text);
+    });
+
+    $(document).on('click', '#unrejectionSubmit', function (e) {
+        console.log("unreject submit clicked");
+        $('#unrejectionSubmit').attr('disabled', 'true');
+        const checkedItemsRejected = $(".file-check.rejected:checked[modify]");
+
+        let file_ids = [];
+
+        console.log(checkedItemsRejected);
+
+        checkedItemsRejected.each(i => {
+            file_ids.push(checkedItemsRejected[i].id.split("_")[1]);
+        });
+
         console.log(file_ids);
 
         let csrftoken = getCookie('csrftoken');
 
         const postData = {
-            'request_id': request_id, // doesn't matter which request we grab
+            'request_id': rqst_id, // doesn't matter which request we grab
             'id_list': file_ids
         };
 
-        const setUnrejectOnFiles = $.post('/api-unreject', postData, 'json').then(
+        $.post('/api-unreject', postData, 'json').then(
             // success
             function (resp, status) {
                 console.log('SUCCESS');
-                // notifyUserSuccess("File Unreject Successful")
-                $("#forceReload").submit();
+                //$("#forceReload").submit();
+                console.log(window.location);
+                window.location = reloadLocaiton;
             },
             // fail 
             function (resp, status) {
@@ -185,8 +200,7 @@ jQuery(document).ready(function () {
                 notifyUserError("Error unrejecting file, send error message to web team: " + errorInfo);
             }
         );
-
-    };
+    });
 
 
     /****************************/
@@ -255,13 +269,14 @@ jQuery(document).ready(function () {
     };
 
     // REJECTION MODAL INPUT VALIDATION AND ACTION
-    const rejectFormCallback = (file_ids, reasons, request_id) => {
+    const rejectFormCallback = (file_ids, reasons, request_id, reject_text) => {
         let csrftoken = getCookie('csrftoken');
 
         const postData = {
             'reject_id': reasons,
             'request_id': request_id, // doesn't matter which request we grab
-            'id_list': file_ids
+            'id_list': file_ids,
+            'reject_text': reject_text
         };
 
         const setRejectOnFiles = $.post('/api-setreject', postData, 'json').then(
@@ -279,11 +294,12 @@ jQuery(document).ready(function () {
                         $(this)[0].click();
                     });
                 }
+                console.log(reloadLocaiton);
                 // reload the page from server
                 if (resp.flash == false) {
-                    window.location = window.location + '?flash=false';
+                    window.location = reloadLocaiton + '?flash=false';
                 } else {
-                    window.location = window.location;
+                    window.location = reloadLocaiton;
                 }
             },
             // fail 

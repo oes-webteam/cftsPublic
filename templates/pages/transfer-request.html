@@ -14,48 +14,55 @@
         <div class="modal fade" id="rejectModal" tabindex="-1" role="dialog" aria-labelledby="rejectModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modial-diolog-scrollable modal-lg" role="document">
                 <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="rejectModalLabel">Select Files to Reject</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
+                    <form>
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="rejectModalLabel">Select Files to Reject</h5>
+                            <button type="button" class="btn-close" onclick="closeModal('#rejectModal')"></button>
+                        </div>
 
-                    <div class="modal-body">
-                        {% for file in rqst.files.all %}
-                            <input type="checkbox" class="btn-check file-check {% if file.rejection_reasons.all %}rejected {% else %}not-rejected {% endif %}" id="{{file.file_id}}" autocomplete="off">
-                            <label class="btn btn-outline-primary btn-rejection my-1 {% if file.rejection_reasons.all %}rejected {% else %}not-rejected {% endif %}" for="{{file.file_id}}">{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</label>
-                        {% endfor %}
-                    </div>
+                        <div class="modal-body">
+                            {% for file in rqst.files.all %}
+                                <input type="checkbox" class="btn-check file-check {% if file.rejection_reasons.all %}rejected {% else %}not-rejected {% endif %}" id="{{file.file_id}}" autocomplete="off" original>
+                                <label class="btn btn-outline-primary btn-rejection my-1 {% if file.rejection_reasons.all %}rejected {% else %}not-rejected {% endif %}" {% if file.rejection_reasons.all %}onclick="getRejectModal(this)"{% endif %} for="{{file.file_id}}">{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</label>
+                            {% endfor %}
+                        </div>
 
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="rejectModalLabel">Select Rejection Reasons</h5>
-                    </div>
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="rejectModalLabel">Select Rejection Reasons</h5>
+                        </div>
 
-                    <div class="modal-body">
-                        {% for reason in rejections %}
-                            <input type="checkbox" class="btn-check reason-check" id="{{reason.rejection_id}}">
-                            <label class="btn btn-outline-danger btn-rejection-label my-1" for="{{reason.rejection_id}}">{{reason.name}}</label>
-                        {% endfor %}
-                    </div>
+                        <div class="modal-body">
+                            {% for reason in rejections %}
+                                <input type="checkbox" class="btn-check reason-check" id="{{reason.rejection_id}}" original>
+                                <label class="btn btn-outline-danger btn-rejection-label my-1" for="{{reason.rejection_id}}">{{reason.name}}</label>
+                            {% endfor %}
+                        </div>
 
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="rejectModalLabel">Comments to User (optional)</h5>
-                    </div>
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="rejectModalLabel">Comments to User (optional)</h5>
+                        </div>
 
-                    <div class="modal-body">
-                        <form>
-                            <div class="mb-3">
-                                <textarea type="text" class="form-control" id="reject-comments" placeholder="Users will see what you type here."></textarea>
-                            </div>
-                        </form>
-                    </div>
+                        <div class="modal-body">
+                            <form>
+                                <div class="mb-3">
+                                    <textarea type="text" class="form-control" id="reject-comments" placeholder="Users will see what you type here." original></textarea>
+                                </div>
+                            </form>
+                        </div>
+                    </form>
 
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" id="rejectionSubmit" class="btn btn-primary" data-bs-dismiss="modal">Submit</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('#rejectModal')">Cancel</button>
+                        <button type="button" id="rejectionSubmit" class="btn btn-primary">Submit</button>
                     </div>
                 </div>
             </div>
         </div>
+
+        <div class="modal fade" id="modifyRejectModal" tabindex="-1" role="dialog" aria-labelledby="modifyRejectModalLabel" aria-hidden="true">
+
+        </div>
+
         <div class="row button-row sticky-top bg-white mb-4 pt-3">
             <div class="col-6">
                 <div class="btn-group">
@@ -94,7 +101,7 @@
                     {% if rqst.network.cfts_deployed == False %}
                         <a href="#" class="btn btn-warning request-encrypt">Encrypt Files</a>
                     {% endif %}
-                    <a href="#" class="btn btn-danger request-reject" data-bs-toggle="modal" data-bs-target="#rejectModal">Reject Files</a>
+                    <button class="btn btn-danger request-reject" onclick="openModal('#rejectModal')">Reject Files</button>
                     <a href="{% url 'scan' rqst.request_id %}" class="btn btn-info">Rescan Files</a>
                 </div>
 
@@ -161,7 +168,19 @@
                                 </div>
                                 <div class="file-right col p-1">
                                     {% if file.rejection_reasons.all %}
-                                        <button class="btn btn-danger" type="button" data-bs-toggle="popover" data-bs-container="body" data-bs-placement="bottom" data-bs-content="test">File rejected for {{file.rejection_reasons.all|length}} reason{{file.rejection_reasons.all|length|pluralize}}</button>
+                                        <button class="btn btn-danger" type="button" data-bs-toggle="popover" data-bs-html="true" data-bs-title="Rejection Reasons" data-bs-container="body" data-bs-placement="bottom" data-bs-trigger="hover focus"
+                                            data-bs-content="
+                                                <ul>
+                                                {% for rejection in file.rejection_reasons.all %}
+                                                    <li>{{rejection.name}}</li>
+                                                {% endfor %}
+                                                {% if file.rejection_text != none and file.rejection_text != '' %}
+                                                    <li>Comments:</li>
+                                                    <ul>
+                                                        <li>{{file.rejection_text}}</li>
+                                                    </ul>
+                                                {% endif %}
+                                            </ul>">File rejected for {{file.rejection_reasons.all|length}} reason{{file.rejection_reasons.all|length|pluralize}}</button>
                                         </div>
 
                                         <div class="rejections-row row collapse" id="reasons_{{file.file_id}}">
@@ -267,24 +286,54 @@
         {% endif %}
 
     </div> <!-- END container -->
-    <!-- <script type="importmap">
-        {
-            "imports": {
-                "bootstrap": "{% static '/js/bootstrap.bundle.min.js' %}"
-            }
-        }
-    </script> -->
-    <script type="module">
-        import { Popover } from "{% static '/js/bootstrap.bundle.min.js' %}"
 
-        const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
-        const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new Popover(popoverTriggerEl))
+    <div class="modal-backdrop fade" style="display: none;"></div>
+
+    <script type="text/javascript">
+        var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+        var popoverList = popoverTriggerList.map(function(popoverTriggerEl){
+            return new bootstrap.Popover(popoverTriggerEl);
+        });
+    </script>
+
+    <script>
+        function getRejectModal(elem){
+            //Add the CSRF token to ajax requests
+            $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+                },
+            });
+
+            fileID = $(elem).attr('for')
+            $('#'+fileID).prop('checked', 'false')
+            $.ajax({
+                type: "GET",
+                url: "/getRejectModal/" + fileID,
+                success: function(response) {
+                    $("#modifyRejectModal").html(response)
+                    $("#rejectModal").hide().removeClass('show').attr('aria-hidden', "true").removeAttr('aria-modal').removeAttr('role').find('form').trigger('reset')
+                    $("#modifyRejectModal").show().addClass('show')
+                }
+            });
+        }
+
+        function openModal(elem){
+            $(elem).show().addClass('show')
+            $('.modal-backdrop').show().addClass('show')
+            $('body').addClass('modal-open').attr('style','style="overflow: hidden; padding-right: 0px;"')
+        }
+
+        function closeModal(elem){
+            $(elem).hide().removeClass('show')
+            $('.modal-backdrop').hide().removeClass('show')
+            $('body').removeClass('modal-open').removeAttr('style')
+            $('.modal').find('form').trigger('reset')
+        }
     </script>
 
     <script>
         let rqst_id = "{{ rqst.request_id }}"
-    </script>
-    <script>
         let user_id = "{{user_id }}"
     </script>
     {% include 'partials/_forceReloadForm.html' %}

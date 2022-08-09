@@ -82,20 +82,20 @@
                 <td class="xfer-date">{{ rc.request.date_created|date:"m/d/Y Hi" }}</td>
                 <td class="xfer-net">{{ rc.request.network }}</td>
                 <td class="xfer-files">
-                    <ul class="file-list">
+                    <ol class="file-list">
                         {%  for f in rc.request.files.all %}
                             {% with f.file_object.name|split:"/" as name %}
-                                <li class="{% if f.rejection_reasons != Null %}rejected{% endif %}" x-file-name="{{ name.2 }}">{{ name.2|truncatechars:50 }}</li>
+                                <li class="{% if f.rejection_reasons.all %}rejected{% endif %}" x-file-name="{{ name.2 }}">{{ name.2|truncatechars:50 }}</li>
                             {% endwith %}
                         {% endfor %}
-                    </ul>
+                    </ol>
                 </td>
                 <td class="xfer-email">
-                    <ul class="email-list">
+                    <ol class="email-list">
                         {%  for e in rc.request.target_email.all %}
                             <li>{{e}}</li>
                         {% endfor %}
-                    </ul>
+                    </ol>
                 </td>
 
             </tr>
@@ -109,20 +109,47 @@
                     <th>Explanation</th>
                 </tr>
                 {%  for f in rc.request.files.all %}
-                    {% if f.rejection_reasons != Null %}
-                        <tr class="data-row">
-                            <td class="xfer-files">
-                                {% with f.file_object.name|split:"/" as name %}
-                                    <p x-file-name="{{ name.2 }}">{{ name.2|truncatechars:50 }}</p>
-                                {% endwith %}
-                            </td>
-                            <td>
-                                <p>{{f.rejection_reasons}}</p>
-                            </td>
-                            <td>
-                                {{f.rejection_reasons.text|linebreaks}}
-                            </td>
-                        </tr>
+                    {% if f.rejection_reasons.all %}
+                        {% for reason in f.rejection_reasons.all %}
+                            {% if reason.name != "Duplicate - No Email" %}
+                                <tr class="data-row">
+                                    <td class="xfer-files">
+                                        {% if forloop.first %}
+                                            {% with f.file_object.name|split:"/" as name %}
+                                                <p x-file-name="{{ name.2 }}">{{ name.2|truncatechars:50 }}</p>
+                                            {% endwith %}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <ul  class="mb-1">
+                                            <li>{{reason.name}}</li>
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <ul  class="mb-1">
+                                            <li>{{reason.text}}</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if f.rejection_text != none and f.rejection_text != '' %}
+                            <tr class="data-row">
+                                <td class="xfer-files">
+                                </td>
+                                <td>
+                                    <ul  class="mb-1">
+                                        <li>Analyst Comments</li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ul  class="mb-1">
+                                        <li>{{f.rejection_text}}</li>
+                                    </ul>
+                                </td>
+                            </tr>
+                        {% endif %}
                     {% endif %}
                 {% endfor %}
             </table>

@@ -293,6 +293,14 @@ def transferRequest(request, id):
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
+def getRejectModal(request, fileID):
+    file = File.objects.get(file_id=fileID)
+    rejections = Rejection.objects.filter(visible=True)
+    return render(request, 'partials/Queue_partials/rejectionModalTemplate.html', {'file': file, 'rejections': rejections})
+
+
+@login_required
+@user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def requestNotes(request, requestid):
     """
     The function takes the notes entered on the request details page, updates the notes field on the

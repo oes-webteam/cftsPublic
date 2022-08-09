@@ -33,6 +33,7 @@ urlpatterns = [
     path('updateFileReview/<uuid:fileID>/<uuid:rqstID>/<str:quit>/<str:completeReview>', views.updateFileReview, name='reviewFile'),
     path('getFile/<str:folder>/<str:fileID>/<str:fileName>', views.getFile, name='getFile'),
     path('removeFileReviewer/<int:stage>', views.removeFileReviewer, name='removeReview'),
+    path('getRejectModal/<uuid:fileID>', views.getRejectModal, name='getRejectModal'),
 
     # drops
     path('drop-zone', views.dropZone, name='drop-zone'),

@@ -95,6 +95,8 @@ def setReject(request):
     request_id = postData['request_id']
     id_list = postData['id_list[]']
 
+    rejection_text = postData['reject_text'][0]
+
     # Update the files to set the rejection
     files = File.objects.filter(file_id__in=id_list)
 
@@ -105,7 +107,12 @@ def setReject(request):
     # Update files review status because a rejected file counts as fully reviewed
     # skipComplete will prevent a files review status from progressing forward when calling updateFileReview()
     for file in files:
+        file.rejection_reasons.clear()
         file.rejection_reasons.add(*reasons)
+        if rejection_text != None and rejection_text != "" and rejection_text != '':
+            file.rejection_text = rejection_text
+            file.save()
+
         ready_to_pull = updateFileReview(request, file.file_id, request_id[0], skipComplete=True)
 
     # Check if all files in the request are rejected
@@ -222,6 +229,8 @@ def unReject(request):
     # For safety any unrejected file is no longer considered reviewed
     for file in files:
         file.rejection_reasons.clear()
+        file.rejection_text = None
+        file.save()
         updateFileReview(request, file.file_id, request_id[0], skipComplete=True)
 
     # Checking if any of the files in the request has a rejection reason. If it does, it sets the
