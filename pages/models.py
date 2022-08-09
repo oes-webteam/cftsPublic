@@ -166,8 +166,7 @@ class File(models.Model):
     file_hash = models.CharField(max_length=40, blank=True, null=True)
     is_pii = models.BooleanField(default=False)
     is_centcom = models.BooleanField(default=False)
-    rejection_reason = models.ForeignKey(
-        Rejection, on_delete=models.DO_NOTHING, null=True, blank=True)
+    rejection_reasons = models.ManyToManyField(Rejection, related_name='file_rejection_reasons', blank=True)
     rejection_text = models.TextField(default=None, blank=True, null=True)
     org = models.CharField(max_length=50, default="")
     NDCI = models.BooleanField(default=False)

@@ -32,10 +32,10 @@
                     {% endif %}
                 {% endif %}
 
-                <ul class="{% if request.pull != None %}pending {% endif %}{% if file.rejection_reason != None %}rejected {% endif %} mb-5">
+                <ul class="{% if request.pull != None %}pending {% endif %}{% if file.rejection_reasons.all %}rejected {% endif %} mb-5">
                     {% for file in request.files.all|slice:":4" %}
                         <li class="m-2">
-                            <p class="card-text {% if file.rejection_reason != None %} rejected {% else %} not-rejected {% endif %}" title="{{ file }}">
+                            <p class="card-text {% if file.rejection_reasons.all %} rejected {% else %} not-rejected {% endif %}" title="{{ file }}">
                                 {% if file.is_pii or request.network.cfts_deployed %}
                                     <span title="PII: {{ file.is_pii }}">🔒</span>
                                 {% endif %}

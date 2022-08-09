@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 <!-- view wrapper -->
-{% load static %} {% block content %}
+{% load static %}
+{% block content %}
     <!-- begin content block variable -->
     <link rel="stylesheet" href="{% static 'css/frontend.css' %}" />
-
 
     <!--Cards Start Here -->
     <section id="boxes">
@@ -131,7 +131,7 @@
                     <!-- end #form-row -->
                     <div class="row" id="button-row">
                         <div class="col-md-4"></div>
-                        <div class="col-md-4 mt-3 text-center d-grid gap-2">
+                        <div class="col-md-4 mt-2 text-center d-grid gap-2">
                             <button class="btn btn-secondary" id="submitButton" role="button" {% if rc.userBanned or rc.networks.items|length == 0 %}disabled{% endif %}>Submit</button>
                         </div>
                         <div class="col-md-4"></div>
@@ -142,7 +142,6 @@
         </div>
         <!-- end .container -->
     </section>
-
     <script>
         var firstName = "{{rc.user.name_first}}";
         var lastName = "{{rc.user.name_last}}";

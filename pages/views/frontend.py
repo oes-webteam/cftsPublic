@@ -16,9 +16,6 @@ from pages.models import *
 from pages.views.auth import getCert, getOrCreateUser
 from pages.views.apis import setConsentCookie
 
-import logging
-
-logger = logging.getLogger('django')
 # ====================================================================
 
 # function to return a dictionary of Network and Email objects from a User objects destination_emails field
@@ -69,7 +66,6 @@ def checkBan(cftsUser):
 # function to serve the main transfer request page
 # decorators to validate that the template contains a csrf token, because it was being stripped out of some requests
 @ensure_csrf_cookie
-@never_cache
 def frontend(request):
     # detect what browser a user is visiting from
     browser = request.user_agent.browser.family
@@ -93,11 +89,8 @@ def frontend(request):
         certInfo = getCert(request)
         cftsUser = getOrCreateUser(request, certInfo)
 
-
         # redirect user to login page or info edit page
-        if cftsUser == False:
-            return render(request, 'pages/frontend.html', {'rc': {'error': True, 'submission_disabled': DISABLE_SUBMISSIONS, 'debug': str(DEBUG), 'resources': resources, 'browser': browser}})
-        elif request.user.is_authenticated == False and certInfo['status'] == "empty" or certInfo['status'] == "buggedPKI":
+        if request.user.is_authenticated == False and certInfo['status'] == "empty" or certInfo['status'] == "buggedPKI":
             if DEBUG == True:
                 return redirect("/login")
             elif DEBUG == False:

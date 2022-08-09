@@ -3,29 +3,29 @@
 {% block scanResult %}
 
     {% if empty == True %}
-        <tr class="file-row">
-            <td colspan="2">
+        <div class="row file-row">
+            <div class="col" colspan="2">
                 <ul class="scanned-list">
                     <li>File never scanned. Click the "Rescan Files" button to rerun scan.</li>
                 </ul>
-            </td>
-        </tr>
+            </div>
+        </div>
     {% else %}
         {% for result in results %}
             {% if result == "empty" %}
                 {% if pull == True %}
                 {% else %}
-                    <tr class="file-row">
-                        <td colspan="2">
+                    <div class="row file-row">
+                        <div class="col" colspan="2">
                             <ul class="scanned-list">
                                 <li>Clean scan</li>
                             </ul>
-                        </td>
-                    </tr>
+                        </div>
+                    </div>
                 {% endif %}
             {% else %}
-                <tr class="file-row">
-                    <td colspan="2">
+                <div class="row file-row">
+                    <div class="col" colspan="2">
                         <ul class="scanned-list">
                             {% if result.imgCount %}
                                 {% if pull == True %}
@@ -44,8 +44,8 @@
                                 </li>
                             {% endfor %}
                         </ul>
-                    </td>
-                </tr>
+                    </div>
+                </div>
             {% endif %}
         {% endfor %}
     {% endif %}
