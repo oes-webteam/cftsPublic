@@ -66,7 +66,6 @@ def checkBan(cftsUser):
 # function to serve the main transfer request page
 # decorators to validate that the template contains a csrf token, because it was being stripped out of some requests
 @ensure_csrf_cookie
-@never_cache
 def frontend(request):
     # detect what browser a user is visiting from
     browser = request.user_agent.browser.family

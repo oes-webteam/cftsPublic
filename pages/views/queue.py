@@ -47,7 +47,6 @@ logger = logging.getLogger('django')
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 @ensure_csrf_cookie
-@never_cache
 def queue(request):
     """
     It takes a request object, queries the database for all the requests that are not part of a
@@ -222,7 +221,6 @@ def queue(request):
     return render(request, 'pages/queue.html', {'rc': rc})
 
 @login_required
-@never_cache
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def transferRequest(request, id):
     """

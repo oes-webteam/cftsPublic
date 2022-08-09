@@ -143,19 +143,19 @@ def setReject(request):
     # Normally rejecting a file would also generate an email to go along with it, but that gets really annoying when doing dev work so emails are disabled when DEBUG==True
     # If DEBUG==False then we call createEml() and return the email generated with a JSON response
 
-    # if DEBUG == True:
-    #     if ready_to_pull == True:
-    #         messages.success(request, "All files in request have been fully reviewed. Request ready to pull")
-    #         return JsonResponse({'debug': True, 'flash': False})
-    #     else:
-    #         return JsonResponse({'debug': True})
-    # else:
-    eml = createEml(request, request_id, id_list, reasons)
-    if ready_to_pull == True:
-        messages.success(request, "All files in request have been fully reviewed. Request ready to pull")
-        return JsonResponse({'eml': str(eml), 'flash': False})
+    if DEBUG == True:
+        if ready_to_pull == True:
+            messages.success(request, "All files in request have been fully reviewed. Request ready to pull")
+            return JsonResponse({'debug': True, 'flash': False})
+        else:
+            return JsonResponse({'debug': True})
     else:
-        return JsonResponse({'eml': str(eml)})
+        eml = createEml(request, request_id, id_list, reasons)
+        if ready_to_pull == True:
+            messages.success(request, "All files in request have been fully reviewed. Request ready to pull")
+            return JsonResponse({'eml': str(eml), 'flash': False})
+        else:
+            return JsonResponse({'eml': str(eml)})
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
@@ -679,7 +679,6 @@ def process(request):
 
     return JsonResponse(resp)
 
-@never_cache
 def setConsentCookie(request):
     """
     The function sets a session cookie called 'consent' with a value of 'consent given' and sets the

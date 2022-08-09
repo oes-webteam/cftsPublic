@@ -76,7 +76,7 @@ input[type="checkbox"] {
     height: 192px;
     font-size: medium;
     text-align: center;
-    line-height: 175px;
+    padding-top: 5rem !important;
 }
 
 /* end ddGlobal */
