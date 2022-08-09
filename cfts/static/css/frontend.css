@@ -151,5 +151,47 @@ h6.isCentcom {
 }
 
 .form-switch{
-    margin-left: 2.5rem;
+    /* margin-left: 2.5rem; */
+    margin-left: 1rem;
+}
+
+.btn-rejection-input:focus, .btn-rejection-label:focus, .btn-check:focus + .btn{
+    outline: none;
+    box-shadow: none;
+}
+
+.btn-rejection-label:focus, .btn-check:focus + .btn{
+    color: var(--bs-btn-color);
+    background-color: var(--bs-btn-bg);
+    border-color: var(--bs-btn-border-color);
+}
+
+.btn-check:checked + .btn, .btn-check:active + .btn, .btn:active, .btn.active, .btn.show {
+	color: var(--bs-btn-active-color) !important;
+	background-color: var(--bs-btn-active-bg) !important;
+	border-color: var(--bs-btn-active-border-color) !important;
+}
+
+.row.form-check.row-cols-3{
+    --bs-gutter-x: 1.5rem !important;
+    --bs-gutter-y: 0 !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    margin-top: calc(-1 * var(--bs-gutter-y)) !important;
+    margin-right: calc(-.5 * var(--bs-gutter-x)) !important;
+    margin-left: calc(-.5 * var(--bs-gutter-x)) !important;
+    min-height: unset;
+    padding-left: unset;
+    margin-bottom: unset;
+}
+
+.form-check-input.is-invalid~.form-check-label, .was-validated .form-check-input:invalid~.form-check-label {
+    color: #dc3545;
+    --bs-btn-border-color: #dc3545;
+}
+
+.form-check-input.is-valid~.form-check-label, .was-validated .form-check-input:valid~.form-check-label {
+    color: #198754;
+    --bs-btn-active-bg: #198754;
+    --bs-btn-border-color: #198754;
 }

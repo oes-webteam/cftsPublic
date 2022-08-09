@@ -64,15 +64,6 @@
     justify-content: space-between;
 }
 
-/* .button-row {
-    top: 130px;
-} */
-
-/* .alert {
-    margin-top: 8rem;
-    margin-bottom: -7rem;
-} */
-
 .text-red {
     color: red;
 }
@@ -80,10 +71,6 @@
 .text-yellow {
     color: #ffae00;
 }
-
-/* .btn-info, .btn-info:hover, .btn-info:disabled, .btn-info:active{
-    color: #fff
-} */
 
 
 .btn-review {
