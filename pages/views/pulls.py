@@ -34,6 +34,7 @@ def getReviewers(pull):
 # function to serve the pulls history page, only available to staff users
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
+@never_cache
 def pulls(request):
     # request context
     rc = {

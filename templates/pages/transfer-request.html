@@ -23,7 +23,9 @@
                         <div class="modal-body">
                             {% for file in rqst.files.all %}
                                 <input type="checkbox" class="btn-check file-check {% if file.rejection_reasons.all %}rejected {% else %}not-rejected {% endif %}" id="{{file.file_id}}" autocomplete="off" original>
-                                <label class="btn btn-outline-primary btn-rejection my-1 {% if file.rejection_reasons.all %}rejected {% else %}not-rejected {% endif %}" {% if file.rejection_reasons.all %}onclick="getRejectModal(this)"{% endif %} for="{{file.file_id}}">{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</label>
+                                <label class="btn btn-outline-primary btn-rejection my-1 {% if file.rejection_reasons.all %}rejected {% else %}not-rejected {% endif %}" {% if file.rejection_reasons.all %}onclick="getRejectModal(this)"{% endif %} for="{{file.file_id}}">{% if file.is_pii or rqst.network.cfts_deployed %}
+                                    <span title="PII: {{ file.is_pii }}&#10;">🔒</span>
+                                {% endif %}{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</label>
                             {% endfor %}
                         </div>
 
@@ -57,6 +59,65 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div class="modal fade" id="reviewModal" tabindex="-1" role="dialog" aria-labelledby="reviewModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modial-diolog-scrollable modal-lg" role="document">
+                <div class="modal-content">
+                    <form>
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="reviewModalLabel">Select Files to Reject</h5>
+                            <button type="button" class="btn-close" onclick="closeModal('#reviewModal')"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            {% for file in rqst.files.all %}
+                                <input type="checkbox" class="btn-check file-check {% if file.rejection_reasons.all %}rejected {% else %}not-rejected {% endif %}" id="review_{{file.file_id}}" autocomplete="off" original>
+                                <label class="btn btn-outline-primary btn-rejection my-1 {% if file.rejection_reasons.all %}rejected {% else %}not-rejected {% endif %}" onclick="getReviewModal(this)" for="review_{{file.file_id}}">{% if file.is_pii or rqst.network.cfts_deployed %}
+                                    <span title="PII: {{ file.is_pii }}&#10;">🔒</span>
+                                {% endif %}{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</label>
+                            {% endfor %}
+                        </div>
+                    </form>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('#reviewModal')">Cancel</button>
+                        <button type="button" id="reviewModalSubmit" class="btn btn-primary">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="encryptModal" tabindex="-1" role="dialog" aria-labelledby="encryptModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modial-diolog-scrollable modal-lg" role="document">
+                <div class="modal-content">
+                    <form>
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="encryptModalLabel">Select Files to Encrypt</h5>
+                            <button type="button" class="btn-close" onclick="closeModal('#encryptModal')"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            {% for file in rqst.files.all %}
+                                {% if file.is_pii == False %}
+                                    <input type="checkbox" class="btn-check file-check encrypt" id="encrypt_{{file.file_id}}" autocomplete="off">
+                                    <label class="btn btn-outline-warning btn-encrypt my-1" for="encrypt_{{file.file_id}}">{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</label>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                    </form>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('#encryptModal')">Cancel</button>
+                        <button type="button" id="encryptSubmit" class="btn btn-primary">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modifyReviewModal" tabindex="-1" role="dialog" aria-labelledby="modifyReviewModalLabel" aria-hidden="true">
+
         </div>
 
         <div class="modal fade" id="modifyRejectModal" tabindex="-1" role="dialog" aria-labelledby="modifyRejectModalLabel" aria-hidden="true">
@@ -99,18 +160,21 @@
             <div class="col-6">
                 <div class="btn-group">
                     {% if rqst.network.cfts_deployed == False %}
-                        <a href="#" class="btn btn-warning request-encrypt">Encrypt Files</a>
+                        <a href="#" class="btn btn-warning request-encrypt" onclick="openModal('#encryptModal')">Encrypt Files</a>
                     {% endif %}
                     <button class="btn btn-danger request-reject" onclick="openModal('#rejectModal')">Reject Files</button>
                     <a href="{% url 'scan' rqst.request_id %}" class="btn btn-info">Rescan Files</a>
+                    {% if user.is_superuser %}
+                        <a href="#" class="btn btn-primary request-remove one-eye"  onclick="openModal('#reviewModal')">Remove Reviewer</a>
+                    {% endif %}
                 </div>
-
+                {% comment %}
                 {% if user.is_superuser %}
                     <div class="btn-group ms-3">
                         <a href="#" class="btn btn-info request-remove one-eye" rqst_id="{{rqst.request_id}}">Remove One Eyer</a>
                         <a href="#" class="btn btn-primary request-remove two-eye" rqst_id="{{rqst.request_id}}">Remove Two Eyer</a>
                     </div>
-                {% endif %}
+                {% endif %} {% endcomment %}
 
             </div>
         </div>
@@ -307,6 +371,27 @@
                     $("#modifyRejectModal").html(response)
                     $("#rejectModal").hide().removeClass('show').attr('aria-hidden', "true").removeAttr('aria-modal').removeAttr('role').find('form').trigger('reset')
                     $("#modifyRejectModal").show().addClass('show')
+                }
+            });
+        }
+
+        function getReviewModal(elem){
+            //Add the CSRF token to ajax requests
+            $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+                },
+            });
+
+            fileID = $(elem).attr('for').split('_')[1]
+            $('#'+fileID).prop('checked', 'false')
+            $.ajax({
+                type: "GET",
+                url: "/getReviewModal/" + fileID,
+                success: function(response) {
+                    $("#modifyReviewModal").html(response)
+                    $("#reviewModal").hide().removeClass('show').attr('aria-hidden', "true").removeAttr('aria-modal').removeAttr('role').find('form').trigger('reset')
+                    $("#modifyReviewModal").show().addClass('show')
                 }
             });
         }

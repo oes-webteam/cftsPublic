@@ -95,13 +95,15 @@
                                 <div class="card-body">
                                     <h3 class="text-gray-dark">Transfer To</h3>
                                     {% if rc.networks.items|length > 0%}
-                                        <div style="display: grid; grid-template-columns: 50% 50%; justify-items: start;">
-                                            {% for net, email in rc.networks.items %}
-                                                <div class="form-check form-switch my-2">
-                                                    <input type="radio" name="network" class="form-check-input network-switch mt-1" style="transform: scale(1.3);" id="switch{{ net }}" value="{{ net }}" email="{{ email }}" />
-                                                    <label class="form-check-label ms-1" style="font-size: medium;" for="switch{{ net }}">{{ net }}</label>
-                                                </div>
-                                            {% endfor %}
+                                        <div class="container input-group mb-3 m-0 p-0 text-center" >
+                                            <div class="row form-check form-switch row-cols-4">
+                                                {% for net, email in rc.networks.items %}
+                                                    <div class="col px-1">
+                                                        <input type="radio" name="network" class="btn-check form-check-input reason-check" id="switch{{ net }}" value="{{ net }}" />
+                                                        <label class="btn btn-sm text-nowrap form-radio btn-outline-secondary form-check-label network-switch w-100 btn-rejection-label my-1" style="font-size: medium;"  for="switch{{ net }}" email="{{ email }}">{{ net }}</label>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
                                         </div>
                                     {% else %}
                                         <h6 class="text-gray-dark">To add destination networks, save valid emails <a href="{% url 'user-info' %}">here</a></h6>
@@ -109,20 +111,34 @@
 
 
                                     <h3 class="text-gray-dark">Destination Email</h3>
-                                    <div class="mb-3 input-group" id="targetEmailGroup">
+                                    <div class="mb-4 input-group" id="targetEmailGroup">
                                         <input type="email" class="form-control" name="targetEmail" id="targetEmail" aria-describedby="targetEmailHelp targetEmailRequired" placeholder="Email Address" required readonly />
                                         <span class="w-100"></span>
                                         <small id="targetEmailHelp" class="form-text text-muted">on the target network</small>
                                     </div>
 
                                     <h4 class="text-gray-dark" >Reliable Human Reviewer</h4>
-                                    <div class="mb-3 input-group" id="RHREmailGroup">
+                                    <div class="mb-4 input-group" id="RHREmailGroup">
                                         <span class="input-group-text" id="RHREmailRequired">*</span>
                                         <input type="email" class="form-control" name="RHREmail" id="RHREmail" aria-describedby="RHREmailHelp RHREmailRequired" placeholder="Email Address (Not Your Own)" required />
                                         <span class="w-100"></span>
                                         <small id="RHREmailHelp" class="form-text text-muted">on this network</small>
                                     </div>
 
+                                    <div id="fileCategoryChoose" style="display: none;">
+                                        <h3 class="text-gray-dark" >File Categories</h4>
+                                        <div class="container input-group mb-3 m-0 p-0 text-center">
+                                            <div class="row form-check form-switch">
+                                                {% for category in rc.categories %}
+                                                    <div class="col px-1">
+                                                        <input type="checkbox" name="fileCategory" class="btn-check form-check-input reason-check" id="{{category.file_category_id}}" value="{{category.file_category}}" />
+                                                        <label class="btn btn-sm text-nowrap form-radio btn-outline-secondary form-check-label file-category-switch w-100 btn-rejection-label my-1" style="font-size: medium;"  for="{{category.file_category_id}}">{{category.file_category}}</label>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                            <small id="FileCategoryHelp" class="form-text text-muted">choose all that apply</small>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -150,6 +166,7 @@
         var org = "{{rc.user.org}}";
         var userBanned = "{{rc.userBanned}}";
         var debug = "{{rc.debug}}"
+        var currentNet = "{{rc.network}}"
     </script>
     <script src="{% static 'js/notification.js' %}"></script>
     <script src="{% static 'js/frontend.js' %}"></script>

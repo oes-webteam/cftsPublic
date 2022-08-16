@@ -23,6 +23,13 @@ $.ajaxSetup({
 $('.network-switch').click(function () {
     let destEmail = $(this).attr('email');
     $('#targetEmail').val(destEmail);
+
+    if ($(this).attr('for') == "switchNIPR" && currentNet == "SIPR") {
+        $('#fileCategoryChoose').show();
+    } else {
+        $('#fileCategoryChoose').hide();
+    }
+
 });
 
 /* ********************************************************* */
@@ -196,28 +203,6 @@ const removeFileFromQueue = (e) => {
 /* ***************************************** */
 /* ADD/REMOVE HIGHLIGHTING TO/FROM DROP ZONE */
 /* ***************************************** */
-// addHighlight = (e) => dropArea.classList.add('highlight-active');
-// removeHighlight = (e) => dropArea.classList.remove('highlight-active');
-
-/* *************** */
-/* EVENT LISTENERS */
-/* *************** */
-// prevent default actions for all these events
-// ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-//     dropArea.addEventListener(eventName, preventDefaults, false);
-// });
-
-// // add/remove highlighting to/from drop zone
-// ['dragenter', 'dragover'].forEach(eventName => {
-//     dropArea.addEventListener(eventName, addHighlight, false);
-// });
-// ['dragleave', 'drop'].forEach(eventName => {
-//     dropArea.addEventListener(eventName, removeHighlight, false);
-// });
-
-// // the add files handler for the drop zone and file field
-// dropArea.addEventListener('drop', addFiles, false);
-// filesInput.addEventListener('change', addFiles, false);
 
 addHighlight = (e) => dropArea.classList.add('highlight-active');
 removeHighlight = (e) => dropArea.classList.remove('highlight-active');

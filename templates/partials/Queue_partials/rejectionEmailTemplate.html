@@ -1,7 +1,5 @@
-{% load util %}
-
-{% block email%}
-    {# fmt:off #}
+{# fmt:off #}
+{% if EMAIL_HOST == '' %}
 %0D%0A%0D%0A
 As a customer it is your responsibility to follow the policies that govern the use of this service.
 %0D%0A%0D%0A
@@ -22,5 +20,22 @@ To see the details of your request click the following link: {{url}}
 %0D%0A%0D%0A
 ---------------------------------------------------------------------------------
 %0D%0A%0D%0A
-    {# fmt:on #}
-{% endblock %}
+{% else %}
+
+As a customer it is your responsibility to follow the policies that govern the use of this service.
+
+Our policy is available on the main page of CFTS. We also recommend utilizing the File Review Guide in the Resources.
+
+If you have any questions contact the team at DSN: 312-529-3867
+
+---------------------------------------------------------------------------------
+Request: {{rqst.user.name_last}}, {{firstName}} ({{ rqst.date_created|date:'d M' }} {{ rqst.date_created|time:'H:i:s' }})
+{% if comments != None %}
+Analyst Comments:
+    {{comments}}
+{% endif %}
+To see the details of your request click the following link: {{url}}
+---------------------------------------------------------------------------------
+
+{% endif %}
+{# fmt:on #}

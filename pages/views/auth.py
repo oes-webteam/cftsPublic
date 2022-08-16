@@ -7,7 +7,7 @@ from django.contrib.auth import login, authenticate
 from django.contrib import messages
 
 from pages.models import Network, User, Email, ResourceLink
-from cfts.settings import NETWORK, DEBUG
+from cfts.settings import NETWORK, DEBUG, IM_ORGBOX_EMAIL
 import logging
 
 logger = logging.getLogger('django')
@@ -297,8 +297,8 @@ def editUserInfo(request):
         # validity check failed, serve the instantiated form back to the user, it will contain helpful error messages for them
         else:
             messages.error(request, "Required fields missing")
-            return render(request, 'authForms/editUserInfo.html', context={'resources': resources, "userInfoForm": form})
+            return render(request, 'authForms/editUserInfo.html', context={'resources': resources, "userInfoForm": form, "rc": {'orgBox': IM_ORGBOX_EMAIL}})
 
     # all GET requests should be served a blank form
     form = userInfoForm(instance=cftsUser, networks=nets)
-    return render(request, 'authForms/editUserInfo.html', context={'resources': resources, "userInfoForm": form, "rc": {'user': cftsUser}})
+    return render(request, 'authForms/editUserInfo.html', context={'resources': resources, "userInfoForm": form, "rc": {'user': cftsUser, 'orgBox': IM_ORGBOX_EMAIL}})

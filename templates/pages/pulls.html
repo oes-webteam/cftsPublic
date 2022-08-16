@@ -10,7 +10,7 @@
             <ul class="grid-column" style="grid-column: {{ forloop.counter}};">
                 {% for pull in net %}
                     {% if forloop.counter0 == 0 %}<h3 class="grid-column-header">{{ pull.pull_network }}</h3>{% endif %}
-                    <li class="pull-card me-2 {% if pull.date_complete != None %}is-done{% elif pull.date_twoeye != None %}to-complete{% elif pull.date_oneeye != None %}to-twoeye{% endif %}" pull_id="{{pull.pull_id}}">
+                    <li class="pull-card mb-3 me-2 {% if pull.date_complete != None %}is-done{% elif pull.date_twoeye != None %}to-complete{% elif pull.date_oneeye != None %}to-twoeye{% endif %}" pull_id="{{pull.pull_id}}">
 
                         <ul>
                             <li class="title-line"><strong>{{ pull.pull_network }}_{{ pull.pull_number }}</strong></li>
