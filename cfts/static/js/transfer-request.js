@@ -235,38 +235,6 @@ jQuery(document).ready(function () {
     });
 
 
-    // $('#encryptSubmit').click(e => {
-    //     e.preventDefault();
-
-
-    //     if ($(e.target).hasClass('selected-encrypt')) {
-    //         console.log("selcted encrypt clicked");
-
-    //         const checkedItems = $("[name='fileSelection']:checked");
-
-    //         if (checkedItems.length == 0) {
-    //             alert(' Select 1 or more files to encrypt.');
-    //         } else {
-    //             let file_ids = [];
-    //             checkedItems.each(i => {
-    //                 file_ids.push(checkedItems[i].id);
-    //             });
-    //             sendEncryptRequest(file_ids, rqst_id);
-    //         }
-
-    //     } else {
-    //         console.log("request encrypt clicked");
-    //         const checkboxes = Array.from(document.querySelectorAll('input[type="checkbox"]'));
-    //         checkboxes.forEach(checkbox => {
-    //             checkbox.removeAttribute("hidden");
-    //         });
-
-    //         $(e.target).text("Encrypt Selected");
-    //         $(e.target).addClass('selected-encrypt');
-    //     }
-
-    // });
-
     const sendEncryptRequest = (file_ids, request_id) => {
         console.log(file_ids);
 
@@ -344,9 +312,26 @@ jQuery(document).ready(function () {
         );
     };
 
+    $(document).on('click', '#modifyReviewSubmit', function (e) {
+        $('#modifyReviewSubmit').attr('disabled', 'true');
+
+        const checkedItems = $(".file-check.encrypt:checked");
+        let file_ids = [];
+
+        console.log(checkedItems);
+        if (checkedItems.length == 0) {
+            alert(' Select 1 or more files to encrypt.');
+        } else {
+            checkedItems.each(i => {
+                file_ids.push(checkedItems[i].id.split("_")[1]);
+            });
+
+            sendEncryptRequest(file_ids, rqst_id);
+        }
+    });
 
     // supersuer button to remove users from file review
-    $('.request-remove').click(e => {
+    $('#modifyReviewSubmit').click(e => {
         e.preventDefault();
 
         if ($(e.target).hasClass('selected-remove')) {
