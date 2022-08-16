@@ -149,19 +149,23 @@ jQuery(document).ready(function () {
         let rejectionReasons = [];
         let reject_text = $("#reject-comments").val();
 
-        console.log(checkedItems);
+        if (checkedItems.length == 0) {
+            alert(' Select 1 or more files to reject.');
+        } else {
+            console.log(checkedItems);
 
-        checkedItems.each(i => {
-            file_ids.push(checkedItems[i].id);
-        });
+            checkedItems.each(i => {
+                file_ids.push(checkedItems[i].id);
+            });
 
-        console.log(checkedReasons);
+            console.log(checkedReasons);
 
-        checkedReasons.each(i => {
-            rejectionReasons.push(checkedReasons[i].id);
-        });
+            checkedReasons.each(i => {
+                rejectionReasons.push(checkedReasons[i].id);
+            });
 
-        rejectFormCallback(file_ids, rejectionReasons, rqst_id, reject_text);
+            rejectFormCallback(file_ids, rejectionReasons, rqst_id, reject_text);
+        }
     });
 
     $(document).on('click', '#unrejectionSubmit', function (e) {
@@ -212,36 +216,56 @@ jQuery(document).ready(function () {
     /* Encrypt files in request */
     /****************************/
 
-    $('.request-encrypt').click(e => {
-        e.preventDefault();
+    $(document).on('click', '#encryptSubmit', function (e) {
+        $('#encryptSubmit').attr('disabled', 'true');
 
-        if ($(e.target).hasClass('selected-encrypt')) {
-            console.log("selcted encrypt clicked");
+        const checkedItems = $(".file-check.encrypt:checked");
+        let file_ids = [];
 
-            const checkedItems = $("[name='fileSelection']:checked");
-
-            if (checkedItems.length == 0) {
-                alert(' Select 1 or more files to encrypt.');
-            } else {
-                let file_ids = [];
-                checkedItems.each(i => {
-                    file_ids.push(checkedItems[i].id);
-                });
-                sendEncryptRequest(file_ids, rqst_id);
-            }
-
+        console.log(checkedItems);
+        if (checkedItems.length == 0) {
+            alert(' Select 1 or more files to encrypt.');
         } else {
-            console.log("request encrypt clicked");
-            const checkboxes = Array.from(document.querySelectorAll('input[type="checkbox"]'));
-            checkboxes.forEach(checkbox => {
-                checkbox.removeAttribute("hidden");
+            checkedItems.each(i => {
+                file_ids.push(checkedItems[i].id.split("_")[1]);
             });
 
-            $(e.target).text("Encrypt Selected");
-            $(e.target).addClass('selected-encrypt');
+            sendEncryptRequest(file_ids, rqst_id);
         }
-
     });
+
+
+    // $('#encryptSubmit').click(e => {
+    //     e.preventDefault();
+
+
+    //     if ($(e.target).hasClass('selected-encrypt')) {
+    //         console.log("selcted encrypt clicked");
+
+    //         const checkedItems = $("[name='fileSelection']:checked");
+
+    //         if (checkedItems.length == 0) {
+    //             alert(' Select 1 or more files to encrypt.');
+    //         } else {
+    //             let file_ids = [];
+    //             checkedItems.each(i => {
+    //                 file_ids.push(checkedItems[i].id);
+    //             });
+    //             sendEncryptRequest(file_ids, rqst_id);
+    //         }
+
+    //     } else {
+    //         console.log("request encrypt clicked");
+    //         const checkboxes = Array.from(document.querySelectorAll('input[type="checkbox"]'));
+    //         checkboxes.forEach(checkbox => {
+    //             checkbox.removeAttribute("hidden");
+    //         });
+
+    //         $(e.target).text("Encrypt Selected");
+    //         $(e.target).addClass('selected-encrypt');
+    //     }
+
+    // });
 
     const sendEncryptRequest = (file_ids, request_id) => {
         console.log(file_ids);

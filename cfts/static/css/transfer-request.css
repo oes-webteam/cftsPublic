@@ -102,6 +102,17 @@
     border-color: var(--bs-btn-border-color);
 }
 
+.btn-encrypt-input:focus, .btn-encrypt-label:focus, .btn-check:focus + .btn{
+    outline: none;
+    box-shadow: none;
+}
+
+.btn-encrypt-label:focus, .btn-check:focus + .btn{
+    color: var(--bs-btn-color);
+    background-color: var(--bs-btn-bg);
+    border-color: var(--bs-btn-border-color);
+}
+
 .btn-check:checked + .btn, .btn-check:active + .btn, .btn:active, .btn.active, .btn.show {
 	color: var(--bs-btn-active-color) !important;
 	background-color: var(--bs-btn-active-bg) !important;
