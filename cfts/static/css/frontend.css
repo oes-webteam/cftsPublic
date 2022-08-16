@@ -172,7 +172,7 @@ h6.isCentcom {
 	border-color: var(--bs-btn-active-border-color) !important;
 }
 
-.row.form-check.row-cols-3{
+.row.form-check{
     --bs-gutter-x: 1.5rem !important;
     --bs-gutter-y: 0 !important;
     display: flex !important;
@@ -194,4 +194,9 @@ h6.isCentcom {
     color: #198754;
     --bs-btn-active-bg: #198754;
     --bs-btn-border-color: #198754;
+}
+
+.input-group:not(.has-validation) > .dropdown-toggle:nth-last-child(n+3), .input-group:not(.has-validation) > :not(:last-child):not(.dropdown-toggle):not(.dropdown-menu) {
+	border-top-right-radius: .375rem;
+	border-bottom-right-radius: .375rem;
 }

@@ -17,7 +17,7 @@ function checkEmail(email) {
     let check = "";
 
     check = domainArray.pop();
-    check = check.toLocaleLowerCase()
+    check = check.toLocaleLowerCase();
     return (check == "mil" || check == "gov" || check == "edu" || check == "org") ? true : false;
 }
 
@@ -36,7 +36,7 @@ function validateForm(form) {
 
     // name
     if (!(form.elements.firstName.value.length && form.elements.lastName.value.length)) {
-        console.log("missing names")
+        console.log("missing names");
         errors.push(form.elements.firstName, form.elements.lastName);
         isValid = false;
     }
@@ -53,14 +53,6 @@ function validateForm(form) {
         isValid = false;
     }
 
-    // classifications
-    for (let check of document.querySelectorAll(".file-classification")) {
-        if (check.value == "") {
-            errors.push(check);
-            isValid = false;
-        }
-    }
-
     // target network
     // user has multiple destination network options
     if (!form.elements.network.value.length) {
@@ -70,6 +62,12 @@ function validateForm(form) {
     // user only has one destination network option
     else if (form.elements.network.length == undefined && form.elements.network.checked == false) {
         errors.push(form.elements.network);
+        isValid = false;
+    }
+
+    // file categories
+    if (document.querySelectorAll("[name=fileCategory]:checked").length < 1 && form.elements.network.value == "NIPR" && currentNet == "SIPR") {
+        form.elements.fileCategory.forEach((elem) => errors.push(elem));
         isValid = false;
     }
 
@@ -179,6 +177,8 @@ function prepareFormData(form) {
 
     }
 
+    // console.log(formData)
+
     data = prepareFileInfo(data);
     for (const [field, value] of formData.entries()) {
         if (!(field.includes("classification") || field.includes("encrypt") || field.includes("files[]"))) {
@@ -220,24 +220,24 @@ function openRequestLink(id) {
 }
 
 function successHandler(r) {
-    console.dir(r);
+    // console.dir(r);
     if (r.banned) {
-        window.location = "/"
+        window.location = "/";
     }
     notifyUserSuccess("THANK YOU! Your files have been submitted. Click <a <a class='alert-link' href='/my-requests'>here</a> to see your requests. ");
 
     if (debug != "True") {
         let requestlink = $("<div class='requestLink' style='display: none;'></div>");
         $(document.body).append(requestlink);
-        requestlink.attr('onClick', "openRequestLink('" + r.request_id + "')")
-        $('.requestLink').each(function() {
+        requestlink.attr('onClick', "openRequestLink('" + r.request_id + "')");
+        $('.requestLink').each(function () {
             $(this)[0].click();
         });
     }
 
     // CLEAN UP!!
 
-    let destEmail = $("#targetEmail").val()
+    let destEmail = $("#targetEmail").val();
 
     document.getElementById("transfer-request-form").reset();
     resetFileQueue();
@@ -250,12 +250,12 @@ function successHandler(r) {
 }
 
 function autoFillUserInfo(email, phone, destEmail) {
-    $("#firstName").val(firstName)
-    $("#lastName").val(lastName)
-    $("#userPhone").val(phone)
-    $("#userEmail").val(email)
-    $("#organization").val(org)
-    $("#targetEmail").val(destEmail)
+    $("#firstName").val(firstName);
+    $("#lastName").val(lastName);
+    $("#userPhone").val(phone);
+    $("#userEmail").val(email);
+    $("#organization").val(org);
+    $("#targetEmail").val(destEmail);
 }
 
 function resetFileQueue() {
@@ -296,7 +296,7 @@ function failHandler(r, s) {
         r.statusText +
         '.  Please notify the CFTS administrators of this error. Contact info can be found by clicking "Contact Us" at the bottom of the page.'
     );
-
+    // console.log(r, s)
     // re-enable the submit button
     $('#submitButton').prop('disabled', false);
 }
@@ -325,11 +325,11 @@ function process(e) {
             updateFileInfo();
 
             let prepData = prepareFormData(xferForm);
-
+            // console.log(prepData)
 
             //Add the CSRF token to ajax requests
             $.ajaxSetup({
-                beforeSend: function(xhr, settings) {
+                beforeSend: function (xhr, settings) {
                     xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
                 },
             });

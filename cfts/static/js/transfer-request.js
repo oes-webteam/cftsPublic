@@ -290,7 +290,7 @@ jQuery(document).ready(function () {
                 console.log('SUCCESS');
                 console.log('Server response: ' + JSON.stringify(resp, null, 4));
 
-                if (resp.debug != true) {
+                if (resp.debug != true && resp.eml) {
                     // create mailto anchor
                     let $anchor = $("<a class='emailLink' target='_blank' href='" + resp.eml + "''></a>");
                     $(document.body).append($anchor);

@@ -82,20 +82,20 @@
                 <td class="xfer-date">{{ rc.request.date_created|date:"m/d/Y Hi" }}</td>
                 <td class="xfer-net">{{ rc.request.network }}</td>
                 <td class="xfer-files">
-                    <ol class="file-list">
+                    <ul class="file-list">
                         {%  for f in rc.request.files.all %}
                             {% with f.file_object.name|split:"/" as name %}
                                 <li class="{% if f.rejection_reasons.all %}rejected{% endif %}" x-file-name="{{ name.2 }}">{{ name.2|truncatechars:50 }}</li>
                             {% endwith %}
                         {% endfor %}
-                    </ol>
+                    </ul>
                 </td>
                 <td class="xfer-email">
-                    <ol class="email-list">
+                    <ul class="email-list">
                         {%  for e in rc.request.target_email.all %}
                             <li>{{e}}</li>
                         {% endfor %}
-                    </ol>
+                    </ul>
                 </td>
 
             </tr>

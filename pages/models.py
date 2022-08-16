@@ -187,6 +187,13 @@ class File(models.Model):
     def __str__(self):
         return os.path.basename(self.file_object.name)
 
+class FileCategories(models.Model):
+    file_category_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    file_category = models.CharField(null=True, max_length=35)
+    visible = models.BooleanField(default=False)
+
+    def __str__(self):
+        return str(self.file_category)
 
 class Request(models.Model):
     request_id = models.UUIDField(
@@ -214,6 +221,7 @@ class Request(models.Model):
     ready_to_pull = models.BooleanField(default=False)
     has_encrypted = models.BooleanField(default=False)
     files_scanned = models.BooleanField(default=False)
+    file_categories = models.ManyToManyField(FileCategories)
 
     class Meta:
         ordering = ['-date_created']

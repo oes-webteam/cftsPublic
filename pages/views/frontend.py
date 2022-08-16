@@ -9,7 +9,7 @@ from django.shortcuts import render, redirect
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.cache import never_cache
 
-from cfts.settings import DEBUG, DISABLE_SUBMISSIONS
+from cfts.settings import DEBUG, DISABLE_SUBMISSIONS, NETWORK, IM_ORGBOX_EMAIL
 # db/model stuff
 from pages.models import *
 
@@ -66,6 +66,7 @@ def checkBan(cftsUser):
 # function to serve the main transfer request page
 # decorators to validate that the template contains a csrf token, because it was being stripped out of some requests
 @ensure_csrf_cookie
+@never_cache
 def frontend(request):
     # detect what browser a user is visiting from
     browser = request.user_agent.browser.family
@@ -73,12 +74,13 @@ def frontend(request):
     # collect resources to display in resources dropdown in the site nav bar
     resources = ResourceLink.objects.all()
     announcements = Message.objects.filter(visible=True)
+    fileCategories = FileCategories.objects.filter(visible=True)
 
     try:
         # if a user is using Internet Explorer server them the template with minimal request context
         # these users will be served a page with the main request form removed and a message shaming them for using IE in {{currentYear}}
         if browser == "IE":
-            rc = {'resources': resources, 'browser': browser}
+            rc = {'resources': resources, 'browser': browser, 'orgBox': IM_ORGBOX_EMAIL}
             return render(request, 'pages/frontend.html', {'rc': rc})
 
         # get consent cookie, redirect to consent page if missing
@@ -94,7 +96,7 @@ def frontend(request):
             if DEBUG == True:
                 return redirect("/login")
             elif DEBUG == False:
-                return render(request, 'pages/frontend.html', {'rc': {'error': True, 'submission_disabled': DISABLE_SUBMISSIONS, 'debug': str(DEBUG), 'resources': resources, 'browser': browser}})
+                return render(request, 'pages/frontend.html', {'rc': {'error': True, 'orgBox': IM_ORGBOX_EMAIL, 'submission_disabled': DISABLE_SUBMISSIONS, 'debug': str(DEBUG), 'resources': resources, 'browser': browser}})
         elif cftsUser == None or cftsUser.update_info == True:
             return redirect("/user-info")
 
@@ -107,7 +109,8 @@ def frontend(request):
         if nets == None:
             return redirect('user-info')
 
-        rc = {'networks': nets, 'submission_disabled': DISABLE_SUBMISSIONS, 'debug': str(DEBUG), 'resources': resources, 'user': cftsUser, 'browser': browser, 'announcements': announcements}
+        rc = {'networks': nets, 'orgBox': IM_ORGBOX_EMAIL, 'submission_disabled': DISABLE_SUBMISSIONS, 'network': NETWORK, 'debug': str(
+            DEBUG), 'resources': resources, 'user': cftsUser, 'browser': browser, 'announcements': announcements, 'categories': fileCategories}
 
         return render(request, 'pages/frontend.html', {'rc': rc})
 
@@ -135,7 +138,7 @@ def userRequests(request):
         pageNum = request.GET.get('page')
         pageObj = requestPage.get_page(pageNum)
 
-    rc = {'requests': pageObj, 'resources': resources, 'user': cftsUser}
+    rc = {'requests': pageObj, 'orgBox': IM_ORGBOX_EMAIL, ' resources': resources, 'user': cftsUser}
 
     return render(request, 'pages/userRequests.html', {'rc': rc})
 
@@ -147,6 +150,6 @@ def requestDetails(request, id):
     # get the Request object the user clicked on from the request history page
     userRequest = Request.objects.get(request_id=id)
 
-    rc = {'request': userRequest, 'resources': resources, 'user': userRequest.user, 'firstName': userRequest.user.name_first.split("_buggedPKI")[0], 'lastName': userRequest.user.name_last}
+    rc = {'request': userRequest, 'orgBox': IM_ORGBOX_EMAIL, 'resources': resources, 'user': userRequest.user, 'firstName': userRequest.user.name_first.split("_buggedPKI")[0], 'lastName': userRequest.user.name_last}
 
     return render(request, 'pages/requestDetails.html', {'rc': rc})
