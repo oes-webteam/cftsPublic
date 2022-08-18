@@ -1,6 +1,8 @@
 {# fmt:off #}
 {% spaceless %}
 {% if EMAIL_HOST != ''%}
+Classification: {{EMAIL_CLASSIFICATION}}
+
 Due to violating the policy that governs the use of CFTS you are receiving an account warning.
 
 Our policies are strictly enforced because the CFTS team accepts the majority of the risk in the cross-domain file transfer process.
@@ -11,8 +13,10 @@ Please review the CFTS policies, CFTS User Training, and File Review Guide to en
 
 If you have any questions contact the team at DSN: 312-529-3867
 
+Classified By: {{request.user.last_name}}, {{request.user.first_name}}
+Classification: {{EMAIL_CLASSIFICATION}}
 {% else %}
-Due to violating the policy that governs the use of CFTS you are receiving an account warning.<br>Our policies are strictly enforced because the CFTS team accepts the majority of the risk in the cross-domain file transfer process.<br>This is your {% if warningCount == 1 %}first{% elif warningCount == 2 %}second{% elif warningCount == 3 %}third and final{% endif %} warning.<br>Please review the CFTS policies, CFTS User Training, and File Review Guide to ensure you remain in compliance with the service governance.<br>If you have any questions contact the team at DSN: 312-529-3867
+Classification: {{EMAIL_CLASSIFICATION}}<br>Due to violating the policy that governs the use of CFTS you are receiving an account warning.<br>Our policies are strictly enforced because the CFTS team accepts the majority of the risk in the cross-domain file transfer process.<br>This is your {% if warningCount == 1 %}first{% elif warningCount == 2 %}second{% elif warningCount == 3 %}third and final{% endif %} warning.<br>Please review the CFTS policies, CFTS User Training, and File Review Guide to ensure you remain in compliance with the service governance.<br>If you have any questions contact the team at DSN: 312-529-3867<br>Classified By: {{request.user.last_name}}, {{request.user.first_name}}<br>Classification: {{EMAIL_CLASSIFICATION}}
 {% endif %}
 {% endspaceless %}
 {# fmt:on #}

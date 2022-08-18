@@ -24,6 +24,7 @@ urlpatterns = [
     # user requests
     path('my-requests', views.userRequests, name='userRequests'),
     path('request/<uuid:id>', views.requestDetails, name='userRequests'),
+    path('cancelUserRequest/<uuid:id>', views.cancelUserRequest, name='cancelUserRequest'),
 
     # queue
     path('queue', views.queue, name='queue'),

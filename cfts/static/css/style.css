@@ -1,0 +1,25 @@
+body {
+  color: rgb(51,51,51);
+  font: 0.8rem  'Source Sans Pro', 'Verdana', 'Arial', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: auto;
+}
+
+nav.navbar {
+  background: #fff; 
+  box-shadow: 2px 2px 5px #484848;
+  font: 1.1rem 'Georgia', 'Times New Roman', serif;
+  opacity: 0.9;
+  z-index: 8000;
+}
+
+#contactUs{
+  z-index: 9000;
+}
+
+nav.navbar li.nav-item {
+  font-size: 1.4rem;
+  padding-right: 1.4rem; 
+}

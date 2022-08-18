@@ -147,9 +147,38 @@ def userRequests(request):
 def requestDetails(request, id):
     resources = ResourceLink.objects.all()
 
+    # get user cert info, get User object
+    certInfo = getCert(request)
+    cftsUser = getOrCreateUser(request, certInfo)
+
     # get the Request object the user clicked on from the request history page
     userRequest = Request.objects.get(request_id=id)
 
-    rc = {'request': userRequest, 'orgBox': IM_ORGBOX_EMAIL, 'resources': resources, 'user': userRequest.user, 'firstName': userRequest.user.name_first.split("_buggedPKI")[0], 'lastName': userRequest.user.name_last}
+    if cftsUser == userRequest.user or request.user.is_staff or request.user.is_superuser:
+        rc = {'request': userRequest, 'orgBox': IM_ORGBOX_EMAIL, 'resources': resources, 'user': userRequest.user, 'firstName': userRequest.user.name_first.split("_buggedPKI")[0], 'lastName': userRequest.user.name_last}
+    else:
+        rc = {'error': True, 'orgBox': IM_ORGBOX_EMAIL, 'resources': resources,}
 
     return render(request, 'pages/requestDetails.html', {'rc': rc})
+
+def cancelUserRequest(request, id):
+    resources = ResourceLink.objects.all()
+
+    # get user cert info, get User object
+    certInfo = getCert(request)
+    cftsUser = getOrCreateUser(request, certInfo)
+
+    # get the Request object the user clicked on from the request history page
+    requestToCancel = Request.objects.get(request_id=id)
+
+    if cftsUser == requestToCancel.user and requestToCancel.pull == None:
+        requestToCancel.delete()
+        messages.success(request, "Request sucessfully deleted")
+
+        return redirect("/my-requests")
+    elif requestToCancel.pull != None:
+        messages.error(request, "Request can no longer be canceled")
+        return redirect('/request/' + str(requestToCancel.request_id))
+    else:
+        rc = {'error': True, 'orgBox': IM_ORGBOX_EMAIL, 'resources': resources,}
+        return render(request, 'pages/requestDetails.html', {'rc': rc})
