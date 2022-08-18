@@ -234,8 +234,11 @@ def transferRequest(request, id):
     :param id: the request_id of the request to be transferred
     :return: a render object.
     """
-
-    rqst = Request.objects.get(request_id=id)
+    try:
+        rqst = Request.objects.get(request_id=id)
+    except Request.DoesNotExist:
+        messages.warning(request, "Could not find the request you were looking for, it may have been deleted.")
+        return redirect('/queue')
 
     dupes = Request.objects.filter(pull__date_complete=None, request_hash=rqst.request_hash).exclude(request_id=rqst.request_id).order_by('-date_created')
 
@@ -429,10 +432,11 @@ def banEml(request, request_id, ignore_strikes, perma_ban):
     """
     rqst = Request.objects.get(request_id=request_id)
     if cftsSettings.EMAIL_HOST != '':
-        msgBody = render_to_string('partials/Queue_partials/banTemplate.html', {'rqst': rqst, 'ignore_strikes': ignore_strikes, 'perma_ban': perma_ban, 'EMAIL_HOST': cftsSettings.EMAIL_HOST}, request)
+        msgBody = render_to_string('partials/Queue_partials/banTemplate.html', {'rqst': rqst, 'ignore_strikes': ignore_strikes, 'perma_ban': perma_ban, 'EMAIL_HOST': cftsSettings.EMAIL_HOST,
+                                                                                        'EMAIL_CLASSIFICATION': cftsSettings.EMAIL_CLASSIFICATION}, request)
 
         email = EmailMessage(
-            'CFTS User Account Suspension',
+            '[' + cftsSettings.EMAIL_CLASSIFICATION + '] CFTS User Account Suspension',
             msgBody,
             "Combined File Transfer Service <" + cftsSettings.EMAIL_FROM_ADDRESS + ">",
             [str(rqst.user.source_email), ],
@@ -442,8 +446,9 @@ def banEml(request, request_id, ignore_strikes, perma_ban):
         email.send(fail_silently=False)
 
     else:
-        msgBody = "mailto:" + str(rqst.user.source_email) + "?subject=CFTS User Account Suspension&body="
-        msgBody += render_to_string('partials/Queue_partials/banTemplate.html', {'rqst': rqst, 'ignore_strikes': ignore_strikes, 'perma_ban': perma_ban, 'EMAIL_HOST': cftsSettings.EMAIL_HOST}, request)
+        msgBody = "mailto:" + str(rqst.user.source_email) + "?subject=[" + cftsSettings.EMAIL_CLASSIFICATION + "] CFTS User Account Suspension&body="
+        msgBody += render_to_string('partials/Queue_partials/banTemplate.html', {'rqst': rqst, 'ignore_strikes': ignore_strikes, 'perma_ban': perma_ban, 'EMAIL_HOST': cftsSettings.EMAIL_HOST,
+                                                                                        'EMAIL_CLASSIFICATION': cftsSettings.EMAIL_CLASSIFICATION}, request)
     
     return msgBody
 
@@ -501,10 +506,11 @@ def warningEml(request, warningCount, source_email):
     """
 
     if cftsSettings.EMAIL_HOST != '':
-        msgBody = render_to_string('partials/Queue_partials/userWarningTemplate.html', {'warningCount': warningCount, 'EMAIL_HOST': cftsSettings.EMAIL_HOST}, request)
+        msgBody = render_to_string('partials/Queue_partials/userWarningTemplate.html', {'warningCount': warningCount, 'EMAIL_HOST': cftsSettings.EMAIL_HOST,
+                                                                                        'EMAIL_CLASSIFICATION': cftsSettings.EMAIL_CLASSIFICATION}, request)
 
         email = EmailMessage(
-            'CFTS User Account Warning',
+            '[' + cftsSettings.EMAIL_CLASSIFICATION + '] CFTS User Account Warning',
             msgBody,
             "Combined File Transfer Service <" + cftsSettings.EMAIL_FROM_ADDRESS + ">",
             [str(source_email), ],
@@ -513,8 +519,9 @@ def warningEml(request, warningCount, source_email):
 
         email.send(fail_silently=False)
     else:
-        msgBody = "mailto:" + str(source_email) + "?subject=CFTS User Account Warning&body="
-        msgBody += render_to_string('partials/Queue_partials/userWarningTemplate.html', {'warningCount': warningCount, 'EMAIL_HOST': cftsSettings.EMAIL_HOST}, request)
+        msgBody = "mailto:" + str(source_email) + "?subject=[" + cftsSettings.EMAIL_CLASSIFICATION + "] CFTS User Account Warning&body="
+        msgBody += render_to_string('partials/Queue_partials/userWarningTemplate.html', {'warningCount': warningCount, 'EMAIL_HOST': cftsSettings.EMAIL_HOST,
+                                                                                        'EMAIL_CLASSIFICATION': cftsSettings.EMAIL_CLASSIFICATION}, request)
 
     return msgBody
 

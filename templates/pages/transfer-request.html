@@ -238,7 +238,7 @@
                                     {% if file.is_pii or rqst.network.cfts_deployed %}
                                         <span title="PII: {{ file.is_pii }}&#10;">🔒</span>
                                     {% endif %}
-                                    <a class="{% if file.rejection_reasons.all %}rejected {% endif %} mr-2" title="{{ file }}" id="{{file.file_id}}" href="/getFile/{{file.file_object}}" download="{{file.file_name}}">{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</a>
+                                    <a class="{% if file.rejection_reasons.all %}rejected {% endif %} mr-2" title="{{ file }}" id="get_{{file.file_id}}" href="/getFile/{{file.file_object}}" download="{{file.file_name}}">{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</a>
 
                                 </div>
                                 <div class="file-right col p-1">
@@ -252,10 +252,10 @@
                                                 {% if file.rejection_text != none and file.rejection_text != '' %}
                                                     <li>Comments:</li>
                                                     <ul>
-                                                        <li>{{file.rejection_text}}</li>
+                                                    <li>{{file.rejection_text}}</li>
                                                     </ul>
                                                 {% endif %}
-                                            </ul>">File rejected for {{file.rejection_reasons.all|length}} reason{{file.rejection_reasons.all|length|pluralize}}</button>
+                                                </ul>">File rejected for {{file.rejection_reasons.all|length}} reason{{file.rejection_reasons.all|length|pluralize}}</button>
                                         </div>
 
                                         <div class="rejections-row row collapse" id="reasons_{{file.file_id}}">

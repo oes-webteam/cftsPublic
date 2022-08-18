@@ -200,3 +200,8 @@ h6.isCentcom {
 	border-top-right-radius: .375rem;
 	border-bottom-right-radius: .375rem;
 }
+
+.input-group-text {
+	border-top-right-radius: .0 !important;
+	border-bottom-right-radius: .0 !important;
+}

@@ -19,7 +19,7 @@ from django.template.loader import render_to_string
 from django.http import JsonResponse, HttpResponse
 
 # cfts settings
-from cfts.settings import NETWORK, DEBUG, EMAIL_HOST, EMAIL_FROM_ADDRESS, IM_ORGBOX_EMAIL
+from cfts.settings import NETWORK, DEBUG, EMAIL_HOST, EMAIL_FROM_ADDRESS, IM_ORGBOX_EMAIL, EMAIL_CLASSIFICATION
 # model/database stuff
 from pages.models import *
 from django.contrib.auth.models import User as authUser
@@ -192,9 +192,9 @@ def createEml(request, request_id, files_list, reasons):
     # Create a mailto link...
     # Yeah, that's how we send out system emails because we aren't allowed to have an email relay server... thanks J6
     if EMAIL_HOST == '':
-        msgBody = "mailto:" + str(rqst.user.source_email) + "?cc=" + str(rqst.RHR_email) + "&subject=CFTS File Rejection&body=The following files have been rejected from your transfer request:%0D%0A"
+        msgBody = "mailto:" + str(rqst.user.source_email) + "?cc=" + str(rqst.RHR_email) + "&subject=[" + EMAIL_CLASSIFICATION + "] CFTS File Rejection&body=Classification: " + EMAIL_CLASSIFICATION + "%0D%0A%0D%0AThe following files have been rejected from your transfer request:%0D%0A"
     else:
-        msgBody = "The following files have been rejected from your transfer request:\n        "
+        msgBody = "Classification: " + EMAIL_CLASSIFICATION +"\n\nThe following files have been rejected from your transfer request:\n        "
 
     # List the names of all the files being rejected in the email
     files = File.objects.filter(file_id__in=files_list)
@@ -221,11 +221,12 @@ def createEml(request, request_id, files_list, reasons):
     url = "https://" + str(request.get_host()) + "/request/" + str(rqst.request_id)
 
     # Render out the email template and append it to the mailto link
-    msgBody += render_to_string('partials/Queue_partials/rejectionEmailTemplate.html', {'rqst': rqst, 'EMAIL_HOST': EMAIL_HOST, 'reasons': reasons, 'firstName': rqst.user.name_first, 'url': url, 'comments': rejectionComments}, request)
+    msgBody += render_to_string('partials/Queue_partials/rejectionEmailTemplate.html', {'rqst': rqst, 'EMAIL_HOST': EMAIL_HOST, 'EMAIL_CLASSIFICATION': EMAIL_CLASSIFICATION, 'reasons': reasons, 'firstName': rqst.user.name_first,
+                                                                                        'url': url, 'comments': rejectionComments}, request)
 
     if EMAIL_HOST != '':
         email = EmailMessage(
-            'CFTS File Rejection',
+            '[' + EMAIL_CLASSIFICATION + '] CFTS File Rejection',
             msgBody,
             "Combined File Transfer Service <" + EMAIL_FROM_ADDRESS + ">",
             [str(rqst.user.source_email), ],

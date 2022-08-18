@@ -80,10 +80,10 @@ def dropEmail(request, id):
 
     if cftsSettings.EMAIL_HOST != '' and buttonFallback == "false":
         eml = render_to_string('partials/Drop_partials/dropEmailTemplate.html', {'url': url, 'deleteDate': dropRequest.delete_on,
-                            'PIN': dropRequest.request_code, 'decryptPhrase': decryptedPhrase, 'EMAIL_HOST': buttonFallback}, request)
+                            'PIN': dropRequest.request_code, 'decryptPhrase': decryptedPhrase, 'EMAIL_HOST': buttonFallback, 'EMAIL_CLASSIFICATION': cftsSettings.EMAIL_CLASSIFICATION}, request)
 
         email = EmailMessage(
-            'CFTS File Drop',
+            '[' + cftsSettings.EMAIL_CLASSIFICATION + '] CFTS File Drop',
             eml,
             "Combined File Transfer Service <" + cftsSettings.EMAIL_FROM_ADDRESS + ">",
             [str(dropRequest.target_email), ],
@@ -92,10 +92,10 @@ def dropEmail(request, id):
 
         email.send(fail_silently=False)
     else:
-        eml = "mailto:" + str(dropRequest.target_email) + "?subject=CFTS File Drop&body=" 
+        eml = "mailto:" + str(dropRequest.target_email) + "?subject=[" + cftsSettings.EMAIL_CLASSIFICATION + "] CFTS File Drop&body=" 
         
         eml += render_to_string('partials/Drop_partials/dropEmailTemplate.html', {'url': url, 'deleteDate': dropRequest.delete_on,
-                                'PIN': dropRequest.request_code, 'decryptPhrase': decryptedPhrase, 'EMAIL_HOST': buttonFallback}, request)
+                                'PIN': dropRequest.request_code, 'decryptPhrase': decryptedPhrase, 'EMAIL_HOST': buttonFallback, 'EMAIL_CLASSIFICATION': cftsSettings.EMAIL_CLASSIFICATION}, request)
 
     dropRequest.email_sent = True
     dropRequest.save()

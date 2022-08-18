@@ -96,7 +96,7 @@
                                     <h3 class="text-gray-dark">Transfer To</h3>
                                     {% if rc.networks.items|length > 0%}
                                         <div class="container input-group mb-3 m-0 p-0 text-center" >
-                                            <div class="row form-check form-switch row-cols-4">
+                                            <div class="row form-check form-switch {% if rc.networks.items|length >= 4%}row-cols-4{% else %}row-cols{% endif %}">
                                                 {% for net, email in rc.networks.items %}
                                                     <div class="col px-1">
                                                         <input type="radio" name="network" class="btn-check form-check-input reason-check" id="switch{{ net }}" value="{{ net }}" />

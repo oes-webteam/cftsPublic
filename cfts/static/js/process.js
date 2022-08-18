@@ -232,6 +232,7 @@ function successHandler(r) {
         requestlink.attr('onClick', "openRequestLink('" + r.request_id + "')");
         $('.requestLink').each(function () {
             $(this)[0].click();
+            $(this)[0].remove();
         });
     }
 

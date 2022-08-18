@@ -20,8 +20,10 @@ To see the details of your request click the following link: {{url}}
 %0D%0A%0D%0A
 ---------------------------------------------------------------------------------
 %0D%0A%0D%0A
+Classified By: {{request.user.last_name}}, {{request.user.first_name}}
+%0D%0A
+Classification: {{EMAIL_CLASSIFICATION}}
 {% else %}
-
 As a customer it is your responsibility to follow the policies that govern the use of this service.
 
 Our policy is available on the main page of CFTS. We also recommend utilizing the File Review Guide in the Resources.
@@ -37,5 +39,7 @@ Analyst Comments:
 To see the details of your request click the following link: {{url}}
 ---------------------------------------------------------------------------------
 
+Classified By: {{request.user.last_name}}, {{request.user.first_name}}
+Classification: {{EMAIL_CLASSIFICATION}}
 {% endif %}
 {# fmt:on #}

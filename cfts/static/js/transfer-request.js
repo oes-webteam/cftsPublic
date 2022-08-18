@@ -52,7 +52,7 @@ jQuery(document).ready(function () {
                 $('#row_' + paramObj.file).fadeOut(400).fadeIn(400).fadeOut(400).fadeIn(400);
             }, 500);
 
-            let fileLink = document.getElementById(paramObj.file);
+            let fileLink = document.getElementById("get_" + paramObj.file);
             console.log(fileLink);
             history.pushState(null, "", location.href.split("?")[0]);
 
@@ -151,6 +151,7 @@ jQuery(document).ready(function () {
 
         if (checkedItems.length == 0) {
             alert(' Select 1 or more files to reject.');
+            $('#rejectionSubmit').removeAttr('disabled', 'false');
         } else {
             console.log(checkedItems);
 
@@ -225,6 +226,7 @@ jQuery(document).ready(function () {
         console.log(checkedItems);
         if (checkedItems.length == 0) {
             alert(' Select 1 or more files to encrypt.');
+            $('#encryptSubmit').removeAttr('disabled', 'false');
         } else {
             checkedItems.each(i => {
                 file_ids.push(checkedItems[i].id.split("_")[1]);
@@ -319,6 +321,7 @@ jQuery(document).ready(function () {
 
         if (checkedItems.length == 0) {
             alert(' Select a reviewer to remove.');
+            $('#modifyReviewSubmit').removeAttr('disabled', 'false');
         } else {
             let data = [];
             
