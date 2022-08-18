@@ -66,23 +66,42 @@
                 <div class="modal-content">
                     <form>
                         <div class="modal-header">
-                            <h5 class="modal-title" id="reviewModalLabel">Select Files to Reject</h5>
+                            <h5 class="modal-title" id="reviewModalLabel">Select File to Change Review</h5>
                             <button type="button" class="btn-close" onclick="closeModal('#reviewModal')"></button>
                         </div>
 
                         <div class="modal-body">
                             {% for file in rqst.files.all %}
-                                <input type="checkbox" class="btn-check file-check {% if file.rejection_reasons.all %}rejected {% else %}not-rejected {% endif %}" id="review_{{file.file_id}}" autocomplete="off" original>
-                                <label class="btn btn-outline-primary btn-rejection my-1 {% if file.rejection_reasons.all %}rejected {% else %}not-rejected {% endif %}" onclick="getReviewModal(this)" for="review_{{file.file_id}}">{% if file.is_pii or rqst.network.cfts_deployed %}
-                                    <span title="PII: {{ file.is_pii }}&#10;">🔒</span>
-                                {% endif %}{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</label>
+                                <div class="row">
+                                    <div class="col-auto">
+                                        <input type="checkbox" class="btn-check file-check {% if file.rejection_reasons.all %}rejected {% else %}not-rejected {% endif %}" id="review_{{file.file_id}}" autocomplete="off" original
+                                            {% if file.user_oneeye == None and file.user_twoeye == None %} disabled{% endif %}>
+                                        <label class="btn btn-outline-primary btn-rejection my-1 {% if file.rejection_reasons.all %}rejected {% else %}not-rejected {% endif %}" onclick="getReviewModal(this)" for="review_{{file.file_id}}">
+                                            {% if file.is_pii or rqst.network.cfts_deployed %}
+                                                <span title="PII: {{ file.is_pii }}&#10;">🔒</span>
+                                            {% endif %}
+                                            {{ file }}
+                                            {% if file.file_count > 1 %}
+                                                ({{file.file_count}} files)
+                                            {% endif %}
+                                        </label>
+                                    </div>
+
+                                    <div class="col" style="padding-top: 0.7rem !important;">
+                                        {% if file.user_oneeye != None %}
+                                            <strong class="me-3"><span class="reviewers">1 Eye: {{file.user_oneeye}}</span></strong>
+                                        {% endif %}
+                                        {% if file.user_twoeye != None %}
+                                            <strong><span class="reviewers">2 Eye: {{file.user_twoeye}}</span></strong>
+                                        {% endif %}
+                                    </div>
+                                </div>
                             {% endfor %}
                         </div>
                     </form>
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" onclick="closeModal('#reviewModal')">Cancel</button>
-                        <button type="button" id="reviewModalSubmit" class="btn btn-primary">Submit</button>
                     </div>
                 </div>
             </div>
@@ -160,22 +179,14 @@
             <div class="col-6">
                 <div class="btn-group">
                     {% if rqst.network.cfts_deployed == False %}
-                        <a href="#" class="btn btn-warning request-encrypt" onclick="openModal('#encryptModal')">Encrypt Files</a>
+                        <button  class="btn btn-warning request-encrypt" onclick="openModal('#encryptModal')">Encrypt Files</button>
                     {% endif %}
                     <button class="btn btn-danger request-reject" onclick="openModal('#rejectModal')">Reject Files</button>
                     <a href="{% url 'scan' rqst.request_id %}" class="btn btn-info">Rescan Files</a>
                     {% if user.is_superuser %}
-                        <a href="#" class="btn btn-primary request-remove one-eye"  onclick="openModal('#reviewModal')">Remove Reviewer</a>
+                        <button  class="btn btn-primary request-remove one-eye"  onclick="openModal('#reviewModal')">Remove Reviewer</button>
                     {% endif %}
                 </div>
-                {% comment %}
-                {% if user.is_superuser %}
-                    <div class="btn-group ms-3">
-                        <a href="#" class="btn btn-info request-remove one-eye" rqst_id="{{rqst.request_id}}">Remove One Eyer</a>
-                        <a href="#" class="btn btn-primary request-remove two-eye" rqst_id="{{rqst.request_id}}">Remove Two Eyer</a>
-                    </div>
-                {% endif %} {% endcomment %}
-
             </div>
         </div>
 
@@ -228,7 +239,7 @@
                                         <span title="PII: {{ file.is_pii }}&#10;">🔒</span>
                                     {% endif %}
                                     <a class="{% if file.rejection_reasons.all %}rejected {% endif %} mr-2" title="{{ file }}" id="{{file.file_id}}" href="/getFile/{{file.file_object}}" download="{{file.file_name}}">{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</a>
-                                    {% if user.is_superuser %}<strong>{% if file.user_oneeye != None %}<span class="reviewers mr-2 d-none">1 Eye: {{file.user_oneeye}}</span>{% endif %} {% if file.user_twoeye != None %}<span class="reviewers d-none">2 Eye: {{file.user_twoeye}}</span>{% endif %}</strong>{% endif %}
+
                                 </div>
                                 <div class="file-right col p-1">
                                     {% if file.rejection_reasons.all %}

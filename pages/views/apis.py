@@ -227,7 +227,7 @@ def createEml(request, request_id, files_list, reasons):
         email = EmailMessage(
             'CFTS File Rejection',
             msgBody,
-            EMAIL_FROM_ADDRESS,
+            "Combined File Transfer Service <" + EMAIL_FROM_ADDRESS + ">",
             [str(rqst.user.source_email), ],
             cc=[str(rqst.RHR_email), ],
             reply_to=[IM_ORGBOX_EMAIL, ],

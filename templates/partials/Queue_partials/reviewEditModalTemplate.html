@@ -19,35 +19,21 @@
                     <h5 class="modal-title" id="modifyReviewModalLabel">Select Reviewer to Remove</h5>
                 </div>
 
-                <div class="modal-body">
-                    {% for reason in rejections %}
-                        {% if reason in file.rejection_reasons.all %}
-                            <input type="checkbox" class="btn-check reason-check" id="mod_{{reason.rejection_id}}" checked modify>
-                            <label class="btn btn-outline-danger btn-rejection-label my-1" for="mod_{{reason.rejection_id}}">{{reason.name}}</label>
-                        {% else %}
-                            <input type="checkbox" class="btn-check reason-check" id="mod_{{reason.rejection_id}}" modify>
-                            <label class="btn btn-outline-danger btn-rejection-label my-1" for="mod_{{reason.rejection_id}}">{{reason.name}}</label>
-                        {% endif %}
-                    {% endfor %}
+                <div class="modal-body form-check">
+                    {% if file.user_oneeye != None %}
+                        <input type="radio" name="reviewEyeer" class="btn-check review-check one-eye" id="one_{{file.file_id}}">
+                        <label class="btn btn-outline-danger my-1" for="one_{{file.file_id}}">1 Eye: {{file.user_oneeye}}</label>
+                    {% endif %}
+                    {% if file.user_twoeye != None %}
+                        <input type="radio" name="reviewEyeer" class="btn-check review-check two-eye" id="two_{{file.file_id}}" >
+                        <label class="btn btn-outline-danger my-1" for="two_{{file.file_id}}">2 Eye: {{file.user_twoeye}}</label>
+                    {% endif %}
                 </div>
 
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modifyReviewModalLabel">Comments to User (optional)</h5>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onClick="closeModal('#modifyReviewModal')">Cancel</button>
+                    <button type="button" id="modifyReviewSubmit" class="btn btn-primary">Submit</button>
                 </div>
-
-                <div class="modal-body">
-                    <form>
-                        <div class="mb-3">
-                            <textarea type="text" class="form-control" id="mod-reject-comments" placeholder="Users will see what you type here." modify>{% if file.rejection_text != none and file.rejection_text != '' %}{{file.rejection_text}}{% endif %}</textarea>
-                        </div>
-                    </form>
-                </div>
-            </form>
-
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onClick="closeModal('#modifyReviewModal')">Cancel</button>
-                <button type="button" id="modifyReviewSubmit" class="btn btn-primary">Submit</button>
             </div>
         </div>
-    </div>
 {% endblock %}
