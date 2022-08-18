@@ -315,74 +315,34 @@ jQuery(document).ready(function () {
     $(document).on('click', '#modifyReviewSubmit', function (e) {
         $('#modifyReviewSubmit').attr('disabled', 'true');
 
-        const checkedItems = $(".file-check.encrypt:checked");
-        let file_ids = [];
+        const checkedItems = $(".review-check:checked");
 
-        console.log(checkedItems);
         if (checkedItems.length == 0) {
-            alert(' Select 1 or more files to encrypt.');
+            alert(' Select a reviewer to remove.');
         } else {
+            let data = [];
+            
             checkedItems.each(i => {
-                file_ids.push(checkedItems[i].id.split("_")[1]);
-            });
-
-            sendEncryptRequest(file_ids, rqst_id);
-        }
-    });
-
-    // supersuer button to remove users from file review
-    $('#modifyReviewSubmit').click(e => {
-        e.preventDefault();
-
-        if ($(e.target).hasClass('selected-remove')) {
-            console.log("selcted Remove clicked");
-
-            const checkedItems = $("[name='fileSelection']:checked");
-
-            if (checkedItems.length == 0) {
-                alert(' Select 1 or more files to remove reviewer from.');
-            } else {
-                let data = [];
-
-                if ($(e.target).hasClass('one-eye')) {
+                data.push(checkedItems[i].id.split('_')[1]);
+                if (checkedItems[i].classList.contains('one-eye')) {
                     stage = 1;
-                } else if ($(e.target).hasClass('two-eye')) {
+                } else if (checkedItems[i].classList.contains('two-eye')) {
                     stage = 2;
                 }
-
-                checkedItems.each(i => {
-                    data.push(checkedItems[i].id);
-                });
-
-                rqst_id = $(e.target).attr('rqst_id');
-
-                sendRemoveRequest(data, stage, rqst_id);
-            }
-
-        } else {
-            console.log("request remove clicked");
-            const checkboxes = Array.from(document.querySelectorAll('input[type="checkbox"]'));
-            checkboxes.forEach(checkbox => {
-                checkbox.removeAttribute("hidden");
             });
-            const reviewers = Array.from(document.querySelectorAll('.reviewers'));
-            reviewers.forEach(elem => {
-                elem.classList.remove('d-none');
-            });
-            $(e.target).text("Remove Selected");
-            $(e.target).addClass('selected-remove');
+
+            sendRemoveRequest(data, stage, rqst_id);
         }
-
     });
 
-    const sendRemoveRequest = (data, stage, rqst_id) => {
+    const sendRemoveRequest = (id_list, stage, rqst_id) => {
         console.log(stage);
         let csrftoken = getCookie('csrftoken');
 
-        let id_list = [];
-        data.forEach((f) => {
-            id_list.push(f.fileID);
-        });
+        // let id_list = [];
+        // data.forEach((f) => {
+        //     id_list.push(f.fileID);
+        // });
 
         const postData = {
             'id_list': id_list,

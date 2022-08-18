@@ -7,6 +7,7 @@ from django.templatetags.static import static
 from zipfile import ZipFile
 from django.utils import timezone
 from cfts import settings as cftsSettings
+from django.core.mail import EmailMessage
 
 # cryptography
 import os
@@ -388,17 +389,27 @@ def banUser(request, userid, requestid, ignore_strikes=False, perma_ban=False):
         else:
             pass
 
-    if days == 0:
-        messages.success(request, "User banned for a really long time")
+    if cftsSettings.EMAIL_HOST != '':
+        if days == 0:
+            messages.success(request, "User banned for a really long time, email sent to user")
+        else:
+            messages.success(request, "User banned for " + str(days) + " days, email sent to user")
     else:
-        messages.success(request, "User banned for " + str(days) + " days")
+        if days == 0:
+            messages.success(request, "User banned for a really long time")
+        else:
+            messages.success(request, "User banned for " + str(days) + " days")
 
     if cftsSettings.DEBUG == True:
         return redirect('/transfer-request/' + str(requestid))
     else:
         # Generate a ban email template, but only when DEBUG == False... for my sanity
-        eml = banEml(request, requestid, ignore_strikes, perma_ban)
-        return redirect('/transfer-request/' + str(requestid) + "?eml=" + eml)
+        if cftsSettings.EMAIL_HOST != '':
+            eml = banEml(request, requestid, ignore_strikes, perma_ban)
+            return redirect('/transfer-request/' + str(requestid))
+        else:
+            eml = banEml(request, requestid, ignore_strikes, perma_ban)
+            return redirect('/transfer-request/' + str(requestid) + "?eml=" + eml)
 
 
 @login_required
@@ -417,9 +428,23 @@ def banEml(request, request_id, ignore_strikes, perma_ban):
     :return: The return value is a string that is the body of an email.
     """
     rqst = Request.objects.get(request_id=request_id)
+    if cftsSettings.EMAIL_HOST != '':
+        msgBody = render_to_string('partials/Queue_partials/banTemplate.html', {'rqst': rqst, 'ignore_strikes': ignore_strikes, 'perma_ban': perma_ban, 'EMAIL_HOST': cftsSettings.EMAIL_HOST}, request)
 
-    msgBody = "mailto:" + str(rqst.user.source_email) + "?subject=CFTS User Account Suspension&body="
-    msgBody += render_to_string('partials/Queue_partials/banTemplate.html', {'rqst': rqst, 'ignore_strikes': ignore_strikes, 'perma_ban': perma_ban}, request)
+        email = EmailMessage(
+            'CFTS User Account Suspension',
+            msgBody,
+            "Combined File Transfer Service <" + cftsSettings.EMAIL_FROM_ADDRESS + ">",
+            [str(rqst.user.source_email), ],
+            reply_to=[cftsSettings.IM_ORGBOX_EMAIL, ],
+        )
+
+        email.send(fail_silently=False)
+
+    else:
+        msgBody = "mailto:" + str(rqst.user.source_email) + "?subject=CFTS User Account Suspension&body="
+        msgBody += render_to_string('partials/Queue_partials/banTemplate.html', {'rqst': rqst, 'ignore_strikes': ignore_strikes, 'perma_ban': perma_ban, 'EMAIL_HOST': cftsSettings.EMAIL_HOST}, request)
+    
     return msgBody
 
 
@@ -446,13 +471,19 @@ def warnUser(request, userid, requestid, confirmWarn=False):
     else:
         userToWarn.update(account_warning_count=userToWarn[0].account_warning_count+1, last_warned_on=timezone.now())
 
-        messages.success(request, "User warning issued")
+        if cftsSettings.EMAIL_HOST != '':
+            messages.success(request, "User warning issued, email sent to user")
+        else:
+            messages.success(request, "User warning issued")
 
         if cftsSettings.DEBUG == True:
             return redirect('/transfer-request/' + str(requestid))
         else:
             eml = warningEml(request, userToWarn[0].account_warning_count, userToWarn[0].source_email)
-            return redirect('/transfer-request/' + str(requestid) + "?eml=" + eml)
+            if cftsSettings.EMAIL_HOST != '':
+                return redirect('/transfer-request/' + str(requestid))
+            else:
+                return redirect('/transfer-request/' + str(requestid) + "?eml=" + eml)
 
 
 @login_required
@@ -469,8 +500,22 @@ def warningEml(request, warningCount, source_email):
     :return: The return value is a string.
     """
 
-    msgBody = "mailto:" + str(source_email) + "?subject=CFTS User Account Warning&body="
-    msgBody += render_to_string('partials/Queue_partials/userWarningTemplate.html', {'warningCount': warningCount}, request)
+    if cftsSettings.EMAIL_HOST != '':
+        msgBody = render_to_string('partials/Queue_partials/userWarningTemplate.html', {'warningCount': warningCount, 'EMAIL_HOST': cftsSettings.EMAIL_HOST}, request)
+
+        email = EmailMessage(
+            'CFTS User Account Warning',
+            msgBody,
+            "Combined File Transfer Service <" + cftsSettings.EMAIL_FROM_ADDRESS + ">",
+            [str(source_email), ],
+            reply_to=[cftsSettings.IM_ORGBOX_EMAIL, ],
+        )
+
+        email.send(fail_silently=False)
+    else:
+        msgBody = "mailto:" + str(source_email) + "?subject=CFTS User Account Warning&body="
+        msgBody += render_to_string('partials/Queue_partials/userWarningTemplate.html', {'warningCount': warningCount, 'EMAIL_HOST': cftsSettings.EMAIL_HOST}, request)
+
     return msgBody
 
 
