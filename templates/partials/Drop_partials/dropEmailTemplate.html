@@ -1,4 +1,24 @@
+{# fmt:off #}
 {% spaceless %}
-    {% load util %}
-    You have received a CFTS file drop. Use the details below to retrieve your files.<br>Your files will be available for download until {{deleteDate}}<br>---------------------------------------------------------------------------------------------------------<br>Request URL: {% if request.is_secure %}https://{% else %}http://{% endif %}{{url}}<br>Request Code: {{PIN}}<br>Decryption Phrase: {{decryptPhrase}}<br>
+{% if EMAIL_HOST == 'false' %}
+Classification: {{EMAIL_CLASSIFICATION}}
+
+You have received a CFTS file drop. Use the details below to retrieve your files.
+
+Your files will be available for download until {{deleteDate}}
+
+---------------------------------------------------------------------------------------------------------
+
+Request URL: {% if request.is_secure %}https://{% else %}http://{% endif %}{{url}}
+
+Request Code: {{PIN}}
+
+Decryption Phrase: {{decryptPhrase}}
+
+Classified By: {{request.user.last_name}}, {{request.user.first_name}}
+Classification: {{EMAIL_CLASSIFICATION}}
+{% else %}
+Classification: {{EMAIL_CLASSIFICATION}}<br>You have received a CFTS file drop. Use the details below to retrieve your files.<br>Your files will be available for download until {{deleteDate}}<br>---------------------------------------------------------------------------------------------------------<br>Request URL: {% if request.is_secure %}https://{% else %}http://{% endif %}{{url}}<br>Request Code: {{PIN}}<br>Decryption Phrase: {{decryptPhrase}}<br>Classified By: {{request.user.last_name}}, {{request.user.first_name}}<br>Classification: {{EMAIL_CLASSIFICATION}}
+{% endif %}
 {% endspaceless %}
+{# fmt:on #}

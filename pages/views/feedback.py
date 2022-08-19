@@ -12,7 +12,7 @@ from django.http import JsonResponse, HttpResponseRedirect
 from django.utils import timezone
 
 # cfts settings
-from cfts import settings as Settings
+from cfts.settings import IM_ORGBOX_EMAIL
 # model/database stuff
 from pages.models import *
 from pages.views.auth import getCert, getOrCreateUser
@@ -29,9 +29,9 @@ def feedback(request, requestid=False):
     # if optional requestid passed in from args include it in the request context
     # requestid is only passed in from a ban request and is used to link to the Request object that warrented a user ban
     if requestid != False:
-        rc = {'resources': resources, 'user': cftsUser, 'rqst': Request.objects.get(request_id=requestid)}
+        rc = {'resources': resources, 'orgBox': IM_ORGBOX_EMAIL, 'user': cftsUser, 'rqst': Request.objects.get(request_id=requestid)}
     else:
-        rc = {'resources': resources, 'user': cftsUser}
+        rc = {'resources': resources, 'orgBox': IM_ORGBOX_EMAIL, 'user': cftsUser}
 
     return render(request, 'pages/feedback.html', {'rc': rc})
 

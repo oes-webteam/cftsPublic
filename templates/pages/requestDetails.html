@@ -7,100 +7,106 @@
     <link rel="stylesheet" href="{% static 'css/requestDetails.css' %}">
 
     <div class="container details-container">
-        <table class="data-table">
-            <tr class="xfer-status">
-                <a type="button" class="btn btn-primary btn-back" href="{% url 'userRequests' %}">Back</a>
-                <h3 class="status-text">Request Status:
-                    {% if rc.request.all_rejected == True %}
-                        Rejected
-                    {% elif rc.request.ready_to_pull == True %}
+        {% if rc.error == True %}
+            <h2>You are not authorized to view details about this request.</h2>
+        {% else %}
+            <table class="data-table">
+                <tr class="xfer-status">
+                    <a type="button" class="btn btn-primary btn-back me-2" href="{% url 'userRequests' %}">Back</a>
+                    {% if rc.request.pull == None%}
+                        <a type="button" class="btn btn-danger btn-cancel me-2" href="/cancelUserRequest/{{rc.request.request_id}}">Cancel Request</a>
+                    {% endif %}
+                    <h3 class="status-text">Request Status:
+                        {% if rc.request.all_rejected == True %}
+                            Rejected
+                        {% elif rc.request.ready_to_pull == True %}
+                            {% if rc.request.pull.date_complete != None %}
+                                Transfer Complete
+                            {% elif rc.request.pull.date_pulled != None %}
+                                Inbound to Destination Network
+                            {% else %}
+                                Review Complete
+                            {% endif %}
+                        {% elif rc.request.pull.date_pulled == None %}
+                            Submitted
+                        {% endif %}
+                    </h3>
+
+                    <div class="status-icons">
                         {% if rc.request.pull.date_complete != None %}
-                            Transfer Complete
+                            <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
+                            <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
+                            <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
+                            {% if rc.request.all_rejected == True %}
+                                <img src="{% static 'img/red_status.svg' %}" class="status-img"></img>
+                            {% else %}
+                                <img src="{% static 'img/green_status.svg' %}" class="status-img"></img>
+                            {% endif %}
+
                         {% elif rc.request.pull.date_pulled != None %}
-                            Inbound to Destination Network
-                        {% else %}
-                            Review Complete
+                            <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
+                            <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
+                            {% if rc.request.all_rejected == True %}
+                                <img src="{% static 'img/red_status.svg' %}" class="status-img"></img>
+                            {% else %}
+                                <img src="{% static 'img/deep-blue_status.svg' %}" class="status-img"></img>
+                            {% endif %}
+                            <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
+
+                        {% elif rc.request.ready_to_pull == True %}
+                            <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
+                            {% if rc.request.all_rejected == True %}
+                                <img src="{% static 'img/red_status.svg' %}" class="status-img"></img>
+                            {% else %}
+                                <img src="{% static 'img/deep-blue_status.svg' %}" class="status-img"></img>
+                            {% endif %}
+                            <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
+                            <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
+
+                        {% else%}
+                            {% if rc.request.all_rejected == True %}
+                                <img src="{% static 'img/red_status.svg' %}" class="status-img"></img>
+                            {% else %}
+                                <img src="{% static 'img/deep-blue_status.svg' %}" class="status-img"></img>
+                            {% endif %}
+                            <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
+                            <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
+                            <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
                         {% endif %}
-                    {% elif rc.request.pull.date_pulled == None %}
-                        Submitted
-                    {% endif %}
-                </h3>
+                    </div>
+                </tr>
 
-                <div class="status-icons">
-                    {% if rc.request.pull.date_complete != None %}
-                        <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
-                        <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
-                        <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
-                        {% if rc.request.all_rejected == True %}
-                            <img src="{% static 'img/red_status.svg' %}" class="status-img"></img>
-                        {% else %}
-                            <img src="{% static 'img/green_status.svg' %}" class="status-img"></img>
-                        {% endif %}
+                <tr>
+                    <th>Submitter</th> <!-- add filter by user -->
+                    <th>Date Submitted</th>
+                    <th>Network</th>
+                    <th>Files</th>
+                    <th>Destination Emails</th>
+                </tr>
+                <tr class="data-row">
+                    <td class="xfer-user">{{ rc.firstName }} {{rc.lastName}}</td>
+                    <td class="xfer-date">{{ rc.request.date_created|date:"m/d/Y Hi" }}</td>
+                    <td class="xfer-net">{{ rc.request.network }}</td>
+                    <td class="xfer-files">
+                        <ul class="file-list">
+                            {%  for f in rc.request.files.all %}
+                                {% with f.file_object.name|split:"/" as name %}
+                                    <li class="{% if f.rejection_reasons.all %}rejected{% endif %}" x-file-name="{{ name.2 }}">{{ name.2|truncatechars:50 }}</li>
+                                {% endwith %}
+                            {% endfor %}
+                        </ul>
+                    </td>
+                    <td class="xfer-email">
+                        <ul class="email-list">
+                            {%  for e in rc.request.target_email.all %}
+                                <li>{{e}}</li>
+                            {% endfor %}
+                        </ul>
+                    </td>
 
-                    {% elif rc.request.pull.date_pulled != None %}
-                        <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
-                        <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
-                        {% if rc.request.all_rejected == True %}
-                            <img src="{% static 'img/red_status.svg' %}" class="status-img"></img>
-                        {% else %}
-                            <img src="{% static 'img/deep-blue_status.svg' %}" class="status-img"></img>
-                        {% endif %}
-                        <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
-
-                    {% elif rc.request.ready_to_pull == True %}
-                        <img src="{% static 'img/blue_status.svg' %}" class="status-img"></img>
-                        {% if rc.request.all_rejected == True %}
-                            <img src="{% static 'img/red_status.svg' %}" class="status-img"></img>
-                        {% else %}
-                            <img src="{% static 'img/deep-blue_status.svg' %}" class="status-img"></img>
-                        {% endif %}
-                        <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
-                        <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
-
-                    {% else%}
-                        {% if rc.request.all_rejected == True %}
-                            <img src="{% static 'img/red_status.svg' %}" class="status-img"></img>
-                        {% else %}
-                            <img src="{% static 'img/deep-blue_status.svg' %}" class="status-img"></img>
-                        {% endif %}
-                        <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
-                        <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
-                        <img src="{% static 'img/grey_status.svg' %}" class="status-img"></img>
-                    {% endif %}
-                </div>
-            </tr>
-
-            <tr>
-                <th>Submitter</th> <!-- add filter by user -->
-                <th>Date Submitted</th>
-                <th>Network</th>
-                <th>Files</th>
-                <th>Destination Emails</th>
-            </tr>
-            <tr class="data-row">
-                <td class="xfer-user">{{ rc.firstName }} {{rc.lastName}}</td>
-                <td class="xfer-date">{{ rc.request.date_created|date:"m/d/Y Hi" }}</td>
-                <td class="xfer-net">{{ rc.request.network }}</td>
-                <td class="xfer-files">
-                    <ul class="file-list">
-                        {%  for f in rc.request.files.all %}
-                            {% with f.file_object.name|split:"/" as name %}
-                                <li class="{% if f.rejection_reason != Null %}rejected{% endif %}" x-file-name="{{ name.2 }}">{{ name.2|truncatechars:50 }}</li>
-                            {% endwith %}
-                        {% endfor %}
-                    </ul>
-                </td>
-                <td class="xfer-email">
-                    <ul class="email-list">
-                        {%  for e in rc.request.target_email.all %}
-                            <li>{{e}}</li>
-                        {% endfor %}
-                    </ul>
-                </td>
-
-            </tr>
-        </table>
-
+                </tr>
+            </table>
+        {% endif %}
         {% if rc.request.has_rejected == True %}
             <table>
                 <tr>
@@ -109,20 +115,47 @@
                     <th>Explanation</th>
                 </tr>
                 {%  for f in rc.request.files.all %}
-                    {% if f.rejection_reason != Null %}
-                        <tr class="data-row">
-                            <td class="xfer-files">
-                                {% with f.file_object.name|split:"/" as name %}
-                                    <p x-file-name="{{ name.2 }}">{{ name.2|truncatechars:50 }}</p>
-                                {% endwith %}
-                            </td>
-                            <td>
-                                <p>{{f.rejection_reason}}</p>
-                            </td>
-                            <td>
-                                {{f.rejection_reason.text|linebreaks}}
-                            </td>
-                        </tr>
+                    {% if f.rejection_reasons.all %}
+                        {% for reason in f.rejection_reasons.all %}
+                            {% if reason.name != "Duplicate - No Email" %}
+                                <tr class="data-row">
+                                    <td class="xfer-files">
+                                        {% if forloop.first %}
+                                            {% with f.file_object.name|split:"/" as name %}
+                                                <p x-file-name="{{ name.2 }}">{{ name.2|truncatechars:50 }}</p>
+                                            {% endwith %}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <ul  class="mb-1">
+                                            <li>{{reason.name}}</li>
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <ul  class="mb-1">
+                                            <li>{{reason.text}}</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if f.rejection_text != none and f.rejection_text != '' %}
+                            <tr class="data-row">
+                                <td class="xfer-files">
+                                </td>
+                                <td>
+                                    <ul  class="mb-1">
+                                        <li>Analyst Comments</li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ul  class="mb-1">
+                                        <li>{{f.rejection_text}}</li>
+                                    </ul>
+                                </td>
+                            </tr>
+                        {% endif %}
                     {% endif %}
                 {% endfor %}
             </table>

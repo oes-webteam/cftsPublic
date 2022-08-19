@@ -1,0 +1,94 @@
+<div class="row">
+    <div class="col results">
+        <h3>Files Reviewed</h3>
+        <div id="reviewed" class="results-data">{{files_reviewed}}</div>
+    </div>
+    <div class="col results">
+        <h3>Files Transfered</h3>
+        <div id="transfered" class="results-data">{{files_transfered}} ({{transPercent}}%)</div>
+    </div>
+    <div class="col results">
+        <h3>Files Rejected</h3>
+        <div id="rejected" class="results-data">{{files_rejected}} ({{rejectPercent}}%)</div>
+    </div>
+    <div class="col results">
+        <h3>CENTCOM Files</h3>
+        <div id="centcom" class="results-data">{{centcom_files}} ({{centcomPercent}}%)</div>
+    </div>
+</div>
+
+</br>
+
+<div class="row">
+    <div class="col results">
+        <h3>File Types</h3>
+        <div id="types">
+            {% for key, value in file_types.items %}
+                <div class="fileCount results-data" id="{{key}}">{{key}}: {{value}}</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="col results">
+        <h3>Combined File Size</h3>
+        <div id="size" class="results-data">{{file_sizes}}</div>
+    </div>
+
+    <div class="col results">
+        <h3>Files By Organization</h3>
+        <div id="org" class="results-data">
+            {% for key, value in org_counts.items %}
+                <div class="orgs" id="{{key}}">{{key}}: {{value}}</div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+
+</br>
+
+<div class="row">
+    <div class="col results">
+        <h3>File Categories</h3>
+        <div id="categories">
+            {% for category in file_categories %}
+                {% if category.file_categories__file_category != None %}
+                    <div class="fileCategories results-data" id="{{category.file_categories__file_category}}">{{category.file_categories__file_category}}: {{category.category_count}}</div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="col results">
+        <h3>Rejection Reasons</h3>
+        <div id="rejections">
+            {% for reason in rejection_reasons %}
+                {% if reason.files__rejection_reasons__name != None %}
+                    <div class="rejections results-data" id="{{reason.files__rejection_reasons__name}}">{{reason.files__rejection_reasons__name}}: {{reason.reject_count}}</div>
+                {% endif %}
+            {% endfor %}
+
+
+        </div>
+    </div>
+
+</div>
+
+</br>
+
+<div class="row">
+    <div class="col results">
+        <h3>Unique Users</h3>
+        <div id="users" class="results-data">{{user_count}}</div>
+    </div>
+
+    <div class="col results">
+        <h3>Users Banned</h3>
+        <div id="users-banned" class="results-data">{{banned_count}}</div>
+    </div>
+
+    <div class="col results">
+        <h3>Users Warned</h3>
+        <div id="users-warned" class="results-data">{{warned_count}}</div>
+    </div>
+</div>

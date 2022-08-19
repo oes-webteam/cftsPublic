@@ -9,16 +9,13 @@ from django.shortcuts import render, redirect
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.cache import never_cache
 
-from cfts.settings import DEBUG, DISABLE_SUBMISSIONS
+from cfts.settings import DEBUG, DISABLE_SUBMISSIONS, NETWORK, IM_ORGBOX_EMAIL
 # db/model stuff
 from pages.models import *
 
 from pages.views.auth import getCert, getOrCreateUser
 from pages.views.apis import setConsentCookie
 
-import logging
-
-logger = logging.getLogger('django')
 # ====================================================================
 
 # function to return a dictionary of Network and Email objects from a User objects destination_emails field
@@ -77,12 +74,13 @@ def frontend(request):
     # collect resources to display in resources dropdown in the site nav bar
     resources = ResourceLink.objects.all()
     announcements = Message.objects.filter(visible=True)
+    fileCategories = FileCategories.objects.filter(visible=True)
 
     try:
         # if a user is using Internet Explorer server them the template with minimal request context
         # these users will be served a page with the main request form removed and a message shaming them for using IE in {{currentYear}}
         if browser == "IE":
-            rc = {'resources': resources, 'browser': browser}
+            rc = {'resources': resources, 'browser': browser, 'orgBox': IM_ORGBOX_EMAIL}
             return render(request, 'pages/frontend.html', {'rc': rc})
 
         # get consent cookie, redirect to consent page if missing
@@ -93,15 +91,12 @@ def frontend(request):
         certInfo = getCert(request)
         cftsUser = getOrCreateUser(request, certInfo)
 
-
         # redirect user to login page or info edit page
-        if cftsUser == False:
-            return render(request, 'pages/frontend.html', {'rc': {'error': True, 'submission_disabled': DISABLE_SUBMISSIONS, 'debug': str(DEBUG), 'resources': resources, 'browser': browser}})
-        elif request.user.is_authenticated == False and certInfo['status'] == "empty" or certInfo['status'] == "buggedPKI":
+        if request.user.is_authenticated == False and certInfo['status'] == "empty" or certInfo['status'] == "buggedPKI":
             if DEBUG == True:
                 return redirect("/login")
             elif DEBUG == False:
-                return render(request, 'pages/frontend.html', {'rc': {'error': True, 'submission_disabled': DISABLE_SUBMISSIONS, 'debug': str(DEBUG), 'resources': resources, 'browser': browser}})
+                return render(request, 'pages/frontend.html', {'rc': {'error': True, 'orgBox': IM_ORGBOX_EMAIL, 'submission_disabled': DISABLE_SUBMISSIONS, 'debug': str(DEBUG), 'resources': resources, 'browser': browser}})
         elif cftsUser == None or cftsUser.update_info == True:
             return redirect("/user-info")
 
@@ -114,7 +109,8 @@ def frontend(request):
         if nets == None:
             return redirect('user-info')
 
-        rc = {'networks': nets, 'submission_disabled': DISABLE_SUBMISSIONS, 'debug': str(DEBUG), 'resources': resources, 'user': cftsUser, 'browser': browser, 'announcements': announcements}
+        rc = {'networks': nets, 'orgBox': IM_ORGBOX_EMAIL, 'submission_disabled': DISABLE_SUBMISSIONS, 'network': NETWORK, 'debug': str(
+            DEBUG), 'resources': resources, 'user': cftsUser, 'browser': browser, 'announcements': announcements, 'categories': fileCategories}
 
         return render(request, 'pages/frontend.html', {'rc': rc})
 
@@ -142,7 +138,7 @@ def userRequests(request):
         pageNum = request.GET.get('page')
         pageObj = requestPage.get_page(pageNum)
 
-    rc = {'requests': pageObj, 'resources': resources, 'user': cftsUser}
+    rc = {'requests': pageObj, 'orgBox': IM_ORGBOX_EMAIL, ' resources': resources, 'user': cftsUser}
 
     return render(request, 'pages/userRequests.html', {'rc': rc})
 
@@ -151,9 +147,38 @@ def userRequests(request):
 def requestDetails(request, id):
     resources = ResourceLink.objects.all()
 
+    # get user cert info, get User object
+    certInfo = getCert(request)
+    cftsUser = getOrCreateUser(request, certInfo)
+
     # get the Request object the user clicked on from the request history page
     userRequest = Request.objects.get(request_id=id)
 
-    rc = {'request': userRequest, 'resources': resources, 'user': userRequest.user, 'firstName': userRequest.user.name_first.split("_buggedPKI")[0], 'lastName': userRequest.user.name_last}
+    if cftsUser == userRequest.user or request.user.is_staff or request.user.is_superuser:
+        rc = {'request': userRequest, 'orgBox': IM_ORGBOX_EMAIL, 'resources': resources, 'user': userRequest.user, 'firstName': userRequest.user.name_first.split("_buggedPKI")[0], 'lastName': userRequest.user.name_last}
+    else:
+        rc = {'error': True, 'orgBox': IM_ORGBOX_EMAIL, 'resources': resources,}
 
     return render(request, 'pages/requestDetails.html', {'rc': rc})
+
+def cancelUserRequest(request, id):
+    resources = ResourceLink.objects.all()
+
+    # get user cert info, get User object
+    certInfo = getCert(request)
+    cftsUser = getOrCreateUser(request, certInfo)
+
+    # get the Request object the user clicked on from the request history page
+    requestToCancel = Request.objects.get(request_id=id)
+
+    if cftsUser == requestToCancel.user and requestToCancel.pull == None:
+        requestToCancel.delete()
+        messages.success(request, "Request sucessfully deleted")
+
+        return redirect("/my-requests")
+    elif requestToCancel.pull != None:
+        messages.error(request, "Request can no longer be canceled")
+        return redirect('/request/' + str(requestToCancel.request_id))
+    else:
+        rc = {'error': True, 'orgBox': IM_ORGBOX_EMAIL, 'resources': resources,}
+        return render(request, 'pages/requestDetails.html', {'rc': rc})

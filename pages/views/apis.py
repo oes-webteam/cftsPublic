@@ -5,24 +5,25 @@ import datetime
 from zipfile import ZipFile
 from django.http.response import HttpResponse
 from django.contrib import messages
+from django.core.mail import EmailMessage
 
 # decorators
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.cache import never_cache
 
 # responses
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 
 # , HttpResponse, FileResponse
 from django.http import JsonResponse, HttpResponse
 
 # cfts settings
-from cfts.settings import NETWORK, DEBUG
+from cfts.settings import NETWORK, DEBUG, EMAIL_HOST, EMAIL_FROM_ADDRESS, IM_ORGBOX_EMAIL, EMAIL_CLASSIFICATION
 # model/database stuff
 from pages.models import *
 from django.contrib.auth.models import User as authUser
-from django.db.models import Q
+from django.db.models import Count, Q
 
 from pages.views.queue import createZip, updateFileReview
 from pages.views.auth import superUserCheck, staffCheck
@@ -60,8 +61,9 @@ def setRejectDupes(request):
     # loop through all duplicate requests and reject all of their files, mark the rejector as a file reviewer for all files
     for rqst in dupeRequests:
         files = rqst.files.all()
-        files.update(rejection_reason=dupeReason)
+        # files.update(rejection_reason=dupeReason)
         for file in files:
+            file.rejection_reasons.add(dupeReason)
             updateFileReview(request, file.file_id, rqst.request_id)
 
     # update flags on the duplicate requests, "rejected_dupe" will hide the requests from the queue
@@ -88,13 +90,16 @@ def setReject(request):
 
     postData = dict(request.POST.lists())
 
-    reject_id = postData['reject_id']
+    reject_ids = postData['reject_id[]']
+    reasons = Rejection.objects.filter(rejection_id__in=reject_ids)
+
     request_id = postData['request_id']
     id_list = postData['id_list[]']
 
+    rejection_text = postData['reject_text'][0]
+
     # Update the files to set the rejection
     files = File.objects.filter(file_id__in=id_list)
-    files.update(rejection_reason_id=reject_id[0])
 
     # update request with the has_rejected flag
     rqst = Request.objects.filter(request_id=request_id[0])
@@ -103,6 +108,12 @@ def setReject(request):
     # Update files review status because a rejected file counts as fully reviewed
     # skipComplete will prevent a files review status from progressing forward when calling updateFileReview()
     for file in files:
+        file.rejection_reasons.clear()
+        file.rejection_reasons.add(*reasons)
+        if rejection_text != None and rejection_text != "" and rejection_text != '':
+            file.rejection_text = rejection_text
+            file.save()
+
         ready_to_pull = updateFileReview(request, file.file_id, request_id[0], skipComplete=True)
 
     # Check if all files in the request are rejected
@@ -110,13 +121,16 @@ def setReject(request):
     all_rejected = True
 
     for file in files:
-        if file.rejection_reason_id == None:
+        if not file.rejection_reasons.all():
             all_rejected = False
 
     if all_rejected == True:
         rqst.update(all_rejected=True)
 
-    messages.success(request, "Files rejected successfully")
+    if EMAIL_HOST == '':
+        messages.success(request, "Files rejected successfully.")
+    else:
+        messages.success(request, "Files rejected successfully, email sent to user.")
 
     # Recreate the zip file for the pull, this will exclude the newly rejected files
     network_name = rqst[0].network.name
@@ -132,6 +146,7 @@ def setReject(request):
 
     # Normally rejecting a file would also generate an email to go along with it, but that gets really annoying when doing dev work so emails are disabled when DEBUG==True
     # If DEBUG==False then we call createEml() and return the email generated with a JSON response
+
     if DEBUG == True:
         if ready_to_pull == True:
             messages.success(request, "All files in request have been fully reviewed. Request ready to pull")
@@ -139,16 +154,24 @@ def setReject(request):
         else:
             return JsonResponse({'debug': True})
     else:
-        eml = createEml(request, request_id, id_list, reject_id)
-        if ready_to_pull == True:
-            messages.success(request, "All files in request have been fully reviewed. Request ready to pull")
-            return JsonResponse({'eml': str(eml), 'flash': False})
+        if EMAIL_HOST == '':
+            eml = createEml(request, request_id, id_list, reasons)
+            if ready_to_pull == True:
+                messages.success(request, "All files in request have been fully reviewed. Request ready to pull.")
+                return JsonResponse({'eml': str(eml), 'flash': False})
+            else:
+                return JsonResponse({'eml': str(eml)})
         else:
-            return JsonResponse({'eml': str(eml)})
+            createEml(request, request_id, id_list, reasons)
+            if ready_to_pull == True:
+                messages.success(request, "All files in request have been fully reviewed. Request ready to pull.")
+                return JsonResponse({'flash': False})
+            else:
+                return JsonResponse({})
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
-def createEml(request, request_id, files_list, reject_id):
+def createEml(request, request_id, files_list, reasons):
     """
     It takes in a request object, a request id, a list of file ids, and a rejection id. It then gets the
     Request and Rejection objects from the database, creates a mailto link, lists the names of all the
@@ -164,25 +187,66 @@ def createEml(request, request_id, files_list, reject_id):
 
     # Get the Request and Rejection objects
     rqst = Request.objects.get(request_id=request_id[0])
-    rejection = Rejection.objects.get(rejection_id=reject_id[0])
+    rejectionComments = None
 
     # Create a mailto link...
     # Yeah, that's how we send out system emails because we aren't allowed to have an email relay server... thanks J6
-    msgBody = "mailto:" + str(rqst.user.source_email) + "?cc=" + str(rqst.RHR_email) + "&subject=CFTS File Rejection&body=The following files have been rejected from your transfer request:%0D%0A"
+    if EMAIL_HOST == '':
+        msgBody = "mailto:" + str(rqst.user.source_email) + "?cc=" + str(rqst.RHR_email) + \
+            "&subject=[" + EMAIL_CLASSIFICATION + "] CFTS File Rejection&body=Classification: " + EMAIL_CLASSIFICATION + "%0D%0A%0D%0AThe following files have been rejected from your transfer request:%0D%0A"
+    else:
+        msgBody = "Classification: " + EMAIL_CLASSIFICATION + "\n\nThe following files have been rejected from your transfer request:\n        "
 
     # List the names of all the files being rejected in the email
     files = File.objects.filter(file_id__in=files_list)
     for file in files:
+        if rejectionComments == None and file.rejection_text != None and file.rejection_text != "":
+            rejectionComments = file.rejection_text
+
         if file == files.last():
-            msgBody += str(file.file_object).split("/")[-1] + " "
+            msgBody += str(file.file_object).split("/")[-1] + ""
         else:
             msgBody += str(file.file_object).split("/")[-1] + ", "
 
+    if EMAIL_HOST == '':
+        msgBody += "%0D%0A%0D%0AReasons for file rejection:%0D%0A"
+    else:
+        msgBody += "\n\nReasons for file rejection:\n        "
+
+    for reason in reasons:
+        if reason == reasons.last():
+            msgBody += reason.name + ""
+        else:
+            msgBody += reason.name + ", "
     # This is the url that users can use to get more details about their request
     url = "https://" + str(request.get_host()) + "/request/" + str(rqst.request_id)
 
     # Render out the email template and append it to the mailto link
-    msgBody += render_to_string('partials/Queue_partials/rejectionEmailTemplate.html', {'rqst': rqst, 'rejection': rejection, 'firstName': rqst.user.name_first, 'url': url}, request)
+    msgBody += render_to_string('partials/Queue_partials/rejectionEmailTemplate.html', {'rqst': rqst, 'EMAIL_HOST': EMAIL_HOST, 'EMAIL_CLASSIFICATION': EMAIL_CLASSIFICATION, 'reasons': reasons, 'firstName': rqst.user.name_first,
+                                                                                        'url': url, 'comments': rejectionComments}, request)
+
+    if EMAIL_HOST != '':
+        try:
+            email = EmailMessage(
+                '[' + EMAIL_CLASSIFICATION + '] CFTS File Rejection',
+                msgBody,
+                "Combined File Transfer Service <" + EMAIL_FROM_ADDRESS + ">",
+                [str(rqst.user.source_email), ],
+                cc=[str(rqst.RHR_email), ],
+                reply_to=[IM_ORGBOX_EMAIL, ],
+            )
+
+            email.send(fail_silently=False)
+        except:
+            email = EmailMessage(
+                '[' + EMAIL_CLASSIFICATION + '] CFTS File Rejection',
+                msgBody,
+                "Combined File Transfer Service <" + EMAIL_FROM_ADDRESS + ">",
+                [str(rqst.user.source_email), ],
+                reply_to=[IM_ORGBOX_EMAIL, ],
+            )
+
+            email.send(fail_silently=False)
 
     return msgBody
 
@@ -203,11 +267,13 @@ def unReject(request):
 
     # Updating the rejection_reason_id to None for all the files in the list.
     files = File.objects.filter(file_id__in=id_list)
-    files.update(rejection_reason_id=None)
 
     # Updating the file review status for each file in the list
     # For safety any unrejected file is no longer considered reviewed
     for file in files:
+        file.rejection_reasons.clear()
+        file.rejection_text = None
+        file.save()
         updateFileReview(request, file.file_id, request_id[0], skipComplete=True)
 
     # Checking if any of the files in the request has a rejection reason. If it does, it sets the
@@ -216,7 +282,7 @@ def unReject(request):
     has_rejected = False
 
     for file in files:
-        if file.rejection_reason_id != None:
+        if not file.rejection_reasons.all():
             has_rejected = True
 
     if has_rejected == False:
@@ -310,15 +376,22 @@ def runNumbers(request, api_call=False):
     centcom_files = 0
     file_types = []
     file_type_counts = {
-        "pdf": 0,
-        "excel": 0,
-        "word": 0,
-        "ppt": 0,
-        "text": 0,
-        "img": 0,
-        "zip": 0,
-        "zipContents": 0,
-        "other": 0
+        "PDF files": 0,
+        "Excel files": 0,
+        "Word files": 0,
+        "PowerPoint files": 0,
+        "Text files": 0,
+        "Image files": 0,
+        "Zip Files": 0,
+        "Total files in zips": 0,
+        "Other": 0
+    }
+    file_category_counts = {
+        "Intel": 0,
+        "Logistics": 0,
+        "Personnel": 0,
+        "Operational": 0,
+        "Governance": 0
     }
     org_counts = {
         "HQ": 0,
@@ -349,6 +422,9 @@ def runNumbers(request, api_call=False):
 
     # Get all requests in the date range that are part of a completed pull.
     requests_in_range = Request.objects.filter(pull__date_complete__date__range=(start_date, end_date))
+
+    rejection_reasons = requests_in_range.values('files__rejection_reasons__name').annotate(reject_count=Count('files__rejection_reasons'))
+    file_categories = requests_in_range.values('file_categories__file_category').annotate(category_count=Count('file_categories__file_category'))
 
     for rqst in requests_in_range:
         # Don't include rejected duplicate requests in metrics
@@ -386,7 +462,7 @@ def runNumbers(request, api_call=False):
                 file_size += f.file_size
 
                 # Exclude the rejects from the transfers numbers, they are counted separately
-                if f.rejection_reason == None:
+                if not f.rejection_reasons.all():
                     files_transfered += f.file_count
 
                     # If the file is from a CENTCOM org count it
@@ -397,7 +473,7 @@ def runNumbers(request, api_call=False):
 
                 # Count how many files were in zips
                 if ext == "zip":
-                    file_type_counts['zipContents'] += f.file_count
+                    file_type_counts['Total files in zips'] += f.file_count
 
                 # File count by organization
                 org = str(f.org)
@@ -408,28 +484,28 @@ def runNumbers(request, api_call=False):
 
     # Add up all file type counts
     pdfCount = file_types.count("pdf")
-    file_type_counts["pdf"] = pdfCount
+    file_type_counts["PDF files"] = pdfCount
 
     excelCount = file_types.count("xlsx") + file_types.count("xls") + file_types.count("xlsm") + file_types.count("xlsb") + file_types.count("xltx") + file_types.count("xltm") + file_types.count("xlt") + file_types.count("csv")
-    file_type_counts["excel"] = excelCount
+    file_type_counts["Excel files"] = excelCount
 
     wordCount = file_types.count("doc") + file_types.count("docx")
-    file_type_counts["word"] = wordCount
+    file_type_counts["Word files"] = wordCount
 
     textCount = file_types.count("txt")
-    file_type_counts["text"] = textCount
+    file_type_counts["Text files"] = textCount
 
-    pptCount = file_types.count("ppt") + file_types.count("pptx") + file_types.count("pps")
-    file_type_counts["ppt"] = pptCount
+    pptCount = file_types.count("PowerPoint files") + file_types.count("pptx") + file_types.count("pps")
+    file_type_counts["PowerPoint files"] = pptCount
 
     imgCount = file_types.count("png") + file_types.count("jpg") + file_types.count("jpeg") + file_types.count("svg") + file_types.count("gif")
-    file_type_counts["img"] = imgCount
+    file_type_counts["Image files"] = imgCount
 
     zipCount = file_types.count("zip")
-    file_type_counts["zip"] = zipCount
+    file_type_counts["Zip Files"] = zipCount
 
     otherCount = len(file_types) - (pdfCount + excelCount + wordCount + imgCount + pptCount + textCount + zipCount)
-    file_type_counts["other"] = otherCount
+    file_type_counts["Other"] = otherCount
 
     # Converting the file size into KB, MB, GB, TB.
     i = 0
@@ -443,8 +519,12 @@ def runNumbers(request, api_call=False):
     banned_users_count = len(banned_users)
     warned_users_count = len(warned_users)
 
-    return JsonResponse({'org_counts': org_counts, 'files_reviewed': files_reviewed, 'files_transfered': files_transfered, 'files_rejected': files_rejected, 'centcom_files': centcom_files,
-                         'file_types': file_type_counts, 'file_sizes': str(round(file_size, 2))+" "+sizeSuffix[i], 'user_count': unique_users_count, 'banned_count': banned_users_count, 'warned_count': warned_users_count})
+    transPercent = round(files_transfered/files_reviewed*100)
+    centcomPercent = round(centcom_files/files_reviewed*100)
+    rejectPercent = round(files_rejected/files_reviewed*100)
+
+    return render(request, 'partials/Report_partials/reportResults.html', {'file_categories': file_categories, 'rejection_reasons': rejection_reasons, 'org_counts': org_counts, 'files_reviewed': files_reviewed, 'files_transfered': files_transfered, 'files_rejected': files_rejected, 'centcom_files': centcom_files,
+                                                                           'file_types': file_type_counts, 'file_sizes': str(round(file_size, 2))+" "+sizeSuffix[i], 'user_count': unique_users_count, 'banned_count': banned_users_count, 'warned_count': warned_users_count, 'transPercent': transPercent, 'centcomPercent': centcomPercent, 'rejectPercent': rejectPercent})
 
 
 def process(request):
@@ -553,6 +633,12 @@ def process(request):
                 rqst.destFlag = True
 
         fileList = []
+
+        try:
+            if form_data.get('network') == "NIPR" and NETWORK == "SIPR":
+                rqst.file_categories.add(*FileCategories.objects.filter(file_category__in=form_data.getlist('fileCategory')))
+        except:
+            pass
 
         # Getting all the staff emails from the database
         staff_emails = [x.lower() for x in authUser.objects.filter(is_staff=True).values_list('email', flat=True)]

@@ -10,11 +10,13 @@
 
         <div class="container">
 
-            <div class="alert alert-danger fadein server-error" style="display: none;" role="alert"></div>
+            <div class="alert alert-danger alert-dismissible fadein server-error" style="display: none;" role="alert"></div>
 
-            <div class="alert alert-danger fadein danger-error" style="display: none;" role="alert"></div>
+            <div class="alert alert-danger alert-dismissible fadein danger-error" style="display: none;" role="alert"></div>
 
-            <div class="alert alert-success notification-success fadein" style="display: none;" role="alert"></div>
+            <div class="alert alert-danger alert-dismissible fadein file-error" style="display: none;" role="alert"></div>
+
+            <div class="alert alert-success alert-dismissible notification-success fadein" style="display: none;" role="alert"></div>
 
             <form action="#" id="transfer-request-form" method="post" enctype="multipart/form-data" novalidate="true">
                 {% csrf_token %}

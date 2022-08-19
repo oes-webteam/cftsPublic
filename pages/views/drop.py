@@ -6,6 +6,7 @@ import shutil
 import io
 from django.contrib import messages
 from django.core import paginator
+from django.core.mail import EmailMessage
 from django.core.files import File as DjangoFile
 from zipfile import ZipFile
 from django.utils import timezone
@@ -66,9 +67,6 @@ def dropEmail(request, id):
 
     requestInfo = ast.literal_eval(dropRequest.request_info)
 
-    eml = "mailto:" + str(dropRequest.target_email) + "?subject=CFTS File Drop&body="
-    url = str(request.get_host()) + "/drop/" + str(id)
-
     keyPath = os.path.join(cftsSettings.KEYS_DIR, cftsSettings.NETWORK + "_PRIV_KEY.pem")
     with open(keyPath, "rb") as infile:
         privKey = load_pem_private_key(infile.read(), password=str.encode(cftsSettings.PRIVATE_KEY_PASSWORD, 'utf-8'))
@@ -76,18 +74,41 @@ def dropEmail(request, id):
 
     decryptedPhrase = privKey.decrypt(requestInfo['encryptedPhrase'], padding.OAEP(padding.MGF1(hashes.SHA256()), hashes.SHA256(), None)).decode()
 
-    eml += render_to_string('partials/Drop_partials/dropEmailTemplate.html', {'url': url, 'deleteDate': dropRequest.delete_on,
-                            'PIN': dropRequest.request_code, 'decryptPhrase': decryptedPhrase}, request)
+    url = str(request.get_host()) + "/drop/" + str(id)  
+
+    buttonFallback = request.GET.get('button', 'false')
+
+    if cftsSettings.EMAIL_HOST != '' and buttonFallback == "false":
+        eml = render_to_string('partials/Drop_partials/dropEmailTemplate.html', {'url': url, 'deleteDate': dropRequest.delete_on,
+                            'PIN': dropRequest.request_code, 'decryptPhrase': decryptedPhrase, 'EMAIL_HOST': buttonFallback, 'EMAIL_CLASSIFICATION': cftsSettings.EMAIL_CLASSIFICATION}, request)
+
+        email = EmailMessage(
+            '[' + cftsSettings.EMAIL_CLASSIFICATION + '] CFTS File Drop',
+            eml,
+            "Combined File Transfer Service <" + cftsSettings.EMAIL_FROM_ADDRESS + ">",
+            [str(dropRequest.target_email), ],
+            reply_to=[cftsSettings.IM_ORGBOX_EMAIL, ],
+        )
+
+        email.send(fail_silently=False)
+    else:
+        eml = "mailto:" + str(dropRequest.target_email) + "?subject=[" + cftsSettings.EMAIL_CLASSIFICATION + "] CFTS File Drop&body=" 
+        
+        eml += render_to_string('partials/Drop_partials/dropEmailTemplate.html', {'url': url, 'deleteDate': dropRequest.delete_on,
+                                'PIN': dropRequest.request_code, 'decryptPhrase': decryptedPhrase, 'EMAIL_HOST': buttonFallback, 'EMAIL_CLASSIFICATION': cftsSettings.EMAIL_CLASSIFICATION}, request)
 
     dropRequest.email_sent = True
     dropRequest.save()
 
-    return redirect("/drop-zone?eml="+eml)
+    if cftsSettings.EMAIL_HOST == '' or buttonFallback == "true":
+        return redirect("/drop-zone?eml="+eml)
 
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def processDrop(request):
     try:
+        send_fail = False
+
         drop_folder = cftsSettings.DROPS_TEMPDIR+"\\drop_1"
 
         i = 2
@@ -140,13 +161,25 @@ def processDrop(request):
                     dropRequest.files.add(dropFile)
                     dropRequest.save()
 
+            if cftsSettings.EMAIL_HOST != '':
+                try:
+                    dropEmail(request, dropRequest.request_id)
+                except:
+                    send_fail = True
+
         shutil.rmtree(drop_folder)
-        messages.success(request, "Requests Upload Successful")
+        if cftsSettings.EMAIL_HOST != '':
+            if send_fail == True:
+                messages.warning(request, "Requests Upload Successful, some emails failed to send")
+            else:
+                messages.success(request, "Requests Upload Successful, emails sent to users")
+        else:
+            messages.success(request, "Requests Upload Successful")
         fileCleanup(request)
 
     except Exception as e:
         logger.error(e)
-        messages.error(request, "Error Creating Requests")
+        messages.error(request, "Error Creating Requests, " + str(e))
     return HttpResponse(set(requestPaths))
 
 

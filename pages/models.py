@@ -166,8 +166,7 @@ class File(models.Model):
     file_hash = models.CharField(max_length=40, blank=True, null=True)
     is_pii = models.BooleanField(default=False)
     is_centcom = models.BooleanField(default=False)
-    rejection_reason = models.ForeignKey(
-        Rejection, on_delete=models.DO_NOTHING, null=True, blank=True)
+    rejection_reasons = models.ManyToManyField(Rejection, related_name='file_rejection_reasons', blank=True)
     rejection_text = models.TextField(default=None, blank=True, null=True)
     org = models.CharField(max_length=50, default="")
     NDCI = models.BooleanField(default=False)
@@ -188,6 +187,13 @@ class File(models.Model):
     def __str__(self):
         return os.path.basename(self.file_object.name)
 
+class FileCategories(models.Model):
+    file_category_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    file_category = models.CharField(null=True, max_length=35)
+    visible = models.BooleanField(default=False)
+
+    def __str__(self):
+        return str(self.file_category)
 
 class Request(models.Model):
     request_id = models.UUIDField(
@@ -215,6 +221,7 @@ class Request(models.Model):
     ready_to_pull = models.BooleanField(default=False)
     has_encrypted = models.BooleanField(default=False)
     files_scanned = models.BooleanField(default=False)
+    file_categories = models.ManyToManyField(FileCategories)
 
     class Meta:
         ordering = ['-date_created']

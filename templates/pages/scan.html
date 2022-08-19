@@ -21,14 +21,14 @@
                                     <td class="p-1 mb-1">Folder in zip: <a href="{% url 'transfer-request' request.request_id %}">{{folder}}</a></td>
                                 </tr>
 
-                                {% if request.imgCount != None%}
+                                {% if request.imgCount != None %}
                                     <tr>
                                         <td class="p-1 mb-1">{{request.imgCount}} image{{request.imgCount|pluralize}} in request cannot be scanned</td>
                                     </tr>
                                 {% endif %}
 
                                 {% for file in request.files.all %}
-                                    {% if file.rejection_reason == None%}
+                                    {% if not file.rejection_reasons.all %}
                                         {% include 'partials/Scan_partials/scanResults.html' with results=file.scan_results file_id=file.file_id pull=True %}
                                     {% endif %}
                                 {% endfor %}

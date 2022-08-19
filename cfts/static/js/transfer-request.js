@@ -1,34 +1,15 @@
 /* transfer-request.js */
 window.document.title = "Request Info";
 
-// ADD SHIFT-CLICK SELECTION
-function enableGroupSelection(selector) {
-    let lastChecked = null;
-    const checkboxes = Array.from(document.querySelectorAll(selector));
-
-    checkboxes.forEach(checkbox => checkbox.addEventListener('click', event => {
-        if (!lastChecked) {
-            lastChecked = checkbox;
-            checkbox.nextElementSibling.style.display = 'inline-block';
-            return;
-        }
-
-        if (event.shiftKey) {
-            const start = checkboxes.indexOf(checkbox);
-            const end = checkboxes.indexOf(lastChecked);
-            checkboxes
-                .slice(Math.min(start, end), Math.max(start, end) + 1)
-                .forEach(checkbox => checkbox.checked = lastChecked.checked);
-        }
-
-        lastChecked = checkbox;
-    }));
-}
-
-jQuery(document).ready(function() {
+jQuery(document).ready(function () {
+    // instantiate the rejection popovers
+    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+    var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+        return new bootstrap.Popover(popoverTriggerEl);
+    });
 
     if (document.location.search) {
-        const search = document.location.search
+        const search = document.location.search;
         const params = new URLSearchParams(search);
         let paramObj = {};
         for (var value of params.keys()) {
@@ -39,49 +20,51 @@ jQuery(document).ready(function() {
 
         if (paramObj.eml) {
 
-            let eml = paramObj.eml + "&body=" + paramObj.body
+            let eml = paramObj.eml + "&body=" + paramObj.body;
             let $anchor = $("<a class='banEmailLink' target='_blank' href='" + eml.replace(/<br>/g, "%0D%0A%0D%0A") + "''></a>");
             $(document.body).append($anchor);
 
-            $('.banEmailLink').each(function() {
+            $('.banEmailLink').each(function () {
                 $(this)[0].click();
             });
 
-            history.pushState(null, "", location.href.split("?")[0])
+            history.pushState(null, "", location.href.split("?")[0]);
         }
 
         if (paramObj.warning) {
-            $('#userWarning').attr('href', $('#userWarning').attr('href') + "/true")
-            history.pushState(null, "", location.href.split("?")[0])
+            $('#userWarning').attr('href', $('#userWarning').attr('href') + "/true");
+            history.pushState(null, "", location.href.split("?")[0]);
         }
 
         if (paramObj.flash == "false") {
-            $('.btn-back').attr('href', '/queue')
-            history.pushState(null, "", location.href.split("?")[0])
+            $('.btn-back').attr('href', '/queue');
+            history.pushState(null, "", location.href.split("?")[0]);
         }
 
         if (paramObj.file) {
-            let row = document.getElementById("row_" + paramObj.file)
+            let row = document.getElementById("row_" + paramObj.file);
 
             row.scrollIntoView({
                 behavior: "smooth",
                 block: "center"
-            })
-            setTimeout(function() {
-                $('#row_' + paramObj.file).fadeOut(400).fadeIn(400).fadeOut(400).fadeIn(400)
-            }, 500)
+            });
+            setTimeout(function () {
+                $('#row_' + paramObj.file).fadeOut(400).fadeIn(400).fadeOut(400).fadeIn(400);
+            }, 500);
 
-            let fileLink = document.getElementById(paramObj.file)
-            console.log(fileLink)
-            history.pushState(null, "", location.href.split("?")[0])
+            let fileLink = document.getElementById("get_" + paramObj.file);
+            console.log(fileLink);
+            history.pushState(null, "", location.href.split("?")[0]);
 
-            fileLink.click()
+            fileLink.click();
         }
     }
 
+    let reloadLocaiton = window.location;
+
 
     $.ajaxSetup({
-        beforeSend: function(xhr, settings) {
+        beforeSend: function (xhr, settings) {
             xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
         }
     });
@@ -90,12 +73,12 @@ jQuery(document).ready(function() {
         e.preventDefault();
         data = {
             'notes': $('#notesField').val()
-        }
+        };
 
 
         $.post("/api-requestnotes/" + rqst_id, data, 'json').then(
-            function(resp) {
-                window.location.replace(window.location)
+            function (resp) {
+                window.location.replace(window.location);
             },
         );
 
@@ -104,349 +87,265 @@ jQuery(document).ready(function() {
 
     $('.reject-dupes').click(e => {
         e.preventDefault();
-        requestIDs = []
+        requestIDs = [];
 
         keeperID = $(e.target).attr('current_id');
         requestHash = $(e.target).attr('request_hash');
 
-        requests = document.querySelectorAll('a.card[request_hash="' + requestHash + '"]')
+        requests = document.querySelectorAll('a.card[request_hash="' + requestHash + '"]');
         requests.forEach(request => {
-            requestIDs.push(request.id)
+            requestIDs.push(request.id);
         });
 
         data = {
             'requestIDs': requestIDs,
             'keeperRequest': keeperID
-        }
+        };
 
         $.post("/api-setrejectdupes", data, 'json').then(
-            function(resp) {
-                window.location.replace(window.location)
+            function (resp) {
+                window.location.replace(window.location);
             },
         );
 
     });
 
-    $('.request-reject').click(e => {
-        e.preventDefault();
-        console.log("request reject clicked")
-        const checkboxes = Array.from(document.querySelectorAll('input[type="checkbox"]'));
-        checkboxes.forEach(checkbox => {
-            checkbox.removeAttribute("hidden");
+    $(document).on('click', '#modifyRejectionSubmit', function (e) {
+        console.log("rejection modify submit clicked");
+        $('#modifyRejectionSubmit').attr('disabled', 'true');
+
+        const checkedItemsRejected = $(".file-check.rejected:checked[modify]");
+        const checkedReasons = $(".reason-check:checked[modify]");
+
+        let file_ids = [];
+        let rejectionReasons = [];
+        let reject_text = $("#mod-reject-comments[modify]").val();
+
+        console.log(checkedItemsRejected);
+
+        checkedItemsRejected.each(i => {
+            console.log(checkedItemsRejected[i].id.split("_")[1]);
+            file_ids.push(checkedItemsRejected[i].id.split("_")[1]);
         });
 
-        $(e.target).hide()
-        $('#rejectiondropdowntoggle').show()
+        console.log(checkedReasons);
+
+        checkedReasons.each(i => {
+            rejectionReasons.push(checkedReasons[i].id.split("_")[1]);
+        });
+
+        rejectFormCallback(file_ids, rejectionReasons, rqst_id, reject_text);
 
     });
 
-    $('#rejectiondropdowntoggle').click(e => {
-        let requests = []
-        console.log("selcted reject clicked")
 
-        const $checkedItems = $("[name='fileSelection']:checked[not-rejected]");
-        const $checkedItemsRejected = $("[name='fileSelection']:checked[rejected]");
+    $(document).on('click', '#rejectionSubmit', function (e) {
+        console.log("rejection submit clicked");
+        $('#rejectionSubmit').attr('disabled', 'true');
 
-        // no files selected to reject or un-reject
-        if ($checkedItems.length == 0 && $checkedItemsRejected.length == 0) {
-            alert('Select 1 or more files to change rejection status.');
-            $('#rejectiondropdowntoggle').dropdown('toggle')
-        }
+        const checkedItems = $(".file-check.not-rejected:checked[original]");
+        const checkedReasons = $(".reason-check:checked[original]");
+        let file_ids = [];
+        let rejectionReasons = [];
+        let reject_text = $("#reject-comments").val();
 
-        // selected files are a mix of rejected and not rejected files
-        else if ($checkedItems.length > 0 && $checkedItemsRejected.length > 0) {
-            alert('Cannot process a mix of rejected and non-rejected files. Rejection and un-rejection are seperate processes. Please select only files to reject or only files to un-reject.');
-            $('#rejectiondropdowntoggle').dropdown('toggle')
+        if (checkedItems.length == 0) {
+            alert(' Select 1 or more files to reject.');
+            $('#rejectionSubmit').removeAttr('disabled', 'false');
+        } else {
+            console.log(checkedItems);
 
-        }
-
-        // files to reject
-        else if ($checkedItems.length > 0) {
-            $('#rejectiondropdowntoggle').dropdown()
-        }
-
-        //files to un-reject
-        else if ($checkedItemsRejected.length > 0) {
-            let data = [];
-            $checkedItemsRejected.each(i => {
-                data.push({
-                    'fileID': $checkedItemsRejected[i].id.slice(4),
-                    'fileName': $($checkedItemsRejected[i]).attr('file_name'),
-                    'requestID': $($checkedItemsRejected[i]).attr('request_id'),
-                    'requestEmail': $($checkedItemsRejected[i]).attr('request_email'),
-                    'unreject': true
-                })
+            checkedItems.each(i => {
+                file_ids.push(checkedItems[i].id);
             });
-            sendUnrejectRequest(data)
-            $('#rejectiondropdowntoggle').dropdown('toggle')
+
+            console.log(checkedReasons);
+
+            checkedReasons.each(i => {
+                rejectionReasons.push(checkedReasons[i].id);
+            });
+
+            rejectFormCallback(file_ids, rejectionReasons, rqst_id, reject_text);
         }
-    })
+    });
 
-    $('.selected-reject').click(e => {
-        let requests = []
-        console.log("selcted reject clicked")
+    $(document).on('click', '#unrejectionSubmit', function (e) {
+        console.log("unreject submit clicked");
+        $('#unrejectionSubmit').attr('disabled', 'true');
+        const checkedItemsRejected = $(".file-check.rejected:checked[modify]");
 
-        const $checkedItems = $("[name='fileSelection']:checked[not-rejected]");
-        const $checkedItemsRejected = $("[name='fileSelection']:checked[rejected]");
+        let file_ids = [];
 
-        $checkedItems.each(i => {
-            if (!requests.includes($($checkedItems[i]).attr('request_id'))) {
-                requests.push($($checkedItems[i]).attr('request_id'))
-            }
+        console.log(checkedItemsRejected);
 
+        checkedItemsRejected.each(i => {
+            file_ids.push(checkedItemsRejected[i].id.split("_")[1]);
         });
 
-        console.log(requests)
-
-        if (requests.length > 1) {
-            alert('You can only reject files from the same request.')
-            requests = []
-        } else {
-            let data = [];
-            $checkedItems.each(i => {
-                data.push({
-                    'fileID': $checkedItems[i].id.slice(4),
-                    'fileName': $($checkedItems[i]).attr('file_name'),
-                    'requestID': $($checkedItems[i]).attr('request_id'),
-                    'requestEmail': $($checkedItems[i]).attr('request_email')
-                })
-            });
-            rejectFormCallback(data, $(e.target).attr('rejection_ID'))
-        }
-    })
-
-
-    const sendUnrejectRequest = (data) => {
-        console.log(data);
+        console.log(file_ids);
 
         let csrftoken = getCookie('csrftoken');
 
-        let id_list = [];
-        data.forEach((f) => {
-            id_list.push(f.fileID)
-        });
-
         const postData = {
-            'request_id': data[0]['requestID'], // doesn't matter which request we grab
-            'id_list': id_list
+            'request_id': rqst_id, // doesn't matter which request we grab
+            'id_list': file_ids
         };
 
-        const setUnrejectOnFiles = $.post('/api-unreject', postData, 'json').then(
+        $.post('/api-unreject', postData, 'json').then(
             // success
-            function(resp, status) {
+            function (resp, status) {
                 console.log('SUCCESS');
-                // notifyUserSuccess("File Unreject Successful")
-                $("#forceReload").submit();
+                //$("#forceReload").submit();
+                console.log(window.location);
+                window.location = reloadLocaiton;
             },
             // fail 
-            function(resp, status) {
+            function (resp, status) {
                 console.log('FAIL');
 
-                alert("Failed to unreject files, send error message to web team.")
-                responseText = resp.responseText
-                errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"))
+                alert("Failed to unreject files, send error message to web team.");
+                responseText = resp.responseText;
+                errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"));
 
-                notifyUserError("Error unrejecting file, send error message to web team: " + errorInfo)
+                notifyUserError("Error unrejecting file, send error message to web team: " + errorInfo);
             }
         );
-
-    };
+    });
 
 
     /****************************/
     /* Encrypt files in request */
     /****************************/
 
-    $('.request-encrypt').click(e => {
-        e.preventDefault();
+    $(document).on('click', '#encryptSubmit', function (e) {
+        $('#encryptSubmit').attr('disabled', 'true');
 
-        if ($(e.target).hasClass('selected-encrypt')) {
-            console.log("selcted encrypt clicked")
+        const checkedItems = $(".file-check.encrypt:checked");
+        let file_ids = [];
 
-            const $checkedItems = $("[name='fileSelection']:checked");
-
-            if ($checkedItems.length == 0) {
-                alert(' Select 1 or more files to encrypt.');
-            } else {
-                let data = [];
-                $checkedItems.each(i => {
-                    data.push({
-                        'fileID': $checkedItems[i].id.slice(4),
-                        'fileName': $($checkedItems[i]).attr('file_name'),
-                        'requestID': $($checkedItems[i]).attr('request_id'),
-                        'requestEmail': $($checkedItems[i]).attr('request_email')
-                    })
-                });
-                sendEncryptRequest(data)
-            }
-
+        console.log(checkedItems);
+        if (checkedItems.length == 0) {
+            alert(' Select 1 or more files to encrypt.');
+            $('#encryptSubmit').removeAttr('disabled', 'false');
         } else {
-            console.log("request encrypt clicked")
-            const checkboxes = Array.from(document.querySelectorAll('input[type="checkbox"]'));
-            checkboxes.forEach(checkbox => {
-                checkbox.removeAttribute("hidden");
+            checkedItems.each(i => {
+                file_ids.push(checkedItems[i].id.split("_")[1]);
             });
 
-            $(e.target).text("Encrypt Selected")
-            $(e.target).addClass('selected-encrypt')
+            sendEncryptRequest(file_ids, rqst_id);
         }
-
     });
 
-    const sendEncryptRequest = (data) => {
-        console.log(data);
+
+    const sendEncryptRequest = (file_ids, request_id) => {
+        console.log(file_ids);
 
         let csrftoken = getCookie('csrftoken');
 
-        let id_list = [];
-        data.forEach((f) => {
-            id_list.push(f.fileID)
-        });
-
         const postData = {
-            'request_id': data[0]['requestID'], // doesn't matter which request we grab
-            'id_list': id_list
+            'request_id': request_id, // doesn't matter which request we grab
+            'id_list': file_ids
         };
 
         const setEncryptOnFiles = $.post('/api-setencrypt', postData, 'json').then(
             // success
-            function(resp, status) {
+            function (resp, status) {
                 console.log('SUCCESS');
                 $("#forceReload").submit();
             },
             // fail 
-            function(resp, status) {
+            function (resp, status) {
                 console.log('FAIL');
 
-                alert("Failed to encrypt files, send error message to web team.")
-                responseText = resp.responseText
-                errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"))
+                alert("Failed to encrypt files, send error message to web team.");
+                responseText = resp.responseText;
+                errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"));
 
-                notifyUserError("Error encrypting file, send error message to web team: " + errorInfo)
+                notifyUserError("Error encrypting file, send error message to web team: " + errorInfo);
             }
         );
 
     };
 
-    const checkSelection = (selector) => {
-        let $ele = $(selector);
-        if ($ele.val().length == 0) {
-            $ele.addClass('ui-state-error');
-            alert($ele.attr('name') + ' cannot be blank.');
-            return false;
-        } else {
-            return true;
-        }
-    };
-
     // REJECTION MODAL INPUT VALIDATION AND ACTION
-    const rejectFormCallback = (data, reason) => {
-        let requests = {};
-
+    const rejectFormCallback = (file_ids, reasons, request_id, reject_text) => {
         let csrftoken = getCookie('csrftoken');
 
-        let id_list = [];
-        data.forEach((f) => {
-            id_list.push(f.fileID)
-        });
-
         const postData = {
-            'reject_id': reason,
-            'request_id': data[0]['requestID'], // doesn't matter which request we grab
-            'id_list': id_list
+            'reject_id': reasons,
+            'request_id': request_id, // doesn't matter which request we grab
+            'id_list': file_ids,
+            'reject_text': reject_text
         };
 
         const setRejectOnFiles = $.post('/api-setreject', postData, 'json').then(
             // success
-            function(resp) {
+            function (resp) {
                 console.log('SUCCESS');
                 console.log('Server response: ' + JSON.stringify(resp, null, 4));
 
-                if (resp.debug != true) {
+                if (resp.debug != true && resp.eml) {
                     // create mailto anchor
                     let $anchor = $("<a class='emailLink' target='_blank' href='" + resp.eml + "''></a>");
                     $(document.body).append($anchor);
 
-                    $('.emailLink').each(function() {
+                    $('.emailLink').each(function () {
                         $(this)[0].click();
                     });
                 }
+                console.log(reloadLocaiton);
                 // reload the page from server
                 if (resp.flash == false) {
-                    window.location = window.location + '?flash=false'
+                    window.location = reloadLocaiton + '?flash=false';
                 } else {
-                    window.location = window.location
+                    window.location = reloadLocaiton;
                 }
             },
             // fail 
-            function(resp, status) {
-                alert("Failed to reject files, send error message to web team.")
+            function (resp, status) {
+                alert("Failed to reject files, send error message to web team.");
 
                 console.log('FAIL');
-                responseText = resp.responseText
-                errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"))
+                responseText = resp.responseText;
+                errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"));
 
-                notifyUserError("Error rejecting file, send error message to web team: " + errorInfo)
+                notifyUserError("Error rejecting file, send error message to web team: " + errorInfo);
             }
         );
     };
 
+    $(document).on('click', '#modifyReviewSubmit', function (e) {
+        $('#modifyReviewSubmit').attr('disabled', 'true');
 
-    // supersuer button to remove users from file review
-    $('.request-remove').click(e => {
-        e.preventDefault();
+        const checkedItems = $(".review-check:checked");
 
-        if ($(e.target).hasClass('selected-remove')) {
-            console.log("selcted Remove clicked")
-
-            const $checkedItems = $("[name='fileSelection']:checked");
-
-            if ($checkedItems.length == 0) {
-                alert(' Select 1 or more files to remove reviewer from.');
-            } else {
-                let data = [];
-
-                if ($(e.target).hasClass('one-eye')) {
-                    stage = 1
-                } else if ($(e.target).hasClass('two-eye')) {
-                    stage = 2
-                }
-
-                $checkedItems.each(i => {
-                    data.push({
-                        'fileID': $checkedItems[i].id.slice(4),
-                    })
-                });
-
-                rqst_id = $(e.target).attr('rqst_id')
-
-                sendRemoveRequest(data, stage, rqst_id)
-            }
-
+        if (checkedItems.length == 0) {
+            alert(' Select a reviewer to remove.');
+            $('#modifyReviewSubmit').removeAttr('disabled', 'false');
         } else {
-            console.log("request remove clicked")
-            const checkboxes = Array.from(document.querySelectorAll('input[type="checkbox"]'));
-            checkboxes.forEach(checkbox => {
-                checkbox.removeAttribute("hidden");
+            let data = [];
+            
+            checkedItems.each(i => {
+                data.push(checkedItems[i].id.split('_')[1]);
+                if (checkedItems[i].classList.contains('one-eye')) {
+                    stage = 1;
+                } else if (checkedItems[i].classList.contains('two-eye')) {
+                    stage = 2;
+                }
             });
-            const reviewers = Array.from(document.querySelectorAll('.reviewers'))
-            reviewers.forEach(elem => {
-                elem.classList.remove('d-none')
-            })
-            $(e.target).text("Remove Selected")
-            $(e.target).addClass('selected-remove')
-        }
 
+            sendRemoveRequest(data, stage, rqst_id);
+        }
     });
 
-    const sendRemoveRequest = (data, stage, rqst_id) => {
-        console.log(stage)
+    const sendRemoveRequest = (id_list, stage, rqst_id) => {
+        console.log(stage);
         let csrftoken = getCookie('csrftoken');
 
-        let id_list = [];
-        data.forEach((f) => {
-            id_list.push(f.fileID)
-        });
+        // let id_list = [];
+        // data.forEach((f) => {
+        //     id_list.push(f.fileID);
+        // });
 
         const postData = {
             'id_list': id_list,
@@ -455,24 +354,21 @@ jQuery(document).ready(function() {
 
         const removeReviewers = $.post('/removeFileReviewer/' + stage, postData, 'json').then(
             // success
-            function(resp, status) {
+            function (resp, status) {
                 console.log('SUCCESS');
                 $("#forceReload").submit();
             },
             // fail 
-            function(resp, status) {
+            function (resp, status) {
                 console.log('FAIL');
 
-                alert("Failed to remove reviewer, send error message to web team.")
-                responseText = resp.responseText
-                errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"))
+                alert("Failed to remove reviewer, send error message to web team.");
+                responseText = resp.responseText;
+                errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"));
 
-                notifyUserError("Error removing reviewer, send error message to web team: " + errorInfo)
+                notifyUserError("Error removing reviewer, send error message to web team: " + errorInfo);
             }
         );
 
     };
-    // RUN THIS STUFF NOW THAT THE PAGE IS LOADED
-    enableGroupSelection('input[type="checkbox"]')
-
 });

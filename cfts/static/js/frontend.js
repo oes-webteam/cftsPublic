@@ -1,4 +1,4 @@
-window.document.title = "CFTS -- Transfer Request Form"
+window.document.title = "CFTS -- Transfer Request Form";
 
 let dropArea = document.getElementById("drop-zone");
 let filesInput = document.getElementById("standard-upload-files");
@@ -7,23 +7,30 @@ let fileInfo = {};
 let addEmail = document.getElementById("addEmail");
 //let classifications = [''];
 
-$("#firstName").val(firstName)
-$("#lastName").val(lastName)
-$("#userPhone").val(phone)
-$("#userEmail").val(email)
-$("#organization").val(org)
+$("#firstName").val(firstName);
+$("#lastName").val(lastName);
+$("#userPhone").val(phone);
+$("#userEmail").val(email);
+$("#organization").val(org);
 
 //Add the CSRF token to ajax requests
 $.ajaxSetup({
-    beforeSend: function(xhr, settings) {
+    beforeSend: function (xhr, settings) {
         xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
     },
 });
 
-$('.network-switch').click(function() {
-    let destEmail = $(this).attr('email')
-    $('#targetEmail').val(destEmail)
-})
+$('.network-switch').click(function () {
+    let destEmail = $(this).attr('email');
+    $('#targetEmail').val(destEmail);
+
+    if ($(this).attr('for') == "switchNIPR" && currentNet == "SIPR") {
+        $('#fileCategoryChoose').show();
+    } else {
+        $('#fileCategoryChoose').hide();
+    }
+
+});
 
 /* ********************************************************* */
 /* ADD FILES TO THE QUEUE WHEN ADDED FROM FIELD OR DROP ZONE */
@@ -33,7 +40,7 @@ const addFiles = (e) => {
     if ('dataTransfer' in e) fileList = e.dataTransfer.files;
     else if ('target' in e) fileList = e.target.files;
     else {
-        console.log("WTF happened here?!")
+        console.log("WTF happened here?!");
         console.dir(e);
     }
 
@@ -50,14 +57,14 @@ const addFiles = (e) => {
             fileObject = {
                 'object': thisFile,
                 'name': thisFile.name
-            }
+            };
             fileQueue.push(fileObject);
         }
     };
 
     updateFileInfo();
     displayFileQueue();
-}
+};
 
 
 /* ************************************************ */
@@ -156,8 +163,8 @@ const displayFileQueue = () => {
 
             let toEncrypt = document.createElement("input");
             toEncrypt.setAttribute("type", "checkbox");
-            toEncrypt.setAttribute("name", "encrypt" + i)
-            toEncrypt.setAttribute("id", "encrypt" + i)
+            toEncrypt.setAttribute("name", "encrypt" + i);
+            toEncrypt.setAttribute("id", "encrypt" + i);
             toEncrypt.setAttribute("value", "true");
             if (fileQueue[i] && fileQueue[i].encrypt) toEncrypt.checked = true;
             toEncrypt.classList.add("form-check-input", "mx-3");
@@ -196,28 +203,6 @@ const removeFileFromQueue = (e) => {
 /* ***************************************** */
 /* ADD/REMOVE HIGHLIGHTING TO/FROM DROP ZONE */
 /* ***************************************** */
-// addHighlight = (e) => dropArea.classList.add('highlight-active');
-// removeHighlight = (e) => dropArea.classList.remove('highlight-active');
-
-/* *************** */
-/* EVENT LISTENERS */
-/* *************** */
-// prevent default actions for all these events
-// ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-//     dropArea.addEventListener(eventName, preventDefaults, false);
-// });
-
-// // add/remove highlighting to/from drop zone
-// ['dragenter', 'dragover'].forEach(eventName => {
-//     dropArea.addEventListener(eventName, addHighlight, false);
-// });
-// ['dragleave', 'drop'].forEach(eventName => {
-//     dropArea.addEventListener(eventName, removeHighlight, false);
-// });
-
-// // the add files handler for the drop zone and file field
-// dropArea.addEventListener('drop', addFiles, false);
-// filesInput.addEventListener('change', addFiles, false);
 
 addHighlight = (e) => dropArea.classList.add('highlight-active');
 removeHighlight = (e) => dropArea.classList.remove('highlight-active');
@@ -236,8 +221,8 @@ removeHighlight = (e) => dropArea.classList.remove('highlight-active');
 });
 
 // the add files handler for the drop zone and file field
-dropArea.addEventListener('click', function() {
-    $('#standard-upload-files').click()
+dropArea.addEventListener('click', function () {
+    $('#standard-upload-files').click();
 }, false);
 dropArea.addEventListener('drop', addFiles, false);
 filesInput.addEventListener('change', addFiles, false);

@@ -1,0 +1,39 @@
+{% load static %}
+{% load util %}
+
+{% block modal %}
+    <div class="modal-dialog modal-dialog-centered modial-diolog-scrollable modal-lg" role="document">
+        <div class="modal-content">
+            <form >
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modifyReviewModalLabel">Modifying Review for File</h5>
+                    <button type="button" class="btn-close" onClick="closeModal('#modifyReviewModal')" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <input type="checkbox" class="btn-check file-check {% if file.rejection_reasons.all %}rejected {% else %}not-rejected {% endif %}" id="mod_{{file.file_id}}" autocomplete="off" checked modify disabled>
+                    <label class="btn btn-outline-primary btn-rejection my-1" for="mod_{{file.file_id}}">{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</label>
+                </div>
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modifyReviewModalLabel">Select Reviewer to Remove</h5>
+                </div>
+
+                <div class="modal-body form-check">
+                    {% if file.user_oneeye != None %}
+                        <input type="radio" name="reviewEyeer" class="btn-check review-check one-eye" id="one_{{file.file_id}}">
+                        <label class="btn btn-outline-danger my-1" for="one_{{file.file_id}}">1 Eye: {{file.user_oneeye}}</label>
+                    {% endif %}
+                    {% if file.user_twoeye != None %}
+                        <input type="radio" name="reviewEyeer" class="btn-check review-check two-eye" id="two_{{file.file_id}}" >
+                        <label class="btn btn-outline-danger my-1" for="two_{{file.file_id}}">2 Eye: {{file.user_twoeye}}</label>
+                    {% endif %}
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onClick="closeModal('#modifyReviewModal')">Cancel</button>
+                    <button type="button" id="modifyReviewSubmit" class="btn btn-primary">Submit</button>
+                </div>
+            </div>
+        </div>
+{% endblock %}
