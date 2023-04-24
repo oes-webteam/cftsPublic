@@ -53,6 +53,7 @@ class userInfoForm(ModelForm):
         ('MARCENT', 'MARCENT'),
         ('NAVCENT', 'NAVCENT'),
         ('SOCCENT', 'SOCCENT'),
+        ('SPACECENT', 'SPACECENT'),
         ('OTHER', 'OTHER - Describe')], required=True)
     other_org = forms.CharField(max_length=50, required=False)
     read_policy = forms.BooleanField()
