@@ -45,6 +45,7 @@ class userLogInForm(AuthenticationForm):
 class userInfoForm(ModelForm):
     source_email = forms.EmailField(max_length=75, required=True)
     phone = forms.CharField(max_length=50, required=True)
+    # Org will need to be moved to a new table, maybe? - Kevin
     org = forms.ChoiceField(choices=[
         ('None', '---------------------'),
         ('CENTCOM HQ', 'CENTCOM HQ'),
@@ -81,7 +82,7 @@ class userInfoForm(ModelForm):
         self.fields['org'].initial = user.org
         self.fields['org'].label = "Organization"
         self.fields['other_org'].initial = user.other_org
-        self.fields['other_org'].label = "Other Organization"
+        self.fields['other_org'].label = "DIR/UNIT"
         self.fields['read_policy'].initial = user.read_policy
         self.fields['read_policy'].label = "I have read and agree to follow the Combined File Transfer Service policies"
         self.helper.layout.append(HTML(
