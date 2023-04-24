@@ -50,12 +50,28 @@ class userInfoForm(ModelForm):
         ('None', '---------------------'),
         ('CENTCOM HQ', 'CENTCOM HQ'),
         ('AFCENT', 'AFCENT'),
+        ('AFRICOM', 'AFRICOM'),
         ('ARCENT', 'ARCENT'),
+        ('CYBERCOM', 'CYBERCOM'),
+        ('EUCOM', 'EUCOM'),
+        ('INDOPACOM', 'INDOPACOM'),
+        ('JCS', 'JCS'),
         ('MARCENT', 'MARCENT'),
         ('NAVCENT', 'NAVCENT'),
+        ('NORTHCOM', 'NORTHCOM'),
         ('SOCCENT', 'SOCCENT'),
-        ('SPACECENT', 'SPACECENT'),
-        ('OTHER', 'OTHER - Describe')], required=True)
+        ('SOCOM', 'SOCOM'),
+        ('SOUTHCOM', 'SOUTHCOM'),
+        ('SPACECOM', 'SPACECOM'),
+        ('STRATCOM', 'STRATCOM'),
+        ('TRANSCOM', 'TRANSCOM'),
+        ('USA', 'USA'),
+        ('USAF', 'USAF'),
+        ('USCG', 'USCG'),
+        ('USMC', 'USMC'),
+        ('USN', 'USN'),
+        ('USSF', 'USSF'),
+        ('OTHER', 'DIR/UNIT - Describe')], required=True)
     other_org = forms.CharField(max_length=50, required=False)
     read_policy = forms.BooleanField()
 
