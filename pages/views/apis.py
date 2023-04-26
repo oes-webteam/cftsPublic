@@ -408,6 +408,7 @@ def runNumbers(request, api_call=False):
     # the start_date and end_date to the current date minus 7 days and the current date respectively.
     # If it is not coming from the API, it will set the start_date and end_date to the values that are
     # passed in the request.
+
     # Kevin H - Adjusting the dates to include timestamps for end_date for correct results.
     if api_call == False:
         start_date = datetime.datetime.strptime(request.POST.get('start_date'), "%m/%d/%Y").date()
@@ -520,9 +521,26 @@ def runNumbers(request, api_call=False):
     banned_users_count = len(banned_users)
     warned_users_count = len(warned_users)
 
-    transPercent = round(files_transfered/files_reviewed*100)
-    centcomPercent = round(centcom_files/files_reviewed*100)
-    rejectPercent = round(files_rejected/files_reviewed*100)
+    # Kevin H - Logic fix to prevent divide by zero exceptions, needs proper recoding.
+    if files_reviewed > 0:
+        
+        if files_transfered > 0:
+            transPercent = round(files_transfered/files_reviewed*100)
+        else:
+            transPercent = 0
+
+        if centcom_files > 0:    
+            centcomPercent = round(centcom_files/files_reviewed*100)
+        else:
+            centcomPercent = 0
+
+        if files_rejected > 0:
+            rejectPercent = round(files_rejected/files_reviewed*100)
+        else:
+            rejectPercent = 0
+
+    else:
+        transPercent, centcomPercent, rejectPercent = 0
 
     return render(request, 'partials/Report_partials/reportResults.html', {'file_categories': file_categories, 'rejection_reasons': rejection_reasons, 'org_counts': org_counts, 'files_reviewed': files_reviewed, 'files_transfered': files_transfered, 'files_rejected': files_rejected, 'centcom_files': centcom_files,
                                                                            'file_types': file_type_counts, 'file_sizes': str(round(file_size, 2))+" "+sizeSuffix[i], 'user_count': unique_users_count, 'banned_count': banned_users_count, 'warned_count': warned_users_count, 'transPercent': transPercent, 'centcomPercent': centcomPercent, 'rejectPercent': rejectPercent})
