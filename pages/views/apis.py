@@ -523,21 +523,15 @@ def runNumbers(request, api_call=False):
 
     # Kevin H - Logic fix to prevent divide by zero exceptions, needs proper recoding.
     if files_reviewed > 0:
-        
+
         if files_transfered > 0:
             transPercent = round(files_transfered/files_reviewed*100)
-        else:
-            transPercent = 0
 
         if centcom_files > 0:    
             centcomPercent = round(centcom_files/files_reviewed*100)
-        else:
-            centcomPercent = 0
 
         if files_rejected > 0:
             rejectPercent = round(files_rejected/files_reviewed*100)
-        else:
-            rejectPercent = 0
 
     else:
         transPercent, centcomPercent, rejectPercent = 0
