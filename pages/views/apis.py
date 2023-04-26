@@ -408,14 +408,15 @@ def runNumbers(request, api_call=False):
     # the start_date and end_date to the current date minus 7 days and the current date respectively.
     # If it is not coming from the API, it will set the start_date and end_date to the values that are
     # passed in the request.
+    # Kevin H - Adjusting the dates to include timestamps for end_date for correct results.
     if api_call == False:
-        start_date = datetime.datetime.strptime(
-            request.POST.get('start_date'), "%m/%d/%Y").date()
-        end_date = datetime.datetime.strptime(
-            request.POST.get('end_date'), "%m/%d/%Y").date()
+        start_date = datetime.datetime.strptime(request.POST.get('start_date'), "%m/%d/%Y").date()
+        end_date = request.POST.get('end_date')
+        end_date = datetime.datetime.strptime(end_date, "%m/%d/%Y")
+        end_date = end_date + datetime.timedelta(hours=23, minutes=59, seconds=59)
     else:
         start_date = datetime.date.today() - datetime.timedelta(days=7)
-        end_date = datetime.date.today()
+        end_date = datetime.date.today() + datetime.timedelta(hours=23, minutes=59, seconds=59)
 
     # Getting the staffID from the form.
     staffID = request.POST.get('staffUser')
