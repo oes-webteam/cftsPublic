@@ -400,7 +400,7 @@ def runNumbers(request, api_call=False):
         "NAVCENT": 0,
         "MARCENT": 0,
         "SOCCENT": 0,
-        "OTHER": 0,
+        "OTHER": 0
     }
     file_size = 0
 
@@ -453,36 +453,36 @@ def runNumbers(request, api_call=False):
                 if rqst.user.last_warned_on != None and rqst.user.last_warned_on.date() >= start_date and rqst.user.last_warned_on.date() <= end_date and rqst.user not in warned_users:
                     warned_users.append(rqst.user)
 
-            for f in files_in_request:
-                file_name = f.__str__()
+            for file in files_in_request:
+                file_name = file.__str__()
                 # Get file extension from the file name, add it to the list of file extensions
                 ext = str(file_name.split('.')[-1]).lower()
                 file_types.append(ext)
 
                 # Add all files to file count, add combined file size to file size total
-                files_reviewed += f.file_count
-                file_size += f.file_size
+                files_reviewed += file.file_count
+                file_size += file.file_size
 
                 # Exclude the rejects from the transfers numbers, they are counted separately
-                if not f.rejection_reasons.all():
-                    files_transfered += f.file_count
+                if not file.rejection_reasons.all():
+                    files_transfered += file.file_count
 
                     # If the file is from a CENTCOM org count it
-                    if f.is_centcom == True:
-                        centcom_files += f.file_count
+                    if file.is_centcom == True:
+                        centcom_files += file.file_count
                 else:
-                    files_rejected += f.file_count
+                    files_rejected += file.file_count
 
                 # Count how many files were in zips
                 if ext == "zip":
-                    file_type_counts['Total files in zips'] += f.file_count
+                    file_type_counts['Total files in zips'] += file.file_count
 
                 # File count by organization
-                org = str(f.org)
+                org = str(file.org)
                 if org != "":
                     if org == "CENTCOM HQ":
                         org = "HQ"
-                    org_counts[org] += f.file_count
+                    org_counts[org] += file.file_count
 
     # Add up all file type counts
     pdfCount = file_types.count("pdf")
