@@ -224,7 +224,7 @@ def editUserInfo(request):
 
     if cftsUser == None:
         cftsUser = User(
-            user_identifier="123abc"
+            user_identifier=certInfo['userHash']
         )
 
     # only process data from a POST request
