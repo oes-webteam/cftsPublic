@@ -374,6 +374,7 @@ def runNumbers(request, api_call=False):
     files_transfered = 0
     files_rejected = 0
     centcom_files = 0
+    transPercent, centcomPercent, rejectPercent = 0, 0, 0
     file_types = []
     file_type_counts = {
         "PDF files": 0,
@@ -409,21 +410,21 @@ def runNumbers(request, api_call=False):
     # If it is not coming from the API, it will set the start_date and end_date to the values that are
     # passed in the request.
 
-    # Kevin H - Adjusting the dates to include timestamps for end_date for correct results.
     if api_call == False:
         start_date = datetime.datetime.strptime(request.POST.get('start_date'), "%m/%d/%Y").date()
         end_date = request.POST.get('end_date')
         end_date = datetime.datetime.strptime(end_date, "%m/%d/%Y")
-        end_date = end_date + datetime.timedelta(hours=23, minutes=59, seconds=59)
     else:
         start_date = datetime.date.today() - datetime.timedelta(days=7)
-        end_date = datetime.date.today() + datetime.timedelta(hours=23, minutes=59, seconds=59)
+        end_date = datetime.date.today()
 
     # Getting the staffID from the form.
     staffID = request.POST.get('staffUser')
 
     # Get all requests in the date range that are part of a completed pull.
     requests_in_range = Request.objects.filter(pull__date_complete__date__range=(start_date, end_date))
+
+    #print(requests_in_range.query)
 
     rejection_reasons = requests_in_range.values('files__rejection_reasons__name').annotate(reject_count=Count('files__rejection_reasons'))
     file_categories = requests_in_range.values('file_categories__file_category').annotate(category_count=Count('file_categories__file_category'))
@@ -521,7 +522,8 @@ def runNumbers(request, api_call=False):
     banned_users_count = len(banned_users)
     warned_users_count = len(warned_users)
 
-    # Kevin H - Logic fix to prevent divide by zero exceptions, needs proper recoding.
+
+    # Kevin H - Logic fix to prevent divide by zero exceptions.
     if files_reviewed > 0:
 
         if files_transfered > 0:
@@ -532,9 +534,7 @@ def runNumbers(request, api_call=False):
 
         if files_rejected > 0:
             rejectPercent = round(files_rejected/files_reviewed*100)
-
-    else:
-        transPercent, centcomPercent, rejectPercent = 0
+        
 
     return render(request, 'partials/Report_partials/reportResults.html', {'file_categories': file_categories, 'rejection_reasons': rejection_reasons, 'org_counts': org_counts, 'files_reviewed': files_reviewed, 'files_transfered': files_transfered, 'files_rejected': files_rejected, 'centcom_files': centcom_files,
                                                                            'file_types': file_type_counts, 'file_sizes': str(round(file_size, 2))+" "+sizeSuffix[i], 'user_count': unique_users_count, 'banned_count': banned_users_count, 'warned_count': warned_users_count, 'transPercent': transPercent, 'centcomPercent': centcomPercent, 'rejectPercent': rejectPercent})
