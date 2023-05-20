@@ -469,6 +469,7 @@ def runNumbers(request, api_call=False):
                     files_transfered += file.file_count
 
                     # If the file is from a CENTCOM org count it
+                    # Kevin H - Should this be counted in the else statement also??
                     if file.is_centcom == True:
                         centcom_files += file.file_count
                 else:
