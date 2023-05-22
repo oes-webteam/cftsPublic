@@ -396,12 +396,28 @@ def runNumbers(request, api_call=False):
     }
     org_counts = {
         "HQ": 0,
-        "ARCENT": 0,
         "AFCENT": 0,
-        "NAVCENT": 0,
+        "AFRICOM": 0,
+        "ARCENT": 0,
+        "CYBERCOM": 0,
+        "EUCOM": 0,
+        "INDOPACOM": 0,
+        "JCS": 0,
         "MARCENT": 0,
+        "NAVCENT": 0,
+        "NORTHCOM": 0,
         "SOCCENT": 0,
-        "OTHER": 0
+        "SOCOM": 0,
+        "SOUTHCOM": 0,
+        "SPACECOM": 0,
+        "STRATCOM": 0,
+        "TRANSCOM": 0,
+        "USA": 0,
+        "USAF": 0,
+        "USCG": 0,
+        "USMC": 0,
+        "USN": 0,
+        "USSF": 0
     }
     file_size = 0
 
