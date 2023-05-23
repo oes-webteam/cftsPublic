@@ -501,7 +501,11 @@ def runNumbers(request, api_call=False):
                     if org == "CENTCOM HQ":
                         org = "HQ"
                     org_counts[org] += file.file_count
-
+                    try:
+                        org_counts[org] += f.file_count
+                    except:
+                        org_counts["OTHER"] += f.file_count
+                        
     # Add up all file type counts
     pdfCount = file_types.count("pdf")
     file_type_counts["PDF files"] = pdfCount
