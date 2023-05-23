@@ -48,7 +48,7 @@ six
 sqlparse
 toml
 tomli
-typed-ast
+#typed-ast
 typing_extensions
 ua-parser
 user-agents

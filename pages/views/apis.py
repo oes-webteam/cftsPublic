@@ -374,6 +374,7 @@ def runNumbers(request, api_call=False):
     files_transfered = 0
     files_rejected = 0
     centcom_files = 0
+    transPercent, centcomPercent, rejectPercent = 0, 0, 0
     file_types = []
     file_type_counts = {
         "PDF files": 0,
@@ -395,12 +396,28 @@ def runNumbers(request, api_call=False):
     }
     org_counts = {
         "HQ": 0,
-        "ARCENT": 0,
         "AFCENT": 0,
-        "NAVCENT": 0,
+        "AFRICOM": 0,
+        "ARCENT": 0,
+        "CYBERCOM": 0,
+        "EUCOM": 0,
+        "INDOPACOM": 0,
+        "JCS": 0,
         "MARCENT": 0,
+        "NAVCENT": 0,
+        "NORTHCOM": 0,
         "SOCCENT": 0,
-        "OTHER": 0,
+        "SOCOM": 0,
+        "SOUTHCOM": 0,
+        "SPACECOM": 0,
+        "STRATCOM": 0,
+        "TRANSCOM": 0,
+        "USA": 0,
+        "USAF": 0,
+        "USCG": 0,
+        "USMC": 0,
+        "USN": 0,
+        "USSF": 0
     }
     file_size = 0
 
@@ -408,11 +425,11 @@ def runNumbers(request, api_call=False):
     # the start_date and end_date to the current date minus 7 days and the current date respectively.
     # If it is not coming from the API, it will set the start_date and end_date to the values that are
     # passed in the request.
+
     if api_call == False:
-        start_date = datetime.datetime.strptime(
-            request.POST.get('start_date'), "%m/%d/%Y").date()
-        end_date = datetime.datetime.strptime(
-            request.POST.get('end_date'), "%m/%d/%Y").date()
+        start_date = datetime.datetime.strptime(request.POST.get('start_date'), "%m/%d/%Y").date()
+        end_date = request.POST.get('end_date')
+        end_date = datetime.datetime.strptime(end_date, "%m/%d/%Y")
     else:
         start_date = datetime.date.today() - datetime.timedelta(days=7)
         end_date = datetime.date.today()
@@ -422,6 +439,8 @@ def runNumbers(request, api_call=False):
 
     # Get all requests in the date range that are part of a completed pull.
     requests_in_range = Request.objects.filter(pull__date_complete__date__range=(start_date, end_date))
+
+    #print(requests_in_range.query)
 
     rejection_reasons = requests_in_range.values('files__rejection_reasons__name').annotate(reject_count=Count('files__rejection_reasons'))
     file_categories = requests_in_range.values('file_categories__file_category').annotate(category_count=Count('file_categories__file_category'))
@@ -451,32 +470,33 @@ def runNumbers(request, api_call=False):
                 if rqst.user.last_warned_on != None and rqst.user.last_warned_on.date() >= start_date and rqst.user.last_warned_on.date() <= end_date and rqst.user not in warned_users:
                     warned_users.append(rqst.user)
 
-            for f in files_in_request:
-                file_name = f.__str__()
+            for file in files_in_request:
+                file_name = file.__str__()
                 # Get file extension from the file name, add it to the list of file extensions
                 ext = str(file_name.split('.')[-1]).lower()
                 file_types.append(ext)
 
                 # Add all files to file count, add combined file size to file size total
-                files_reviewed += f.file_count
-                file_size += f.file_size
+                files_reviewed += file.file_count
+                file_size += file.file_size
 
                 # Exclude the rejects from the transfers numbers, they are counted separately
-                if not f.rejection_reasons.all():
-                    files_transfered += f.file_count
+                if not file.rejection_reasons.all():
+                    files_transfered += file.file_count
 
                     # If the file is from a CENTCOM org count it
-                    if f.is_centcom == True:
-                        centcom_files += f.file_count
+                    # Kevin H - Should this be counted in the else statement also??
+                    if file.is_centcom == True:
+                        centcom_files += file.file_count
                 else:
-                    files_rejected += f.file_count
+                    files_rejected += file.file_count
 
                 # Count how many files were in zips
                 if ext == "zip":
-                    file_type_counts['Total files in zips'] += f.file_count
+                    file_type_counts['Total files in zips'] += file.file_count
 
                 # File count by organization
-                org = str(f.org)
+                org = str(file.org)
                 if org != "":
                     if org == "CENTCOM HQ":
                         org = "HQ"
@@ -522,9 +542,19 @@ def runNumbers(request, api_call=False):
     banned_users_count = len(banned_users)
     warned_users_count = len(warned_users)
 
-    transPercent = round(files_transfered/files_reviewed*100)
-    centcomPercent = round(centcom_files/files_reviewed*100)
-    rejectPercent = round(files_rejected/files_reviewed*100)
+
+    # Kevin H - Logic fix to prevent divide by zero exceptions.
+    if files_reviewed > 0:
+
+        if files_transfered > 0:
+            transPercent = round(files_transfered/files_reviewed*100)
+
+        if centcom_files > 0:    
+            centcomPercent = round(centcom_files/files_reviewed*100)
+
+        if files_rejected > 0:
+            rejectPercent = round(files_rejected/files_reviewed*100)
+        
 
     return render(request, 'partials/Report_partials/reportResults.html', {'file_categories': file_categories, 'rejection_reasons': rejection_reasons, 'org_counts': org_counts, 'files_reviewed': files_reviewed, 'files_transfered': files_transfered, 'files_rejected': files_rejected, 'centcom_files': centcom_files,
                                                                            'file_types': file_type_counts, 'file_sizes': str(round(file_size, 2))+" "+sizeSuffix[i], 'user_count': unique_users_count, 'banned_count': banned_users_count, 'warned_count': warned_users_count, 'transPercent': transPercent, 'centcomPercent': centcomPercent, 'rejectPercent': rejectPercent})

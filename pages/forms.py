@@ -45,15 +45,33 @@ class userLogInForm(AuthenticationForm):
 class userInfoForm(ModelForm):
     source_email = forms.EmailField(max_length=75, required=True)
     phone = forms.CharField(max_length=50, required=True)
+    # Org will need to be moved to a new table, maybe? - Kevin
     org = forms.ChoiceField(choices=[
         ('None', '---------------------'),
         ('CENTCOM HQ', 'CENTCOM HQ'),
         ('AFCENT', 'AFCENT'),
+        ('AFRICOM', 'AFRICOM'),
         ('ARCENT', 'ARCENT'),
+        ('CYBERCOM', 'CYBERCOM'),
+        ('EUCOM', 'EUCOM'),
+        ('INDOPACOM', 'INDOPACOM'),
+        ('JCS', 'JCS'),
         ('MARCENT', 'MARCENT'),
         ('NAVCENT', 'NAVCENT'),
+        ('NORTHCOM', 'NORTHCOM'),
         ('SOCCENT', 'SOCCENT'),
-        ('OTHER', 'OTHER - Describe')], required=True)
+        ('SOCOM', 'SOCOM'),
+        ('SOUTHCOM', 'SOUTHCOM'),
+        ('SPACECOM', 'SPACECOM'),
+        ('STRATCOM', 'STRATCOM'),
+        ('TRANSCOM', 'TRANSCOM'),
+        ('USA', 'USA'),
+        ('USAF', 'USAF'),
+        ('USCG', 'USCG'),
+        ('USMC', 'USMC'),
+        ('USN', 'USN'),
+        ('USSF', 'USSF'),
+        ('OTHER', 'DIR/UNIT - Describe')], required=True)
     other_org = forms.CharField(max_length=50, required=False)
     read_policy = forms.BooleanField()
 
@@ -80,7 +98,7 @@ class userInfoForm(ModelForm):
         self.fields['org'].initial = user.org
         self.fields['org'].label = "Organization"
         self.fields['other_org'].initial = user.other_org
-        self.fields['other_org'].label = "Other Organization"
+        self.fields['other_org'].label = "DIR/UNIT"
         self.fields['read_policy'].initial = user.read_policy
         self.fields['read_policy'].label = "I have read and agree to follow the Combined File Transfer Service policies"
         self.helper.layout.append(HTML(
