@@ -480,9 +480,6 @@ def runNumbers(request, api_call=False):
                 if org != "":
                     if org == "CENTCOM HQ":
                         org = "HQ"
-                    # Kevin H - This try except is used to bandaid adding other ORGS. Rollback code but database has other ORGS in it.
-                    # It errors because it cannot find the new ORGS but other issues are happening.
-                    # Still working this bug but for now it will catch and add them to OTHERS.
                     try:
                         org_counts[org] += f.file_count
                     except:
