@@ -8,6 +8,7 @@ class UserAdmin(admin.ModelAdmin):
     #fields = ('name_first','name_last', 'auth_user','user_identifier', 'source_email','destination_emails','phone',('banned','strikes','banned_until'),'update_info','notes')
     search_fields = ('name_last', 'name_first', 'auth_user__username', 'source_email__address', 'banned', 'strikes', 'banned_until', 'phone', 'user_identifier')
     sortable_by = ('name_last', 'name_first', 'source_email', 'banned', 'strikes', 'banned_until')
+    readonly_fields = ('destination_emails','source_email')
 
 
 class RequestAdmin(admin.ModelAdmin):
@@ -16,6 +17,7 @@ class RequestAdmin(admin.ModelAdmin):
     #fields = ('user','request_hash','network','org','pull','date_pulled',('files','target_email'),('comments','notes'),('is_centcom','is_dupe','has_rejected','all_rejected','destFlag'),('ready_to_pull','is_submitted'))
     search_fields = ('user__name_last', 'user__name_first', 'user__auth_user__username', 'network__name')
     sortable_by = ('user', 'network', 'pull', 'has_rejected', 'all_rejected')
+    readonly_fields = ('target_email','files')
 
 
 class FeedbackAdmin(admin.ModelAdmin):
