@@ -606,7 +606,7 @@ def process(request):
         target_list = []
         for destination in destination_list:
             # Split emails at the "@", this is used along with the source email and will raise a flag if they do not match. needs to be imporved, causes a lot of false positives
-            destSplit_list.append(destination.split("@")[0])
+            destSplit_list.append(destination.split("@")[0].lower())
 
             # Same process as get or create email but for destination instead of source
             try:
@@ -659,7 +659,7 @@ def process(request):
         # Add destination email to request object and raise email mismatch flag if needed
         rqst.target_email.add(*target_list)
         if form_data.get('network') == "NIPR" or form_data.get('network') == "SIPR":
-            if form_data.get('userEmail').split("@")[0] not in destSplit_list:
+            if form_data.get('userEmail').split("@")[0].lower() not in destSplit_list:
                 rqst.destFlag = True
 
         fileList = []

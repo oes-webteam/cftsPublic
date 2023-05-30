@@ -71,7 +71,7 @@ class userInfoForm(ModelForm):
         ('USMC', 'USMC'),
         ('USN', 'USN'),
         ('USSF', 'USSF'),
-        ('OTHER', 'DIR/UNIT - Describe')], required=True)
+        ('OTHER', 'OTHER > DIR/UNIT - Describe -> ')], required=True)
     other_org = forms.CharField(max_length=50, required=False)
     read_policy = forms.BooleanField()
 
@@ -130,7 +130,7 @@ class userInfoForm(ModelForm):
                 self.add_error(network.name+' Email', "Destination email cannot be the same as " + NETWORK + " email")
 
         if form.get('org') == "None":
-            self.add_error('org', "Select an organization")
+            self.add_error('org', "Please select an organization")
 
         if form.get('org') == "OTHER" and form.get('other_org') == "":
-            self.add_error('other_org', "List your organization")
+            self.add_error('other_org', "Please list your DIR/UNIT")
