@@ -417,7 +417,8 @@ def runNumbers(request, api_call=False):
         "USCG": 0,
         "USMC": 0,
         "USN": 0,
-        "USSF": 0
+        "USSF": 0,
+        "OTHER": 0
     }
     file_size = 0
 
@@ -501,9 +502,9 @@ def runNumbers(request, api_call=False):
                     if org == "CENTCOM HQ":
                         org = "HQ"
                     try:
-                        org_counts[org] += f.file_count
+                        org_counts[org] += file.file_count
                     except:
-                        org_counts["OTHER"] += f.file_count
+                        org_counts["OTHER"] += file.file_count
 
     # Add up all file type counts
     pdfCount = file_types.count("pdf")
