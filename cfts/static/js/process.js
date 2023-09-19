@@ -168,12 +168,12 @@ function prepareFormData(form) {
         formData.append('targetEmail', emailList);
     }
 
-    if (form.elements.organization.value == "OTHER") {
-        formData.delete('isCentcom');
-        formData.append('isCentcom', "False");
-    } else {
+    if (form.elements.organization.value == "CENTCOM HQ" || form.elements.organization.value == "AFCENT" || form.elements.organization.value == "ARCENT" || form.elements.organization.value == "MARCENT" || form.elements.organization.value == "NAVCENT" || form.elements.organization.value == "SOCCENT" || form.elements.organization.value == "SPACECENT") {
         formData.delete('isCentcom');
         formData.append('isCentcom', "True");
+    } else {
+        formData.delete('isCentcom');
+        formData.append('isCentcom', "False");
 
     }
 
