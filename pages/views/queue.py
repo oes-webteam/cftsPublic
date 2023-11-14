@@ -1,7 +1,7 @@
 # ====================================================================
 # core
 import random
-import datetime
+from datetime import datetime, timedelta
 from django.contrib import messages
 from django.templatetags.static import static
 from zipfile import ZipFile
@@ -572,6 +572,11 @@ def createZip(request, network_name, rejectPull):
             maxPull = Pull.objects.filter(network=destNetwork).latest('date_pulled')
 
             # Reset the pull number everyday
+            
+            # Kevin: Commented Code below to fix pull_number issues. Need to test on staging.
+            # pulled_date = maxPull.date_pulled 
+            # tomorrow = datetime.now() + timedelta(days=1)
+            # if( tomorrow > pulled_date ):
             if(datetime.datetime.now().date() > maxPull.date_pulled.date()):
                 pull_number = 1
             else:
