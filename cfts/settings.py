@@ -31,13 +31,15 @@ DEBUG = ENV.DEBUG
 in the SIPR production network file you will see that there are some hosts that don't start with cfts, these were the hosts for the legacy transfer service.
 those hosts are accepted and redirected to the new cfts host
 '''
-ALLOWED_HOSTS = ENV.ALLOWED_HOSTS
+# ALLOWED_HOSTS = ENV.ALLOWED_HOSTS
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 '''
 this is the name of the network the system is being hosted on, ex: SIPR, NIPR, CPN-X
 these names should match the Network objects in the database
 '''
 NETWORK = ENV.NETWORK
+ALLOWED_DOMAIN = ENV.ALLOWED_DOMAIN
 
 KEYS_DIR = os.path.join(BASE_DIR, "KEYS")
 
@@ -230,7 +232,7 @@ LOGGING = {
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'cfts\static')
+    os.path.join(BASE_DIR, 'cfts/static')
 ]
 
 '''

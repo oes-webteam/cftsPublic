@@ -7,7 +7,7 @@ from django.contrib.auth import login, authenticate
 from django.contrib import messages
 
 from pages.models import Network, User, Email, ResourceLink
-from cfts.settings import NETWORK, DEBUG, IM_ORGBOX_EMAIL
+from cfts.settings import NETWORK, DEBUG, IM_ORGBOX_EMAIL, ALLOWED_DOMAIN
 import logging
 
 logger = logging.getLogger('django')
@@ -89,15 +89,17 @@ def getCert(request):
 def getOrCreateEmail(request, address, network):
     # retieve Network object based on passed in args
     emailNet = Network.objects.get(name=network)
-
-    # try to get email bassed on both address and network first
+    allowed_domain = ALLOWED_DOMAIN  # Replace with the required domain
+    
+    # try to get email based on both address and network first
     try:
         userEmail = Email.objects.get(address=address, network=emailNet)
-        # just incase, if the Email object's network field does not match the Network object we retrieved then rewrite it
+        
+        # just in case, if the Email object's network field does not match the Network object we retrieved then rewrite it
         if userEmail.network != emailNet:
             userEmail.network = emailNet
             userEmail.save()
-
+    
     # no match, try just address and update the network if found
     except Email.DoesNotExist:
         try:
@@ -121,7 +123,14 @@ def getOrCreateEmail(request, address, network):
     # oops, get returned multiple objects, use filter instead and grab the first object
     except Email.MultipleObjectsReturned:
         userEmail = Email.objects.filter(address=address, network=emailNet)[0]
-
+    
+    # Ensure the user's email is from the allowed domain
+    user_email_domain = userEmail.address.split('@')[-1]
+    print("This is the user email domain", user_email_domain)
+    if user_email_domain != allowed_domain and network == NETWORK:
+        print(network)
+        raise ValueError(f"User email must be from the {allowed_domain} domain.")
+    
     return userEmail
 
 # function to retrive or create a single User record, this function will always need the result from getCert() passed in

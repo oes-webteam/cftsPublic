@@ -108,8 +108,6 @@
                                     {% else %}
                                         <h6 class="text-gray-dark">To add destination networks, save valid emails <a href="{% url 'user-info' %}">here</a></h6>
                                     {% endif %}
-
-
                                     <h3 class="text-gray-dark">Destination Email</h3>
                                     <div class="mb-4 input-group" id="targetEmailGroup">
                                         <input type="email" class="form-control" name="targetEmail" id="targetEmail" aria-describedby="targetEmailHelp targetEmailRequired" placeholder="Email Address" required readonly />
@@ -120,7 +118,7 @@
                                     <h4 class="text-gray-dark" >Reliable Human Reviewer</h4>
                                     <div class="mb-4 input-group" id="RHREmailGroup">
                                         <span class="input-group-text" id="RHREmailRequired">*</span>
-                                        <input type="email" class="form-control" name="RHREmail" id="RHREmail" aria-describedby="RHREmailHelp RHREmailRequired" placeholder="Email Address (Not Your Own)" required />
+                                        <input type="email" class="form-control" name="RHREmail" id="RHREmail" aria-describedby="RHREmailHelp RHREmailRequired" placeholder="Reviewer's Email Address" required />
                                         <span class="w-100"></span>
                                         <small id="RHREmailHelp" class="form-text text-muted">on this network</small>
                                     </div>

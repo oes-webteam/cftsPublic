@@ -15,12 +15,11 @@ function checkEmail(email) {
     let domain = email.split("@").pop();
     let domainArray = domain.split(".");
     let check = "";
-
+    
     check = domainArray.pop();
     check = check.toLocaleLowerCase();
     return (check == "mil" || check == "gov" || check == "edu" || check == "org") ? true : false;
 }
-
 /* *************** */
 /* FORM VALIDATION */
 /* *************** */
