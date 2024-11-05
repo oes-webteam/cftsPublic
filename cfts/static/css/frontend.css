@@ -205,3 +205,17 @@ h6.isCentcom {
 	border-top-right-radius: .0 !important;
 	border-bottom-right-radius: .0 !important;
 }
+/* changes for error div under RHR email */
+.text-danger {
+    color: red;
+    font-size: 0.9em;
+    margin-top: 0.2em;
+}
+
+#RHREmailError {
+    display: none;
+}
+
+#RHREmailError.show {
+    display: block; 
+}

@@ -89,7 +89,7 @@ def getCert(request):
 def getOrCreateEmail(request, address, network):
     # retieve Network object based on passed in args
     emailNet = Network.objects.get(name=network)
-    allowed_domain = ALLOWED_DOMAIN  # Replace with the required domain
+    allowed_domain = ALLOWED_DOMAIN  
     
     # try to get email based on both address and network first
     try:
@@ -124,11 +124,9 @@ def getOrCreateEmail(request, address, network):
     except Email.MultipleObjectsReturned:
         userEmail = Email.objects.filter(address=address, network=emailNet)[0]
     
-    # Ensure the user's email is from the allowed domain
+    # only allow user email from specific network
     user_email_domain = userEmail.address.split('@')[-1]
-    print("This is the user email domain", user_email_domain)
     if user_email_domain != allowed_domain and network == NETWORK:
-        print(network)
         raise ValueError(f"User email must be from the {allowed_domain} domain.")
     
     return userEmail

@@ -26,7 +26,7 @@ function checkEmail(email) {
 function validateForm(form) {
     let isValid = true;
     let errors = [];
-
+    
     // CLEAR!!  ...any previous submissions
     [...form.elements].forEach((elem) => {
         elem.classList.remove("is-valid");
@@ -101,7 +101,12 @@ function validateForm(form) {
         console.log("WTF happened here?!");
         return false;
     }
-
+    // error message for matching emails
+    if(form.elements.targetEmail.value === form.elements.RHREmail.value){
+        errors.push(form.elements.targetEmail, form.elements.RHREmail);
+        isValid = false;
+        notifyEmailError("Reviewer email cannot match the destination email.");
+    }
     if (typeof form.elements.RHREmail.length != 'undefined' && form.elements.RHREmail.length > 1) {
         /* check all for validity */
         form.elements.RHREmail.forEach((elem) => {
@@ -347,7 +352,7 @@ function process(e) {
             console.log("Request Process Canceled");
 
             // notify the user there were validation errors
-            notifyUserWarning("There are errors on the request form.  Please review and address the indicated fields.");
+            notifyUserWarning("There are errors on the request form. Please review and address the indicated fields.");
 
             // re-enable the submit button
             $('#submitButton').prop('disabled', false);

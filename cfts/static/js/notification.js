@@ -39,3 +39,13 @@ notifyUserError = (msg) => {
     alertDiv.html(msg + "<button class='btn-close p-3' type='button' data-bs-dismiss='alert'></button>");
     alertDiv.fadeIn();
 };
+
+notifyEmailError = (msg) => {
+    console.log("Error message: email must not match Destination email");
+    $(".notification-success").hide();
+    $(".danger-error").hide();
+    $(".server-error").hide();
+    let alertDiv = $("#RHREmailError");
+    alertDiv.html(msg + "<button class='btn-close p-3' type='button' data-bs-dismiss='alert'></button>");
+    alertDiv.fadeIn();
+};
