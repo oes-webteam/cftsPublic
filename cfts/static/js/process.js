@@ -8,6 +8,45 @@
 xferForm = document.querySelector("#transfer-request-form");
 xferForm.addEventListener("submit", process, false);
 
+// Remove email error if RHR email is changed
+document.addEventListener('DOMContentLoaded', function() {
+    const targetEmailInput = document.getElementById('targetEmail');
+    const rhrEmailInput = document.getElementById('RHREmail');
+    const rhrEmailErrorDiv = document.getElementById('RHREmailError');
+    const userEmailInput = document.getElementById('userEmail');
+
+    function clearEmailError() {
+        if (targetEmailInput.value !== rhrEmailInput.value) {
+            rhrEmailErrorDiv.style.display = 'none';
+            rhrEmailErrorDiv.innerHTML = '';
+            targetEmailInput.classList.remove('is-invalid');
+            rhrEmailInput.classList.remove('is-invalid');
+        }
+    }
+
+    function validateEmails() {
+        const targetEmail = targetEmailInput.value;
+        const rhrEmail = rhrEmailInput.value;
+        const userEmail = userEmailInput.value;
+
+        if (targetEmail === rhrEmail) {
+            notifyEmailError("Destination email cannot match the Reliable Human Reviewer's email.");
+            targetEmailInput.classList.add('is-invalid');
+            rhrEmailInput.classList.add('is-invalid');
+        } else if(userEmail === rhrEmail){
+            notifyEmailError("User email cannot match the Reliable Human Reviewer's email.");
+            targetEmailInput.classList.add('is-invalid');
+            rhrEmailInput.classList.add('is-invalid');
+        }else {
+            clearEmailError();
+        }
+    }
+
+    targetEmailInput.addEventListener('input', validateEmails);
+    rhrEmailInput.addEventListener('input', validateEmails);
+    userEmailInput.addEventListener('input', validateEmails);
+});
+
 /* **************** */
 /* EMAIL VALIDATION */
 /* **************** */
@@ -32,18 +71,53 @@ function validateForm(form) {
         elem.classList.remove("is-valid");
         elem.classList.remove("is-invalid");
     });
+    let firstName = form.elements.firstName.value;
+    let lastName = form.elements.lastName.value;
+    let userEmail = form.elements.userEmail.value;
+    let phone = form.elements.userPhone.value;
+    let org = form.elements.organization.value;
+    let targetEmail = form.elements.targetEmail.value;
+    let rhrEmail = form.elements.RHREmail.value;
+    let network = form.elements.network.value;
 
     // name
-    if (!(form.elements.firstName.value.length && form.elements.lastName.value.length)) {
+    if (!(firstName.length && lastName.length)) {
         console.log("missing names");
         errors.push(form.elements.firstName, form.elements.lastName);
         isValid = false;
     }
-
+    
     // source email
-    if (!(form.elements.userEmail.value.length && checkEmail(form.elements.userEmail.value))) {
+    if (!(userEmail.length && checkEmail(email))) {
         errors.push(form.elements.userEmail);
         isValid = false;
+    }
+
+    // destination email
+    if (!(targetEmail.length && checkEmail(targetEmail))) {
+        errors.push(form.elements.targetEmail);
+        isValid = false;
+    }
+
+    // reviewer email
+    if (!(rhrEmail.length && checkEmail(rhrEmail))) {
+        errors.push(form.elements.RHREmail);
+        isValid = false;
+    } else {
+        const reviewerDomain = rhrEmail.split("@").pop();
+        if (reviewerDomain !== allowedDomain) {
+            errors.push(form.elements.RHREmail);
+            isValid = false;
+        }
+        if (targetEmail === rhrEmail) {
+            errors.push(form.elements.targetEmail);
+            isValid = false;
+            notifyEmailError("Destination email cannot match the Reliable Human Reviewer's email.");
+        } else if (userEmail === rhrEmail) {
+            errors.push(form.elements.targetEmail, form.elements.RHREmail);
+            isValid = false;
+            notifyEmailError("Reviewer email cannot match the user email.");
+        }
     }
 
     // file queue
@@ -54,7 +128,7 @@ function validateForm(form) {
 
     // target network
     // user has multiple destination network options
-    if (!form.elements.network.value.length) {
+    if (!network.length) {
         form.elements.network.forEach((elem) => errors.push(elem));
         isValid = false;
     }
@@ -65,7 +139,7 @@ function validateForm(form) {
     }
 
     // file categories
-    if (document.querySelectorAll("[name=fileCategory]:checked").length < 1 && form.elements.network.value == "NIPR" && currentNet == "SIPR") {
+    if (document.querySelectorAll("[name=fileCategory]:checked").length < 1 && network == "NIPR" && currentNet == "SIPR") {
         form.elements.fileCategory.forEach((elem) => errors.push(elem));
         isValid = false;
     }
@@ -81,7 +155,7 @@ function validateForm(form) {
     if (typeof form.elements.targetEmail.length != 'undefined' && form.elements.targetEmail.length > 1) {
         /* check all for validity */
         form.elements.targetEmail.forEach((elem) => {
-            if (!checkEmail(elem.value, form.elements.network.value, "to")) {
+            if (!checkEmail(elem.value, network, "to")) {
                 errors.push(elem);
                 isValid = false;
             }
@@ -89,7 +163,7 @@ function validateForm(form) {
     }
     /* form has one email */
     else if (typeof form.elements.targetEmail != 'undefined') {
-        if (!(form.elements.targetEmail.value.length && checkEmail(form.elements.targetEmail.value, form.elements.network.value, "to"))) {
+        if (!(targetEmail.length && checkEmail(targetEmail, network, "to"))) {
             errors.push(form.elements.targetEmail);
             isValid = false;
         }
@@ -101,16 +175,11 @@ function validateForm(form) {
         console.log("WTF happened here?!");
         return false;
     }
-    // error message for matching emails
-    if(form.elements.targetEmail.value === form.elements.RHREmail.value){
-        errors.push(form.elements.targetEmail, form.elements.RHREmail);
-        isValid = false;
-        notifyEmailError("Reviewer email cannot match the destination email.");
-    }
+
     if (typeof form.elements.RHREmail.length != 'undefined' && form.elements.RHREmail.length > 1) {
         /* check all for validity */
         form.elements.RHREmail.forEach((elem) => {
-            if (!checkEmail(elem.value, form.elements.network.value, "to")) {
+            if (!checkEmail(elem.value, network, "to")) {
                 errors.push(elem);
                 isValid = false;
             }
@@ -118,7 +187,7 @@ function validateForm(form) {
     }
     /* form has one email */
     else if (typeof form.elements.RHREmail != 'undefined') {
-        if (!(form.elements.RHREmail.value.length && checkEmail(form.elements.RHREmail.value, form.elements.network.value, "to"))) {
+        if (!(rhrEmail.length && checkEmail(rhrEmail, network, "to"))) {
             errors.push(form.elements.RHREmail);
             isValid = false;
         }
@@ -180,8 +249,6 @@ function prepareFormData(form) {
         formData.append('isCentcom', "False");
 
     }
-
-    // console.log(formData)
 
     data = prepareFileInfo(data);
     for (const [field, value] of formData.entries()) {

@@ -127,9 +127,9 @@ def getOrCreateEmail(request, address, network):
     # only allow user email from specific network
     user_email_domain = userEmail.address.split('@')[-1]
     if user_email_domain != allowed_domain and network == NETWORK:
-        raise ValueError(f"User email must be from the {allowed_domain} domain.")
+        messages.error(request, f"User email must be from the {allowed_domain} domain.")
     
-    return userEmail
+    return None if user_email_domain != allowed_domain and network == NETWORK else userEmail
 
 # function to retrive or create a single User record, this function will always need the result from getCert() passed in
 def getOrCreateUser(request, certInfo):
