@@ -93,6 +93,8 @@ class userInfoForm(ModelForm):
         self.fields['name_first'].label = 'First Name'
         self.fields['name_last'].label = 'Last Name'
         self.fields['source_email'].initial = email
+        # prevent changes to source email
+        self.fields['source_email'].disabled = True
         self.fields['source_email'].label = NETWORK + ' Email'
         self.fields['phone'].initial = user.phone
         self.fields['org'].initial = user.org
