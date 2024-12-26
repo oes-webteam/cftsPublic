@@ -167,6 +167,7 @@
         var userBanned = "{{rc.userBanned}}";
         var debug = "{{rc.debug}}"
         var currentNet = "{{rc.network}}"
+        const allowedDomain = "{{ ALLOWED_DOMAIN|escapejs }}";
     </script>
     <script src="{% static 'js/notification.js' %}"></script>
     <script src="{% static 'js/frontend.js' %}"></script>

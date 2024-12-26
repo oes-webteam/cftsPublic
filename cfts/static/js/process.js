@@ -16,6 +16,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const rhrEmailInput = document.getElementById('RHREmail');
     const rhrEmailErrorDiv = document.getElementById('RHREmailError');
     const userEmailInput = document.getElementById('userEmail');
+    
+
+    function checkEmail(email) {
+        const domain = email.split("@").pop(); // Extract the domain part
+        const baseDomain = domain.split(".").slice(-2).join(".").toLowerCase(); // Get the last two segments
+        return baseDomain === allowedDomain;
+    }
 
     function clearEmailError() {
         if (targetEmailInput.value !== rhrEmailInput.value) {
@@ -33,15 +40,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (targetEmail === rhrEmail) {
             notifyEmailError("Destination email cannot match the Reliable Human Reviewer's email.");
-            targetEmailInput.classList.add('is-invalid');
-            rhrEmailInput.classList.add('is-invalid');
-        } else if(userEmail === rhrEmail){
+        } else if (userEmail === rhrEmail) {
             notifyEmailError("User email cannot match the Reliable Human Reviewer's email.");
-            targetEmailInput.classList.add('is-invalid');
-            rhrEmailInput.classList.add('is-invalid');
-        }else {
+        } else if (!checkEmail(userEmail)) {
+            notifyEmailError("User email must be SIPR email.");
+        }else if (!checkEmail(rhrEmail)) {
+            notifyEmailError("Reviewer email must be SIPR email.");
+        } else {
             clearEmailError();
         }
+    }
+
+    function notifyEmailError(message) {
+        rhrEmailErrorDiv.style.display = 'block';
+        rhrEmailErrorDiv.innerHTML = message;
+        targetEmailInput.classList.add('is-invalid');
+        rhrEmailInput.classList.add('is-invalid');
     }
 
     targetEmailInput.addEventListener('input', validateEmails);
