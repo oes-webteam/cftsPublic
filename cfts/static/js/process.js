@@ -19,36 +19,16 @@ document.addEventListener('DOMContentLoaded', function() {
     
 
     function checkEmail(email) {
-        const domain = email.split("@").pop(); // Extract the domain part
-        const baseDomain = domain.split(".").slice(-2).join(".").toLowerCase(); // Get the last two segments
-        return baseDomain === allowedDomain;
-    }
-
-    function clearEmailError() {
-        if (targetEmailInput.value !== rhrEmailInput.value) {
-            rhrEmailErrorDiv.style.display = 'none';
-            rhrEmailErrorDiv.innerHTML = '';
-            targetEmailInput.classList.remove('is-invalid');
-            rhrEmailInput.classList.remove('is-invalid');
+        console.log(allowedDomain)
+        if (!email.includes("@") || email.split("@")[1].trim() === "") {
+            return false; 
         }
-    }
-
-    function validateEmails() {
-        const targetEmail = targetEmailInput.value;
-        const rhrEmail = rhrEmailInput.value;
-        const userEmail = userEmailInput.value;
-
-        if (targetEmail === rhrEmail) {
-            notifyEmailError("Destination email cannot match the Reliable Human Reviewer's email.");
-        } else if (userEmail === rhrEmail) {
-            notifyEmailError("User email cannot match the Reliable Human Reviewer's email.");
-        } else if (!checkEmail(userEmail)) {
-            notifyEmailError("User email must be SIPR email.");
-        }else if (!checkEmail(rhrEmail)) {
-            notifyEmailError("Reviewer email must be SIPR email.");
-        } else {
-            clearEmailError();
+        const domain = email.split("@").pop().trim();
+        if (!domain.includes(".")) {
+            return false;
         }
+        const baseDomain = domain.split(".").slice(-2).join(".").toLowerCase();
+        return baseDomain === allowedDomain.toLowerCase();
     }
 
     function notifyEmailError(message) {
@@ -57,6 +37,31 @@ document.addEventListener('DOMContentLoaded', function() {
         targetEmailInput.classList.add('is-invalid');
         rhrEmailInput.classList.add('is-invalid');
     }
+    function clearEmailError() {
+            rhrEmailErrorDiv.style.display = 'none';
+            rhrEmailErrorDiv.innerHTML = '';
+            targetEmailInput.classList.remove('is-invalid');
+            rhrEmailInput.classList.remove('is-invalid');
+        }
+        function validateEmails() {
+            const targetEmail = targetEmailInput.value.trim();
+            const rhrEmail = rhrEmailInput.value.trim();
+            const userEmail = userEmailInput.value.trim();
+        
+            console.log("Validating RHR Email:", rhrEmail);
+            console.log("CheckEmail Result:", checkEmail(rhrEmail));
+            
+        
+            if (targetEmail === rhrEmail) {
+                notifyEmailError("Destination email cannot match the Reliable Human Reviewer's email.");
+            } else if (userEmail === rhrEmail) {
+                notifyEmailError("User email cannot match the Reliable Human Reviewer's email.");
+            } else if (!checkEmail(rhrEmail)) {
+                notifyEmailError(`Reliable Human Reviewer's email must be from the ${allowedDomain} domain.`);
+            } else {
+                clearEmailError();
+            }
+        }
 
     targetEmailInput.addEventListener('input', validateEmails);
     rhrEmailInput.addEventListener('input', validateEmails);

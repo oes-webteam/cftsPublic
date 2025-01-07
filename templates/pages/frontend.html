@@ -121,6 +121,9 @@
                                         <input type="email" class="form-control" name="RHREmail" id="RHREmail" aria-describedby="RHREmailHelp RHREmailRequired" placeholder="Reviewer's Email Address" required />
                                         <span class="w-100"></span>
                                         <small id="RHREmailHelp" class="form-text text-muted">on this network</small>
+                                        
+                                    </div>
+                                    <div>
                                         <div id="RHREmailError" class="text-danger" style="display: none;"></div>
                                     </div>
                                     
@@ -159,15 +162,15 @@
         <!-- end .container -->
     </section>
     <script>
-        var firstName = "{{rc.user.name_first}}";
-        var lastName = "{{rc.user.name_last}}";
-        var email = "{{rc.user.source_email}}";
-        var phone = "{{rc.user.phone}}";
-        var org = "{{rc.user.org}}";
-        var userBanned = "{{rc.userBanned}}";
-        var debug = "{{rc.debug}}"
-        var currentNet = "{{rc.network}}"
-        const allowedDomain = "{{ ALLOWED_DOMAIN|escapejs }}";
+        let firstName = "{{rc.user.name_first}}";
+        let lastName = "{{rc.user.name_last}}";
+        let email = "{{rc.user.source_email}}";
+        let phone = "{{rc.user.phone}}";
+        let org = "{{rc.user.org}}";
+        let userBanned = "{{rc.userBanned}}";
+        let debug = "{{rc.debug}}"
+        let currentNet = "{{rc.network}}"
+        let allowedDomain = "{{ ALLOWED_DOMAIN }}";
     </script>
     <script src="{% static 'js/notification.js' %}"></script>
     <script src="{% static 'js/frontend.js' %}"></script>

@@ -78,7 +78,6 @@ class Email(models.Model):
         primary_key=True, default=uuid.uuid4, editable=False)
     address = models.CharField(max_length=255)
     network = models.ForeignKey(Network, default=None, null=True, blank=True, on_delete=models.DO_NOTHING)
-
     class Meta:
         ordering = ['address']
 
