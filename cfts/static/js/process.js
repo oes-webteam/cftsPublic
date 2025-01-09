@@ -16,10 +16,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const rhrEmailInput = document.getElementById('RHREmail');
     const rhrEmailErrorDiv = document.getElementById('RHREmailError');
     const userEmailInput = document.getElementById('userEmail');
-    
 
     function checkEmail(email) {
-        console.log(allowedDomain)
         if (!email.includes("@") || email.split("@")[1].trim() === "") {
             return false; 
         }
@@ -47,17 +45,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const targetEmail = targetEmailInput.value.trim();
             const rhrEmail = rhrEmailInput.value.trim();
             const userEmail = userEmailInput.value.trim();
-        
-            console.log("Validating RHR Email:", rhrEmail);
-            console.log("CheckEmail Result:", checkEmail(rhrEmail));
-            
-        
+
             if (targetEmail === rhrEmail) {
                 notifyEmailError("Destination email cannot match the Reliable Human Reviewer's email.");
             } else if (userEmail === rhrEmail) {
                 notifyEmailError("User email cannot match the Reliable Human Reviewer's email.");
             } else if (!checkEmail(rhrEmail)) {
-                notifyEmailError(`Reliable Human Reviewer's email must be from the ${allowedDomain} domain.`);
+                notifyEmailError(`Reliable Human Reviewer's email must be from this domain.`);
             } else {
                 clearEmailError();
             }
