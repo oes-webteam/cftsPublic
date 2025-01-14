@@ -185,6 +185,18 @@ class File(models.Model):
 
     def __str__(self):
         return os.path.basename(self.file_object.name)
+    
+    def is_first_review_complete(self):
+        return self.date_oneeye is not None
+    def is_second_review_complete(self):
+        return self.date_twoeye is not None
+    def review_status(self):
+        if self.is_first_review_complete() and self.is_second_review_complete():
+            return "Fully reveiwed"
+        elif self.is_first_review_complete() and not self.is_second_review_complete():
+            return "First Review Complete"
+        else:
+            return "Not Reviewed"
 
 class FileCategories(models.Model):
     file_category_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
