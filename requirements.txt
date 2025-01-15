@@ -1,7 +1,7 @@
 setuptools
 wheel
 setuptools-scm
-pywin32
+# pywin32
 virtualenv
 wfastcgi
 asgiref

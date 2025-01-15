@@ -38,6 +38,7 @@ this is the name of the network the system is being hosted on, ex: SIPR, NIPR, C
 these names should match the Network objects in the database
 '''
 NETWORK = ENV.NETWORK
+ALLOWED_DOMAIN = ENV.ALLOWED_DOMAIN
 
 KEYS_DIR = os.path.join(BASE_DIR, "KEYS")
 
@@ -230,7 +231,7 @@ LOGGING = {
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'cfts\static')
+    os.path.join(BASE_DIR, 'cfts/static')
 ]
 
 '''

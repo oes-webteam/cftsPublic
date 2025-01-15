@@ -108,8 +108,6 @@
                                     {% else %}
                                         <h6 class="text-gray-dark">To add destination networks, save valid emails <a href="{% url 'user-info' %}">here</a></h6>
                                     {% endif %}
-
-
                                     <h3 class="text-gray-dark">Destination Email</h3>
                                     <div class="mb-4 input-group" id="targetEmailGroup">
                                         <input type="email" class="form-control" name="targetEmail" id="targetEmail" aria-describedby="targetEmailHelp targetEmailRequired" placeholder="Email Address" required readonly />
@@ -120,10 +118,15 @@
                                     <h4 class="text-gray-dark" >Reliable Human Reviewer</h4>
                                     <div class="mb-4 input-group" id="RHREmailGroup">
                                         <span class="input-group-text" id="RHREmailRequired">*</span>
-                                        <input type="email" class="form-control" name="RHREmail" id="RHREmail" aria-describedby="RHREmailHelp RHREmailRequired" placeholder="Email Address (Not Your Own)" required />
+                                        <input type="email" class="form-control" name="RHREmail" id="RHREmail" aria-describedby="RHREmailHelp RHREmailRequired" placeholder="Reviewer's Email Address" required />
                                         <span class="w-100"></span>
                                         <small id="RHREmailHelp" class="form-text text-muted">on this network</small>
+                                        
                                     </div>
+                                    <div>
+                                        <div id="RHREmailError" class="text-danger" style="display: none;"></div>
+                                    </div>
+                                    
 
                                     <div id="fileCategoryChoose" style="display: none;">
                                         <h3 class="text-gray-dark" >File Categories</h4>
@@ -159,14 +162,15 @@
         <!-- end .container -->
     </section>
     <script>
-        var firstName = "{{rc.user.name_first}}";
-        var lastName = "{{rc.user.name_last}}";
-        var email = "{{rc.user.source_email}}";
-        var phone = "{{rc.user.phone}}";
-        var org = "{{rc.user.org}}";
-        var userBanned = "{{rc.userBanned}}";
-        var debug = "{{rc.debug}}"
-        var currentNet = "{{rc.network}}"
+        let firstName = "{{rc.user.name_first}}";
+        let lastName = "{{rc.user.name_last}}";
+        let email = "{{rc.user.source_email}}";
+        let phone = "{{rc.user.phone}}";
+        let org = "{{rc.user.org}}";
+        let userBanned = "{{rc.userBanned}}";
+        let debug = "{{rc.debug}}"
+        let currentNet = "{{rc.network}}"
+        let allowedDomain = "{{ rc.allowed_domain }}";
     </script>
     <script src="{% static 'js/notification.js' %}"></script>
     <script src="{% static 'js/frontend.js' %}"></script>

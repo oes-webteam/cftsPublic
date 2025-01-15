@@ -7,7 +7,7 @@ from django.contrib.auth import login, authenticate
 from django.contrib import messages
 
 from pages.models import Network, User, Email, ResourceLink
-from cfts.settings import NETWORK, DEBUG, IM_ORGBOX_EMAIL
+from cfts.settings import NETWORK, DEBUG, IM_ORGBOX_EMAIL, ALLOWED_DOMAIN
 import logging
 
 logger = logging.getLogger('django')
@@ -88,40 +88,46 @@ def getCert(request):
 # function to retrive or create a single Email record
 def getOrCreateEmail(request, address, network):
     # retieve Network object based on passed in args
-    emailNet = Network.objects.get(name=network)
-
-    # try to get email bassed on both address and network first
+    network = Network.objects.get(name=network)
+    allowed_domain = ALLOWED_DOMAIN  
+    
+    # try to get email based on both address and network first
     try:
-        userEmail = Email.objects.get(address=address, network=emailNet)
-        # just incase, if the Email object's network field does not match the Network object we retrieved then rewrite it
-        if userEmail.network != emailNet:
-            userEmail.network = emailNet
+        userEmail = Email.objects.get(address=address, network=network)
+        # just in case, if the Email object's network field does not match the Network object we retrieved then rewrite it
+        if userEmail.network != network:
+            userEmail.network = network
             userEmail.save()
-
+    
     # no match, try just address and update the network if found
     except Email.DoesNotExist:
         try:
             userEmail = Email.objects.get(address=address)
-            if userEmail.network != emailNet:
-                userEmail.network = emailNet
+            if userEmail.network != network:
+                userEmail.network = network
                 userEmail.save()
 
         # oops, get returned multiple objects, use filter instead and grab the first object
         except Email.MultipleObjectsReturned:
             userEmail = Email.objects.filter(address=address)[0]
-            if userEmail.network != emailNet:
-                userEmail.network = emailNet
+            if userEmail.network != network:
+                userEmail.network = network
                 userEmail.save()
 
         # still nothing, create the email
         except Email.DoesNotExist:
-            userEmail = Email(address=address, network=emailNet)
+            userEmail = Email(address=address, network=network)
             userEmail.save()
 
     # oops, get returned multiple objects, use filter instead and grab the first object
     except Email.MultipleObjectsReturned:
-        userEmail = Email.objects.filter(address=address, network=emailNet)[0]
-
+        userEmail = Email.objects.filter(address=address, network=network)[0]
+    
+    # only allow user email from specific network
+    user_email_domain = userEmail.address.split('@')[-1]
+    if user_email_domain != allowed_domain and network == NETWORK:
+        messages.error(request, f"User email must be from the {allowed_domain} domain.")
+    
     return userEmail
 
 # function to retrive or create a single User record, this function will always need the result from getCert() passed in
@@ -239,8 +245,13 @@ def editUserInfo(request):
 
         # proceed if form passes validity checks
         if form.is_valid():
+                # Combine email_local and email_domain to form the full email address
+            email_local = request.POST.get('email_local')
+            email_domain = request.POST.get('email_domain')
+            full_email = f"{email_local}@{email_domain}"
+
             # update source email address object
-            userEmail = getOrCreateEmail(request, request.POST.get('source_email'), NETWORK)
+            userEmail = getOrCreateEmail(request, full_email, NETWORK)
 
             # update cfts User object info
             cftsUser.name_first = request.POST.get('name_first')

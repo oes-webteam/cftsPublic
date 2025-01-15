@@ -3,7 +3,7 @@
 from datetime import date
 from django.core import paginator
 from django.contrib import messages
-
+from django.conf import settings
 # responses
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -110,7 +110,7 @@ def frontend(request):
             return redirect('user-info')
 
         rc = {'networks': nets, 'orgBox': IM_ORGBOX_EMAIL, 'submission_disabled': DISABLE_SUBMISSIONS, 'network': NETWORK, 'debug': str(
-            DEBUG), 'resources': resources, 'user': cftsUser, 'browser': browser, 'announcements': announcements, 'categories': fileCategories}
+            DEBUG), 'resources': resources, 'user': cftsUser, 'browser': browser, 'announcements': announcements, 'categories': fileCategories, 'allowed_domain': settings.ALLOWED_DOMAIN}   
 
         return render(request, 'pages/frontend.html', {'rc': rc})
 
