@@ -245,13 +245,10 @@ def editUserInfo(request):
 
         # proceed if form passes validity checks
         if form.is_valid():
-                # Combine email_local and email_domain to form the full email address
-            email_local = request.POST.get('email_local')
-            email_domain = request.POST.get('email_domain')
-            full_email = f"{email_local}@{email_domain}"
+            
 
             # update source email address object
-            userEmail = getOrCreateEmail(request, full_email, NETWORK)
+            userEmail = getOrCreateEmail(request, request.POST.get('source_email'), NETWORK)
 
             # update cfts User object info
             cftsUser.name_first = request.POST.get('name_first')
