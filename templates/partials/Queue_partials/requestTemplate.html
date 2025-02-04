@@ -6,14 +6,30 @@
         <a class="card bg-light {% if highlightFirst == True %}dupe{% endif %}{% if request.user_reviewing > 0 %}reviewing{% endif %}{% if request.pull != None %}pulled {% endif %} {% if request.pull.centcom_pull == True %}centcom{% endif %}" id="{{request.request_id}}" href="{% url 'transfer-request' request.request_id %}" request_hash="{{request.request_hash}}">
             <div class="card-body request-header {% if request.pull != None %} pending{% endif %} {% if request.centcom_pull %}centcom{% endif %}">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <svg width="20" height="20">
-                        <circle cx="10" cy="10" r="8" fill="none" stroke="#ccc" stroke-width="2"></circle>
-                        <circle id="progressCircle" cx="10" cy="10" r="8" fill="none" stroke="#007bff" stroke-width="2" stroke-dasharray="25.13" stroke-dashoffset="25.13"></circle>
+                    <svg class="progress-ring" width="20" height="20" viewBox="0 0 40 40">
+                        <circle
+                            class="progress-ring__circle"
+                            stroke="black"
+                            stroke-width="2"
+                            fill="transparent"
+                            r="18"
+                            cx="20"
+                            cy="20"
+                        />
                     </svg>
-                    <svg width="20" height="20">
-                        <circle cx="10" cy="10" r="8" fill="none" stroke="#ccc" stroke-width="2"></circle>
-                        <circle id="progressCircle" cx="10" cy="10" r="8" fill="none" stroke="#007bff" stroke-width="2" stroke-dasharray="25.13" stroke-dashoffset="25.13"></circle>
+                    
+                    <svg width="20" height="20" viewBox="0 0 40 40" class="progress-ring">
+                        <circle
+                            class="progress-ring__circle"
+                            stroke="black"
+                            stroke-width="2"
+                            fill="transparent"
+                            r="18"
+                            cx="20"
+                            cy="20"
+                        />
                     </svg>
+                    
                 </div>
                 <h5 class="card-title" style="width: 75%;">{%if request.is_centcom%}{%endif%}{{ request.user }}{%if request.is_centcom%}{%endif%}</h5>
                 <p class="request-submitted card-subtitle mb-2 text-muted">Submitted: {{ request.date_created|date:'db'|upper }} @ {{ request.date_created|time:'Hi' }}</p>

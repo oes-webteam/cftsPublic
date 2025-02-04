@@ -152,8 +152,8 @@ class userInfoForm(ModelForm):
             if network_email == source_email:
                 self.add_error(network.name + ' Email', f"Destination email cannot be the same as {NETWORK} email.")
 
-        if form.get('org') == "None":
-            self.add_error('org', "Please select an organization")
+            if form.get('org') == "None":
+                self.add_error('org', "Please select an organization")
 
-        if form.get('org') == "OTHER" and form.get('other_org') == "":
-            self.add_error('other_org', "Please list your DIR/UNIT")
+            if form.get('org') == "OTHER" and form.get('other_org') == "":
+                self.add_error('other_org', "Please list your DIR/UNIT")
