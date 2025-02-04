@@ -32,26 +32,22 @@ document.addEventListener('DOMContentLoaded', function() {
     function notifyEmailError(message) {
         rhrEmailErrorDiv.style.display = 'block';
         rhrEmailErrorDiv.innerHTML = message;
-        targetEmailInput.classList.add('is-invalid');
-        rhrEmailInput.classList.add('is-invalid');
     }
     function clearEmailError() {
             rhrEmailErrorDiv.style.display = 'none';
             rhrEmailErrorDiv.innerHTML = '';
-            targetEmailInput.classList.remove('is-invalid');
-            rhrEmailInput.classList.remove('is-invalid');
         }
         function validateEmails() {
             const targetEmail = targetEmailInput.value.trim();
             const rhrEmail = rhrEmailInput.value.trim();
             const userEmail = userEmailInput.value.trim();
 
-            if (targetEmail === rhrEmail) {
+            if (userEmail === rhrEmail) {
+                notifyEmailError("Your user email cannot match the Reliable Human Reviewer's email.");
+            } else if (targetEmail === rhrEmail) {
                 notifyEmailError("Destination email cannot match the Reliable Human Reviewer's email.");
-            } else if (userEmail === rhrEmail) {
-                notifyEmailError("User email cannot match the Reliable Human Reviewer's email.");
             } else if (!checkEmail(rhrEmail)) {
-                notifyEmailError(`Reliable Human Reviewer's email must be from this domain.`);
+                notifyEmailError(`Reliable Human Reviewer's email must be from the ${allowedDomain} domain.`);
             } else {
                 clearEmailError();
             }
@@ -94,11 +90,25 @@ document.addEventListener('DOMContentLoaded', function() {
           isValid = false;
       }
   
-      // source email
-      if (!(form.elements.userEmail.value.length && checkEmail(form.elements.userEmail.value))) {
-          errors.push(form.elements.userEmail);
-          isValid = false;
-      }
+     // emails
+    const userEmail = form.elements.userEmail.value;
+    const rhrEmail = form.elements.RHREmail.value;
+    const targetEmail = form.elements.targetEmail.value;
+
+    if (!(userEmail.length && checkEmail(userEmail))) {
+        errors.push(form.elements.userEmail);
+        isValid = false;
+    }
+
+    if (!(rhrEmail.length && checkEmail(rhrEmail))) {
+        errors.push(form.elements.RHREmail);
+        isValid = false;
+    }
+
+    if (!(targetEmail.length && checkEmail(targetEmail))) {
+        errors.push(form.elements.targetEmail);
+        isValid = false;
+    }
   
       // file queue
       if (!fileQueue.length) {
@@ -156,10 +166,17 @@ document.addEventListener('DOMContentLoaded', function() {
           return false;
       }
       // error message for matching emails
-      if(form.elements.targetEmail.value === form.elements.RHREmail.value){
+      if(targetEmail === rhrEmail){
           errors.push(form.elements.targetEmail, form.elements.RHREmail);
           isValid = false;
-          notifyEmailError("Reviewer email cannot match the destination email.");
+      }
+      if(userEmail === rhrEmail){
+        errors.push(form.elements.targetEmail, form.elements.RHREmail);
+        isValid = false;
+      }
+      if(userEmail === targetEmail){
+        errors.push(form.elements.targetEmail, form.elements.RHREmail);
+        isValid = false;
       }
       if (typeof form.elements.RHREmail.length != 'undefined' && form.elements.RHREmail.length > 1) {
           /* check all for validity */
