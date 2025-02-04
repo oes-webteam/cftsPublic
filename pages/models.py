@@ -19,8 +19,7 @@ def randomize_path_drop_file(instance, filename):
 
 
 class ResourceLink(models.Model):
-    resourcelink_id = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False)
+    resourcelink_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=50)
     file_object = models.FileField(
         upload_to='resources/', blank=True, null=True)
