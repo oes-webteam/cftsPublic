@@ -243,6 +243,13 @@
     right: 1rem;
 }
 
+.file-container {
+    display: flex;
+    align-items: center; 
+    gap: 5px; 
+}
+
+
 @media(min-width: 700px) {
     .col-12 {
         max-width: 100%;
