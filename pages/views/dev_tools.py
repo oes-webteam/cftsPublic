@@ -10,16 +10,15 @@ import traceback
 from pages.views.auth import superUserCheck, staffCheck, getCert, getOrCreateUser
 from django.utils import timezone
 import logging
-import time
 
 logger = logging.getLogger('django')
 # ====================================================================
 
 # function called from fileCleanup() to delete files in a directory that are over a number of days old
 def deleteFiles(directory, maxAge):
-    # if not os.path.exists(directory):
-    #     print(f"Directory {directory} does not exist. Skipping deletion.")
-    #     return
+    if not os.path.exists(directory):
+        print(f"Directory {directory} does not exist. Skipping deletion.")
+        return
     # get all files in directory passed in from args
     with os.scandir(directory) as files:
         for file in files:
@@ -69,41 +68,33 @@ def fileCleanup(request):
             if pullAge.days >= 1:
                 for file in File.objects.filter(pull=pull).values_list('file_object', flat=True):
                     file_path = os.path.join(settings.BASE_DIR, os.path.dirname(file))
+
                     if os.path.exists(file_path):
                         try:
-                            logger.info(f"Deleting directory: {file_path}")
-                            shutil.rmtree(file_path)
+                            shutil.rmtree(file_path)  # Delete directory
                         except Exception as e:
-                            logger.warning(f"Could not delete {file_path}: {e}")
-                    else:
-                        logger.warning(f"Skipping deletion, directory not found: {file_path}")
-                    
-                zipPath = os.path.join(settings.PULLS_DIR, f"{pull.network.name}_{pull.pull_number} {pull.date_pulled.astimezone().strftime('%d%b %H%M')}.zip")
-                
+                            logger.warning(f"Could not delete directory {file_path}: {e}")
+
+                zipPath = os.path.join(
+                    settings.PULLS_DIR, 
+                    f"{pull.network.name}_{pull.pull_number} {pull.date_pulled.astimezone().strftime('%d%b %H%M')}.zip"
+                )
+
                 if os.path.exists(zipPath):
-                    for _ in range(3):
-                        try:
-                            os.remove(zipPath)
-                            logger.info(f"Deleted zip file: {zipPath}")
-                            break
-                        except PermissionError:
-                            logger.warning(f"File in use: {zipPath}, retrying in 2 seconds...")
-                            time.sleep(2)
-                        except Exception as e:
-                            logger.warning(f"Could not delete zip file {zipPath}: {e}")
-                            break
-                else:
-                    logger.warning(f"Skipping deletion, zip file not found: {zipPath}")
+                    try:
+                        os.remove(zipPath)  # Delete zip file
+                    except Exception as e:
+                        logger.warning(f"Could not delete zip file {zipPath}: {e}")
 
                 pull.pull_deleted = True
                 pull.save()
-
         deleteFiles(scanPath, 1)
         deleteFiles(dropsPath, 5)
         deleteDrops()
     except Exception as e:
+        logger.error(f"Error in file cleanup: {e}")
         messages.error(request, "Could not perform scheduled file deletion." + str(traceback.format_exc()))
-        logger.error("File cleanup error:\n" + traceback.format_exc())
+
 
 
 # function to update all users update_info field to force them to update their user info.
