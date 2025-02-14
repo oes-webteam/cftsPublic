@@ -32,33 +32,34 @@
                     {% endif %}
                 {% endif %}
 
-                <ul class="{% if request.pull != None %}pending {% endif %}{% if file.rejection_reasons.all %}rejected {% endif %} mb-5">
+                <ul class="{% if request.pull != None %}pending {% endif %}{% if file.rejection_reasons.all %}rejected {% endif %} mb-5" id="fileList">
                     {% for file in request.files.all %}
-                        <li class="m-2 {% if forloop.counter > 4 %}d-none extra-files{% endif %}">
+                        <li class="m-2 {% if forloop.counter > 4 %} d-none extra-files {% endif %}">
                             <p class="card-text {% if file.rejection_reasons.all %} rejected {% else %} not-rejected {% endif %}" title="{{ file }}">
                                 {% if file.is_pii or request.network.cfts_deployed %}
                                     <span title="PII: {{ file.is_pii }}">🔒</span>
                                 {% endif %}
+                
                                 <!-- Checkmark logic -->
                                 {% if file.date_oneeye and not file.date_twoeye %}
-                                ✅
+                                    ✅
                                 {% elif file.date_oneeye and file.date_twoeye %}
-                                ✅✅
+                                    ✅✅
                                 {% endif %}
                 
-                                {{ file|truncatechars:25 }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}
+                                {{ file|truncatechars:25 }}{% if file.file_count > 1 %} ({{ file.file_count }} files){% endif %}
                             </p>
                         </li>
                     {% endfor %}
+                
                     {% if request.files.count > 4 %}
                         <li class="m-2">
-                            <button id="showMoreBtn" class="btn btn-link card-text" onclick="toggleMoreFiles()">
+                            <button id="showMoreBtn" type="button" class="btn btn-link card-text">
                                 Show {{ request.files.count|add:"-4" }} more files...
                             </button>
                         </li>
                     {% endif %}
-                </ul>
-                
+                </ul>                
                 <div class="card-bottom">
                     {% if request.is_dupe %}<button href="#" class="btn queue-btn btn-info show-dupe" {% if detailspage %}style="display: none;" {% endif %} request_hash="{{request.request_hash}}">Show Duplicates</button> {% else %}{% endif %}
                 </div>
