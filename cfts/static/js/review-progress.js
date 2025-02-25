@@ -1,36 +1,41 @@
-document.addEventListener("DOMContentLoaded", function () {
-    // Add checkmarks based on review status
-    document.querySelectorAll(".file-row").forEach(row => {
-        let firstReviewerCompleted = row.getAttribute("data-first-reviewer") === "true";
-        let secondReviewerCompleted = row.getAttribute("data-second-reviewer") === "true";
-        let reviewerBegin = document.getElementById('btn-review')
-        
-        let checkmarkContainer = document.createElement("span");
+// function setProgress(percentage) {
+//     let radius = 18;
+//     let circumference = 2 * Math.PI * radius; // Full circumference
+//     let offset = circumference - (percentage / 100) * circumference;
+
+//     $(".progress-ring__circle")
+//         .attr("stroke-dasharray", circumference) // Ensure correct value
+//         .attr("stroke-dashoffset", offset); // Update progress
+// }
+
+// function updateProgress() {
+//     let totalFiles = $(".file-review").length;
+//     let completedFiles = $(".file-review:checked").length;
+//     let progress = (completedFiles / totalFiles) * 100;
+
+//     setProgress(progress);
+// }
+$(document).ready(function () {
+    $(".file-row").each(function () {
+        const firstReviewerCompleted = $(this).data("first-reviewer") === true;
+        const secondReviewerCompleted = $(this).data("second-reviewer") === true;
+
+        const checkmarkContainer = $("<span></span>"); 
 
         if (firstReviewerCompleted) {
-            checkmarkContainer.innerHTML += "✔️";
+            checkmarkContainer.append("✔️");
         }
 
         if (secondReviewerCompleted) {
-            checkmarkContainer.innerHTML += "✔️";
+            checkmarkContainer.append("✔️");
         }
 
-        row.querySelector(".file-left").appendChild(checkmarkContainer);
+        $(this).find(".file-left").append(checkmarkContainer); 
+
+        // $(".file-review").on("change", function () {
+        //     updateProgress();
+        // });
+
+        // updateProgress(); 
     });
-
-    const showMoreBtn = document.getElementById("showMoreBtn");
-    const extraFiles = document.querySelectorAll(".extra-files"); // Select all hidden files
-
-    if (showMoreBtn) {
-        showMoreBtn.addEventListener("click", function () {
-            extraFiles.forEach(file => file.classList.toggle("d-none"));
-
-            // Toggle button text
-            if (showMoreBtn.innerText.includes("Show")) {
-                showMoreBtn.innerText = "Show Less";
-            } else {
-                showMoreBtn.innerText = `Show ${extraFiles.length} more files...`;
-            }
-        });
-    }
 });
