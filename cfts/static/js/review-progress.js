@@ -47,30 +47,30 @@ function updateCheckmarks(fileRow) {
     }
 }
 
-function updateProgress() {
-    const totalFilesCount = document.getElementById('file-count').getAttribute('data-count');
-    console.log(totalFilesCount); 
-    let firstReviewerCompleted = $(".file-row").filter(function () {
-        return $(this).attr("data-first-reviewer") === "true";
-    }).length;
+// function updateProgress() {
+//     const totalFilesCount = {{ request.files.all.count }}
+//     console.log(totalFilesCount); 
+//     let firstReviewerCompleted = $(".file-row").filter(function () {
+//         return $(this).attr("data-first-reviewer") === "true";
+//     }).length;
 
-    let secondReviewerCompleted = $(".file-row").filter(function () {
-        return $(this).attr("data-second-reviewer") === "true";
-    }).length;
+//     let secondReviewerCompleted = $(".file-row").filter(function () {
+//         return $(this).attr("data-second-reviewer") === "true";
+//     }).length;
 
-    let firstReviewerProgress = (firstReviewerCompleted / totalFiles) * 100;
-    let secondReviewerProgress = (secondReviewerCompleted / totalFiles) * 100;
+//     let firstReviewerProgress = (firstReviewerCompleted / totalFiles) * 100;
+//     let secondReviewerProgress = (secondReviewerCompleted / totalFiles) * 100;
 
-    updateCircularProgress(".first-reviewer-progress .progress-ring", ".first-reviewer-progress .progress-text", firstReviewerProgress, firstReviewerCompleted, totalFiles);
-    updateCircularProgress(".second-reviewer-progress .progress-ring", ".second-reviewer-progress .progress-text", secondReviewerProgress, secondReviewerCompleted, totalFiles);
-}
+//     updateCircularProgress(".first-reviewer-progress .progress-ring", ".first-reviewer-progress .progress-text", firstReviewerProgress, firstReviewerCompleted, totalFiles);
+//     updateCircularProgress(".second-reviewer-progress .progress-ring", ".second-reviewer-progress .progress-text", secondReviewerProgress, secondReviewerCompleted, totalFiles);
+// }
 
-function updateCircularProgress(selector, textSelector, progress, completed, total) {
-    let circumference = 2 * Math.PI * 30;
-    let offset = circumference - (progress / 100) * circumference;
+// function updateCircularProgress(selector, textSelector, progress, completed, total) {
+//     let circumference = 2 * Math.PI * 30;
+//     let offset = circumference - (progress / 100) * circumference;
 
-    $(selector).css("stroke-dashoffset", offset)
-               .css("stroke", "green");
+//     $(selector).css("stroke-dashoffset", offset)
+//                .css("stroke", "green");
 
-    $(textSelector).text(`${completed}/${total}`);
-}
+//     $(textSelector).text(`${completed}/${total}`);
+// }
