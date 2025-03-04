@@ -232,7 +232,12 @@
                 <div class="details-card">
                     <div class="container file-container">
                         {% for file in rqst.files.all %}
-                            <div class="file-row row p-2" id="row_{{file.file_id}}">
+                            <div class="file-row row p-2" id="row_{{file.file_id}}" 
+                            data-first-reviewer="{% if file.date_oneeye %}true{% else %}false{% endif %}"
+                            data-first-reviewer-started="{% if file.date_oneeye == None and file.user_oneeye != None %}true{% else %}false{% endif %}"
+                            data-second-reviewer-started="{% if file.date_twoeye == None and file.user_twoeye != None %}true{% else %}false{% endif %}"
+                            data-second-reviewer="{% if file.date_twoeye %}true{% else %}false{% endif %}"
+                            >
                                 <div class="file-left pt-2 col">
                                     <!-- Show encrypt flag? -->
                                     {% if file.is_pii or rqst.network.cfts_deployed %}
@@ -428,4 +433,5 @@
     {% include 'partials/_forceReloadForm.html' %}
     <script src="{% static 'js/notification.js' %}"></script>
     <script src="{% static 'js/transfer-request.js' %}"></script>
+    <script src="{% static 'js/review-progress.js' %}"></script>
 {% endblock  %}

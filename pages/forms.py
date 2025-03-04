@@ -7,7 +7,8 @@ from django.forms import ModelForm
 from crispy_forms.helper import FormHelper
 from django.contrib.auth import authenticate
 from crispy_forms.layout import Div, Submit, HTML
-from cfts.settings import NETWORK
+from cfts.settings import NETWORK, ALLOWED_DOMAIN
+
 
 
 class userLogInForm(AuthenticationForm):
@@ -127,12 +128,32 @@ class userInfoForm(ModelForm):
         self.helper.layout.append(Submit('save', 'Save'))
 
     def validate_form(self, form):
+        def is_valid_email(email: str, allowed_domain: str) -> bool:
+            if "@" not in email or email.split("@")[1].strip() == "":
+                return False 
+
+            domain = email.split("@")[-1].strip()
+            if "." not in domain:
+                return False 
+
+            base_domain = ".".join(domain.split(".")[-2:]).lower()
+            return base_domain == allowed_domain.lower()
+
+        source_email = form.get('source_email')
+        
+        # Validate source email domain
+        if not is_valid_email(source_email, ALLOWED_DOMAIN):
+            self.add_error('source_email', f"Email must be from the {ALLOWED_DOMAIN} domain.")
+
         for network in Network.objects.filter(visible=True):
-            if form.get(network.name+' Email') == form.get('source_email'):
-                self.add_error(network.name+' Email', "Destination email cannot be the same as " + NETWORK + " email")
+            network_email = form.get(network.name + ' Email')
 
-        if form.get('org') == "None":
-            self.add_error('org', "Please select an organization")
+            # Ensure destination email is not the same as the source email
+            if network_email == source_email:
+                self.add_error(network.name + ' Email', f"Destination email cannot be the same as {NETWORK} email.")
 
-        if form.get('org') == "OTHER" and form.get('other_org') == "":
-            self.add_error('other_org', "Please list your DIR/UNIT")
+            if form.get('org') == "None":
+                self.add_error('org', "Please select an organization")
+
+            if form.get('org') == "OTHER" and form.get('other_org') == "":
+                self.add_error('other_org', "Please list your DIR/UNIT")

@@ -230,6 +230,17 @@
     bottom: 1rem;
 }
 
+/* .progress-ring {
+    transform: rotate(-90deg);
+    transform-origin: center;
+}
+.progress-ring__circle {
+    transition: stroke-dashoffset 0.5s ease;
+    stroke: green;
+    stroke-width: 4;
+    fill: transparent;
+} */
+
 .review-count {
     position: absolute;
     top: .65rem;

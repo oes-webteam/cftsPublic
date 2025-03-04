@@ -127,6 +127,7 @@ def getOrCreateEmail(request, address, network):
     user_email_domain = userEmail.address.split('@')[-1]
     if user_email_domain != allowed_domain and network == NETWORK:
         messages.error(request, f"User email must be from the {allowed_domain} domain.")
+        return None
     
     return userEmail
 

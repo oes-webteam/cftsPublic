@@ -5,7 +5,8 @@ table {
 }
 
 table td {
-    padding: 0.2vw 0.5vw;
+    text-align: left; /* Aligns data to the left */
+    padding: 0.5vw 1vw;
     vertical-align: top;
 }
 
@@ -15,6 +16,10 @@ table tr:first-child td {
 
 .data-table .form-group .filter {
     font-size: inherit;
+}
+
+tr.data-row {
+    border-bottom: 1px solid #ddd; /* Adds a subtle separator between rows */
 }
 
 .data-table .form-group .filter-active,
@@ -37,8 +42,9 @@ ul.email-list {
 }
 
 th {
-    text-indent: .5rem;
-    white-space: nowrap;
+    text-align: left;  /* Aligns text to the left */
+    padding: 0.5vw 1vw; /* Ensures even spacing */
+    border-bottom: 2px solid #ddd; 
 
 }
 
@@ -48,6 +54,44 @@ th {
     align-items: center;
     margin-bottom: 1rem;
 }
+
+.file-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd; 
+    padding: 10px 0;
+}
+
+.file-name {
+    flex: 1; 
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; 
+}
+
+.review-status-wrapper {
+    display: flex;
+    gap: 20px; 
+}
+
+.review-status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 60px; 
+    text-align: center;
+}
+
+.review-label {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.review-icon {
+    font-size: 1.2em;
+}
+
 
 /* .btn-back {
     margin-right: 18rem;

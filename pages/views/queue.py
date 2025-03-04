@@ -577,7 +577,7 @@ def createZip(request, network_name, rejectPull):
             # pulled_date = maxPull.date_pulled 
             # tomorrow = datetime.now() + timedelta(days=1)
             # if( tomorrow > pulled_date ):
-            if(datetime.datetime.now().date() > maxPull.date_pulled.date()):
+            if(datetime.now().date() > maxPull.date_pulled.date()):
                 pull_number = 1
             else:
                 if maxPull.pull_number == None:
