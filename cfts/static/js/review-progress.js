@@ -5,8 +5,6 @@ $(document).ready(function () {
 
     $(".btn-review").on("click", function () {
         const fileRow = $(this).closest(".file-row");
-
-        // Simulate completion for a reviewer
         if (!fileRow.attr("data-first-reviewer")) {
             fileRow.attr("data-first-reviewer", "true");
         } else if (!fileRow.attr("data-second-reviewer")) {
@@ -14,11 +12,32 @@ $(document).ready(function () {
         }
 
         updateCheckmarks(fileRow);
-        updateProgress();
     });
 
-    updateProgress();
+    
+    
+
+    $(".toggle-files").on("click", function (e) {
+        console.log("Button clicked")
+        e.preventDefault();
+        const fileList = $(this).closest("ul");
+        const allFiles = fileList.find(".file-item");
+        const hiddenFiles = fileList.find(".file-item:hidden"); 
+
+        if (hiddenFiles.length > 0) {
+            hiddenFiles.show(); 
+            $(this).text("Show Less");
+        } else{
+            console.log("Class added")
+            allFiles.slice(4).addClass("hidden");
+            $(this).text(`Show ${allFiles.length - 4} more files`);
+        }
+        
+    });
+
 });
+
+
 
 function updateCheckmarks(fileRow) {
     const firstReviewerCompleted = fileRow.attr("data-first-reviewer") === "true";
@@ -46,31 +65,3 @@ function updateCheckmarks(fileRow) {
         checkmarkContainer.append("⏳");
     }
 }
-
-// function updateProgress() {
-//     const totalFilesCount = {{ request.files.all.count }}
-//     console.log(totalFilesCount); 
-//     let firstReviewerCompleted = $(".file-row").filter(function () {
-//         return $(this).attr("data-first-reviewer") === "true";
-//     }).length;
-
-//     let secondReviewerCompleted = $(".file-row").filter(function () {
-//         return $(this).attr("data-second-reviewer") === "true";
-//     }).length;
-
-//     let firstReviewerProgress = (firstReviewerCompleted / totalFiles) * 100;
-//     let secondReviewerProgress = (secondReviewerCompleted / totalFiles) * 100;
-
-//     updateCircularProgress(".first-reviewer-progress .progress-ring", ".first-reviewer-progress .progress-text", firstReviewerProgress, firstReviewerCompleted, totalFiles);
-//     updateCircularProgress(".second-reviewer-progress .progress-ring", ".second-reviewer-progress .progress-text", secondReviewerProgress, secondReviewerCompleted, totalFiles);
-// }
-
-// function updateCircularProgress(selector, textSelector, progress, completed, total) {
-//     let circumference = 2 * Math.PI * 30;
-//     let offset = circumference - (progress / 100) * circumference;
-
-//     $(selector).css("stroke-dashoffset", offset)
-//                .css("stroke", "green");
-
-//     $(textSelector).text(`${completed}/${total}`);
-// }
