@@ -62,6 +62,9 @@
                     {% for file in request.files.all %}
                         <li class="m-2 file-item {% if forloop.counter > 4 %}hidden-files{% endif %}">
                             <p class="card-text {% if file.rejection_reasons.all %} rejected {% else %} not-rejected {% endif %}" title="{{ file }}">
+                                {% if file.is_pii or request.network.cfts_deployed %}
+                                    <span title="PII: {{ file.is_pii }}">🔒</span>
+                                {% endif %}
                                 {% if file.date_oneeye and not file.date_twoeye %}
                                     ✅
                                 {% elif file.date_oneeye and file.date_twoeye %}
