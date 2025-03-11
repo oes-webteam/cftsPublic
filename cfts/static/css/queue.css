@@ -150,6 +150,14 @@
     border-color: #ecc047;
 }
 
+.file-item {
+    display: list-item; 
+}
+
+.file-item.hidden-files {
+    display: none;
+}
+
 .hidden {
     display: none;
 }
@@ -230,7 +238,7 @@
     bottom: 1rem;
 }
 
-/* .progress-ring {
+.progress-ring {
     transform: rotate(-90deg);
     transform-origin: center;
 }
@@ -239,7 +247,7 @@
     stroke: green;
     stroke-width: 4;
     fill: transparent;
-} */
+}
 
 .review-count {
     position: absolute;
