@@ -15,26 +15,23 @@ $(document).ready(function () {
     });
 
     
-    
-
-    $(".toggle-files").on("click", function (e) {
-        console.log("Button clicked")
+    $(".toggle-files").off("click").on("click", function (e) {
         e.preventDefault();
+
         const fileList = $(this).closest("ul");
         const allFiles = fileList.find(".file-item");
-        const hiddenFiles = fileList.find(".file-item:hidden"); 
+        const hiddenFiles = allFiles.slice(4);
 
-        if (hiddenFiles.length > 0) {
-            hiddenFiles.show(); 
-            $(this).text("Show Less");
-        } else{
-            console.log("Class added")
-            allFiles.slice(4).addClass("hidden");
-            $(this).text(`Show ${allFiles.length - 4} more files`);
+        if (hiddenFiles.css("display") === "none") {
+            hiddenFiles.css("display", "list-item");
+            $(this).text("Show Less"); 
+        } else {
+            hiddenFiles.css("display", "none"); // Hide files
+            $(this).text(`Show ${hiddenFiles.length} more files`); 
         }
-        
     });
-
+    
+    
 });
 
 

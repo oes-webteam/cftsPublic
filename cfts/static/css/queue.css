@@ -150,6 +150,14 @@
     border-color: #ecc047;
 }
 
+.file-item {
+    display: list-item; 
+}
+
+.file-item.hidden-files {
+    display: none;
+}
+
 .hidden {
     display: none;
 }
