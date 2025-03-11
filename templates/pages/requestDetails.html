@@ -89,32 +89,10 @@
                     <td class="xfer-net">{{ rc.request.network }}</td>
                     <td class="xfer-files">
                         <ul class="file-list">
-                            {% for f in rc.request.files.all %}
-                                <li class="{% if f.rejection_reasons.all %}rejected{% endif %}">
-                                    <div class="file-row">
-                                        <span class="file-name">{{ f.file_name|truncatechars:50 }}</span>
-                                    
-                                        <div class="review-status">
-                                            {% if f.user_oneeye and not f.is_first_review_complete %}
-                                                <span class="review-label">1 eye</span>
-                                                <span class="review-icon">⏳</span>
-                                            {% elif f.is_first_review_complete %}
-                                                <span class="review-label">1 eye</span>
-                                                <span class="review-icon">✅</span>
-                                            {% endif %}
-                                        </div>
-                                    
-                                        <div class="review-status">
-                                            {% if f.user_twoeye and not f.is_second_review_complete %}
-                                                <span class="review-label">2 eye</span>
-                                                <span class="review-icon">⏳</span>
-                                            {% elif f.is_second_review_complete %}
-                                                <span class="review-label">2 eye</span>
-                                                <span class="review-icon">✅</span>
-                                            {% endif %}
-                                        </div>
-                                    </div>                                    
-                                </li>
+                            {%  for f in rc.request.files.all %}
+                                {% with f.file_object.name|split:"/" as name %}
+                                    <li class="{% if f.rejection_reasons.all %}rejected{% endif %}" x-file-name="{{ name.2 }}">{{ name.2|truncatechars:50 }}</li>
+                                {% endwith %}
                             {% endfor %}
                         </ul>
                     </td>
