@@ -37,7 +37,8 @@ from pages.models import *
 from django.db.models import Count, Q
 from django.contrib.auth.models import User as authUser
 
-
+from rapidfuzz import fuzz
+import re
 import logging
 
 logger = logging.getLogger('django')
@@ -267,30 +268,39 @@ def transferRequest(request, id):
         'RHRDestFlag': False,
     }
 
-    destSplit = rqst.target_email.all()[0].address.split("@")[0]
-
-    if rqst.destFlag == True:
-        if rqst.user.source_email.address.split("@")[0] != destSplit:
-            emailFlags['sourceDestFlag'] = True
+    def normalize_username(email):
+        username = email.split("@")[0].lower()
+        parts = re.split(r'[.\-_]', username)
+        filtered = [part for part in parts if len(part) > 1]
+        return ''.join(filtered)
+    
+    dest_email = rqst.target_email.all()[0].address
+    dest_username = normalize_username(dest_email)
+    source_username =  normalize_username(rqst.user.source_email.address)
+    rhr_email = rqst.RHR_email.lower()
+    rhr_username = normalize_username(rhr_email)
 
     # Getting all the staff emails from the database
     staff_emails = [x.lower() for x in authUser.objects.filter(is_staff=True).values_list('email', flat=True)]
-    rhr = rqst.RHR_email.lower()
+
+    if rhr_email in staff_emails:
+        emailFlags['RHRStaffFlag'] = True
+        emailFlags['RHRFlag'] = True
 
     # Checking if the RHR email address in the form is in the staff_emails list, or if it is the same as the
     # source or destination email address. If any of those are true, then it sets the destFlag to True.
 
-    if rhr == rqst.user.source_email.address.lower():
-        emailFlags['RHRSourceFlag'] = True
-        emailFlags['RHRFlag'] = True
-
-    if rhr == rqst.target_email.all()[0].address.lower():
+    if rqst.destFlag and source_username != dest_username:
+            if fuzz.partial_ratio(dest_username, rhr_username) >= 85:
+                emailFlags['sourceDestFlag'] = True
+    if rhr_email == rqst.user.source_email.address.lower() or \
+        fuzz.partial_ratio(source_username, rhr_username) >= 85:
+            emailFlags['RHRSourceFlag'] = True
+            emailFlags['RHRFlag'] = True        
+    if rhr_email == dest_email.lower():
         emailFlags['RHRDestFlag'] = True
         emailFlags['RHRFlag'] = True
 
-    if rhr in staff_emails:
-        emailFlags['RHRStaffFlag'] = True
-        emailFlags['RHRFlag'] = True
 
     return render(request, 'pages/transfer-request.html', {'rqst': rqst, 'emailFlags': emailFlags, 'dupes': dupes, 'mostRecentDupe': mostRecentDupe, 'rejections': rejections,
                                                            'centcom': rqst.is_centcom, 'notes': rqst.notes, "user_id": rqst.user.user_id, 'debug': cftsSettings.DEBUG})
