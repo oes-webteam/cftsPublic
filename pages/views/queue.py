@@ -290,14 +290,15 @@ def transferRequest(request, id):
     # Checking if the RHR email address in the form is in the staff_emails list, or if it is the same as the
     # source or destination email address. If any of those are true, then it sets the destFlag to True.
 
-    if rqst.destFlag and source_username != dest_username:
-            if fuzz.partial_ratio(dest_username, rhr_username) >= 85:
-                emailFlags['sourceDestFlag'] = True
-    if rhr_email == rqst.user.source_email.address.lower() or \
-        fuzz.partial_ratio(source_username, rhr_username) >= 85:
-            emailFlags['RHRSourceFlag'] = True
-            emailFlags['RHRFlag'] = True        
-    if rhr_email == dest_email.lower():
+    threshold = 90
+
+    # RHR vs Source
+    if fuzz.partial_ratio(source_username, rhr_username) >= threshold:
+        emailFlags['RHRSourceFlag'] = True
+        emailFlags['RHRFlag'] = True
+
+    # RHR vs Destination
+    if fuzz.partial_ratio(dest_username, rhr_username) >= threshold:
         emailFlags['RHRDestFlag'] = True
         emailFlags['RHRFlag'] = True
 
