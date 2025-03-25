@@ -8,11 +8,12 @@
             <div class="card-body request-header {% if request.pull != None %} pending{% endif %} {% if request.centcom_pull %}centcom{% endif %}">
                 <h5 class="card-title" style="width: 75%;">{%if request.is_centcom%}{%endif%}{{ request.user }}{%if request.is_centcom%}{%endif%}</h5>
                 <p class="request-submitted card-subtitle mb-2 text-muted">Submitted: {{ request.date_created|date:'db'|upper }} @ {{ request.date_created|time:'Hi' }}</p>
-
+<p>DEBUG: destFlag = {{ request.destFlag }} true true</p>
                 {% if request.destFlag %}
                     <p class="card-text" style="color: red;">
                         {% if request.destFlag %}Email conflict, check source/destination/RHR emails{% endif %}
                     </p>
+                    
                 {% endif %}
 
                 {% if request.pull != None or request.ready_to_pull != False %}{% else %}

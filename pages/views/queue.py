@@ -290,7 +290,7 @@ def transferRequest(request, id):
     # Checking if the RHR email address in the form is in the staff_emails list, or if it is the same as the
     # source or destination email address. If any of those are true, then it sets the destFlag to True.
 
-    threshold = 90
+    threshold = 85
 
     # RHR vs Source
     if fuzz.partial_ratio(source_username, rhr_username) >= threshold:

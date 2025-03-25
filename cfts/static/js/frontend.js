@@ -71,7 +71,7 @@ const addFiles = (e) => {
 /* VALIDATE UPLOADED FILES (AS BEST WE CAN FOR NOW) */
 /* ************************************************ */
 const validateFile = (thisFile) => {
-    let charWhitelist = new RegExp(/[^a-z0-9\.\s_-]/);
+    let charWhitelist = new RegExp(/[^a-z0-9\.\(\)\s_-]/);
     let msg = "";
     let errorFlag = false;
 
