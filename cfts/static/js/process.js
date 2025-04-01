@@ -11,7 +11,7 @@
 /* **************** */
   /* EMAIL ERRORS */
   /* **************** */
-document.addEventListener('DOMContentLoaded', function() {
+
     const targetEmailInput = document.getElementById('targetEmail');
     const rhrEmailInput = document.getElementById('RHREmail');
     const rhrEmailErrorDiv = document.getElementById('RHREmailError');
@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
     targetEmailInput.addEventListener('input', validateEmails);
     rhrEmailInput.addEventListener('input', validateEmails);
     userEmailInput.addEventListener('input', validateEmails);
-});
+
 
   /* **************** */
   /* EMAIL VALIDATION */
@@ -176,6 +176,10 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       if(userEmail === targetEmail){
         errors.push(form.elements.targetEmail, form.elements.userEmail);
+        isValid = false;
+      }
+      if(!validateEmail(rhrEmail)){
+        errors.push(form.elements.RHREmail)
         isValid = false;
       }
       if (typeof form.elements.RHREmail.length != 'undefined' && form.elements.RHREmail.length > 1) {
