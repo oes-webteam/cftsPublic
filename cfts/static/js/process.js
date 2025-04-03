@@ -40,6 +40,7 @@
         function validateEmails() {
             const targetEmail = targetEmailInput.value.trim();
             const rhrEmail = rhrEmailInput.value.trim();
+            
             const userEmail = userEmailInput.value.trim();
 
             if (userEmail === rhrEmail) {

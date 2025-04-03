@@ -283,13 +283,12 @@ def transferRequest(request, id):
     # Getting all the staff emails from the database
     staff_emails = [x.lower() for x in authUser.objects.filter(is_staff=True).values_list('email', flat=True)]
 
-    if rhr_email in staff_emails:
-        emailFlags['RHRStaffFlag'] = True
-        emailFlags['RHRFlag'] = True
-
     # Checking if the RHR email address in the form is in the staff_emails list, or if it is the same as the
     # source or destination email address. If any of those are true, then it sets the destFlag to True.
-
+    if rhr_email in staff_emails:
+            emailFlags['RHRStaffFlag'] = True
+            emailFlags['RHRFlag'] = True
+            
     threshold = 85
 
     # RHR vs Source

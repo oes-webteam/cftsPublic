@@ -110,6 +110,11 @@ jQuery(document).ready(function () {
 
     });
 
+    $(document).on('click', '#select-all-files', function () {
+        let isChecked = $(this).prop('checked');
+        $(".all-files[original]").prop('checked', isChecked); 
+    });
+
     $(document).on('click', '#modifyRejectionSubmit', function (e) {
         console.log("rejection modify submit clicked");
         $('#modifyRejectionSubmit').attr('disabled', 'true');

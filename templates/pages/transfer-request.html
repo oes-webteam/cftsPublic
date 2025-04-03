@@ -21,8 +21,10 @@
                         </div>
 
                         <div class="modal-body">
+                            <input type="checkbox" name="select-all" id="select-all-files">
+                            <label for="select-all-files">Select All Files</label>
                             {% for file in rqst.files.all %}
-                                <input type="checkbox" class="btn-check file-check {% if file.rejection_reasons.all %}rejected {% else %}not-rejected {% endif %}" id="{{file.file_id}}" autocomplete="off" original>
+                                <input type="checkbox" class="btn-check file-check all-files {% if file.rejection_reasons.all %}rejected {% else %}not-rejected {% endif %}" id="{{file.file_id}}" autocomplete="off" original>
                                 <label class="btn btn-outline-primary btn-rejection my-1 {% if file.rejection_reasons.all %}rejected {% else %}not-rejected {% endif %}" {% if file.rejection_reasons.all %}onclick="getRejectModal(this)"{% endif %} for="{{file.file_id}}">{% if file.is_pii or rqst.network.cfts_deployed %}
                                     <span title="PII: {{ file.is_pii }}&#10;">🔒</span>
                                 {% endif %}{{ file }}{% if file.file_count > 1 %} ({{file.file_count}} files){% endif %}</label>

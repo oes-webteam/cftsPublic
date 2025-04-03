@@ -8,14 +8,11 @@
             <div class="card-body request-header {% if request.pull != None %} pending{% endif %} {% if request.centcom_pull %}centcom{% endif %}">
                 <h5 class="card-title" style="width: 75%;">{%if request.is_centcom%}{%endif%}{{ request.user }}{%if request.is_centcom%}{%endif%}</h5>
                 <p class="request-submitted card-subtitle mb-2 text-muted">Submitted: {{ request.date_created|date:'db'|upper }} @ {{ request.date_created|time:'Hi' }}</p>
-<p>DEBUG: destFlag = {{ request.destFlag }} true true</p>
                 {% if request.destFlag %}
                     <p class="card-text" style="color: red;">
                         {% if request.destFlag %}Email conflict, check source/destination/RHR emails{% endif %}
-                    </p>
-                    
+                    </p>  
                 {% endif %}
-
                 {% if request.pull != None or request.ready_to_pull != False %}{% else %}
                     {% if request.needs_review > 0 %}
                         <h6 class="ml-3">{{request.needs_review}} file{{ request.needs_review|pluralize }} open for review</h6>
@@ -41,16 +38,18 @@
                                 {% if file.is_pii or request.network.cfts_deployed %}
                                     <span title="PII: {{ file.is_pii }}">🔒</span>
                                 {% endif %}
-                                {% if file.date_oneeye and not file.date_twoeye %}
-                                    ✅
-                                {% elif file.date_oneeye and file.date_twoeye %}
-                                    ✅✅
-                                {% else %}
-                                    {% if file.user_oneeye and not file.date_oneeye %}
-                                        ⏳ 
-                                    {% endif %}
-                                    {% if file.user_twoeye and not file.date_twoeye %}
-                                        ⏳
+                                {% if not file.rejection_reasons.all %} 
+                                    {% if file.date_oneeye and not file.date_twoeye %}
+                                        ✅
+                                    {% elif file.date_oneeye and file.date_twoeye %}
+                                        ✅✅
+                                    {% else %}
+                                        {% if file.user_oneeye and not file.date_oneeye %}
+                                            ⏳ 
+                                        {% endif %}
+                                        {% if file.user_twoeye and not file.date_twoeye %}
+                                            ⏳
+                                        {% endif %}
                                     {% endif %}
                                 {% endif %}
                                 {{ file|truncatechars:25 }}{% if file.file_count > 1 %} ({{ file.file_count }} files){% endif %}

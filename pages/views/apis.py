@@ -694,7 +694,7 @@ def process(request):
         source_username = normalize_username(source_email.address)
 
         # Normalize destination emails
-        destination_usernames = [normalize_username(x) for x in destination_list]
+        destination_username = [normalize_username(x) for x in destination_list]
 
         threshold = 85
 
@@ -707,7 +707,7 @@ def process(request):
             rqst.destFlag = True
 
         # Flag if RHR is similar to any destination email
-        for dest_username in destination_usernames:
+        for dest_username in destination_username:
             if fuzz.partial_ratio(rhr_username, dest_username) >= threshold:
                 rqst.destFlag = True
                 break
