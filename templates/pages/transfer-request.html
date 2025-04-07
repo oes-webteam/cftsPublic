@@ -119,6 +119,8 @@
                         </div>
 
                         <div class="modal-body">
+                            <input type="checkbox" name="encrypt-all" id="encrypt-all-files">
+                            <label for="encrypt-all-files">Encrypt All Files</label>
                             {% for file in rqst.files.all %}
                                 {% if file.is_pii == False %}
                                     <input type="checkbox" class="btn-check file-check encrypt" id="encrypt_{{file.file_id}}" autocomplete="off">

@@ -115,6 +115,11 @@ jQuery(document).ready(function () {
         $(".all-files[original]").prop('checked', isChecked); 
     });
 
+    $(document).on('click', '#encrypt-all-files', function () {
+        let isChecked = $(this).prop('checked');
+        $(".encrypt").prop('checked', isChecked); 
+    });
+
     $(document).on('click', '#modifyRejectionSubmit', function (e) {
         console.log("rejection modify submit clicked");
         $('#modifyRejectionSubmit').attr('disabled', 'true');
@@ -222,55 +227,67 @@ jQuery(document).ready(function () {
     /* Encrypt files in request */
     /****************************/
 
-    $(document).on('click', '#encryptSubmit', function (e) {
-        $('#encryptSubmit').attr('disabled', 'true');
+   // Select All functionality for encryption
+$(document).on('click', '#encrypt-all-files', function () {
+    let isChecked = $(this).prop('checked');
+    $(".file-check.encrypt").prop('checked', isChecked); // Select/deselect all files for encryption
+});
 
-        const checkedItems = $(".file-check.encrypt:checked");
-        let file_ids = [];
+// Submission logic for encryption
+$(document).on('click', '#encryptSubmit', function (e) {
+    $('#encryptSubmit').attr('disabled', 'true');
 
-        console.log(checkedItems);
-        if (checkedItems.length == 0) {
-            alert(' Select 1 or more files to encrypt.');
-            $('#encryptSubmit').removeAttr('disabled', 'false');
-        } else {
-            checkedItems.each(i => {
-                file_ids.push(checkedItems[i].id.split("_")[1]);
-            });
+    const checkedItems = $(".file-check.encrypt:checked"); // Selected files for encryption
+    let file_ids = [];
 
-            sendEncryptRequest(file_ids, rqst_id);
-        }
-    });
+    console.log(checkedItems);
 
+    if (checkedItems.length == 0) {
+        alert('Select 1 or more files to encrypt.');
+        $('#encryptSubmit').removeAttr('disabled', 'false');
+    } else {
+        checkedItems.each(function () {
+            file_ids.push($(this).attr('id').split("_")[1]);
+        });
 
-    const sendEncryptRequest = (file_ids, request_id) => {
-        console.log(file_ids);
+        console.log("Encrypting files: ", file_ids);
 
-        let csrftoken = getCookie('csrftoken');
+        sendEncryptRequest(file_ids, rqst_id);
+    }
+});
 
-        const postData = {
-            'request_id': request_id, // doesn't matter which request we grab
-            'id_list': file_ids
-        };
+// Encryption request logic
+const sendEncryptRequest = (file_ids, request_id) => {
+    console.log(file_ids);
 
-        const setEncryptOnFiles = $.post('/api-setencrypt', postData, 'json').then(
-            // success
-            function (resp, status) {
-                console.log('SUCCESS');
-                $("#forceReload").submit();
-            },
-            // fail 
-            function (resp, status) {
-                console.log('FAIL');
+    let csrftoken = getCookie('csrftoken');
 
-                alert("Failed to encrypt files, send error message to web team.");
-                responseText = resp.responseText;
-                errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"));
-
-                notifyUserError("Error encrypting file, send error message to web team: " + errorInfo);
-            }
-        );
-
+    const postData = {
+        'request_id': request_id, // Doesn't matter which request we grab
+        'id_list': file_ids
     };
+
+    const setEncryptOnFiles = $.post('/api-setencrypt', postData, 'json').then(
+        // Success callback
+        function (resp, status) {
+            console.log('SUCCESS');
+            $("#forceReload").submit(); // Reload the page or refresh the state
+        },
+        // Failure callback
+        function (resp, status) {
+            console.log('FAIL');
+
+            alert("Failed to encrypt files, send error message to web team.");
+            let responseText = resp.responseText;
+            let errorInfo = responseText.substring(
+                resp.responseText.indexOf("Exception Value"),
+                resp.responseText.indexOf("Python Executable")
+            );
+
+            notifyUserError("Error encrypting file, send error message to web team: " + errorInfo);
+        }
+    );
+};
 
     // REJECTION MODAL INPUT VALIDATION AND ACTION
     const rejectFormCallback = (file_ids, reasons, request_id, reject_text) => {
