@@ -112,13 +112,18 @@ jQuery(document).ready(function () {
 
     $(document).on('click', '#select-all-files', function () {
         let isChecked = $(this).prop('checked');
+        const allOriginalFiles = $(".file-check.rejected[original]");
+    
+        // Disable the "Select All" checkbox if there's <= 1 file or all are rejected
+        if (allOriginalFiles) {
+            $('#select-all-files').prop('disabled', true);
+        } else {
+            $('#select-all-files').prop('disabled', false);
+        }
+        
         $(".all-files[original]").prop('checked', isChecked); 
     });
 
-    $(document).on('click', '#encrypt-all-files', function () {
-        let isChecked = $(this).prop('checked');
-        $(".encrypt").prop('checked', isChecked); 
-    });
 
     $(document).on('click', '#modifyRejectionSubmit', function (e) {
         console.log("rejection modify submit clicked");
@@ -158,6 +163,12 @@ jQuery(document).ready(function () {
         let file_ids = [];
         let rejectionReasons = [];
         let reject_text = $("#reject-comments").val();
+
+        if (checkedReasons.length === 0) {
+            alert('Select 1 or more rejection reasons.');
+            $('#rejectionSubmit').removeAttr('disabled');
+            return;
+        }
 
         if (checkedItems.length == 0) {
             alert(' Select 1 or more files to reject.');
