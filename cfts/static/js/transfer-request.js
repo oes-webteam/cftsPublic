@@ -112,18 +112,8 @@ jQuery(document).ready(function () {
 
     $(document).on('click', '#select-all-files', function () {
         let isChecked = $(this).prop('checked');
-        const allOriginalFiles = $(".file-check.rejected[original]");
-    
-        // Disable the "Select All" checkbox if there's <= 1 file or all are rejected
-        if (allOriginalFiles) {
-            $('#select-all-files').prop('disabled', true);
-        } else {
-            $('#select-all-files').prop('disabled', false);
-        }
-        
         $(".all-files[original]").prop('checked', isChecked); 
     });
-
 
     $(document).on('click', '#modifyRejectionSubmit', function (e) {
         console.log("rejection modify submit clicked");
@@ -163,12 +153,6 @@ jQuery(document).ready(function () {
         let file_ids = [];
         let rejectionReasons = [];
         let reject_text = $("#reject-comments").val();
-
-        if (checkedReasons.length === 0) {
-            alert('Select 1 or more rejection reasons.');
-            $('#rejectionSubmit').removeAttr('disabled');
-            return;
-        }
 
         if (checkedItems.length == 0) {
             alert(' Select 1 or more files to reject.');
@@ -238,67 +222,55 @@ jQuery(document).ready(function () {
     /* Encrypt files in request */
     /****************************/
 
-   // Select All functionality for encryption
-$(document).on('click', '#encrypt-all-files', function () {
-    let isChecked = $(this).prop('checked');
-    $(".file-check.encrypt").prop('checked', isChecked); // Select/deselect all files for encryption
-});
+    $(document).on('click', '#encryptSubmit', function (e) {
+        $('#encryptSubmit').attr('disabled', 'true');
 
-// Submission logic for encryption
-$(document).on('click', '#encryptSubmit', function (e) {
-    $('#encryptSubmit').attr('disabled', 'true');
+        const checkedItems = $(".file-check.encrypt:checked");
+        let file_ids = [];
 
-    const checkedItems = $(".file-check.encrypt:checked"); // Selected files for encryption
-    let file_ids = [];
+        console.log(checkedItems);
+        if (checkedItems.length == 0) {
+            alert(' Select 1 or more files to encrypt.');
+            $('#encryptSubmit').removeAttr('disabled', 'false');
+        } else {
+            checkedItems.each(i => {
+                file_ids.push(checkedItems[i].id.split("_")[1]);
+            });
 
-    console.log(checkedItems);
-
-    if (checkedItems.length == 0) {
-        alert('Select 1 or more files to encrypt.');
-        $('#encryptSubmit').removeAttr('disabled', 'false');
-    } else {
-        checkedItems.each(function () {
-            file_ids.push($(this).attr('id').split("_")[1]);
-        });
-
-        console.log("Encrypting files: ", file_ids);
-
-        sendEncryptRequest(file_ids, rqst_id);
-    }
-});
-
-// Encryption request logic
-const sendEncryptRequest = (file_ids, request_id) => {
-    console.log(file_ids);
-
-    let csrftoken = getCookie('csrftoken');
-
-    const postData = {
-        'request_id': request_id, // Doesn't matter which request we grab
-        'id_list': file_ids
-    };
-
-    const setEncryptOnFiles = $.post('/api-setencrypt', postData, 'json').then(
-        // Success callback
-        function (resp, status) {
-            console.log('SUCCESS');
-            $("#forceReload").submit(); // Reload the page or refresh the state
-        },
-        // Failure callback
-        function (resp, status) {
-            console.log('FAIL');
-
-            alert("Failed to encrypt files, send error message to web team.");
-            let responseText = resp.responseText;
-            let errorInfo = responseText.substring(
-                resp.responseText.indexOf("Exception Value"),
-                resp.responseText.indexOf("Python Executable")
-            );
-
-            notifyUserError("Error encrypting file, send error message to web team: " + errorInfo);
+            sendEncryptRequest(file_ids, rqst_id);
         }
-    );
-};
+    });
+
+
+    const sendEncryptRequest = (file_ids, request_id) => {
+        console.log(file_ids);
+
+        let csrftoken = getCookie('csrftoken');
+
+        const postData = {
+            'request_id': request_id, // doesn't matter which request we grab
+            'id_list': file_ids
+        };
+
+        const setEncryptOnFiles = $.post('/api-setencrypt', postData, 'json').then(
+            // success
+            function (resp, status) {
+                console.log('SUCCESS');
+                $("#forceReload").submit();
+            },
+            // fail 
+            function (resp, status) {
+                console.log('FAIL');
+
+                alert("Failed to encrypt files, send error message to web team.");
+                responseText = resp.responseText;
+                errorInfo = responseText.substring(resp.responseText.indexOf("Exception Value"), resp.responseText.indexOf("Python Executable"));
+
+                notifyUserError("Error encrypting file, send error message to web team: " + errorInfo);
+            }
+        );
+
+    };
 
     // REJECTION MODAL INPUT VALIDATION AND ACTION
     const rejectFormCallback = (file_ids, reasons, request_id, reject_text) => {
