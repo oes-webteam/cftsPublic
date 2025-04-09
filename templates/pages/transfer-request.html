@@ -21,22 +21,8 @@
                         </div>
                         
                         <div class="modal-body">
-                            {% with non_rejected_files=0 %}
-                                {% for file in rqst.files.all %}
-                                    {% if not file.rejection_reasons.all %}
-                                        {% with non_rejected_files=non_rejected_files|add:1 %}
-                                        {% endwith %}
-                                    {% endif %}
-                                {% endfor %}
-                                {% if non_rejected_files > 0 %}
-                                    <input type="checkbox" name="select-all" id="select-all-files">
-                                    <label for="select-all-files">Select All Files</label>
-                                {% else %}
-                                    <input type="checkbox" name="select-all" id="select-all-files" disabled>
-                                    <label for="select-all-files" disabled>Select All Files</label>
-                                {% endif %}
-                            {% endwith %}
-                            
+                            <input type="checkbox" name="select-all" id="select-all-files">
+                            <label for="select-all-files">Select All Files</label>
                             {% for file in rqst.files.all %}
                                 {% if not file.rejection_reasons.all %}
                                     <input type="checkbox" class="btn-check file-check all-files not-rejected" id="{{file.file_id}}" autocomplete="off" original>
