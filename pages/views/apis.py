@@ -29,6 +29,9 @@ from pages.views.queue import createZip, updateFileReview
 from pages.views.auth import superUserCheck, staffCheck
 from pages.views.scan import scan
 
+import re
+from rapidfuzz import fuzz
+
 import hashlib
 
 '''
@@ -674,14 +677,40 @@ def process(request):
         except:
             pass
 
-        # Getting all the staff emails from the database
-        staff_emails = [x.lower() for x in authUser.objects.filter(is_staff=True).values_list('email', flat=True)]
-        rhr = form_data.get('RHREmail').lower()
+        def normalize_username(email):
+            username = email.split("@")[0].lower()
+            parts = re.split(r'[.\-_]', username)
+            filtered = [part for part in parts if len(part) > 1]
+            return ''.join(filtered)
 
-        # Checking if the RHR email address in the form is in the staff_emails list, or if it is the same as the
-        # source or destination email address. If any of those are true, then it sets the destFlag to True.
-        if rhr in staff_emails or rhr == source_email.address.lower() or rhr in [x.lower() for x in destination_list]:
+        # Get staff emails
+        staff_emails = [x.lower() for x in authUser.objects.filter(is_staff=True).values_list('email', flat=True)]
+
+        # Get RHR and normalize
+        rhr = form_data.get('RHREmail').lower()
+        rhr_username = normalize_username(rhr)
+
+        # Normalize source email
+        source_username = normalize_username(source_email.address)
+
+        # Normalize destination emails
+        destination_username = [normalize_username(x) for x in destination_list]
+
+        threshold = 85
+
+        # Flag if RHR is a staff member
+        if rhr in staff_emails:
             rqst.destFlag = True
+
+        # Flag if RHR is similar to source email
+        if fuzz.partial_ratio(rhr_username, source_username) >= threshold:
+            rqst.destFlag = True
+
+        # Flag if RHR is similar to any destination email
+        for dest_username in destination_username:
+            if fuzz.partial_ratio(rhr_username, dest_username) >= threshold:
+                rqst.destFlag = True
+                break
 
         # Loading the fileInfo from the form_data.
         file_info = json.loads(form_data.get('fileInfo'))

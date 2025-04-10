@@ -6,40 +6,13 @@
     <div class="col-12">
         <a class="card bg-light {% if highlightFirst == True %}dupe{% endif %}{% if request.user_reviewing > 0 %}reviewing{% endif %}{% if request.pull != None %}pulled {% endif %} {% if request.pull.centcom_pull == True %}centcom{% endif %}" id="{{request.request_id}}" href="{% url 'transfer-request' request.request_id %}" request_hash="{{request.request_hash}}">
             <div class="card-body request-header {% if request.pull != None %} pending{% endif %} {% if request.centcom_pull %}centcom{% endif %}">
-                <!-- <div style="display: flex; align-items: center; gap: 40px;"> -->
-                    <!-- First Reviewer Progress -->
-                    <!-- <div class="progress-circle first-reviewer-progress" style="position: relative; width: 80px; height: 80px;">
-                        <svg width="80" height="80">
-                            <circle cx="40" cy="40" r="30" stroke="#ddd" stroke-width="6" fill="none"/>
-                            <circle class="progress-ring" cx="40" cy="40" r="30" stroke="red" stroke-width="6" fill="none"
-                                stroke-dasharray="188.4" stroke-dashoffset="188.4" stroke-linecap="round"/>
-                        </svg>
-                        <span class="progress-text" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-                        font-size: 14px; font-weight: bold;"> 
-                        {{ request.files.all.count }}/{{ request.files.all.count }}
-                    </span>
-                    </div> -->
-                
-                    <!-- Second Reviewer Progress -->
-                    <!-- <div class="progress-circle second-reviewer-progress" style="position: relative; width: 80px; height: 80px;">
-                        <svg width="80" height="80">
-                            <circle cx="40" cy="40" r="30" stroke="#ddd" stroke-width="6" fill="none"/>
-                            <circle class="progress-ring" cx="40" cy="40" r="30" stroke="red" stroke-width="6" fill="none" 
-                                stroke-dasharray="188.4" stroke-dashoffset="188.4" stroke-linecap="round"/>
-                        </svg>
-                        <span class="progress-text" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-                        font-size: 14px; font-weight: bold;">{{ request.files.all.count }}/{{ request.files.all.count }}</span>
-                    </div>
-                </div> -->
                 <h5 class="card-title" style="width: 75%;">{%if request.is_centcom%}{%endif%}{{ request.user }}{%if request.is_centcom%}{%endif%}</h5>
                 <p class="request-submitted card-subtitle mb-2 text-muted">Submitted: {{ request.date_created|date:'db'|upper }} @ {{ request.date_created|time:'Hi' }}</p>
-
                 {% if request.destFlag %}
                     <p class="card-text" style="color: red;">
                         {% if request.destFlag %}Email conflict, check source/destination/RHR emails{% endif %}
-                    </p>
+                    </p>  
                 {% endif %}
-
                 {% if request.pull != None or request.ready_to_pull != False %}{% else %}
                     {% if request.needs_review > 0 %}
                         <h6 class="ml-3">{{request.needs_review}} file{{ request.needs_review|pluralize }} open for review</h6>
@@ -65,16 +38,18 @@
                                 {% if file.is_pii or request.network.cfts_deployed %}
                                     <span title="PII: {{ file.is_pii }}">🔒</span>
                                 {% endif %}
-                                {% if file.date_oneeye and not file.date_twoeye %}
-                                    ✅
-                                {% elif file.date_oneeye and file.date_twoeye %}
-                                    ✅✅
-                                {% else %}
-                                    {% if file.user_oneeye and not file.date_oneeye %}
-                                        ⏳ 
-                                    {% endif %}
-                                    {% if file.user_twoeye and not file.date_twoeye %}
-                                        ⏳
+                                {% if not file.rejection_reasons.all %} 
+                                    {% if file.date_oneeye and not file.date_twoeye %}
+                                        ✅
+                                    {% elif file.date_oneeye and file.date_twoeye %}
+                                        ✅✅
+                                    {% else %}
+                                        {% if file.user_oneeye and not file.date_oneeye %}
+                                            ⏳ 
+                                        {% endif %}
+                                        {% if file.user_twoeye and not file.date_twoeye %}
+                                            ⏳
+                                        {% endif %}
                                     {% endif %}
                                 {% endif %}
                                 {{ file|truncatechars:25 }}{% if file.file_count > 1 %} ({{ file.file_count }} files){% endif %}

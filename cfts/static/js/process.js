@@ -11,13 +11,13 @@
 /* **************** */
   /* EMAIL ERRORS */
   /* **************** */
-document.addEventListener('DOMContentLoaded', function() {
+
     const targetEmailInput = document.getElementById('targetEmail');
     const rhrEmailInput = document.getElementById('RHREmail');
     const rhrEmailErrorDiv = document.getElementById('RHREmailError');
     const userEmailInput = document.getElementById('userEmail');
 
-    function checkEmail(email) {
+    function validateEmail(email) {
         if (!email.includes("@") || email.split("@")[1].trim() === "") {
             return false; 
         }
@@ -40,13 +40,14 @@ document.addEventListener('DOMContentLoaded', function() {
         function validateEmails() {
             const targetEmail = targetEmailInput.value.trim();
             const rhrEmail = rhrEmailInput.value.trim();
+            
             const userEmail = userEmailInput.value.trim();
 
             if (userEmail === rhrEmail) {
                 notifyEmailError("Your user email cannot match the Reliable Human Reviewer's email.");
             } else if (targetEmail === rhrEmail) {
                 notifyEmailError("Destination email cannot match the Reliable Human Reviewer's email.");
-            } else if (!checkEmail(rhrEmail)) {
+            } else if (!validateEmail(rhrEmail)) {
                 notifyEmailError(`Reliable Human Reviewer's email must be from the ${allowedDomain} domain.`);
             } else {
                 clearEmailError();
@@ -56,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
     targetEmailInput.addEventListener('input', validateEmails);
     rhrEmailInput.addEventListener('input', validateEmails);
     userEmailInput.addEventListener('input', validateEmails);
-});
+
 
   /* **************** */
   /* EMAIL VALIDATION */
@@ -175,7 +176,11 @@ document.addEventListener('DOMContentLoaded', function() {
         isValid = false;
       }
       if(userEmail === targetEmail){
-        errors.push(form.elements.targetEmail, form.elements.RHREmail);
+        errors.push(form.elements.targetEmail, form.elements.userEmail);
+        isValid = false;
+      }
+      if(!validateEmail(rhrEmail)){
+        errors.push(form.elements.RHREmail)
         isValid = false;
       }
       if (typeof form.elements.RHREmail.length != 'undefined' && form.elements.RHREmail.length > 1) {
