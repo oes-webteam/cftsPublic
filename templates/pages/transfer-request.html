@@ -40,6 +40,11 @@
                             <div class="modal-header">
                                 <h5 class="modal-title" id="rejectModalLabel">Rejected Files</h5>
                             </div>
+                            <input type="checkbox" name="select-all" id="select-all-files-rejected">
+                            <label for="select-all-files-rejected">Select All Rejected Files</label>
+                            {% if rqst.files.rejection_reasons.count == 0 %}
+                                <p>No files to unreject</p>
+                            {% endif %}
                             {% for file in rqst.files.all %}
                                 {% if file.rejection_reasons.all %}
                                     <input type="checkbox" class="btn-check file-check all-files rejected" id="{{file.file_id}}" autocomplete="off" modify>
