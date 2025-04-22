@@ -11,8 +11,8 @@
 
     <div class="container details">
         <!-- Modal -->
-        <div class="modal fade" id="rejectModal" tabindex="-1" role="dialog" aria-labelledby="rejectModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modial-diolog-scrollable modal-lg" role="document">
+        <div class="modal draggable" id="rejectModal" tabindex="-1" role="dialog" aria-labelledby="rejectModalLabel" aria-hidden="true" data-bs-background="false">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg" role="document">
                 <div class="modal-content">
                     <form>
                         <div class="modal-header">
@@ -91,7 +91,7 @@
             </div>
         </div>
 
-        <div class="modal fade" id="reviewModal" tabindex="-1" role="dialog" aria-labelledby="reviewModalLabel" aria-hidden="true">
+        <div class="modal draggable" id="reviewModal" tabindex="-1" role="dialog" aria-labelledby="reviewModalLabel" aria-hidden="true" data-bs-backdrop="false">
             <div class="modal-dialog modal-dialog-centered modial-diolog-scrollable modal-lg" role="document">
                 <div class="modal-content">
                     <form>
@@ -399,26 +399,34 @@
 
     </div> <!-- END container -->
 
-    <div class="modal-backdrop fade" style="display: none;"></div>
-
     <script>
-        function getRejectModal(elem){
-            //Add the CSRF token to ajax requests
+        function getRejectModal(elem) {
+            // Add the CSRF token to ajax requests
             $.ajaxSetup({
                 beforeSend: function(xhr, settings) {
                     xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
                 },
             });
 
-            fileID = $(elem).attr('for')
-            $('#'+fileID).prop('checked', 'false')
+            fileID = $(elem).attr('for');
+            $('#' + fileID).prop('checked', false);  // 'false' should be boolean
+
             $.ajax({
                 type: "GET",
                 url: "/getRejectModal/" + fileID,
                 success: function(response) {
-                    $("#modifyRejectModal").html(response)
-                    $("#rejectModal").hide().removeClass('show').attr('aria-hidden', "true").removeAttr('aria-modal').removeAttr('role').find('form').trigger('reset')
-                    $("#modifyRejectModal").show().addClass('show')
+                    $("#modifyRejectModal").html(response);
+                    $("#rejectModal").hide().removeClass('show').attr('aria-hidden', "true").removeAttr('aria-modal').removeAttr('role').find('form').trigger('reset');
+                    $("#modifyRejectModal").show().addClass('show');
+
+                    // Make the modal draggable AFTER it’s injected
+                    $('#rejectModal .modal-dialog').draggable({
+                        handle: '.modal-header',
+                        cursor: 'move'
+                    });
+
+                    // Optional: change the cursor
+                    $('#rejectModal .modal-header').css('cursor', 'move');
                 }
             });
         }
@@ -446,13 +454,11 @@
 
         function openModal(elem){
             $(elem).show().addClass('show')
-            $('.modal-backdrop').show().addClass('show')
             $('body').addClass('modal-open').attr('style','style="overflow: hidden; padding-right: 0px;"')
         }
 
         function closeModal(elem){
             $(elem).hide().removeClass('show')
-            $('.modal-backdrop').hide().removeClass('show')
             $('body').removeClass('modal-open').removeAttr('style')
             $('.modal').find('form').trigger('reset')
         }

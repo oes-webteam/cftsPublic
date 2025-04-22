@@ -1,12 +1,78 @@
 /* transfer-request.js */
 window.document.title = "Request Info";
 
+document.addEventListener('DOMContentLoaded', function () {
+    // Initialize the rejectModal with backdrop disabled
+    $('#rejectModal').modal({
+        backdrop: false,
+    });
+
+    // Initialize the modifyRejectionsModal with backdrop disabled
+    $('#modifyRejectionsModal').modal({
+        backdrop: false,
+    });
+
+    // Example: Open the rejectModal programmatically
+    $('#openRejectModalButton').on('click', function () {
+        $('#rejectModal').modal('show');
+    });
+
+    // Example: Open the modifyRejectionsModal programmatically
+    $('#openModifyRejectionsModalButton').on('click', function () {
+        $('#modifyRejectionsModal').modal('show');
+    });
+
+    // Function to make a modal draggable
+    function makeModalDraggable(modalId) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+
+        const header = modal.querySelector('.modal-header');
+        const dialog = modal.querySelector('.modal-dialog');
+        let isDragging = false;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        // Mouse down event to start dragging
+        header.addEventListener('mousedown', function (e) {
+            isDragging = true;
+            offsetX = e.clientX - dialog.offsetLeft;
+            offsetY = e.clientY - dialog.offsetTop;
+            dialog.style.position = 'absolute';
+            dialog.style.margin = '0'; // Remove Bootstrap's default centering
+            dialog.style.zIndex = 1050; // Ensure it stays above other elements
+        });
+
+        // Mouse move event to drag the modal
+        document.addEventListener('mousemove', function (e) {
+            if (isDragging) {
+                dialog.style.left = `${e.clientX - offsetX}px`;
+                dialog.style.top = `${e.clientY - offsetY}px`;
+            }
+        });
+
+        // Mouse up event to stop dragging
+        document.addEventListener('mouseup', function () {
+            isDragging = false;
+        });
+    }
+
+    // Apply draggable functionality to both modals
+    makeModalDraggable('rejectModal');
+    makeModalDraggable('modifyRejectionsModal');
+});
+
+
+
+
 jQuery(document).ready(function () {
     // instantiate the rejection popovers
     var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
     var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
         return new bootstrap.Popover(popoverTriggerEl);
     });
+
+    
 
     if (document.location.search) {
         const search = document.location.search;
@@ -84,7 +150,6 @@ jQuery(document).ready(function () {
 
     });
 
-
     $('.reject-dupes').click(e => {
         e.preventDefault();
         requestIDs = [];
@@ -114,12 +179,6 @@ jQuery(document).ready(function () {
         let isChecked = $(this).prop('checked');
         $(".all-files[original]").prop('checked', isChecked); 
     });
-    
-    $(document).on('click', '#select-all-files', function () {
-        let isChecked = $(this).prop('checked');
-        $(".all-files[original]").prop('checked', isChecked); 
-    });
-    
 
     $(document).on('click', '#modifyRejectionSubmit', function (e) {
         console.log("rejection modify submit clicked");
