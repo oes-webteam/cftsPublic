@@ -60,6 +60,24 @@ document.addEventListener('DOMContentLoaded', function () {
     // Apply draggable functionality to both modals
     makeModalDraggable('rejectModal');
     makeModalDraggable('modifyRejectionsModal');
+
+
+    // Check if any file checkboxes exist that are available for encryption
+    if ($(".file-check.encrypt").length === 0 ) {
+        $("#encrypt-all-files").prop("disabled", true).prop("checked", false);
+        $("label[for='encrypt-all-files']").text("All files encrypted");
+    }
+
+    // For original (or non-rejected) file checkboxes
+    if ($(".all-files[original]").length === 0) {
+        $("#select-all-files").prop("disabled", true);
+        $("label[for='select-all-files']").text("All files rejected");
+    }
+    
+    if ($(".file-check.rejected[modify]").length === 0) {
+        $("#select-all-rejected-files").prop("disabled", true);
+        $("label[for='select-all-rejected-files']").text("No rejected files available");
+    }
 });
 
 
