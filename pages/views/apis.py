@@ -574,236 +574,252 @@ def process(request):
     """
 
     if request.method == 'POST':
-        # Getting the form data and files from the request.
-        form_data = request.POST
-        form_files = request.FILES
-
-        # This string is used to collect information about a request and generate a request hash that is used to detect duplicate requests submitted to the system
-        requestData = ""
-
-        # Use the form data to create the necessary records for the request
-
-        # The network the file was submitted on, pulls from the settings.py file which pulls form the network.py
-        sourceNet = Network.objects.get(name=NETWORK)
-
-        # Trying to get an email object from the database. If it doesn't exist, it creates a new one.
         try:
-            source_email = Email.objects.get(address=form_data.get('userEmail'), network=sourceNet)
-        except Email.DoesNotExist:
-            source_email = Email(address=form_data.get('userEmail'), network=sourceNet)
-            source_email.save()
-        # get() returned more than one Email object, use filter instead and use first object, update Email.network if needed
-        except Email.MultipleObjectsReturned:
-            source_email = Email.objects.filter(address=form_data.get('userEmail'))[0]
+            logger.info("Processing file submission")
+            logger.info(f"Form data: {request.POST}")
+            logger.info(f"Uploaded files: {request.FILES}")
 
-        if source_email.network == None:
-            source_email.network = sourceNet
-            source_email.save()
+            # Getting the form data and files from the request.
+            form_data = request.POST
+            form_files = request.FILES
 
-        # Add source email to request hash
-        requestData += form_data.get('userEmail')
+            # This string is used to collect information about a request and generate a request hash that is used to detect duplicate requests submitted to the system
+            requestData = ""
 
-        # Get the destination Network object
-        destinationNet = Network.objects.get(name=form_data.get('network'))
+            # Use the form data to create the necessary records for the request
 
-        # Users used to be able to transfer to multiple email addresses, the code below should be refactored to assume only one destination email
-        destination_list = form_data.get('targetEmail').split(",")
-        destSplit_list = []
+            # The network the file was submitted on, pulls from the settings.py file which pulls form the network.py
+            sourceNet = Network.objects.get(name=NETWORK)
 
-        target_list = []
-        for destination in destination_list:
-            # Split emails at the "@", this is used along with the source email and will raise a flag if they do not match. needs to be imporved, causes a lot of false positives
-            destSplit_list.append(destination.split("@")[0].lower())
-
-            # Same process as get or create email but for destination instead of source
+            # Trying to get an email object from the database. If it doesn't exist, it creates a new one.
             try:
-                target_email = Email.objects.get(address=destination, network=destinationNet)
+                source_email = Email.objects.get(address=form_data.get('userEmail'), network=sourceNet)
             except Email.DoesNotExist:
-                target_email = Email(address=destination, network=destinationNet)
-                target_email.save()
+                source_email = Email(address=form_data.get('userEmail'), network=sourceNet)
+                source_email.save()
+            # get() returned more than one Email object, use filter instead and use first object, update Email.network if needed
             except Email.MultipleObjectsReturned:
-                target_email = Email.objects.filter(address=destination, network=destinationNet)[0]
+                source_email = Email.objects.filter(address=form_data.get('userEmail'))[0]
 
-            # Add destination email to request hash
-            requestData += destination
-            target_list.append(target_email)
+            if source_email.network == None:
+                source_email.network = sourceNet
+                source_email.save()
 
-        # Add first and last name to request hash
-        requestData += form_data.get('firstName').replace(" ", "").lower()
-        requestData += form_data.get('lastName').replace(" ", "").lower()
+            # Add source email to request hash
+            requestData += form_data.get('userEmail')
 
-        # Importing two functions from auth.py, importing them at the top of the file was causing a circular import error and I was too lazy to fix it...
-        from pages.views.auth import getCert, getOrCreateUser
+            # Get the destination Network object
+            destinationNet = Network.objects.get(name=form_data.get('network'))
 
-        # Get user cert info, use cert info to return a User object, see auth.py for details
-        certInfo = getCert(request)
-        cftsUser = getOrCreateUser(request, certInfo)
+            # Users used to be able to transfer to multiple email addresses, the code below should be refactored to assume only one destination email
+            destination_list = form_data.get('targetEmail').split(",")
+            destSplit_list = []
 
-        # Check to see if a user is banned, if so kick them to the home page
-        if cftsUser.banned == True:
-            return JsonResponse({'banned': True})
+            target_list = []
+            for destination in destination_list:
+                # Split emails at the "@", this is used along with the source email and will raise a flag if they do not match. needs to be imporved, causes a lot of false positives
+                destSplit_list.append(destination.split("@")[0].lower())
 
-        # Get users organization from request form
-        org = form_data.get('organization')
-        if form_data.get('organization') == "CENTCOM HQ":
-            org = "HQ"
+                # Same process as get or create email but for destination instead of source
+                try:
+                    target_email = Email.objects.get(address=destination, network=destinationNet)
+                except Email.DoesNotExist:
+                    target_email = Email(address=destination, network=destinationNet)
+                    target_email.save()
+                except Email.MultipleObjectsReturned:
+                    target_email = Email.objects.filter(address=destination, network=destinationNet)[0]
 
-        # Create the initial Request object so that we can start creating object relationships
-        rqst = Request(
-            user=cftsUser,
-            network=destinationNet,
-            comments=form_data.get('comments'),
-            org=org,
-            is_centcom=form_data.get('isCentcom'),
-            RHR_email=form_data.get('RHREmail'),
-            ready_to_pull=destinationNet.skip_file_review,
-        )
-        rqst.save()
+                # Add destination email to request hash
+                requestData += destination
+                target_list.append(target_email)
 
-        # Add destination network to request hash
-        requestData += form_data.get('network')
+            # Add first and last name to request hash
+            requestData += form_data.get('firstName').replace(" ", "").lower()
+            requestData += form_data.get('lastName').replace(" ", "").lower()
 
-        # Add destination email to request object and raise email mismatch flag if needed
-        rqst.target_email.add(*target_list)
-        if form_data.get('network') == "NIPR" or form_data.get('network') == "SIPR":
-            if form_data.get('userEmail').split("@")[0].lower() not in destSplit_list:
-                rqst.destFlag = True
+            # Importing two functions from auth.py, importing them at the top of the file was causing a circular import error and I was too lazy to fix it...
+            from pages.views.auth import getCert, getOrCreateUser
 
-        fileList = []
+            # Get user cert info, use cert info to return a User object, see auth.py for details
+            certInfo = getCert(request)
+            cftsUser = getOrCreateUser(request, certInfo)
 
-        try:
-            if form_data.get('network') == "NIPR" and NETWORK == "SIPR":
-                rqst.file_categories.add(*FileCategories.objects.filter(file_category__in=form_data.getlist('fileCategory')))
-        except:
-            pass
+            # Check to see if a user is banned, if so kick them to the home page
+            if cftsUser.banned == True:
+                return JsonResponse({'banned': True})
 
-        def normalize_username(email):
-            username = email.split("@")[0].lower()
-            parts = re.split(r'[.\-_]', username)
-            filtered = [part for part in parts if len(part) > 1]
-            return ''.join(filtered)
+            # Get users organization from request form
+            org = form_data.get('organization')
+            if form_data.get('organization') == "CENTCOM HQ":
+                org = "HQ"
 
-        # Get staff emails
-        staff_emails = [x.lower() for x in authUser.objects.filter(is_staff=True).values_list('email', flat=True)]
-
-        # Get RHR and normalize
-        rhr = form_data.get('RHREmail').lower()
-        rhr_username = normalize_username(rhr)
-
-        # Normalize source email
-        source_username = normalize_username(source_email.address)
-
-        # Normalize destination emails
-        destination_username = [normalize_username(x) for x in destination_list]
-
-        threshold = 85
-
-        # Flag if RHR is a staff member
-        if rhr in staff_emails:
-            rqst.destFlag = True
-
-        # Flag if RHR is similar to source email
-        if fuzz.partial_ratio(rhr_username, source_username) >= threshold:
-            rqst.destFlag = True
-
-        # Flag if RHR is similar to any destination email
-        for dest_username in destination_username:
-            if fuzz.partial_ratio(rhr_username, dest_username) >= threshold:
-                rqst.destFlag = True
-                break
-
-        # Loading the fileInfo from the form_data.
-        file_info = json.loads(form_data.get('fileInfo'))
-
-        has_encrypted = False
-
-        # Create a File object for every file in the request
-        for i, f in enumerate(form_files.getlist("files")):
-            if file_info[i]['encrypt'] == 'true':
-                has_encrypted = True
-
-            this_file = File(
-                file_object=f,
-                is_pii=file_info[i]['encrypt'] == 'true',
-                org=form_data.get('organization'),
+            # Create the initial Request object so that we can start creating object relationships
+            rqst = Request(
+                user=cftsUser,
+                network=destinationNet,
+                comments=form_data.get('comments'),
+                org=org,
                 is_centcom=form_data.get('isCentcom'),
+                RHR_email=form_data.get('RHREmail'),
+                ready_to_pull=destinationNet.skip_file_review,
             )
+            rqst.save()
 
-            # Counting the number of files in a zip file and the total size of the files in the zip file.
-            if str(f).split('.')[-1] == "zip":
-                with ZipFile(f, 'r') as zip:
-                    # Get info for all files
-                    info = zip.infolist()
-                    fileCount = 0
+            # Add destination network to request hash
+            requestData += form_data.get('network')
 
-                    # Only count files, not folders
-                    for entry in info:
-                        if entry.is_dir() == False:
-                            fileCount += 1
+            # Add destination email to request object and raise email mismatch flag if needed
+            rqst.target_email.add(*target_list)
+            if form_data.get('network') == "NIPR" or form_data.get('network') == "SIPR":
+                if form_data.get('userEmail').split("@")[0].lower() not in destSplit_list:
+                    rqst.destFlag = True
 
-                    # Count of all files in zip
-                    this_file.file_count = fileCount
+            fileList = []
 
-                    # Count the total uncompressed file size for all files in the zip
-                    fileSize = 0
-                    for file in info:
-                        fileSize += file.file_size
+            try:
+                if form_data.get('network') == "NIPR" and NETWORK == "SIPR":
+                    rqst.file_categories.add(*FileCategories.objects.filter(file_category__in=form_data.getlist('fileCategory')))
+            except:
+                pass
 
-                    this_file.file_size = fileSize
+            def normalize_username(email):
+                username = email.split("@")[0].lower()
+                parts = re.split(r'[.\-_]', username)
+                filtered = [part for part in parts if len(part) > 1]
+                return ''.join(filtered)
 
-            else:
-                # If its not a zip just get the file size from the file object, file count defaults to 1
-                this_file.file_size = this_file.file_object.size
+            # Get staff emails
+            staff_emails = [x.lower() for x in authUser.objects.filter(is_staff=True).values_list('email', flat=True)]
 
-            # Save the file, let Django strip illegal characters from the path, and trim the dir path from the filename
-            this_file.save()
-            this_file.file_name = str(this_file.file_object.name).split("/")[-1]
-            this_file.save()
+            # Get RHR and normalize
+            rhr = form_data.get('RHREmail').lower()
+            rhr_username = normalize_username(rhr)
 
-            # Add the file to the request and the list of files used in the request hash
-            rqst.files.add(this_file)
-            rqst.has_encrypted = has_encrypted
-            fileList.append(str(f))
+            # Normalize source email
+            source_username = normalize_username(source_email.address)
 
-        # Sort the list of files so the order of files does not affect the duplicate checking
-        fileList.sort()
+            # Normalize destination emails
+            destination_username = [normalize_username(x) for x in destination_list]
 
-        # Add all filenames to request hash
-        for file in fileList:
-            requestData += file
+            threshold = 85
 
-        # Create the request hash and add it to the Request object
-        requestHash = hashlib.md5()
-        requestHash.update(requestData.encode())
-        requestHash = requestHash.hexdigest()
-        rqst.request_hash = requestHash
+            # Flag if RHR is a staff member
+            if rhr in staff_emails:
+                rqst.destFlag = True
 
-        # Check for any files with the same hash that have not been pulled yet
-        dupes = Request.objects.filter(pull__date_complete=None, request_hash=requestHash)
+            # Flag if RHR is similar to source email
+            if fuzz.partial_ratio(rhr_username, source_username) >= threshold:
+                rqst.destFlag = True
 
-        # Updating the is_dupe field to True for all the duplicate records.
-        if dupes:
-            rqst.is_dupe = True
-            dupes.update(is_dupe=True)
+            # Flag if RHR is similar to any destination email
+            for dest_username in destination_username:
+                if fuzz.partial_ratio(rhr_username, dest_username) >= threshold:
+                    rqst.destFlag = True
+                    break
 
-        # If we have gotten this far without an error than this request is good to go, Requests where is_submitted == False are filtered out from the queue and pulls
-        rqst.is_submitted = True
-        rqst.save()
+            # Loading the fileInfo from the form_data.
+            file_info = json.loads(form_data.get('fileInfo'))
 
-        # Scan all files in request for any match of a DirtyWord object, append results to file, an error in a scan will NOT prevent the request from being submitted
-        try:
-            scan(request, rqst.request_id)
-        except:
-            pass
+            has_encrypted = False
 
-        # We did it!!! The request is submitted, return the request is as part of the response
-        resp = {'status': 'success', 'request_id': rqst.pk}
+            # Create a File object for every file in the request
+            for i, f in enumerate(form_files.getlist("files")):
+                if file_info[i]['encrypt'] == 'true':
+                    has_encrypted = True
 
+                this_file = File(
+                    file_object=f,
+                    is_pii=file_info[i]['encrypt'] == 'true',
+                    org=form_data.get('organization'),
+                    is_centcom=form_data.get('isCentcom'),
+                )
+
+                # Counting the number of files in a zip file and the total size of the files in the zip file.
+                if str(f).split('.')[-1] == "zip":
+                    with ZipFile(f, 'r') as zip:
+                        # Get info for all files
+                        info = zip.infolist()
+                        fileCount = 0
+
+                        # Only count files, not folders
+                        for entry in info:
+                            if entry.is_dir() == False:
+                                fileCount += 1
+
+                        # Count of all files in zip
+                        this_file.file_count = fileCount
+
+                        # Count the total uncompressed file size for all files in the zip
+                        fileSize = 0
+                        for file in info:
+                            fileSize += file.file_size
+
+                        this_file.file_size = fileSize
+
+                else:
+                    # If its not a zip just get the file size from the file object, file count defaults to 1
+                    this_file.file_size = this_file.file_object.size
+
+                # Save the file, let Django strip illegal characters from the path, and trim the dir path from the filename
+                this_file.save()
+                this_file.file_name = str(this_file.file_object.name).split("/")[-1]
+                this_file.save()
+
+                # Add the file to the request and the list of files used in the request hash
+                rqst.files.add(this_file)
+                rqst.has_encrypted = has_encrypted
+                fileList.append(str(f))
+
+            # Sort the list of files so the order of files does not affect the duplicate checking
+            fileList.sort()
+
+            # Add all filenames to request hash
+            for file in fileList:
+                requestData += file
+
+            # Create the request hash and add it to the Request object
+            requestHash = hashlib.md5()
+            requestHash.update(requestData.encode())
+            requestHash = requestHash.hexdigest()
+            rqst.request_hash = requestHash
+
+            # Check for any files with the same hash that have not been pulled yet
+            dupes = Request.objects.filter(pull__date_complete=None, request_hash=requestHash)
+
+            # Updating the is_dupe field to True for all the duplicate records.
+            if dupes:
+                rqst.is_dupe = True
+                dupes.update(is_dupe=True)
+
+            # If we have gotten this far without an error than this request is good to go, Requests where is_submitted == False are filtered out from the queue and pulls
+            rqst.is_submitted = True
+            rqst.save()
+
+            # Scan all files in request for any match of a DirtyWord object, append results to file, an error in a scan will NOT prevent the request from being submitted
+            try:
+                scan(request, rqst.request_id)
+            except:
+                pass
+
+            # We did it!!! The request is submitted, return the request is as part of the response
+            resp = {'status': 'success', 'request_id': rqst.pk}
+
+            logger.info(f"Generated request hash: {rqst.request_hash}")
+            logger.info(f"Response: {resp}")
+
+            return JsonResponse(resp)
+        
+        except Exception as e:
+            logger.error(f"Error during file submission: {e}", exc_info=True)
+            return JsonResponse({'status': 'fail', 'reason': 'server-error', 'msg': 'An error occurred during submission.'})
+        
+    # else:
+    #         resp = {'status': 'fail', 'reason': 'bad-request-type',
+    #                 'msg': "The 'api-processrequest' view only accepts POST requests."}
     else:
-        resp = {'status': 'fail', 'reason': 'bad-request-type',
-                'msg': "The 'api-processrequest' view only accepts POST requests."}
+        logger.warning("Invalid request method")
+        return JsonResponse({'status': 'fail', 'reason': 'bad-request-type', 'msg': "The 'api-processrequest' view only accepts POST requests."})
 
-    return JsonResponse(resp)
 
 @never_cache
 def setConsentCookie(request):

@@ -138,10 +138,12 @@ def getOrCreateUser(request, certInfo):
         # validPKI users do not need to be logged in so long as they have a pre-existing User reccord
         if certInfo['status'] == "validPKI" or certInfo['status'] == "externalPKI":
             userHash = certInfo['userHash']
+            logger.info(f"Attempting to retrieve user with hash: {userHash}")
 
             # get the User object that matches the certificate hash
             try:
                 user = User.objects.get(user_identifier=userHash)
+                logger.info(f"User found: {user}")
             except User.MultipleObjectsReturned:
                 messages.error(request, "An error occured while trying to identify user, please click the 'Contact Us' link to request help.")
                 users = User.objects.filter(user_identifier=userHash).values_list('user_id', flat=True)
@@ -239,10 +241,6 @@ def editUserInfo(request):
 
         # instantiate a user info form with data from the POST request
         form = userInfoForm(request.POST, instance=cftsUser, networks=nets)
-
-        # validste_form() is a method of the userInfoForm class that validates none of the destination emails are the same as the users source_email
-        # it also validates that if the 'org' field is set to "Other" that they have filled in the field that describes their organization
-        form.validate_form(request.POST)
 
         # proceed if form passes validity checks
         if form.is_valid():
