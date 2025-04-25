@@ -26,23 +26,31 @@ document.addEventListener('DOMContentLoaded', function () {
     function makeModalDraggable(modalId) {
         const modal = document.getElementById(modalId);
         if (!modal) return;
-
-        const header = modal.querySelector('.modal-header');
+    
+        const content = modal.querySelector('.modal-content');
         const dialog = modal.querySelector('.modal-dialog');
         let isDragging = false;
         let offsetX = 0;
         let offsetY = 0;
-
+    
         // Mouse down event to start dragging
-        header.addEventListener('mousedown', function (e) {
+        content.addEventListener('mousedown', function (e) {
             isDragging = true;
-            offsetX = e.clientX - dialog.offsetLeft;
-            offsetY = e.clientY - dialog.offsetTop;
+    
+            // Use getBoundingClientRect to get the actual position
+            const rect = dialog.getBoundingClientRect();
+            offsetX = e.clientX - rect.left;
+            offsetY = e.clientY - rect.top;
+            
+            // Switch to absolute positioning
             dialog.style.position = 'absolute';
-            dialog.style.margin = '0'; // Remove Bootstrap's default centering
-            dialog.style.zIndex = 1050; // Ensure it stays above other elements
+            dialog.style.margin = '0';     
+            dialog.style.transform = 'none';     
+            dialog.style.left = rect.left + "px";   
+            dialog.style.top = rect.top + "px";    
+            dialog.style.zIndex = 1050; 
         });
-
+    
         // Mouse move event to drag the modal
         document.addEventListener('mousemove', function (e) {
             if (isDragging) {
@@ -50,16 +58,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 dialog.style.top = `${e.clientY - offsetY}px`;
             }
         });
-
+    
         // Mouse up event to stop dragging
         document.addEventListener('mouseup', function () {
             isDragging = false;
         });
     }
-
+    
     // Apply draggable functionality to both modals
     makeModalDraggable('rejectModal');
     makeModalDraggable('modifyRejectionsModal');
+    
 
 
     // Check if any file checkboxes exist that are available for encryption

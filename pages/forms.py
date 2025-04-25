@@ -147,15 +147,23 @@ class userInfoForm(ModelForm):
         org = cleaned_data.get('org')
         other_org = cleaned_data.get('other_org')
 
+        # Validate organization fields separately
         if org == "None":
             self.add_error('org', "Please select an organization")
-
         if org == "OTHER" and not other_org:
             self.add_error('other_org', "Please list your DIR/UNIT")
-
+        
+        # Loop over each visible network and validate its email field
         for network in Network.objects.filter(visible=True):
-            network_email = cleaned_data.get(network.name + ' Email')
-            if network_email == source_email:
-                self.add_error(network.name + ' Email', f"Destination email cannot be the same as {NETWORK} email.")
-
+            field_name = f"{network.name} Email"
+            network_email = cleaned_data.get(field_name)
+            
+            # If the network email is provided and it matches the source email,
+            # add an error to that field.
+            if network_email and network_email == source_email:
+                self.add_error(
+                    field_name,
+                    f"Destination email for {network.name} cannot be the same as the source email."
+                )
+        
         return cleaned_data
