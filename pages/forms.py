@@ -46,7 +46,6 @@ class userLogInForm(AuthenticationForm):
 class userInfoForm(ModelForm):
     source_email = forms.EmailField(max_length=75, required=True)
     phone = forms.CharField(max_length=50, required=True)
-    # Org will need to be moved to a new table, maybe? - Kevin
     org = forms.ChoiceField(choices=[
         ('None', '---------------------'),
         ('CENTCOM HQ', 'CENTCOM HQ'),
@@ -94,8 +93,6 @@ class userInfoForm(ModelForm):
         self.fields['name_first'].label = 'First Name'
         self.fields['name_last'].label = 'Last Name'
         self.fields['source_email'].initial = email
-        # prevent changes to source email
-        # self.fields['source_email'].disabled = True
         self.fields['source_email'].label = NETWORK + ' Email'
         self.fields['phone'].initial = user.phone
         self.fields['org'].initial = user.org
@@ -109,17 +106,15 @@ class userInfoForm(ModelForm):
 
         for network in networks:
             net = Network.objects.get(name=network)
-            fieldName = net.name+' Email'
+            fieldName = net.name + ' Email'
             self.fields[fieldName] = forms.EmailField(max_length=75, required=False)
             self.fields[fieldName].label = fieldName
             try:
                 networkEmail = user.destination_emails.get(network__name=network)
                 self.fields[fieldName].initial = networkEmail.address
-
             except Email.MultipleObjectsReturned:
                 networkEmail = user.destination_emails.filter(network__name=network)
                 self.fields[fieldName].initial = networkEmail[0].address
-
             except Email.DoesNotExist:
                 pass
             self.helper.layout.append(fieldName)
@@ -127,33 +122,48 @@ class userInfoForm(ModelForm):
         self.helper.all().wrap_together(Div, css_class="inline-fields")
         self.helper.layout.append(Submit('save', 'Save'))
 
-    def validate_form(self, form):
+    def clean_source_email(self):
+        source_email = self.cleaned_data.get('source_email')
+
         def is_valid_email(email: str, allowed_domain: str) -> bool:
             if "@" not in email or email.split("@")[1].strip() == "":
-                return False 
+                return False
 
             domain = email.split("@")[-1].strip()
             if "." not in domain:
-                return False 
+                return False
 
             base_domain = ".".join(domain.split(".")[-2:]).lower()
             return base_domain == allowed_domain.lower()
 
-        source_email = form.get('source_email')
-        
-        # Validate source email domain
         if not is_valid_email(source_email, ALLOWED_DOMAIN):
-            self.add_error('source_email', f"Email must be from the {ALLOWED_DOMAIN} domain.")
+            raise forms.ValidationError(f"Email must be from the {ALLOWED_DOMAIN} domain.")
 
+        return source_email
+
+    def clean(self):
+        cleaned_data = super().clean()
+        source_email = cleaned_data.get('source_email')
+        org = cleaned_data.get('org')
+        other_org = cleaned_data.get('other_org')
+
+        # Validate organization fields separately
+        if org == "None":
+            self.add_error('org', "Please select an organization")
+        if org == "OTHER" and not other_org:
+            self.add_error('other_org', "Please list your DIR/UNIT")
+        
+        # Loop over each visible network and validate its email field
         for network in Network.objects.filter(visible=True):
-            network_email = form.get(network.name + ' Email')
-
-            # Ensure destination email is not the same as the source email
-            if network_email == source_email:
-                self.add_error(network.name + ' Email', f"Destination email cannot be the same as {NETWORK} email.")
-
-            if form.get('org') == "None":
-                self.add_error('org', "Please select an organization")
-
-            if form.get('org') == "OTHER" and form.get('other_org') == "":
-                self.add_error('other_org', "Please list your DIR/UNIT")
+            field_name = f"{network.name} Email"
+            network_email = cleaned_data.get(field_name)
+            
+            # If the network email is provided and it matches the source email,
+            # add an error to that field.
+            if network_email and network_email == source_email:
+                self.add_error(
+                    field_name,
+                    f"Destination email for {network.name} cannot be the same as the source email."
+                )
+        
+        return cleaned_data

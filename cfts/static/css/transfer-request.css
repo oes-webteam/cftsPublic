@@ -119,6 +119,15 @@
 	border-color: var(--bs-btn-active-border-color) !important;
 }
 
+.modal.draggable .modal-header {
+    cursor: grab;
+}
+
+.modal.draggable .modal-header:active {
+    cursor: grabbing;
+}
+
+
 @media (max-width: 1575px) {
     .btn-group {
         margin-left: 0% !important;

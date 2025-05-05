@@ -173,16 +173,16 @@
         <div class="row button-row sticky-top bg-white mb-4 pt-3">
             <div class="col-6">
                 <div class="btn-group">
-                    <a type="button" class="btn btn-primary btn-back" href="/queue?network={{rqst.network}}&rqst={{rqst.request_id}}">Back</a>
+                    <a type="button" class="btn btn-back" style="color: white; background-color: black;" href="/queue?network={{rqst.network}}&rqst={{rqst.request_id}}">Back</a>
                     <a class="btn btn-info" id="noteBtn" href="#">Save Notes</a>
                 </div>
 
                 <div class="btn-group ms-3">
                     {% if rqst.user.account_warning_count < 3 %}<a class="btn btn-warning" id="userWarning" href="{% url 'api-warnuser' user_id rqst.request_id %}">Issue User Warning</a>{% endif %}
                     {% if not rqst.user.banned%}
-                        <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rqst.request_id "True" "False" %}">Ban User, 1 day</a>
+                        <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rqst.request_id "True" "False" %}">Ban: 1 day</a>
                         {% if user.is_superuser %}
-                            <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rqst.request_id "False" "False" %}">Ban User,
+                            <a class="btn btn-danger" id="banBtn" href="{% url 'api-banuser' user_id rqst.request_id "False" "False" %}">Ban:
                                 {% if rqst.user.strikes == 0 %} 3 days{% elif rqst.user.strikes == 1 %} 7 days{% elif rqst.user.strikes == 2 %} 30 days{% elif rqst.user.strikes == 3 %} Permanently{% endif %}
                             </a>
                         {% endif %}
@@ -213,6 +213,7 @@
                     {% if user.is_superuser %}
                         <button  class="btn btn-primary request-remove one-eye"  onclick="openModal('#reviewModal')">Remove Reviewer</button>
                     {% endif %}
+                    <a type="button" class="btn btn-back" style="color: white; background-color: black;" href="/queue?network={{rqst.network}}&rqst={{rqst.request_id}}">Back</a>
                 </div>
             </div>
         </div>
