@@ -45,6 +45,11 @@ class FileAdmin(admin.ModelAdmin):
     search_fields = ('file_name', )
     sortable_by = ('file_name', 'pull')
 
+class ComplianceBannerAcceptanceAdmin(admin.ModelAdmin):
+    list_display = ('user', 'last_accepted')
+    search_fields = ('user__name_last', 'user__name_first')
+    sortable_by = ('user', 'last_accepted')
+
 
 # Register your models here.
 admin.site.register(File, FileAdmin)
@@ -61,3 +66,5 @@ admin.site.register(Message)
 admin.site.register(Drop_File)
 admin.site.register(Drop_Request)
 admin.site.register(FileCategories)
+admin.site.register(ComplianceBannerSettings)
+admin.site.register(ComplianceBannerAcceptance, ComplianceBannerAcceptanceAdmin)

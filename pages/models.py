@@ -308,3 +308,26 @@ class Message(models.Model):
 
     def __str__(self):
         return str(self.message)
+    
+#  These classes are used to store the settings for the compliance banner
+#  and the acceptance of the banner by users.
+    
+class ComplianceBannerSettings(models.Model):
+    compliance_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    compliance_text = models.TextField(null=True)
+    visible = models.BooleanField(default=False)
+    accept_button_text = models.CharField(max_length=50, default="Accept")
+
+    def __str__(self):
+        return str(self.compliance)
+    
+class ComplianceBannerAcceptance(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    banner = models.ForeignKey(ComplianceBannerSettings, on_delete=models.CASCADE)
+    last_accepted = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'banner')  # This will prevent duplicate acceptances
+
+    def __str__(self):
+        return f"{self.user.username} last accepted {self.banner.compliance_text} on {self.last_accepted}"
