@@ -1,0 +1,49 @@
+{% if request.show_compliance_banner %}
+<div id="compliance-banner" class="compliance-banner alert alert-warning text-center" role="alert" aria-live="polite">
+    <p>{{ request.compliance_banner.text }}</p>
+    <button id="compliance-banner-btn" class="btn btn-primary" aria-label="Accept or close compliance banner">
+        {{ request.compliance_banner.button_text }}
+    </button>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const bannerButton = document.getElementById('compliance-banner-btn');
+        if (bannerButton) {
+            bannerButton.addEventListener('click', function () {
+                if (bannerButton.innerText === "Accept") {
+                    bannerButton.disabled = true;
+                    bannerButton.innerText = "Processing...";
+                    fetch("{% url 'accept_compliance_banner' %}", {
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": "{{ csrf_token }}",
+                            "Content-Type": "application/json"
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === "success") {
+                            bannerButton.innerText = "Close";
+                            bannerButton.disabled = false;
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error accepting compliance banner:", error);
+                        alert("An error occurred. Please try again.");
+                        bannerButton.disabled = false;
+                        bannerButton.innerText = "Accept";
+                    });
+                } else {
+                    const banner = document.getElementById('compliance-banner');
+                    banner.style.transition = 'opacity 0.5s';
+                    banner.style.opacity = '0';
+                    setTimeout(() => {
+                        banner.style.display = 'none';
+                    }, 500);
+                }
+            });
+        }
+    });
+</script>
+{% endif %}

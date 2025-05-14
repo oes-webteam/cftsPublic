@@ -46,7 +46,7 @@ class FileAdmin(admin.ModelAdmin):
     sortable_by = ('file_name', 'pull')
 
 class ComplianceBannerAcceptanceAdmin(admin.ModelAdmin):
-    list_display = ('user_name_last', 'user_name_first', 'banner_text', 'last_accepted')
+    list_display = ('user_name_last', 'user_name_first', 'banner_text', 'accepted_at') 
 
     def user_name_last(self, obj):
         return obj.user.name_last

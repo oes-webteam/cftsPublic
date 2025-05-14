@@ -95,6 +95,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_user_agents.middleware.UserAgentMiddleware',
+    'pages.middleware.ComplianceBannerMiddleware',  # custom middleware to show the compliance banner
 ]
 
 ROOT_URLCONF = 'cfts.urls'

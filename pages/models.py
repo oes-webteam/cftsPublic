@@ -317,18 +317,20 @@ class ComplianceBannerSettings(models.Model):
     compliance_text = models.TextField(null=True)
     visible = models.BooleanField(default=False)
     accept_button_text = models.CharField(max_length=50, default="Accept")
+    start_date = models.DateTimeField(null=True, blank=True)  # When the banner becomes active
+    end_date = models.DateTimeField(null=True, blank=True)    # When the banner expires
 
     def __str__(self):
         # Use compliance_text or another field for a meaningful string representation
         return self.compliance_text if self.compliance_text else "Compliance Banner"
     
 class ComplianceBannerAcceptance(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # Updated to reference the custom User model
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     banner = models.ForeignKey(ComplianceBannerSettings, on_delete=models.CASCADE)
-    last_accepted = models.DateTimeField(auto_now=True)
+    accepted_at = models.DateTimeField(auto_now=True)  
 
     class Meta:
-        unique_together = ('user', 'banner')  # This will prevent duplicate acceptances
+        unique_together = ('user', 'banner')
 
     def __str__(self):
-        return f"{self.user.name_last}, {self.user.name_first} last accepted {self.banner.compliance_text} on {self.last_accepted}"
+        return f"{self.user.username} accepted {self.banner.compliance_text} on {self.accepted_at}"

@@ -172,7 +172,7 @@ class userInfoForm(ModelForm):
 class complianceBannerForm(ModelForm):
     class Meta:
         model = ComplianceBannerSettings
-        fields = ['compliance_text', 'visible']
+        fields = ['compliance_text', 'visible', 'start_date', 'end_date']
         widgets = {
             'compliance_text': forms.Textarea(attrs={'rows': 4, 'cols': 50}),
         }
