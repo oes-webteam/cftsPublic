@@ -15,15 +15,16 @@ from pages.models import ComplianceBannerSettings
 @login_required
 @user_passes_test(staffCheck, login_url='frontend', redirect_field_name=None)
 def delayed_compliance(request):
-    # Get the first (or only) compliance banner
     banner = ComplianceBannerSettings.objects.first()
 
     if request.method == 'POST':
         form = complianceBannerForm(request.POST, instance=banner)
         if form.is_valid():
             form.save()
-            return redirect('delayed_compliance')  # Redirect to the same page after saving
+            return redirect('compliance-banner-settings')
     else:
         form = complianceBannerForm(instance=banner)
 
-    return render(request, 'pages/compliance-banner-settings.html', {'form': form})
+    return render(request, 'pages/compliance-banner-settings.html', {
+        'form': form,
+    })

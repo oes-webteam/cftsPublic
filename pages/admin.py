@@ -46,9 +46,19 @@ class FileAdmin(admin.ModelAdmin):
     sortable_by = ('file_name', 'pull')
 
 class ComplianceBannerAcceptanceAdmin(admin.ModelAdmin):
-    list_display = ('user', 'last_accepted')
-    search_fields = ('user__name_last', 'user__name_first')
-    sortable_by = ('user', 'last_accepted')
+    list_display = ('user_name_last', 'user_name_first', 'banner_text', 'last_accepted')
+
+    def user_name_last(self, obj):
+        return obj.user.name_last
+    user_name_last.short_description = 'Last Name'
+
+    def user_name_first(self, obj):
+        return obj.user.name_first
+    user_name_first.short_description = 'First Name'
+
+    def banner_text(self, obj):
+        return obj.banner.compliance_text
+    banner_text.short_description = 'Banner Text'
 
 
 # Register your models here.

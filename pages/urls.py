@@ -69,6 +69,9 @@ urlpatterns = [
     path('ban-request/submitfeedback', views.submitFeedback, name='submitfeedback'),
     path('submitfeedback', views.submitFeedback, name='submitfeedback'),
 
+    # compliance banner
+    path('compliance-banner-settings', views.delayed_compliance, name='compliance-banner-settings'),
+
     # APIs
     path('api-setreject', views.setReject, name='api-setreject'),
     path('api-setrejectdupes', views.setRejectDupes, name='api-setrejectdupes'),

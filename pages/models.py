@@ -319,10 +319,11 @@ class ComplianceBannerSettings(models.Model):
     accept_button_text = models.CharField(max_length=50, default="Accept")
 
     def __str__(self):
-        return str(self.compliance)
+        # Use compliance_text or another field for a meaningful string representation
+        return self.compliance_text if self.compliance_text else "Compliance Banner"
     
 class ComplianceBannerAcceptance(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # Updated to reference the custom User model
     banner = models.ForeignKey(ComplianceBannerSettings, on_delete=models.CASCADE)
     last_accepted = models.DateTimeField(auto_now=True)
 
@@ -330,4 +331,4 @@ class ComplianceBannerAcceptance(models.Model):
         unique_together = ('user', 'banner')  # This will prevent duplicate acceptances
 
     def __str__(self):
-        return f"{self.user.username} last accepted {self.banner.compliance_text} on {self.last_accepted}"
+        return f"{self.user.name_last}, {self.user.name_first} last accepted {self.banner.compliance_text} on {self.last_accepted}"

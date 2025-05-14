@@ -8,6 +8,7 @@ from crispy_forms.helper import FormHelper
 from django.contrib.auth import authenticate
 from crispy_forms.layout import Div, Submit, HTML
 from cfts.settings import NETWORK, ALLOWED_DOMAIN
+from .models import ComplianceBannerSettings
 
 
 
@@ -167,3 +168,11 @@ class userInfoForm(ModelForm):
                 )
         
         return cleaned_data
+
+class complianceBannerForm(ModelForm):
+    class Meta:
+        model = ComplianceBannerSettings
+        fields = ['compliance_text', 'visible']
+        widgets = {
+            'compliance_text': forms.Textarea(attrs={'rows': 4, 'cols': 50}),
+        }
