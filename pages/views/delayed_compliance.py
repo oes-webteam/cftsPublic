@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import permission_required
 from pages.views.auth import superUserCheck, staffCheck
 from django.shortcuts import render, redirect, get_object_or_404
 from pages.forms import complianceBannerForm
-from pages.models import ComplianceBannerSettings, ComplianceBannerAcceptance
+from pages.models import ComplianceBannerSettings, ComplianceBannerAcceptance, User
 from django.utils.timezone import now
 
 from django.http import JsonResponse
@@ -36,8 +36,23 @@ def delayed_compliance(request):
 @login_required
 def accept_compliance_banner(request):
     if request.method == "POST":
-        banner = ComplianceBannerSettings.objects.filter(visible=True, start_date__lte=now(), end_date__gte=now()).first()
+        # Get the current user and compliance banner
+        try:
+            user = User.objects.get(auth_user=request.user)  # Retrieve the custom User instance
+        except User.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "User not found."}, status=400)
+
+        banner = ComplianceBannerSettings.objects.filter(visible=True).first()
+
         if banner:
-            ComplianceBannerAcceptance.objects.get_or_create(user=request.user, banner=banner)
+            # Record the user's acceptance
+            ComplianceBannerAcceptance.objects.update_or_create(
+                user=user,
+                banner=banner,
+                defaults={'last_accepted': now()}
+            )
             return JsonResponse({"status": "success"})
-    return JsonResponse({"status": "error"}, status=400)
+        else:
+            return JsonResponse({"status": "error", "message": "No active compliance banner found."}, status=400)
+
+    return JsonResponse({"status": "error", "message": "Invalid request method."}, status=405)

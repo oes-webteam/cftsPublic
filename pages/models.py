@@ -325,12 +325,12 @@ class ComplianceBannerSettings(models.Model):
         return self.compliance_text if self.compliance_text else "Compliance Banner"
     
 class ComplianceBannerAcceptance(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    banner = models.ForeignKey(ComplianceBannerSettings, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    banner = models.ForeignKey('ComplianceBannerSettings', on_delete=models.CASCADE)
     accepted_at = models.DateTimeField(auto_now=True)  
 
     class Meta:
         unique_together = ('user', 'banner')
 
     def __str__(self):
-        return f"{self.user.username} accepted {self.banner.compliance_text} on {self.accepted_at}"
+        return f"{self.user.name_first} {self.user.name_last} accepted {self.banner.compliance_text} on {self.accepted_at}"

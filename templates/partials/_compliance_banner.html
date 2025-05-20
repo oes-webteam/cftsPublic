@@ -14,7 +14,7 @@
                 if (bannerButton.innerText === "Accept") {
                     bannerButton.disabled = true;
                     bannerButton.innerText = "Processing...";
-                    fetch("{% url 'accept_compliance_banner' %}", {
+                    fetch("{% url 'accept-compliance-banner' %}", {
                         method: "POST",
                         headers: {
                             "X-CSRFToken": "{{ csrf_token }}",
