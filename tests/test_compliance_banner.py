@@ -1,4 +1,5 @@
 import pytest
+from django.test import TestCase
 from django.utils.timezone import now, timedelta
 from pages.models import ComplianceBannerSettings, ComplianceBannerAcceptance
 from django.contrib.auth.models import User

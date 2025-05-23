@@ -11,6 +11,7 @@ from pages.models import ComplianceBannerSettings, ComplianceBannerAcceptance, U
 from django.utils.timezone import now
 
 from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 
 # ====================================================================
@@ -34,25 +35,34 @@ def delayed_compliance(request):
     })
 
 @login_required
+@require_POST
 def accept_compliance_banner(request):
+    try:
+        # Get the custom user object
+        user = User.objects.get(auth_user=request.user)
+    except User.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'User not found.'}, status=400)
+
+    try:
+        # Get the active compliance banner
+        banner = ComplianceBannerSettings.objects.get(visible=True)
+    except ComplianceBannerSettings.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'No active compliance banner found.'}, status=400)
+
+    # Record acceptance
+    ComplianceBannerAcceptance.objects.get_or_create(user=user, banner=banner)
+    return JsonResponse({'status': 'success'})
+
+
+def compliance_banner_settings(request):
+    # Get the current settings instance, or create one if it doesn't exist
+    banner, created = ComplianceBannerSettings.objects.get_or_create(pk=1)  # or your logic
+
     if request.method == "POST":
-        # Get the current user and compliance banner
-        try:
-            user = User.objects.get(auth_user=request.user)  # Retrieve the custom User instance
-        except User.DoesNotExist:
-            return JsonResponse({"status": "error", "message": "User not found."}, status=400)
+        form = ComplianceBannerSettingsForm(request.POST, instance=banner)
+        if form.is_valid():
+            form.save()
+    else:
+        form = ComplianceBannerSettingsForm(instance=banner)
 
-        banner = ComplianceBannerSettings.objects.filter(visible=True).first()
-
-        if banner:
-            # Record the user's acceptance
-            ComplianceBannerAcceptance.objects.update_or_create(
-                user=user,
-                banner=banner,
-                defaults={'last_accepted': now()}
-            )
-            return JsonResponse({"status": "success"})
-        else:
-            return JsonResponse({"status": "error", "message": "No active compliance banner found."}, status=400)
-
-    return JsonResponse({"status": "error", "message": "Invalid request method."}, status=405)
+    return render(request, "pages/compliance-banner-settings.html", {"form": form})

@@ -71,7 +71,7 @@ urlpatterns = [
 
     # compliance banner
     path('compliance-banner-settings', views.delayed_compliance, name='compliance-banner-settings'),
-    path('accept-compliance-banner', views.delayed_compliance, name='accept-compliance-banner'),
+    path('accept-compliance-banner', views.accept_compliance_banner, name='accept-compliance-banner'),
 
     # APIs
     path('api-setreject', views.setReject, name='api-setreject'),

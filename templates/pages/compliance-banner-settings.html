@@ -1,29 +1,31 @@
 {% extends 'base.html' %}
+<!-- view wrapper -->
 {% load static %}
 {% block content %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Compliance Banner Settings</title>
-
-    <!-- Include Bootstrap and Tempus Dominus CSS -->
-    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-    <link rel="stylesheet" href="{% static 'css/font-awesome.min.css' %}">
-    <link rel="stylesheet" href="{% static 'css/tempusdominus-bootstrap-4.min.css' %}">
-</head>
-<body>
-    <form method="post">
-        {% csrf_token %}
-        <div class="form-group">
-            <div class="row">
-                <!-- Start Date -->
-                <div class="col-md-6">
+<form method="post">
+    {% csrf_token %}
+    <div class="row">
+        <!-- Compliance Text -->
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="id_compliance_text">Compliance Text</label>
+                {{ form.compliance_text }}
+            </div>
+            <div class="form-group mt-2">
+                <label for="visible">Visible</label>
+                <input type="checkbox" id="visible" name="visible" {% if form.visible.value %}checked{% endif %}>
+            </div>
+        </div>
+        <!-- Active Between Dates -->
+        <div class="col-md-6">
+            <div class="border rounded p-4 mb-4 w-auto" style="max-width: 500px;">
+                <div class="mb-2 font-weight-bold text-center">Active between</div>
+                <div class="mb-2 text-muted small text-center">You can set a specific start date and end date</div>
+                <div class="form-group mb-3">
                     <label for="id_start_date">Start Date</label>
                     <div class="input-group date" id="start_date_picker" data-target-input="nearest">
-                        <input type="text" id="id_start_date" name="start_date" class="form-control datetimepicker-input" data-target="#start_date_picker" placeholder="Start date">
+                        <input type="text" id="id_start_date" name="start_date" class="form-control datetimepicker-input w-auto" style="max-width: 220px;" data-target="#start_date_picker" placeholder="Start date">
                         <div class="input-group-append" data-target="#start_date_picker" data-toggle="datetimepicker">
                             <span class="input-group-text">
                                 <i class="fa fa-calendar fa-2x"></i>
@@ -31,12 +33,10 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- End Date -->
-                <div class="col-md-6">
+                <div class="form-group mb-0">
                     <label for="id_end_date">End Date</label>
                     <div class="input-group date" id="end_date_picker" data-target-input="nearest">
-                        <input type="text" id="id_end_date" name="end_date" class="form-control datetimepicker-input" data-target="#end_date_picker" placeholder="End date">
+                        <input type="text" id="id_end_date" name="end_date" class="form-control datetimepicker-input w-auto" style="max-width: 220px;" data-target="#end_date_picker" placeholder="End date">
                         <div class="input-group-append" data-target="#end_date_picker" data-toggle="datetimepicker">
                             <span class="input-group-text">
                                 <i class="fa fa-calendar fa-2x"></i>
@@ -46,23 +46,9 @@
                 </div>
             </div>
         </div>
-
-        <div class="form-group mt-3">
-            <label for="id_compliance_text">Compliance Text</label>
-            {{ form.compliance_text }}
-            <label for="visible">Visible</label>
-            <input type="checkbox" id="visible" name="visible" {% if form.visible.value %}checked{% endif %}>   
-        </div>
-
-        <button type="submit" class="btn btn-primary mt-3">Save Changes</button>
-    </form>
-
-    <!-- Include Bootstrap and Tempus Dominus JS -->
-    <script src="{% static 'js/jquery.min.js' %}"></script>
-    <script src="{% static 'js/moment.min.js' %}"></script>
-    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
-    <script src="{% static 'js/tempusdominus-bootstrap-4.min.js' %}"></script>
-
+    </div>
+    <button type="submit" class="btn btn-primary mt-3">Save Changes</button>
+</form>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
         console.log("Initializing Tempus Dominus...");
@@ -108,6 +94,4 @@
     // Update the document title
         window.document.title = "CFTS -- Compliance Banner Settings";
     </script>
-</body>
-</html>
 {% endblock %}
